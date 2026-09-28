@@ -1,0 +1,311 @@
+# PokeArena — Game Specification (v1)
+
+A persistent Pokemon collecting and battling game played through Twitch chat.
+The bot runs as a WPF desktop application on the streamer's machine; viewers
+play entirely via chat commands. A static Blazor website shows the leaderboard,
+trainer pages and battle logs.
+
+Status: concept frozen 2026-09-03. Open points are marked **OPEN** and
+collected in the last section. Conventions: code and documentation in English,
+all chat output and UI text in German.
+
+---
+
+## 1. Core concepts
+
+- **Trainer** — a viewer, identified permanently by their **Twitch user id**
+  (never by display name; names can change). The current display name is
+  stored alongside and refreshed when seen.
+- **Species (Art)** — one of the 151 Gen-1 Pokemon, defined in the base data
+  (`data/pokemon.json`). Each species has exactly **one** type.
+- **Specimen (Exemplar)** — one owned instance of a species. Duplicates are
+  allowed; every catch creates a new specimen. Exactly one specimen per
+  trainer is flagged as the **starter**.
+- **Achievement (AV)** — unlocked at thresholds of *distinct species owned*
+  (15, 25, 40, 60, 70, 80, 90, 100, 105, 110, 115, 130, 135, 140, 145, 150,
+  151). Once unlocked, an achievement is **never lost**, even if the distinct
+  count later drops below the threshold. Each achievement unlocks the
+  corresponding NPC.
+
+## 2. Base data
+
+`data/pokemon.json`, one entry per species (**OPEN**: values supplied by the
+project owner; the catch-rate column from earlier drafts is dropped because
+catching is deterministic, see §4):
+
+| Field       | Meaning                                                    |
+|-------------|------------------------------------------------------------|
+| `id`        | 1–151, national dex number                                 |
+| `name`      | official German name (display)                             |
+| `slug`      | URL/command-safe name, lowercase; `nidoran-m`/`nidoran-w` for the two Nidoran |
+| `hp`        | base HP                                                    |
+| `atk`       | base attack                                                |
+| `def`       | base defense                                               |
+| `typ`       | exactly one type (see `data/typen.json`)                   |
+| `seltenheit`| 1 = common, 2 = rare, 3 = legendary (boss draw weighting)  |
+| `bossZiele` | optional; targets hit per boss round. Default 1, `0` = all |
+
+`data/typen.json` holds the Gen-1 type chart (15 types). House rule: there is
+no immunity — every `0×` entry of the original chart is replaced by **0.25**.
+Deliberate Gen-1 quirks kept (differ from modern charts): Poison and Bug are
+super effective against each other, Ice is neutral against Fire, Ghost gets
+0.25 (was 0) against Psychic.
+
+## 3. Registration
+
+- `!registrieren <Starter>` — one-time, irrevocable choice of one of five
+  starters: **Bisasam, Schiggy, Glumanda, Pikachu, Evoli**.
+- Creates the trainer and their starter specimen.
+- Any game command from an unregistered user gets a hint pointing to
+  `!registrieren` (no auto-registration).
+- Everyone may play; no follower/sub gate. One configured channel only.
+
+## 4. Boss encounter (`!boss`)
+
+Trigger and lobby:
+
+1. A registered user types `!boss` while no encounter runs and the global
+   cooldown has elapsed → a lobby opens with a countdown
+   (`BossCountdownSeconds`, default 30). Announcement is generic („Ein wilder
+   Boss nähert sich!") — the boss is not yet determined.
+2. During the countdown every registered user (including the initiator,
+   automatically) joins via `!boss`. Joining twice is a no-op.
+3. If fewer than `BossMinTeilnehmer` (default 2) joined when the countdown
+   ends: message „Boss entkommt mangels Herausforderern", short retry
+   cooldown (`BossFehlschlagCooldownMinutes`, default 2), no full cooldown.
+
+Boss draw (after the lobby closes, so participant count is known):
+
+- Tier probabilities grow with participant count `N` and are capped:
+  `p(legendär) = min(Cap3, Basis3 + ProSpieler3 × N)` (defaults 1 % + 1 %/player, cap 20 %),
+  `p(selten)   = min(Cap2, Basis2 + ProSpieler2 × N)` (defaults 10 % + 2 %/player, cap 40 %),
+  remainder → common. Within a tier the species is drawn uniformly.
+- Boss HP = base HP × `HPFaktor` × `BossFaktor` (default 5.0). Other stats are
+  the base values.
+
+Fight (resolved **instantly** when the lobby closes — no interaction is
+possible, so no artificial pacing):
+
+- Each participant fields **one random specimen** from their inventory. If it
+  faints, that participant is out — no replacements.
+- Per round: all living participant Pokemon attack the boss once, in
+  seed-random order; then the boss attacks `bossZiele` random living
+  participant Pokemon (default 1).
+- Boss HP reaches 0 → **every participant whose Pokemon is still alive
+  catches the boss** (one new specimen each). No dice roll — survival is the
+  catch condition.
+- All participant Pokemon faint first → the boss escapes, nobody catches.
+- Chat output: start message, result summary (who caught / boss escaped) and
+  the battle-log link. The global cooldown (`BossCooldownMinutes`, default 30)
+  starts when the encounter **ends**.
+- Achievement unlocks caused by the catches are announced afterwards:
+  „X hat AV Y freigeschalten und kann NPC Z herausfordern."
+
+## 5. Battle engine
+
+Used by boss, PvP and NPC fights.
+
+- **Damage:** `max(1, round(Skalierung × ATK / DEF × Typfaktor × Streuung × Krit))`
+  - `Skalierung` default 25
+  - `Streuung` uniform in [0.85, 1.00]
+  - Crit: factor `KritFaktor` (default 2.0) with chance `KritChance`
+    (default 6.25 %)
+  - `Typfaktor` from the type chart (attack type = attacker's own type)
+  - No STAB, no immunities. Minimum damage 1 makes stalemates impossible.
+- Effective HP in any fight = base HP × `HPFaktor` (default 1.0). HP exists
+  only inside a fight; everything is healed afterwards.
+- **1-vs-1 turn rules (PvP/NPC):** the challenger strikes first. When a
+  Pokemon faints, its side sends the next random team member and that side
+  attacks first.
+- `MaxRunden` (default 200) is a pure safety net — reaching it is a bug, is
+  logged as a warning, and the side with the higher remaining HP sum wins.
+- **Determinism:** the RNG is injected; every battle stores its seed. The
+  full log is still persisted verbatim (replaying a seed after a balancing
+  change would yield a different outcome, so logs are data, not derived).
+- Log line format follows the PDF, e.g.
+  `Pokemon 1 (HP X) hat Pokemon 2 (HP X) X Schaden zugefügt.` /
+  `Pokemon X wurde besiegt.`
+
+## 6. PvP (`!fight`)
+
+- `!fight @name` challenges another registered trainer. Requirements: both
+  own **≥ 6 specimens**; neither has another open challenge (one open
+  challenge per trainer, in either direction).
+- The challenged trainer accepts with `!fight @challenger` within
+  `HerausforderungTimeoutMinutes` (default 2); otherwise the challenge
+  expires silently.
+- Teams: **6 random specimens per side**, drawn by the engine. The starter
+  may be drawn like any other specimen.
+- Reward: the winner receives **one random specimen from the loser's team of
+  6, excluding the starter specimen** (pool may thus be 5). The transfer is
+  permanent; only that concrete specimen is protected — further copies of the
+  starter's species are normal loot.
+- No cooldown between trainer pairs (v1; revisit if trading-by-losing gets
+  abused).
+- A trainer may be in a boss lobby and a PvP fight at the same time —
+  inventories are only touched when a fight resolves.
+- The PDF's original challenge mode (show team, opponent hand-picks a team,
+  winner picks the reward) is **deferred to a later version**.
+
+## 7. NPC fights (`!challenge <NPC>`)
+
+- 17 NPCs, unlocked by achievement thresholds (distinct species):
+
+  | AV  | NPC       | Team (fixed species)                                        |
+  |-----|-----------|-------------------------------------------------------------|
+  | 15  | Eich      | Bisasam, Schiggy, Glumanda, Raupy, Hornliu, Pikachu          |
+  | 25  | Rocko     | Kleinstein, Georok, Geowaz, Onix, Rihorn, Rizeros            |
+  | 40  | Misty     | Sterndu, Starmie, Goldini, Golking, Enton, Entoron           |
+  | 60  | Jessie    | Mauzi, Rettan, Arbok, Schlurp, Muschas, Ditto                |
+  | 70  | James     | Mauzi, Ultrigaria, Sarzenia, Smogon, Smogmog, Karpador       |
+  | 80  | Bob       | Pikachu, Raichu, Magnetilo, Magneton, Elektek, Zapdos        |
+  | 90  | Erika     | Knofensa, Ultrigaria, Tangela, Myrapla, Duflor, Giflor       |
+  | 100 | Koga      | Bluzuk, Omot, Bibor, Smettbo, Tentoxa, Pinsir                |
+  | 105 | Sabrina   | Abra, Kadabra, Simsala, Traumato, Hypno, Rossana             |
+  | 110 | Pyro      | Vulnona, Gallopa, Arkani, Glurak, Magmar, Lavados            |
+  | 115 | Giovanni  | Digdri, Snobilikat, Nidoqueen, Nidoking, Rizeros, Geowaz     |
+  | 130 | Lorelei   | Jugong, Austos, Lahmus, Rossana, Lapras, Arktos              |
+  | 135 | Bruno     | Onix, Nockchan, Kicklee, Aerodactyl, Relaxo, Machomei        |
+  | 140 | Agathe    | Gengar, Golbat, Alpollo, Arbok, Smogmog, Porygon             |
+  | 145 | Siegfried | Garados, Dratini, Dragonir, Amonitas, Aerodactyl, Dragoran   |
+  | 150 | Garry     | Simsala, Kokowei, Aquana, Blitza, Flamara, Mewtu             |
+  | 151 | Ash       | Arktos, Lavados, Zapdos, Turtok, Glurak, Bisaflor            |
+
+  (Spelling per official German names; the PDF's variants are normalized.)
+
+- Player side: 6 random specimens, same rules and minimum (≥ 6) as PvP. The
+  player is the challenger and strikes first.
+- NPC side: the fixed team above; stats = base values × per-NPC strength
+  multiplier (`npcs.json`, configurable per NPC).
+- Cooldowns per trainer and NPC, both configurable: after a **loss**
+  `NPCNiederlageCooldownHours` (default 48), after a **win**
+  `NPCSiegCooldownMinutes` (default 60) — the win cooldown exists to limit
+  farming.
+- Error replies per PDF: „Du kannst diesen NPC noch nicht herausfordern
+  (Cooldown XX:XX)" / „… (noch x Pokemon benötigt)".
+- **OPEN (E22):** the reward for beating an NPC is not yet defined. Blocks
+  only this milestone's reward step; fights themselves are specified.
+
+## 8. Commands
+
+| Command                    | Who        | Effect                                        |
+|----------------------------|------------|-----------------------------------------------|
+| `!registrieren <Starter>`  | anyone     | one-time registration with starter            |
+| `!boss`                    | registered | open boss lobby / join during countdown       |
+| `!fight @name`             | registered | challenge (or accept a pending challenge)     |
+| `!challenge <NPC>`         | registered | fight an unlocked NPC                         |
+| `!arena`                   | anyone     | posts the website link                        |
+| `!bossreset`               | mods       | reset the global boss cooldown                |
+| `!entfernen @name`         | mods       | delete a trainer (see §11)                    |
+
+All other management (config values, token setup, manual corrections, backup)
+lives in the WPF UI, not in chat. Pokemon names in commands are matched
+case-insensitively against `name` and `slug`.
+
+## 9. Website
+
+Static **Blazor WebAssembly** site, hosted on **GitHub Pages** in this
+repository, deployed by a GitHub Actions workflow (build limits do not apply
+to Actions-based publishing). The bot uploads data files via the GitHub
+Contents API using a fine-grained PAT (this repo only, permission
+`Contents: Read and write`), stored in the Windows credential store.
+
+Pages (v1): leaderboard, battle log per fight, trainer detail page, OBS
+overlay view.
+
+Data files (all derived — fully regenerable from the DB; the UI has a
+"republish everything" action):
+
+| File                       | Content                                              |
+|----------------------------|------------------------------------------------------|
+| `rangliste.json`           | rank, display name, distinct count, total count, player count, timestamp. Sort: distinct desc, then total desc, then earliest attainment |
+| `trainer/<twitch-id>.json` | pokedex (species + count), achievements, recent fights, stats |
+| `kampf/<id>.json`          | participants, teams, log lines, result, loot, seed   |
+| `kaempfe.json`             | last N fights for an index page                      |
+| `meta.json`                | data format version, timestamp                       |
+
+- Files are uploaded **directly per change** (v1); batching is a later
+  optimization if commit volume becomes a nuisance.
+- A Pages deploy takes ~1 minute. The battle page therefore shows a
+  friendly „Kampf wird gerade veröffentlicht …" state and retries while the
+  JSON 404s, so links posted to chat immediately are never broken.
+- Leaderboard/overlay pages poll every 15 s; battle pages are static.
+- Trainer URLs use the Twitch user id as filename; friendly routes resolve
+  names via the leaderboard data.
+- **OBS overlay:** OBS runs on the same machine as the bot, so the overlay
+  browser source points at a **local Kestrel endpoint of the WPF app**
+  (instant updates, works offline). The public site keeps the polled
+  snapshots.
+
+## 10. Storage
+
+- **SQLite (EF Core) is the single source of truth**: trainers, specimens,
+  fights (including full logs and seeds), achievements, cooldowns, open
+  challenges, publish queue, balancing config. Loot transfers run in one
+  transaction.
+- A **publish queue** (outbox) decouples game logic from uploads; network
+  failures lose nothing.
+- **Secrets** (Twitch tokens for the dedicated bot account, GitHub PAT) go
+  into the Windows credential store — never into the DB, config files or the
+  repo. The UI shows token expiry dates.
+- **Backup:** DB file copy on app exit plus a manual "backup now" button.
+
+## 11. Privacy
+
+Display names appear permanently on a public website. Therefore:
+
+- `!entfernen @name` (mods) and a UI action delete a trainer and their
+  specimens, and republish affected files; the trainer's name in existing
+  battle logs is replaced by „[gelöscht]".
+- A short privacy note lives on the website.
+
+## 12. Twitch integration
+
+- Transport: **EventSub WebSocket** (`channel.chat.message`) for reading,
+  **Helix Send Chat Message** for writing. No IRC.
+- Auth: **Device Code Flow** (public client, no secret) for the dedicated
+  bot account; scopes `user:read:chat`, `user:write:chat`, `user:bot`;
+  broadcaster grants `channel:bot` (or the bot is made a moderator — also
+  recommended for the higher rate limit).
+- Outgoing messages run through a rate limiter with a queue; results of mass
+  events (boss) are aggregated into few messages and respect the 500-char
+  message limit.
+
+## 13. Configuration defaults
+
+| Key                            | Default   |
+|--------------------------------|-----------|
+| Skalierung                     | 25        |
+| Streuung                       | 0.85–1.00 |
+| KritChance / KritFaktor        | 6.25 % / 2.0 |
+| HPFaktor                       | 1.0       |
+| MaxRunden                      | 200       |
+| BossCountdownSeconds           | 30        |
+| BossMinTeilnehmer              | 2         |
+| BossCooldownMinutes            | 30        |
+| BossFehlschlagCooldownMinutes  | 2         |
+| BossFaktor                     | 5.0       |
+| Seltenheit Basis/ProSpieler/Cap| s. §4     |
+| HerausforderungTimeoutMinutes  | 2         |
+| NPCNiederlageCooldownHours     | 48        |
+| NPCSiegCooldownMinutes         | 60        |
+| WebsitePollSeconds             | 15        |
+
+All balancing values are editable in the UI at runtime.
+
+## 14. Open points and later versions
+
+**OPEN for v1:**
+
+1. Base data values (`pokemon.json`) — supplied by the project owner.
+2. NPC reward (E22).
+3. Exact German wording of all chat messages (drafted during implementation).
+
+**Deferred (v2+), from the PDF:**
+
+- Challenge mode: challenger shows their team, opponent hand-picks a team,
+  winner picks the reward.
+- Attacks per Pokemon, randomly selected, with per-attack types.
+- Pokemon defeated in a fight become unavailable for further fights (but
+  stay in the pokedex).
+- Battle log retention/cleanup policy.
