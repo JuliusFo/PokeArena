@@ -5,6 +5,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PokeArena.Core;
+using PokeArena.Core.Secrets;
+using PokeArena.Desktop.Services;
 using PokeArena.Desktop.Views;
 using PokeArena.UI;
 using Serilog;
@@ -80,6 +82,7 @@ public partial class App : Application
 #endif
         builder.Services.AddSingleton(paths);
         builder.Services.AddSingleton(TimeProvider.System);
+        builder.Services.AddSingleton<ISecretStore, CredentialManagerSecretStore>();
         builder.Services.AddSingleton(new AppInfo(version));
         builder.Services.AddSingleton<MainWindow>();
 

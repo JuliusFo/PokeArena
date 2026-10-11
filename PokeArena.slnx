@@ -6,5 +6,6 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/PokeArena.Core.Tests/PokeArena.Core.Tests.csproj" />
+    <Project Path="tests/PokeArena.Integration.Tests/PokeArena.Integration.Tests.csproj" />
   </Folder>
 </Solution>
