@@ -17,3 +17,5 @@ tagged `vX.Y.Z` once its section is complete.
 ### Changed
 - Website data moves from GitHub commits to Cloudflare R2 (ADR-0003).
 - Species have one or two types instead of exactly one (ADR-0005).
+- Damage uses a damped ratio and the better of physical/special; bosses
+  scale with participant count via HP and number of targets (ADR-0006).

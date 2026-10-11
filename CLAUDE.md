@@ -9,7 +9,7 @@ Status: 2026-10-11 · no release yet (pre-v0.1.0, specification phase)
 |---|---|---|
 | `docs/spec.md` | Game rules, commands, config defaults (source of truth for gameplay) | Before any game-logic or chat-text work |
 | `docs/architecture.md` | Data model, game flows, publishing outbox, desktop UI concept | Before touching Core or Desktop structure |
-| `docs/decisions/` | ADRs (stack, Twitch, site data, determinism, base data/types) | Before changing stack or architecture |
+| `docs/decisions/` | ADRs (stack, Twitch, site data, determinism, base data/types, balancing) | Before changing stack or architecture |
 | `docs/roadmap.md` | Planned work packages WP-NN, user decisions, open questions | At the start of every package |
 | `docs/backlog.md` | Unplanned ideas, grouped by topic | When an idea comes up — park it there |
 | `docs/work-packages.md` | Package overview + log per finished package | After finishing a package |
@@ -135,5 +135,5 @@ PokeArena.slnx
 
 ## 9. Next
 
-Settle boss balancing (damage formula, boss scaling, simulator) for WP-03;
-start WP-00 scaffold. Details: docs/roadmap.md.
+Start WP-00 scaffold. Still open before later packages: NPC reward (E22),
+operations on the streamer's PC. Details: docs/roadmap.md.

@@ -47,18 +47,18 @@ Demo: `!boss` playable end-to-end.
   types (multiplied on defence, better type on attack).
 - User decision (2026-10-11): generated rarity list accepted as is
   (98 common / 48 rare / 5 legendary).
-- Open (review 2026-10-11):
-  - Damage formula: raw `ATK/DEF` explodes for the official outliers
-    (Chaneira DEF 5, Onix DEF 160, Karpador ATK 10); dampen (e.g.
-    `(ATK+k)/(DEF+k)`). `spez` is in the data — use e.g. `max(atk, spez)` as
-    attack so Psychic Pokemon (Simsala ATK 50, Spez 135) are not useless?
-  - Boss difficulty does not scale with participant count; above ~5 players
-    the boss nearly always loses. Scale boss HP or `bossZiele` with N?
-  - Add a Monte Carlo balancing simulator (≈ 0.5 day) to tune the above.
-  - All 151 species (incl. Mew, Ditto, starters) must be in the boss pool, or
-    achievements 150/151 are unreachable.
-  - Progression length: expected catches for k distinct species (uniform
-    lower bound) — 15: ~16, 60: ~76, 100: ~163, 151: ~845. Intended?
+- User decisions (2026-10-11, ADR-0006): damped damage ratio with best of
+  physical/special (`k` = 50); boss attacks `⌈N/3⌉` targets, HP =
+  base HP × 1.8 × N; target group win rate ≈ 75 %.
+- Every species has a rarity tier, so all 151 can appear as boss — the
+  achievements 150/151 are reachable.
+- Build a Monte Carlo balancing simulator (≈ 0.5 day) on the real engine:
+  first reproduce the ADR-0006 numbers, then fine-tune `Skalierung`, `k` and
+  the first-strike advantage (18 % one-hit KOs in 1-vs-1).
+- Open: progression length. Expected catches for k distinct species (uniform
+  lower bound) — 15: ~16, 60: ~76, 100: ~163, 151: ~845; with ≈ 60 % catch
+  chance per boss that is ≈ 1.7× as many boss fights. Intended, or add a
+  bonus for missing species (backlog)?
 
 ## WP-04 — PvP (3–4 days) → v0.4.0
 

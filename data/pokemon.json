@@ -1,8 +1,7 @@
 {
   "hinweis": [
     "Generiert mit tools/GeneratePokemonData.cs aus PokeAPI, Werte wie in Generation I.",
-    "spez = Gen-1-Wert Spezial. seltenheit: 1 = gewoehnlich, 2 = selten, 3 = legendaer.",
-    "bossZiele ist optional (Standard 1, 0 = alle)."
+    "spez = Gen-1-Wert Spezial. seltenheit: 1 = gewoehnlich, 2 = selten, 3 = legendaer."
   ],
   "pokemon": [
     { "id": 1, "name": "Bisasam", "slug": "bisasam", "typen": ["Pflanze", "Gift"], "hp": 45, "atk": 49, "def": 49, "spez": 65, "seltenheit": 2 },

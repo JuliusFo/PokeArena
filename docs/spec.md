@@ -43,10 +43,9 @@ dropped because catching is deterministic (see §4).
 | `hp`        | base HP                                                    |
 | `atk`       | base attack                                                |
 | `def`       | base defense                                               |
-| `spez`      | Gen-1 Special (not used by the damage formula yet)         |
+| `spez`      | Gen-1 Special: special attack **and** special defense (§5) |
 | `typen`     | one or two types, Gen-1 order (see `data/typen.json`)      |
 | `seltenheit`| 1 = common, 2 = rare, 3 = legendary (boss draw weighting)  |
-| `bossZiele` | optional; targets hit per boss round. Default 1, `0` = all |
 
 `data/typen.json` holds the Gen-1 type chart (15 types). House rule: there is
 no immunity — every `0×` entry of the original chart is replaced by **0.25**.
@@ -87,8 +86,9 @@ Boss draw (after the lobby closes, so participant count is known):
   `p(legendär) = min(Cap3, Basis3 + ProSpieler3 × N)` (defaults 1 % + 1 %/player, cap 20 %),
   `p(selten)   = min(Cap2, Basis2 + ProSpieler2 × N)` (defaults 10 % + 2 %/player, cap 40 %),
   remainder → common. Within a tier the species is drawn uniformly.
-- Boss HP = base HP × `HPFaktor` × `BossFaktor` (default 5.0). Other stats are
-  the base values.
+- Boss HP = base HP × `HPFaktor` × `BossHPProSpieler` × `N` (default 1.8).
+  Other stats are the base values. Together with the target count below this
+  keeps the group's win rate near **75 %** for any `N` (ADR-0006).
 
 Fight (resolved **instantly** when the lobby closes — no interaction is
 possible, so no artificial pacing):
@@ -96,8 +96,9 @@ possible, so no artificial pacing):
 - Each participant fields **one random specimen** from their inventory. If it
   faints, that participant is out — no replacements.
 - Per round: all living participant Pokemon attack the boss once, in
-  seed-random order; then the boss attacks `bossZiele` random living
-  participant Pokemon (default 1).
+  seed-random order; then the boss attacks `⌈N / BossZieleTeiler⌉`
+  (default 3) different random living participant Pokemon — all of them if
+  fewer are alive. `N` is the participant count at the start.
 - Boss HP reaches 0 → **every participant whose Pokemon is still alive
   catches the boss** (one new specimen each). No dice roll — survival is the
   catch condition.
@@ -112,7 +113,12 @@ possible, so no artificial pacing):
 
 Used by boss, PvP and NPC fights.
 
-- **Damage:** `max(1, round(Skalierung × ATK / DEF × Typfaktor × Streuung × Krit))`
+- **Damage:** `max(1, round(Skalierung × Quote × Typfaktor × Streuung × Krit))`
+  - `Quote` = the better of physical and special (ADR-0006):
+    `max((ATK_a + k) / (DEF_d + k), (SPEZ_a + k) / (SPEZ_d + k))` with
+    `k` = `Daempfung` (default 50). As in Gen 1, Special serves as both
+    special attack and special defense. The damping keeps outliers (Chaneira
+    DEF 5, Onix DEF 160) from deciding fights on their own.
   - `Skalierung` default 25
   - `Streuung` uniform in [0.85, 1.00]
   - Crit: factor `KritFaktor` (default 2.0) with chance `KritChance`
@@ -302,6 +308,7 @@ Display names appear permanently on a public website. Therefore:
 | Key                            | Default   |
 |--------------------------------|-----------|
 | Skalierung                     | 25        |
+| Daempfung (k)                  | 50        |
 | Streuung                       | 0.85–1.00 |
 | KritChance / KritFaktor        | 6.25 % / 2.0 |
 | HPFaktor                       | 1.0       |
@@ -310,7 +317,8 @@ Display names appear permanently on a public website. Therefore:
 | BossMinTeilnehmer              | 2         |
 | BossCooldownMinutes            | 30        |
 | BossFehlschlagCooldownMinutes  | 2         |
-| BossFaktor                     | 5.0       |
+| BossHPProSpieler               | 1.8       |
+| BossZieleTeiler                | 3         |
 | Seltenheit Basis/ProSpieler/Cap| s. §4     |
 | HerausforderungTimeoutMinutes  | 2         |
 | NPCNiederlageCooldownHours     | 48        |
