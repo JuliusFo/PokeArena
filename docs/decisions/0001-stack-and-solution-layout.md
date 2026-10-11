@@ -31,3 +31,17 @@ tests.
 - Balancing changes to base data are a git diff, not a migration.
 - Core is fully unit-testable; ViewModels are tested directly.
 - Backups are a single DB file (see roadmap WP-07 for the WAL caveat).
+
+## Addendum 2026-10-11 (WP-00)
+
+- The desktop UI is Blazor Hybrid instead of WPF-UI + CommunityToolkit.Mvvm
+  (ADR-0007); `PokeArena.UI` (Razor class library) joins the layout.
+- Tests: xUnit v3 on Microsoft Testing Platform (user decision). Integration
+  tests live in `tests/PokeArena.Integration.Tests`.
+- Package versions are managed centrally (`Directory.Packages.props`).
+- "No `NuGet.config`" is replaced by a `nuget.config` that clears all
+  machine-wide feeds and maps every package to nuget.org (user decision): a
+  global DevExpress feed on the dev machine broke the build (NU1507). The
+  intent — packages only from nuget.org — is now enforced, not just agreed.
+- Logging: Serilog file sink under `%LOCALAPPDATA%\PokeArena\logs`.
+- Secrets: `Meziantou.Framework.Win32.CredentialManager` (user decision).

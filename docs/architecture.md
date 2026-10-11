@@ -47,8 +47,10 @@ Runtime balancing values (spec §13) are stored in the DB and editable in the UI
   background worker uploads to R2 and retries on failure. "Republish
   everything" regenerates all files from the DB.
 
-## Desktop UI concept (`PokeArena.Desktop`)
+## Desktop UI concept (`PokeArena.Desktop` + `PokeArena.UI`)
 
+Blazor Hybrid (ADR-0007): Desktop is a thin WPF host with a `BlazorWebView`;
+all screens are Razor components in `PokeArena.UI` with CSS design tokens.
 Operated by the streamer, so every screen must be usable without technical
 knowledge. Planned areas:
 

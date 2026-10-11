@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-10-11 · no release yet (pre-v0.1.0, specification phase)
+Status: 2026-10-11 · no release yet (pre-v0.1.0) · WP-00 scaffold done, WP-01 next
 
 ## 1. Where to find what
 
@@ -9,12 +9,12 @@ Status: 2026-10-11 · no release yet (pre-v0.1.0, specification phase)
 |---|---|---|
 | `docs/spec.md` | Game rules, commands, config defaults (source of truth for gameplay) | Before any game-logic or chat-text work |
 | `docs/architecture.md` | Data model, game flows, publishing outbox, desktop UI concept | Before touching Core or Desktop structure |
-| `docs/decisions/` | ADRs (stack, Twitch, site data, determinism, base data/types, balancing) | Before changing stack or architecture |
+| `docs/decisions/` | ADRs (stack, Twitch, site data, determinism, base data/types, balancing, desktop UI) | Before changing stack or architecture |
 | `docs/roadmap.md` | Planned work packages WP-NN, user decisions, open questions | At the start of every package |
 | `docs/backlog.md` | Unplanned ideas, grouped by topic | When an idea comes up — park it there |
 | `docs/work-packages.md` | Package overview + log per finished package | After finishing a package |
 | `CHANGELOG.md` | Release notes (Keep a Changelog, SemVer) | Before tagging a release |
-| `src/<Project>/CLAUDE.md` | Pitfalls of that project (loads automatically; created in WP-00) | — |
+| `src/<Project>/CLAUDE.md` | Pitfalls of that project (Core, UI, Desktop; loads automatically) | — |
 
 ## 2. Goal and audience
 
@@ -61,28 +61,32 @@ Changes only via ADR.
 
 | Area | Decision | Notes |
 |---|---|---|
-| Runtime | .NET 10 (`net10.0`, `net10.0-windows`), `.slnx` | Version via `Directory.Build.props` |
-| Desktop | WPF + WPF-UI + CommunityToolkit.Mvvm, Microsoft.Extensions.Hosting | Same stack as the user's DeskCycle project |
+| Runtime | .NET 10 (`net10.0`, `net10.0-windows10.0.19041.0`), `.slnx` | Version in `Directory.Build.props`, package versions in `Directory.Packages.props`, feeds in `nuget.config` (nuget.org only) |
+| Desktop | Blazor Hybrid: thin WPF host + `BlazorWebView`, UI in Razor class library; Generic Host, Serilog | As in FerretSharp (ADR-0007) |
 | Storage | EF Core + SQLite | Migrations in Core |
 | Twitch | EventSub WebSocket (read), Helix Send Chat Message (write), Device Code Flow | TwitchLib behind own interfaces (ADR-0002) |
 | Website | Blazor WebAssembly on GitHub Pages | App only, no data (ADR-0003) |
 | Site data | Cloudflare R2 via `r2.dev`, `AWSSDK.S3` | Base URL is config (ADR-0003) |
-| Tests | **open** — proposal: xUnit v3 | Decide in WP-00 |
+| Secrets | Windows Credential Manager via `Meziantou.Framework.Win32.CredentialManager` | Behind `ISecretStore` (ADR-0002) |
+| Tests | xUnit v3 on Microsoft Testing Platform; bUnit for components once they have logic | ADR-0001 addendum |
 
 **Do not use:** IRC chat · GitHub (Contents API, Pages, commits) for player
-data · `NuGet.config` (all packages from nuget.org) · `Random`, `DateTime.Now`
-or `DateTimeOffset.Now` directly in Core · UI automation tests (test ViewModels
-directly).
+data · package feeds other than nuget.org · WPF-UI, CommunityToolkit.Mvvm
+(ADR-0007) · in Core: clock and unseeded randomness (`DateTime.Now`,
+`new Random()` … — the build fails, ADR-0004) · UI automation tests.
 
 ## 5. Solution layout
 
 ```
 PokeArena.slnx
 ├─ src/
-│  ├─ PokeArena.Core/      # domain, engine, Twitch, data, publishing — no UI
-│  ├─ PokeArena.Desktop/   # WPF host, ViewModels, local overlay endpoint
-│  └─ PokeArena.Web/       # Blazor WASM, reads JSON from R2
-├─ tests/PokeArena.Core.Tests/
+│  ├─ PokeArena.Core/      # domain, engine, Twitch, data, publishing — no UI, no Windows
+│  ├─ PokeArena.UI/        # Razor components + CSS of the desktop app
+│  ├─ PokeArena.Desktop/   # WPF host: BlazorWebView, logging, Windows services; later overlay endpoint
+│  └─ PokeArena.Web/       # (WP-06) Blazor WASM, reads JSON from R2
+├─ tests/
+│  ├─ PokeArena.Core.Tests/        # unit tests, nothing outside the process
+│  └─ PokeArena.Integration.Tests/ # real infrastructure (Credential Manager; later Twitch, R2)
 ├─ tools/                  # dev scripts, e.g. GeneratePokemonData.cs (`dotnet run <file>`)
 └─ data/                   # pokemon.json, typen.json, npcs.json (versioned base data)
 ```
@@ -90,7 +94,8 @@ PokeArena.slnx
 - `data/pokemon.json` is generated — change `tools/GeneratePokemonData.cs`
   and rerun it instead of editing the JSON (ADR-0005).
 
-- Desktop → Core. Tests → Core. Core → no project.
+- Desktop → UI, Core. UI → Core. Core → no project. Core.Tests → Core;
+  Integration.Tests → Desktop.
 - Web references neither Core nor Desktop (no EF Core or Twitch in WASM).
   How the site JSON DTOs are shared is **open** (WP-06).
 
@@ -135,5 +140,5 @@ PokeArena.slnx
 
 ## 9. Next
 
-Start WP-00 scaffold. Still open before later packages: NPC reward (E22),
-operations on the streamer's PC. Details: docs/roadmap.md.
+Start WP-01 (Twitch connection). Still open before later packages: NPC reward
+(E22), operations on the streamer's PC. Details: docs/roadmap.md.

@@ -23,3 +23,11 @@ Deliberately **not**: reconstructing battle logs from seeds.
 - Golden tests per seed are possible but pin a fixed config; they break by
   design when formulas change.
 - Battle logs take DB space; a retention policy is deferred (spec §14).
+
+## Addendum 2026-10-11 (WP-00)
+
+Enforced by `Microsoft.CodeAnalysis.BannedApiAnalyzers` in Core
+(`src/PokeArena.Core/BannedSymbols.txt`): `DateTime.Now/UtcNow/Today`,
+`DateTimeOffset.Now/UtcNow`, `new Random()` and `Random.Shared` fail the
+build. A seeded `new Random(seed)` stays allowed — it is deterministic and is
+what the injected random source will wrap. Time comes from `TimeProvider`.

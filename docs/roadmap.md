@@ -9,17 +9,12 @@ so WP-03 is no longer blocked by base data.
 
 ## WP-00 — Scaffold (≈ 1 day) → v0.1.0
 
-Solution, DI/hosting, config system, credential store access, CI (build +
-tests), `Directory.Build.props` with warnings as errors.
-Demo: `dotnet test` green in CI.
-
-- Open: test framework (proposal xUnit v3).
-- Create `src/<Project>/CLAUDE.md` files and move the pitfalls below into them.
+**Done 2026-10-11** — see the log in work-packages.md.
 
 ## WP-01 — Twitch connection (3–4 days) → v0.1.0
 
-Device-code auth, EventSub read, Helix send, rate limiter; WPF shell with
-connect button, status, live chat log.
+Device-code auth, EventSub read, Helix send, rate limiter; desktop shell
+(Blazor, ADR-0007) with connect button, status, live chat log.
 Demo: the bot answers a test command in the channel.
 
 - User decision (2026-10-11): the user sets up the bot account and tokens.
@@ -28,8 +23,9 @@ Demo: the bot answers a test command in the channel.
 - Proposal (review 2026-10-11): process all game commands on one serialized
   queue (e.g. `Channel<T>`) — battles resolve instantly, so this removes race
   conditions at no cost.
-- Pitfalls: EventSub keepalive timeout and `session_reconnect` handling;
-  public-client refresh tokens expire after 30 days.
+- Pitfalls: see `src/PokeArena.Core/CLAUDE.md` (keepalive, `session_reconnect`,
+  30-day refresh tokens).
+- First components with logic → add a UI test project with bUnit.
 
 ## WP-02 — Domain foundation (2–3 days) → v0.2.0
 
@@ -97,8 +93,9 @@ Demo: stream-ready.
 
 - Open: installation and updates on the streamer's PC (self-contained
   publish, installer?).
-- Pitfall: copying the SQLite file while open loses WAL content — back up with
-  `VACUUM INTO` or the SQLite backup API.
+- Pitfall: SQLite backup with WAL, see `src/PokeArena.Core/CLAUDE.md`. A
+  release workflow like DigitalDeskCycle2's (`release.yml`, notes from the
+  CHANGELOG) fits here once installation is decided.
 
 ## Open UX questions
 
