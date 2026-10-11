@@ -2,7 +2,7 @@
 
 Companion to [SPEC.md](SPEC.md). Estimates assume solo development by an
 experienced .NET developer; "day" = one focused person-day. Total for v1:
-**≈ 25–32 days**. Every milestone ends in a state that could run on stream.
+**≈ 25–31 days**. Every milestone ends in a state that could run on stream.
 
 ## Solution layout
 
@@ -14,7 +14,7 @@ PokeArena.slnx
 │  │  ├─ Commands/             # parsing, routing, cooldown/permission checks, dialog states
 │  │  ├─ Game/                 # battle engine, boss encounter, PvP, NPC, achievements
 │  │  ├─ Data/                 # EF Core model, SQLite, migrations, base-data loader
-│  │  └─ Publishing/           # ISitePublisher, GitHub Contents API impl., outbox worker
+│  │  └─ Publishing/           # ISitePublisher, R2 (S3-compatible) impl., outbox worker
 │  ├─ PokeArena.Desktop/       # net10.0-windows, WPF (WPF-UI + CommunityToolkit.Mvvm,
 │  │                           #   Microsoft.Extensions.Hosting — same stack as DeskCycle)
 │  └─ PokeArena.Web/           # Blazor WebAssembly, static, deployed to GitHub Pages
@@ -29,7 +29,7 @@ PokeArena.slnx
 Key packages: `TwitchLib.Api` (Helix), `TwitchLib.EventSub.Websockets`
 (preview — wrapped behind own interfaces so a hand-rolled WebSocket client can
 replace it if it misbehaves), `Microsoft.EntityFrameworkCore.Sqlite`,
-`CommunityToolkit.Mvvm`, `WPF-UI`.
+`CommunityToolkit.Mvvm`, `WPF-UI`, `AWSSDK.S3` (R2 uploads).
 
 ## Data model (sketch)
 
@@ -55,7 +55,7 @@ never copies balancing values.
 | M3 | Battle engine (damage, types, crits, seed, log) + boss encounter incl. lobby, rarity draw, cooldowns, achievements | `!boss` playable end-to-end | 4–5 |
 | M4 | PvP: challenge/accept dialog, timeout, random teams, loot transfer | `!fight` playable | 3–4 |
 | M5 | NPC fights + unlock announcements (reward slot stubbed until E22 is decided) | `!challenge Eich` playable | 2–3 |
-| M6 | Website: Blazor pages (leaderboard, battle, trainer, overlay), GitHub Actions deploy, publisher + outbox, local overlay endpoint | Battle link in chat opens a live page | 4–6 |
+| M6 | Website: Blazor pages (leaderboard, battle, trainer, overlay), GitHub Actions deploy of the app, R2 bucket + CORS + cache headers, R2 publisher + outbox, local overlay endpoint | Battle link in chat opens a live page | 4–5 |
 | M7 | Operations: mod commands, deletion flow, backup, republish-all, README, message wording pass | Stream-ready | 2–3 |
 
 Milestone order is deliberate: M3 needs `pokemon.json`; if the base data is
@@ -78,7 +78,7 @@ data.
 |------|-----------|
 | `TwitchLib.EventSub.Websockets` is preview | wrapped behind own interface; hand-rolled client is a ~1-day fallback |
 | EventSub chat is officially beta (breaking changes possible) | transport isolated in one module; IRC fallback would slot behind the same interface |
-| Pages deploy latency (~1 min) annoys during streams | battle page retry state (SPEC §9); switch to Cloudflare R2 behind `ISitePublisher` is a ~1-day change |
+| R2 adds a second provider (Cloudflare account, API token, CORS/cache setup) | one-time setup documented in README; `ISitePublisher` keeps the storage swappable; local folder publisher for dry runs |
 | Base data / E22 pending | milestones reordered so nothing idles |
 | Balancing needs live tuning | all values in UI-editable config; battles store seeds for post-hoc analysis |
 

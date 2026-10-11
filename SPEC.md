@@ -204,11 +204,23 @@ case-insensitively against `name` and `slug`.
 
 ## 9. Website
 
-Static **Blazor WebAssembly** site, hosted on **GitHub Pages** in this
-repository, deployed by a GitHub Actions workflow (build limits do not apply
-to Actions-based publishing). The bot uploads data files via the GitHub
-Contents API using a fine-grained PAT (this repo only, permission
-`Contents: Read and write`), stored in the Windows credential store.
+The site is split into an app and its data:
+
+- **App:** static **Blazor WebAssembly**, hosted on **GitHub Pages** in this
+  repository, deployed by a GitHub Actions workflow. It is rebuilt only on
+  code changes and contains **no player data**.
+- **Data:** JSON files in a **Cloudflare R2** bucket, publicly readable via
+  its **`r2.dev` subdomain** (v1). Cloudflare rate-limits `r2.dev` and does
+  not cache it, which is irrelevant at this channel's size (e.g. 30 viewers
+  polling every 15 s ≈ 2 req/s). The data base URL is a config value of the
+  web app, so moving to a custom domain later is a config change, not a code
+  change. CORS allows `GET` from the Pages origin. The bot uploads
+  through the S3-compatible API with an R2 API token scoped to this bucket
+  (`Object Read & Write`), stored in the Windows credential store.
+
+Rationale: no deploy per data change (uploads are live in seconds), no commit
+noise in the code repository, and deletions are real — a public git history
+would keep deleted trainers' names forever (see §11).
 
 Pages (v1): leaderboard, battle log per fight, trainer detail page, OBS
 overlay view.
@@ -224,11 +236,15 @@ Data files (all derived — fully regenerable from the DB; the UI has a
 | `kaempfe.json`             | last N fights for an index page                      |
 | `meta.json`                | data format version, timestamp                       |
 
-- Files are uploaded **directly per change** (v1); batching is a later
-  optimization if commit volume becomes a nuisance.
-- A Pages deploy takes ~1 minute. The battle page therefore shows a
-  friendly „Kampf wird gerade veröffentlicht …" state and retries while the
-  JSON 404s, so links posted to chat immediately are never broken.
+- Files are uploaded **directly per change** via the publish queue.
+- Uploads normally land within seconds, but the queue may lag (network
+  failure, bot offline). The battle page therefore shows a friendly
+  „Kampf wird gerade veröffentlicht …" state and retries while the JSON
+  404s, so links posted to chat immediately are never broken.
+- Caching: `kampf/<id>.json` is immutable (long `Cache-Control` max-age);
+  all other files are mutable and uploaded with a short max-age (≤ the poll
+  interval) so browsers (and a CDN, once a custom domain is used) never
+  serve stale leaderboards.
 - Leaderboard/overlay pages poll every 15 s; battle pages are static.
 - Trainer URLs use the Twitch user id as filename; friendly routes resolve
   names via the leaderboard data.
@@ -245,7 +261,7 @@ Data files (all derived — fully regenerable from the DB; the UI has a
   transaction.
 - A **publish queue** (outbox) decouples game logic from uploads; network
   failures lose nothing.
-- **Secrets** (Twitch tokens for the dedicated bot account, GitHub PAT) go
+- **Secrets** (Twitch tokens for the dedicated bot account, R2 API token) go
   into the Windows credential store — never into the DB, config files or the
   repo. The UI shows token expiry dates.
 - **Backup:** DB file copy on app exit plus a manual "backup now" button.
@@ -255,8 +271,10 @@ Data files (all derived — fully regenerable from the DB; the UI has a
 Display names appear permanently on a public website. Therefore:
 
 - `!entfernen @name` (mods) and a UI action delete a trainer and their
-  specimens, and republish affected files; the trainer's name in existing
-  battle logs is replaced by „[gelöscht]".
+  specimens, delete their `trainer/<twitch-id>.json` from the bucket, and
+  republish affected files; the trainer's name in existing battle logs is
+  replaced by „[gelöscht]". Because player data never enters the git
+  repository, nothing survives in any history.
 - A short privacy note lives on the website.
 
 ## 12. Twitch integration
@@ -309,3 +327,13 @@ All balancing values are editable in the UI at runtime.
 - Pokemon defeated in a fight become unavailable for further fights (but
   stay in the pokedex).
 - Battle log retention/cleanup policy.
+
+**Deferred (v2+), from the design review:**
+
+- Custom domain for the R2 data bucket (needs a domain managed by
+  Cloudflare). Switch if `r2.dev` rate limits ever bite or CDN caching is
+  wanted.
+- Alt-account protection (e.g. minimum Twitch account age via Helix
+  `Get Users` → `created_at` at `!registrieren`). Not needed for a small
+  channel; revisit if alts are used to fill boss lobbies, raise rarity odds
+  or funnel specimens via PvP losses.
