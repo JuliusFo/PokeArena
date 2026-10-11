@@ -131,8 +131,7 @@ PokeArena.slnx
 - Small channel: load assumption ~30 concurrent viewers, a few hundred trainers.
 - Dev machine: Windows 11, PowerShell (Git Bash available); **no Python
   installed** — write scripts in PowerShell or as `dotnet` tools.
-- Base data uses official Gen-1 values; the rarity list still needs a review
-  by the user/streamer (spec §14).
+- Base data uses official Gen-1 values (ADR-0005).
 
 ## 9. Next
 

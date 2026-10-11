@@ -45,7 +45,8 @@ Demo: `!boss` playable end-to-end.
 
 - User decisions (2026-10-11, ADR-0005): official Gen-1 values, real dual
   types (multiplied on defence, better type on attack).
-- Open: review the generated rarity list (98 common / 48 rare / 5 legendary).
+- User decision (2026-10-11): generated rarity list accepted as is
+  (98 common / 48 rare / 5 legendary).
 - Open (review 2026-10-11):
   - Damage formula: raw `ATK/DEF` explodes for the official outliers
     (Chaneira DEF 5, Onix DEF 160, Karpador ATK 10); dampen (e.g.

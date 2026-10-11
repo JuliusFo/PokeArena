@@ -46,3 +46,7 @@ moves.
   `spez` is available should the formula use it.
 - Manual edits to `seltenheit` are lost on regeneration unless the rule in
   the script is changed instead; edit the script, not the JSON.
+
+## Addendum 2026-10-11
+
+The user reviewed and accepted the generated rarity list unchanged.
