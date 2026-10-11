@@ -9,7 +9,7 @@ Status: 2026-10-11 · no release yet (pre-v0.1.0, specification phase)
 |---|---|---|
 | `docs/spec.md` | Game rules, commands, config defaults (source of truth for gameplay) | Before any game-logic or chat-text work |
 | `docs/architecture.md` | Data model, game flows, publishing outbox, desktop UI concept | Before touching Core or Desktop structure |
-| `docs/decisions/` | ADRs (stack, Twitch, site data, determinism) | Before changing stack or architecture |
+| `docs/decisions/` | ADRs (stack, Twitch, site data, determinism, base data/types) | Before changing stack or architecture |
 | `docs/roadmap.md` | Planned work packages WP-NN, user decisions, open questions | At the start of every package |
 | `docs/backlog.md` | Unplanned ideas, grouped by topic | When an idea comes up — park it there |
 | `docs/work-packages.md` | Package overview + log per finished package | After finishing a package |
@@ -83,8 +83,12 @@ PokeArena.slnx
 │  ├─ PokeArena.Desktop/   # WPF host, ViewModels, local overlay endpoint
 │  └─ PokeArena.Web/       # Blazor WASM, reads JSON from R2
 ├─ tests/PokeArena.Core.Tests/
+├─ tools/                  # dev scripts, e.g. GeneratePokemonData.cs (`dotnet run <file>`)
 └─ data/                   # pokemon.json, typen.json, npcs.json (versioned base data)
 ```
+
+- `data/pokemon.json` is generated — change `tools/GeneratePokemonData.cs`
+  and rerun it instead of editing the JSON (ADR-0005).
 
 - Desktop → Core. Tests → Core. Core → no project.
 - Web references neither Core nor Desktop (no EF Core or Twitch in WASM).
@@ -93,7 +97,7 @@ PokeArena.slnx
 ## 6. Core terms (details: docs/architecture.md)
 
 - **Trainer** — registered viewer, keyed by Twitch user id.
-- **Species (Art)** — one of 151 Gen-1 Pokemon from `data/pokemon.json`, exactly one type.
+- **Species (Art)** — one of 151 Gen-1 Pokemon from `data/pokemon.json`, Gen-1 stats, one or two types.
 - **Specimen (Exemplar)** — one owned instance; duplicates allowed; one is the protected starter.
 - **Achievement (AV)** — threshold of distinct species owned; unlocks an NPC; permanent.
 - **Boss encounter** — lobby + instantly resolved group fight; survivors catch the boss.
@@ -127,7 +131,8 @@ PokeArena.slnx
 - Small channel: load assumption ~30 concurrent viewers, a few hundred trainers.
 - Dev machine: Windows 11, PowerShell (Git Bash available); **no Python
   installed** — write scripts in PowerShell or as `dotnet` tools.
-- Base data `data/pokemon.json` is still to be supplied (spec §14).
+- Base data uses official Gen-1 values; the rarity list still needs a review
+  by the user/streamer (spec §14).
 
 ## 9. Next
 

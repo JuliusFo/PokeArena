@@ -4,9 +4,8 @@ Planned work packages up to v1.0.0. Read the package before starting it and
 agree the plan with the user. Estimates: solo, "day" = one focused person-day;
 total ≈ 25–31 days. Every package ends in a state that could run on stream.
 
-Order is deliberate: WP-03 needs `data/pokemon.json`. If the base data is
-still missing then, WP-06 may be moved before WP-03 (it works with dummy
-data) — agree with the user first.
+Order is deliberate. `data/pokemon.json` exists since 2026-10-11 (ADR-0005),
+so WP-03 is no longer blocked by base data.
 
 ## WP-00 — Scaffold (≈ 1 day) → v0.1.0
 
@@ -44,11 +43,14 @@ Damage, types, crits, seed, log; boss lobby, rarity draw, cooldowns,
 achievements.
 Demo: `!boss` playable end-to-end.
 
-- Blocked by: `data/pokemon.json` (spec §14).
+- User decisions (2026-10-11, ADR-0005): official Gen-1 values, real dual
+  types (multiplied on defence, better type on attack).
+- Open: review the generated rarity list (98 common / 48 rare / 5 legendary).
 - Open (review 2026-10-11):
-  - Damage formula: raw `ATK/DEF` explodes for outliers (e.g. DEF 5); dampen
-    (e.g. `(ATK+k)/(DEF+k)`) or curate base values. Gen 1 "Special" is not
-    modelled — Psychic Pokemon (Simsala ATK 50) become weak.
+  - Damage formula: raw `ATK/DEF` explodes for the official outliers
+    (Chaneira DEF 5, Onix DEF 160, Karpador ATK 10); dampen (e.g.
+    `(ATK+k)/(DEF+k)`). `spez` is in the data — use e.g. `max(atk, spez)` as
+    attack so Psychic Pokemon (Simsala ATK 50, Spez 135) are not useless?
   - Boss difficulty does not scale with participant count; above ~5 players
     the boss nearly always loses. Scale boss HP or `bossZiele` with N?
   - Add a Monte Carlo balancing simulator (≈ 0.5 day) to tune the above.

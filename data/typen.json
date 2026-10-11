@@ -2,7 +2,8 @@
   "hinweis": [
     "Gen-1-Typentabelle (15 Typen). Nur Abweichungen von 1.0 sind aufgefuehrt.",
     "Hausregel: kein 'wirkungslos' - alle 0x-Eintraege des Originals sind 0.25.",
-    "Bewusst beibehaltene Gen-1-Eigenheiten: Gift<->Kaefer je 2.0, Eis gegen Feuer 1.0, Geist gegen Psycho 0.25 (statt 0)."
+    "Bewusst beibehaltene Gen-1-Eigenheiten: Gift<->Kaefer je 2.0, Eis gegen Feuer 1.0, Geist gegen Psycho 0.25 (statt 0).",
+    "Doppeltypen (ADR-0005): Faktoren gegen beide Verteidigertypen werden multipliziert; ein Angreifer nutzt seinen besseren Typ."
   ],
   "standardfaktor": 1.0,
   "typen": [
