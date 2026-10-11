@@ -1,0 +1,16 @@
+# Changelog
+
+All notable changes to this project are documented here. The format follows
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html). Each release is
+tagged `vX.Y.Z` once its section is complete.
+
+## [Unreleased]
+
+### Added
+- Game specification (`docs/spec.md`) and Gen-1 type chart (`data/typen.json`).
+- Documentation structure: `CLAUDE.md`, architecture, ADRs 0001–0004,
+  roadmap, backlog, work-package log.
+
+### Changed
+- Website data moves from GitHub commits to Cloudflare R2 (ADR-0003).
