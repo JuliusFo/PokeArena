@@ -1,0 +1,19 @@
+# Line endings normalised to LF in the repository, native in the working
+# directory (same as DigitalDeskCycle2 and FerretSharp).
+* text=auto
+
+*.cs        text diff=csharp
+*.razor     text
+*.xaml      text
+*.csproj    text
+*.slnx      text
+*.props     text
+*.json      text
+*.md        text
+*.css       text
+*.html      text
+*.yml       text
+*.ps1       text
+
+*.png binary
+*.ico binary
