@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <!-- Razor UI of the desktop app, hosted by PokeArena.Desktop (BlazorWebView); no WPF/Windows references here (ADR-0007). -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>PokeArena.UI</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PokeArena.Core\PokeArena.Core.csproj" />
+  </ItemGroup>
+
+</Project>

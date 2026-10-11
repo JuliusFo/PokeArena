@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <!-- Thin WPF host: generic host, logging, window chrome and the BlazorWebView. The UI lives in PokeArena.UI (ADR-0007). -->
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!-- BlazorWebView's WebView2CompositionControl needs the WinRT projection; with plain net10.0-windows the app
+         crashes at startup (known from FerretSharp). -->
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>PokeArena.Desktop</RootNamespace>
+    <AssemblyName>PokeArena</AssemblyName>
+    <!-- Per-monitor DPI awareness, see the comment in the manifest. -->
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Serilog.Extensions.Hosting" />
+    <PackageReference Include="Serilog.Sinks.File" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PokeArena.Core\PokeArena.Core.csproj" />
+    <ProjectReference Include="..\PokeArena.UI\PokeArena.UI.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>
