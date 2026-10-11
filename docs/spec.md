@@ -319,21 +319,5 @@ All balancing values are editable in the UI at runtime.
 2. NPC reward (E22).
 3. Exact German wording of all chat messages (drafted during implementation).
 
-**Deferred (v2+), from the PDF:**
-
-- Challenge mode: challenger shows their team, opponent hand-picks a team,
-  winner picks the reward.
-- Attacks per Pokemon, randomly selected, with per-attack types.
-- Pokemon defeated in a fight become unavailable for further fights (but
-  stay in the pokedex).
-- Battle log retention/cleanup policy.
-
-**Deferred (v2+), from the design review:**
-
-- Custom domain for the R2 data bucket (needs a domain managed by
-  Cloudflare). Switch if `r2.dev` rate limits ever bite or CDN caching is
-  wanted.
-- Alt-account protection (e.g. minimum Twitch account age via Helix
-  `Get Users` → `created_at` at `!registrieren`). Not needed for a small
-  channel; revisit if alts are used to fill boss lobbies, raise rarity odds
-  or funnel specimens via PvP losses.
+**Deferred (v2+):** everything not in v1 — from the PDF, the design review
+and later ideas — is collected in [backlog.md](backlog.md).
