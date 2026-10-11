@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PokeArena.Core/PokeArena.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/PokeArena.Core.Tests/PokeArena.Core.Tests.csproj" />
+  </Folder>
+</Solution>

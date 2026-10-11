@@ -1,0 +1,7 @@
+P:System.DateTime.Now;Use the injected TimeProvider (ADR-0004)
+P:System.DateTime.UtcNow;Use the injected TimeProvider (ADR-0004)
+P:System.DateTime.Today;Use the injected TimeProvider (ADR-0004)
+P:System.DateTimeOffset.Now;Use the injected TimeProvider (ADR-0004)
+P:System.DateTimeOffset.UtcNow;Use the injected TimeProvider (ADR-0004)
+M:System.Random.#ctor;Unseeded randomness breaks replayable battles; use the injected random source (ADR-0004)
+P:System.Random.Shared;Unseeded randomness breaks replayable battles; use the injected random source (ADR-0004)

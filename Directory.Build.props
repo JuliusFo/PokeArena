@@ -1,0 +1,17 @@
+<Project>
+
+  <!-- Shared by every project. The version lands in the assembly and thus in the
+       file properties of the executable, so a running build can be identified. -->
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <Version>0.1.0</Version>
+    <Product>PokeArena</Product>
+    <Authors>JuliusFo</Authors>
+    <Copyright>Copyright (c) 2026 JuliusFo</Copyright>
+    <RepositoryUrl>https://github.com/JuliusFo/PokeArena</RepositoryUrl>
+  </PropertyGroup>
+
+</Project>
