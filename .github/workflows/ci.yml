@@ -1,0 +1,41 @@
+# Build and tests on every push to main and every pull request.
+# Windows only: the desktop host is WPF, and the integration tests use the Windows Credential Manager.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build:
+    name: Build and test (Windows)
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Build
+        run: dotnet build PokeArena.slnx -c Release -warnaserror
+
+      - name: Unit tests
+        run: dotnet test tests/PokeArena.Core.Tests -c Release --no-build
+
+      - name: Integration tests
+        run: dotnet test tests/PokeArena.Integration.Tests -c Release --no-build
