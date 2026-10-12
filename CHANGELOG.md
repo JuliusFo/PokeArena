@@ -21,6 +21,12 @@ tagged `vX.Y.Z` once its section is complete.
   disclaimer.
 - Rule against official Pokémon assets in repo, app, website and overlay
   (ADR-0008).
+- Twitch connection: sign in the bot account with a code (works from the
+  phone too), the bot reads and writes the channel's chat and reconnects on
+  its own after connection drops.
+- `!pokearena` answers that the bot is online and shows its version.
+- Desktop app: connection status with plain-German hints, live chat log, and
+  a dry run ("Probelauf") to try commands without writing to Twitch.
 
 ### Changed
 - Website data moves from GitHub commits to Cloudflare R2 (ADR-0003).

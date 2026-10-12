@@ -59,3 +59,25 @@ a hosted auth backend.
   lives in `appsettings.json`.
 - `!pokearena` (spec §8) is the WP-01 demo command and stays as a permanent
   status check.
+
+## Addendum 2026-10-13 (WP-01 implementation)
+
+- **Grants** (Twitch chat docs checked 2026-10-12): with a *user* access token
+  over EventSub WebSocket, reading needs only `user:read:chat` and sending
+  only `user:write:chat` of the bot account; `user:bot` / `channel:bot` only
+  matter for an app access token (chat bot badge). The bot still requests
+  `user:bot` so a later switch needs no new login. Neither moderator status
+  nor `channel:bot` is required — moderator only raises the send limit and
+  protects against slow mode. To be confirmed in the live test.
+- **Send rate**: the sender always keeps the normal-user limits (20 messages
+  per 30 s, 1 per second) instead of detecting moderator status — results are
+  aggregated, so this is far from tight.
+- **Token expiry in the UI** is dropped: access tokens last 4 h and are
+  refreshed automatically, refresh tokens have no fixed date. The UI shows the
+  signed-in bot account instead; a dead login surfaces as "sign in again".
+- **Shared chat**: messages that originate in another channel of a shared
+  chat session are ignored — their viewers do not play here. The bot's own
+  messages are ignored too.
+- **Channel setting**: `PokeArena:Twitch:Channel`; during development it comes
+  from a git-ignored `appsettings.local.json`. How the streamer sets it is the
+  open setup question of WP-07.
