@@ -9,7 +9,7 @@ Status: 2026-10-11 · no release yet (pre-v0.1.0) · WP-00 scaffold done, WP-01 
 |---|---|---|
 | `docs/spec.md` | Game rules, commands, config defaults (source of truth for gameplay) | Before any game-logic or chat-text work |
 | `docs/architecture.md` | Data model, game flows, publishing outbox, desktop UI concept | Before touching Core or Desktop structure |
-| `docs/decisions/` | ADRs (stack, Twitch, site data, determinism, base data/types, balancing, desktop UI) | Before changing stack or architecture |
+| `docs/decisions/` | ADRs (stack, Twitch, site data, determinism, base data/types, balancing, desktop UI, no official assets) | Before changing stack or architecture |
 | `docs/roadmap.md` | Planned work packages WP-NN, user decisions, open questions | At the start of every package |
 | `docs/backlog.md` | Unplanned ideas, grouped by topic | When an idea comes up — park it there |
 | `docs/work-packages.md` | Package overview + log per finished package | After finishing a package |
@@ -54,6 +54,8 @@ shows leaderboard, trainer pages and battle logs.
   DB. (ADR-0001)
 - Achievements are never revoked; the starter specimen is never transferred.
   (spec §1, §6)
+- No official Pokémon assets (sprites, artwork, sounds, logos) in repo, app,
+  website or overlay — not even fetched at runtime. (ADR-0008)
 
 ## 4. Stack
 

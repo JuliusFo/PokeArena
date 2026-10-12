@@ -82,6 +82,8 @@ Demo: a battle link in chat opens a live page.
 - Open: how Web shares the JSON DTOs without referencing Core (shared
   contracts project vs. duplicated records).
 - Open: whose Cloudflare account hosts the bucket (user or streamer)?
+- Constraint (ADR-0008): no official sprites, artwork or sounds — species are
+  shown as text and CSS; decide whether the site shows the fan disclaimer.
 - Open: define "earliest attainment" for leaderboard ties when a trainer
   loses and regains a species.
 

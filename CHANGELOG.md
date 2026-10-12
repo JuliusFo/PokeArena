@@ -19,6 +19,8 @@ tagged `vX.Y.Z` once its section is complete.
 - Solution, shared build settings and CI on GitHub Actions.
 - README with project overview, build steps, roadmap and fan-project
   disclaimer.
+- Rule against official Pokémon assets in repo, app, website and overlay
+  (ADR-0008).
 
 ### Changed
 - Website data moves from GitHub commits to Cloudflare R2 (ADR-0003).
