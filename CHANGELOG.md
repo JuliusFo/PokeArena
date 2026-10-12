@@ -7,6 +7,8 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-13
+
 ### Added
 - Game specification (`docs/spec.md`) and Gen-1 type chart (`data/typen.json`).
 - Documentation structure: `CLAUDE.md`, architecture, ADRs 0001–0004,

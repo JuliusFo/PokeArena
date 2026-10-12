@@ -68,7 +68,8 @@ a hosted auth backend.
   matter for an app access token (chat bot badge). The bot still requests
   `user:bot` so a later switch needs no new login. Neither moderator status
   nor `channel:bot` is required — moderator only raises the send limit and
-  protects against slow mode. To be confirmed in the live test.
+  protects against slow mode. Live test 2026-10-13: reading and replying work
+  with the user token.
 - **Send rate**: the sender always keeps the normal-user limits (20 messages
   per 30 s, 1 per second) instead of detecting moderator status — results are
   aggregated, so this is far from tight.

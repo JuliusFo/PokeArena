@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-10-13 · no release yet (pre-v0.1.0) · WP-01 built, live test pending
+Status: 2026-10-13 · v0.1.0 (WP-00, WP-01 done) · WP-02 next
 
 ## 1. Where to find what
 
@@ -143,6 +143,5 @@ PokeArena.slnx
 
 ## 9. Next
 
-Finish WP-01: live test with the bot account in the test channel, then
-release v0.1.0 and start WP-02. Still open before later packages: NPC reward
-(E22), operations on the streamer's PC. Details: docs/roadmap.md.
+Start WP-02 (domain foundation: EF Core, base-data loader, `!registrieren`).
+Still open before later packages: NPC reward (E22), operations on the streamer's PC. Details: docs/roadmap.md.

@@ -6,7 +6,7 @@ in [roadmap.md](roadmap.md).
 | WP | Name | Version | Status |
 |---|---|---|---|
 | WP-00 | Scaffold | 0.1.0 | done 2026-10-11 |
-| WP-01 | Twitch connection | 0.1.0 | built 2026-10-13, live test pending |
+| WP-01 | Twitch connection | 0.1.0 | done 2026-10-13 |
 | WP-02 | Domain foundation | 0.2.0 | planned |
 | WP-03 | Battle engine + boss | 0.3.0 | planned |
 | WP-04 | PvP | 0.4.0 | planned |
@@ -62,10 +62,12 @@ in [roadmap.md](roadmap.md).
 - Pitfalls: see `src/PokeArena.Core/CLAUDE.md` (parallel refresh logs the bot
   out; cancelling a WebSocket receive aborts the socket; shared chat; U+E0000
   suffix). Raw JSON in C# tests: `}}}` needs `$$$` raw strings or spaces.
-- Deliberately not done: live test with the real bot account (needs the
-  user's login), detecting moderator status for a higher send rate, persisting
-  the dry-run toggle (no DB before WP-02), channel setting in the UI (WP-07
-  setup question).
+- Live test 2026-10-13: bot account signed in via device code, `!pokearena`
+  answered in `ShiyoFurball`; Twitch integration test green against the real
+  API.
+- Deliberately not done: detecting moderator status for a higher send rate,
+  persisting the dry-run toggle (no DB before WP-02), channel setting in the
+  UI (WP-07 setup question).
 
 Template per entry:
 

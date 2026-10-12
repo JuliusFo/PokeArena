@@ -8,8 +8,8 @@ and work their way through 17 NPC trainers, all via chat commands. A desktop
 app on the streamer's PC runs the bot; a static website shows the leaderboard,
 trainer pages and battle logs.
 
-> **Status:** early development, no release yet. The scaffold (WP-00) is done;
-> the Twitch connection (WP-01) is next. See the [roadmap](#roadmap).
+> **Status:** early development. Version 0.1.0: the bot connects to Twitch and
+> answers `!pokearena`. Registration and persistent data (WP-02) are next. See the [roadmap](#roadmap).
 
 ## How it plays
 
@@ -107,7 +107,7 @@ don't edit it by hand.
 
 | Version | Content | Status |
 |---|---|---|
-| 0.1.0 | Scaffold, CI, bot answers a test command in chat | in progress |
+| 0.1.0 | Scaffold, CI, bot answers a test command in chat | done |
 | 0.2.0 | Registration, persistent data | planned |
 | 0.3.0 | Battle engine, `!boss` playable | planned |
 | 0.4.0 | PvP `!fight` | planned |
