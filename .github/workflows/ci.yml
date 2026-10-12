@@ -37,5 +37,8 @@ jobs:
       - name: Unit tests
         run: dotnet test tests/PokeArena.Core.Tests -c Release --no-build
 
+      - name: Component tests
+        run: dotnet test tests/PokeArena.UI.Tests -c Release --no-build
+
       - name: Integration tests
         run: dotnet test tests/PokeArena.Integration.Tests -c Release --no-build
