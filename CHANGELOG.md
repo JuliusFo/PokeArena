@@ -17,6 +17,8 @@ tagged `vX.Y.Z` once its section is complete.
   log files under `%LOCALAPPDATA%\PokeArena\logs`, single running instance,
   secrets in the Windows Credential Manager (ADR-0007).
 - Solution, shared build settings and CI on GitHub Actions.
+- README with project overview, build steps, roadmap and fan-project
+  disclaimer.
 
 ### Changed
 - Website data moves from GitHub commits to Cloudflare R2 (ADR-0003).
