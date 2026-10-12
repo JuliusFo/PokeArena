@@ -69,7 +69,8 @@ a hosted auth backend.
   `user:bot` so a later switch needs no new login. Neither moderator status
   nor `channel:bot` is required — moderator only raises the send limit and
   protects against slow mode. Live test 2026-10-13: reading and replying work
-  with the user token.
+  with the user token; the bot was a moderator in the test channel, so the
+  case without moderator status is still untested.
 - **Send rate**: the sender always keeps the normal-user limits (20 messages
   per 30 s, 1 per second) instead of detecting moderator status — results are
   aggregated, so this is far from tight.
