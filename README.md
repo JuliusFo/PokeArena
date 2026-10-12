@@ -23,6 +23,7 @@ channel.
 | `!fight @name` | registered | challenge another trainer, or accept their challenge |
 | `!challenge <NPC>` | registered | fight an NPC unlocked by an achievement |
 | `!arena` | anyone | post the website link |
+| `!pokearena` | anyone | check that the bot is online |
 | `!bossreset`, `!entfernen @name` | mods | reset the boss cooldown, delete a trainer |
 
 - **Boss fights:** a lobby gathers participants, then the fight resolves

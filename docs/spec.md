@@ -209,6 +209,7 @@ Used by boss, PvP and NPC fights.
 | `!fight @name`             | registered | challenge (or accept a pending challenge)     |
 | `!challenge <NPC>`         | registered | fight an unlocked NPC                         |
 | `!arena`                   | anyone     | posts the website link                        |
+| `!pokearena`               | anyone     | status check: „PokeArena-Bot ist online (Version x).“ |
 | `!bossreset`               | mods       | reset the global boss cooldown                |
 | `!entfernen @name`         | mods       | delete a trainer (see §11)                    |
 

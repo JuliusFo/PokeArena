@@ -66,7 +66,7 @@ Changes only via ADR.
 | Runtime | .NET 10 (`net10.0`, `net10.0-windows10.0.19041.0`), `.slnx` | Version in `Directory.Build.props`, package versions in `Directory.Packages.props`, feeds in `nuget.config` (nuget.org only) |
 | Desktop | Blazor Hybrid: thin WPF host + `BlazorWebView`, UI in Razor class library; Generic Host, Serilog | As in FerretSharp (ADR-0007) |
 | Storage | EF Core + SQLite | Migrations in Core |
-| Twitch | EventSub WebSocket (read), Helix Send Chat Message (write), Device Code Flow | TwitchLib behind own interfaces (ADR-0002) |
+| Twitch | EventSub WebSocket (read), Helix Send Chat Message (write), Device Code Flow | Own lean client (`HttpClient`, `ClientWebSocket`) behind own interfaces (ADR-0002) |
 | Website | Blazor WebAssembly on GitHub Pages | App only, no data (ADR-0003) |
 | Site data | Cloudflare R2 via `r2.dev`, `AWSSDK.S3` | Base URL is config (ADR-0003) |
 | Secrets | Windows Credential Manager via `Meziantou.Framework.Win32.CredentialManager` | Behind `ISecretStore` (ADR-0002) |
