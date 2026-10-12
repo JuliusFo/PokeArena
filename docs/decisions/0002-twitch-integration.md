@@ -30,8 +30,32 @@ a hosted auth backend.
 
 ## Consequences
 
-- Refresh tokens of public clients expire 30 days after they are generated
-  (Twitch docs). The app must refresh regularly and fall back to a new device
+- Refresh tokens of public clients are single-use and expire after 30 days of
+  inactivity (corrected 2026-10-12, see addendum). The app must store every
+  new refresh token at once and fall back to a new device
   login on `400 Invalid refresh token`.
 - Device Code Flow lets the user authorize the bot account from any device,
   e.g. their own phone, while the token lands on the streamer's PC.
+
+## Addendum 2026-10-12 (WP-01 planning)
+
+- **Own lean client instead of TwitchLib** (user decision): `HttpClient`,
+  `ClientWebSocket` and `System.Text.Json`, still behind `IChatTransport` /
+  `IChatSender`. WP-01 needs only a handful of endpoints (device flow, token
+  refresh and validation, users, EventSub subscription, send chat message)
+  and one EventSub message type; `TwitchLib.EventSub.Websockets` is a
+  preview, and reconnect behaviour stays fully under our control and
+  testable with fakes. The interface boundary above already allowed this.
+- **Refresh tokens, corrected** (Twitch docs checked 2026-10-12): refresh
+  tokens of public clients are **single-use** — every refresh returns a new
+  one that must be stored immediately — and expire after **30 days of
+  inactivity**, not 30 days after they were generated. While polling the
+  device flow, handle `authorization_pending` (keep polling) and
+  `invalid device code` (expired: start over); `slow_down` is not
+  documented.
+- **Twitch app** registered 2026-10-12 by the user as a **Public** client,
+  category Chat Bot. The redirect URL `http://localhost` is required by the
+  console but unused by the device flow. The client ID is not a secret and
+  lives in `appsettings.json`.
+- `!pokearena` (spec §8) is the WP-01 demo command and stays as a permanent
+  status check.

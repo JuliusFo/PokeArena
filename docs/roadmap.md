@@ -11,20 +11,29 @@ so WP-03 is no longer blocked by base data.
 
 **Done 2026-10-11** — see the log in work-packages.md.
 
-## WP-01 — Twitch connection (3–4 days) → v0.1.0
+## WP-01 — Twitch connection (4–5 days) → v0.1.0
 
 Device-code auth, EventSub read, Helix send, rate limiter; desktop shell
-(Blazor, ADR-0007) with connect button, status, live chat log.
-Demo: the bot answers a test command in the channel.
+(Blazor, ADR-0007) with connect button, status, live chat log, dry run.
+Demo: the bot answers `!pokearena` in the channel.
 
 - User decision (2026-10-11): the user sets up the bot account and tokens.
+- User decisions (2026-10-12): own lean Twitch client instead of TwitchLib
+  (ADR-0002 addendum); a minimal dry run ("Probelauf") — simulated viewers
+  type commands in the UI, replies go only to the log; `!pokearena` as
+  permanent status command (spec §8). Estimate grows to 4–5 days.
+- Setup (2026-10-12): bot account exists; Twitch app registered as Public
+  client, client ID in `appsettings.json`. Test channel during development:
+  the user's own channel `ShiyoFurball`.
 - Open: is `channel:bot` / `user:bot` actually required with a user token over
-  WebSocket? Test, then update ADR-0002.
-- Proposal (review 2026-10-11): process all game commands on one serialized
-  queue (e.g. `Channel<T>`) — battles resolve instantly, so this removes race
-  conditions at no cost.
+  WebSocket, or is moderator status enough? Test, then update ADR-0002.
+- Proposal (review 2026-10-11, accepted for WP-01): process all chat commands
+  on one serialized queue (`Channel<T>`) — battles resolve instantly, so this
+  removes race conditions at no cost.
 - Pitfalls: see `src/PokeArena.Core/CLAUDE.md` (keepalive, `session_reconnect`,
-  30-day refresh tokens).
+  single-use refresh tokens).
+- Check the current send-rate limits for bots and moderators against the
+  Twitch docs before implementing the rate limiter.
 - First components with logic → add a UI test project with bUnit.
 
 ## WP-02 — Domain foundation (2–3 days) → v0.2.0

@@ -8,6 +8,7 @@
 - `data/pokemon.json` is generated: change `tools/GeneratePokemonData.cs`, rerun it, never edit the JSON.
 - Twitch (WP-01): EventSub WebSocket sends keepalives; missing ones mean reconnect. `session_reconnect`
   must connect to the new URL **before** closing the old socket, or messages are lost. Public-client refresh
-  tokens expire 30 days after they are generated; on `400 Invalid refresh token` fall back to a new device login.
+  tokens are single-use (store each new one at once) and expire after 30 days of inactivity; on
+  `400 Invalid refresh token` fall back to a new device login.
 - SQLite (WP-02/07): copying the database file while it is open loses the WAL content — back up with
   `VACUUM INTO` or the SQLite backup API.
