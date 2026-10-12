@@ -480,3 +480,6 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Local overrides of the desktop app (e.g. the test channel during development)
+appsettings.local.json
