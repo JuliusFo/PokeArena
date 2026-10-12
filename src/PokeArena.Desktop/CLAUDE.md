@@ -14,3 +14,8 @@ Thin WPF host around a `BlazorWebView` (ADR-0007). UI belongs in PokeArena.UI, l
   message box; keep both. All message box texts are German (the streamer reads them).
 - Credentials are stored as `PokeArena:<name>`; integration tests use `integration-test:<guid>` names and
   delete them again.
+- Twitch settings live in `appsettings.json` under `PokeArena:Twitch` (client ID is public, ADR-0002). The
+  channel for development goes into the git-ignored `appsettings.local.json` next to the csproj; it is copied
+  to the output only if it exists. The command line still overrides both.
+- The Twitch login is stored in the Credential Manager as `PokeArena:twitch-token` — independent of
+  `--PokeArena:DataDirectory`, so a test profile shares the real login.

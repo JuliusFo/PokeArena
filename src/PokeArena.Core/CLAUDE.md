@@ -10,5 +10,15 @@
   must connect to the new URL **before** closing the old socket, or messages are lost. Public-client refresh
   tokens are single-use (store each new one at once) and expire after 30 days of inactivity; on
   `400 Invalid refresh token` fall back to a new device login.
+- Refreshes go only through `TwitchTokenProvider.RefreshAsync` (serialized). A second, parallel refresh spends
+  the single-use token twice and logs the bot out. Never log tokens.
+- Cancelling a pending `ClientWebSocket.ReceiveAsync` aborts the socket — close politely first, then cancel
+  (see `EventSubSession.Connection.DisposeAsync`).
+- Every incoming message goes through `ChatInbox`; only `CommandProcessor` reads it. Commands therefore run one
+  at a time and may keep state (e.g. cooldowns) without locks — don't add a second consumer.
+- Chat events: ignore the bot's own messages (reply loops) and shared-chat messages from other channels
+  (`source_broadcaster_user_id`). Some clients append U+E0000 to repeated messages; `ParsedCommand` strips it.
+- Timers in async loops: `Task.Delay(delay, timeProvider, ct)` and `new CancellationTokenSource(timeout,
+  timeProvider)`, so tests drive them with `FakeTimeProvider.Advance`.
 - SQLite (WP-02/07): copying the database file while it is open loses the WAL content — back up with
   `VACUUM INTO` or the SQLite backup API.

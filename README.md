@@ -82,11 +82,24 @@ dotnet test tests/PokeArena.Core.Tests
 ```
 
 ```bash
+dotnet test tests/PokeArena.UI.Tests
+```
+
+```bash
 dotnet run --project src/PokeArena.Desktop
 ```
 
 Warnings are errors. The integration tests use the Windows Credential Manager
-of the current user. `data/pokemon.json` is generated from
+of the current user; the Twitch test is skipped until a bot login is stored.
+
+To connect the bot during development, put the test channel into
+`src/PokeArena.Desktop/appsettings.local.json` (git-ignored):
+
+```json
+{ "PokeArena": { "Twitch": { "Channel": "yourchannel" } } }
+```
+
+Then sign in the bot account in the app. `data/pokemon.json` is generated from
 [PokeAPI](https://pokeapi.co/) with `dotnet run tools/GeneratePokemonData.cs`;
 don't edit it by hand.
 

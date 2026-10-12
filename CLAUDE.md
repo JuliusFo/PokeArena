@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-10-11 · no release yet (pre-v0.1.0) · WP-00 scaffold done, WP-01 next
+Status: 2026-10-13 · no release yet (pre-v0.1.0) · WP-01 built, live test pending
 
 ## 1. Where to find what
 
@@ -70,7 +70,7 @@ Changes only via ADR.
 | Website | Blazor WebAssembly on GitHub Pages | App only, no data (ADR-0003) |
 | Site data | Cloudflare R2 via `r2.dev`, `AWSSDK.S3` | Base URL is config (ADR-0003) |
 | Secrets | Windows Credential Manager via `Meziantou.Framework.Win32.CredentialManager` | Behind `ISecretStore` (ADR-0002) |
-| Tests | xUnit v3 on Microsoft Testing Platform; bUnit for components once they have logic | ADR-0001 addendum |
+| Tests | xUnit v3 on Microsoft Testing Platform; bUnit for components | ADR-0001 addendum |
 
 **Do not use:** IRC chat · GitHub (Contents API, Pages, commits) for player
 data · package feeds other than nuget.org · WPF-UI, CommunityToolkit.Mvvm
@@ -88,7 +88,8 @@ PokeArena.slnx
 │  └─ PokeArena.Web/       # (WP-06) Blazor WASM, reads JSON from R2
 ├─ tests/
 │  ├─ PokeArena.Core.Tests/        # unit tests, nothing outside the process
-│  └─ PokeArena.Integration.Tests/ # real infrastructure (Credential Manager; later Twitch, R2)
+│  ├─ PokeArena.UI.Tests/          # bUnit component tests
+│  └─ PokeArena.Integration.Tests/ # real infrastructure (Credential Manager, Twitch; later R2)
 ├─ tools/                  # dev scripts, e.g. GeneratePokemonData.cs (`dotnet run <file>`)
 └─ data/                   # pokemon.json, typen.json, npcs.json (versioned base data)
 ```
@@ -97,7 +98,7 @@ PokeArena.slnx
   and rerun it instead of editing the JSON (ADR-0005).
 
 - Desktop → UI, Core. UI → Core. Core → no project. Core.Tests → Core;
-  Integration.Tests → Desktop.
+  UI.Tests → UI; Integration.Tests → Desktop.
 - Web references neither Core nor Desktop (no EF Core or Twitch in WASM).
   How the site JSON DTOs are shared is **open** (WP-06).
 
@@ -142,5 +143,6 @@ PokeArena.slnx
 
 ## 9. Next
 
-Start WP-01 (Twitch connection). Still open before later packages: NPC reward
+Finish WP-01: live test with the bot account in the test channel, then
+release v0.1.0 and start WP-02. Still open before later packages: NPC reward
 (E22), operations on the streamer's PC. Details: docs/roadmap.md.
