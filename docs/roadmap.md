@@ -27,10 +27,9 @@ Demo: the bot answers `!pokearena` in the channel.
   the user's own channel `ShiyoFurball`.
 - Answered by the docs (ADR-0002 addendum 2026-10-13): with a user token over
   WebSocket neither `channel:bot` nor moderator status is required.
-  Confirm in the live test.
-- Status 2026-10-13: built and tested with fakes; live test pending (sign in
-  the bot account, `!pokearena` in the test channel, reconnect after a
-  network drop).
+- **Done 2026-10-13**: live test passed — bot account signed in via device
+  code, `!pokearena` answered in the test channel, integration test green
+  against the real API. See the log in work-packages.md.
 - Proposal (review 2026-10-11, accepted for WP-01): process all chat commands
   on one serialized queue (`Channel<T>`) — battles resolve instantly, so this
   removes race conditions at no cost.
