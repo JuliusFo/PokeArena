@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PokeArena.Core;
 using PokeArena.Core.Secrets;
+using PokeArena.Core.Twitch;
 using PokeArena.Desktop.Services;
 using PokeArena.Desktop.Views;
 using PokeArena.UI;
@@ -61,7 +62,11 @@ public partial class App : Application
             ContentRootPath = AppContext.BaseDirectory,
         });
 
+        // Developer overrides (git-ignored); the command line still wins over both files.
+        builder.Configuration.AddJsonFile("appsettings.local.json", optional: true).AddCommandLine(args);
+
         var options = builder.Configuration.GetSection(PokeArenaOptions.SectionName).Get<PokeArenaOptions>() ?? new();
+        var twitchOptions = builder.Configuration.GetSection(TwitchOptions.SectionName).Get<TwitchOptions>() ?? new();
         var paths = AppPaths.Resolve(options);
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
@@ -84,11 +89,16 @@ public partial class App : Application
         builder.Services.AddSingleton(TimeProvider.System);
         builder.Services.AddSingleton<ISecretStore, CredentialManagerSecretStore>();
         builder.Services.AddSingleton(new AppInfo(version));
+        builder.Services.AddPokeArenaChat(twitchOptions);
         builder.Services.AddSingleton<MainWindow>();
 
         _host = builder.Build();
         await _host.StartAsync();
-        Log.Information("PokeArena {Version} started, data in {DataDirectory}", version, paths.Root);
+        Log.Information(
+            "PokeArena {Version} started, data in {DataDirectory}, channel {Channel}",
+            version,
+            paths.Root,
+            string.IsNullOrWhiteSpace(twitchOptions.Channel) ? "(none)" : twitchOptions.Channel);
 
         var window = _host.Services.GetRequiredService<MainWindow>();
         MainWindow = window;
