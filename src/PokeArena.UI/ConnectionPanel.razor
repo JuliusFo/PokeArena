@@ -1,0 +1,96 @@
+@* Twitch login and connection: what the streamer sees and controls. *@
+@using PokeArena.Core.Twitch
+@implements IDisposable
+@inject ITwitchConnection Twitch
+
+<section class="card">
+    <h2>Twitch-Verbindung</h2>
+
+    @switch (State.Status)
+    {
+        case TwitchStatus.NotConfigured:
+            <p class="status"><span class="dot dot-off"></span>Nicht eingerichtet</p>
+            <p class="hint">Es ist noch kein Twitch-Kanal eingestellt. Bitte wende dich an die Person, die PokeArena für dich eingerichtet hat.</p>
+            break;
+
+        case TwitchStatus.SignedOut:
+            <p class="status"><span class="dot dot-off"></span>Bot ist nicht angemeldet</p>
+            <Problem State="State" Channel="@Twitch.Channel" />
+            <p class="hint">Melde den Bot-Account einmal bei Twitch an. Danach verbindet sich PokeArena bei jedem Start von selbst.</p>
+            <div class="actions">
+                <button class="btn btn-primary" @onclick="Twitch.BeginLoginAsync">Bot-Account anmelden</button>
+            </div>
+            break;
+
+        case TwitchStatus.WaitingForLogin when State.Login is { } login:
+            <p class="status"><span class="dot dot-busy"></span>Warte auf die Anmeldung …</p>
+            <ol class="steps">
+                <li>Öffne <a href="@login.VerificationUri" target="_blank">twitch.tv/activate</a> – gern auch am Handy.</li>
+                <li>Melde dich dort mit dem <strong>Bot-Account</strong> an, nicht mit deinem eigenen.</li>
+                <li>Gib diesen Code ein und bestätige:</li>
+            </ol>
+            <p class="code" data-testid="user-code">@login.UserCode</p>
+            <p class="hint">Der Code gilt bis @login.ExpiresAt.ToLocalTime().ToString("HH:mm") Uhr. Gib nur Codes ein, die du gerade hier in PokeArena siehst – niemals Codes, die dir jemand schickt.</p>
+            <div class="actions">
+                <button class="btn" @onclick="Twitch.CancelLogin">Abbrechen</button>
+            </div>
+            break;
+
+        case TwitchStatus.Connecting:
+            <p class="status"><span class="dot dot-busy"></span>Verbinde mit Twitch …</p>
+            break;
+
+        case TwitchStatus.Connected:
+            <p class="status"><span class="dot dot-on"></span>Verbunden</p>
+            <dl class="facts">
+                <dt>Bot-Account</dt>
+                <dd>@State.BotLogin</dd>
+                <dt>Kanal</dt>
+                <dd>@Twitch.Channel</dd>
+            </dl>
+            <div class="actions">
+                <button class="btn" @onclick="Twitch.DisconnectAsync">Trennen</button>
+                <button class="btn btn-quiet" @onclick="Twitch.SignOutAsync">Bot abmelden</button>
+            </div>
+            break;
+
+        case TwitchStatus.Reconnecting:
+            <p class="status"><span class="dot dot-busy"></span>Verbindung unterbrochen</p>
+            <p class="hint">
+                PokeArena versucht es von selbst wieder@(State.RetryAt is { } retry ? $" (um {retry.ToLocalTime():HH:mm:ss} Uhr)" : "").
+                Ist das Internet weg, verbindet sich der Bot, sobald es wieder da ist.
+            </p>
+            <div class="actions">
+                <button class="btn" @onclick="Twitch.DisconnectAsync">Trennen</button>
+            </div>
+            break;
+
+        case TwitchStatus.Disconnected:
+            <p class="status"><span class="dot dot-off"></span>Getrennt</p>
+            <p class="hint">Der Bot ist angemeldet, liest und schreibt aber gerade nicht im Chat.</p>
+            <div class="actions">
+                <button class="btn btn-primary" @onclick="Twitch.Connect">Verbinden</button>
+                <button class="btn btn-quiet" @onclick="Twitch.SignOutAsync">Bot abmelden</button>
+            </div>
+            break;
+
+        case TwitchStatus.Failed:
+            <p class="status"><span class="dot dot-error"></span>Keine Verbindung</p>
+            <Problem State="State" Channel="@Twitch.Channel" />
+            <div class="actions">
+                <button class="btn btn-primary" @onclick="Twitch.Connect">Erneut versuchen</button>
+                <button class="btn btn-quiet" @onclick="Twitch.SignOutAsync">Bot abmelden</button>
+            </div>
+            break;
+    }
+</section>
+
+@code {
+    private TwitchConnectionState State => Twitch.State;
+
+    protected override void OnInitialized() => Twitch.StateChanged += OnStateChanged;
+
+    private void OnStateChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Twitch.StateChanged -= OnStateChanged;
+}

@@ -1,0 +1,50 @@
+@* Live log of the chat: incoming commands, bot replies and notes, newest first. *@
+@using PokeArena.Core.Chat
+@implements IDisposable
+@inject ChatLog Log
+
+<section class="card log-card">
+    <h2>Chat-Protokoll</h2>
+    @if (_entries.Count == 0)
+    {
+        <p class="hint">Noch keine Nachrichten. Sobald jemand im Chat schreibt, erscheint es hier.</p>
+    }
+    else
+    {
+        <ul class="log">
+            @foreach (var entry in Enumerable.Reverse(_entries))
+            {
+                <li class="log-entry log-@entry.Kind.ToString().ToLowerInvariant()">
+                    <time>@entry.At.ToLocalTime().ToString("HH:mm:ss")</time>
+                    @if (entry.Name is not null)
+                    {
+                        <span class="who">@entry.Name</span>
+                    }
+                    <span class="text">@entry.Text</span>
+                    @if (entry.DryRun)
+                    {
+                        <span class="tag">Probelauf</span>
+                    }
+                </li>
+            }
+        </ul>
+    }
+</section>
+
+@code {
+    private IReadOnlyList<ChatLogEntry> _entries = [];
+
+    protected override void OnInitialized()
+    {
+        _entries = Log.Snapshot();
+        Log.Changed += OnChanged;
+    }
+
+    private void OnChanged() => _ = InvokeAsync(() =>
+    {
+        _entries = Log.Snapshot();
+        StateHasChanged();
+    });
+
+    public void Dispose() => Log.Changed -= OnChanged;
+}

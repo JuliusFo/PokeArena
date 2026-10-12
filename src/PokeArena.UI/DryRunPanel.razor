@@ -1,0 +1,70 @@
+@* Dry run ("Probelauf"): try commands without writing to the real chat. *@
+@using PokeArena.Core.Chat
+@implements IDisposable
+@inject DryRunMode DryRun
+@inject ChatInbox Inbox
+
+<section class="card">
+    <h2>Probelauf</h2>
+    <label class="switch">
+        <input type="checkbox" checked="@DryRun.Enabled" @onchange="Toggle" />
+        <span>Probelauf einschalten</span>
+    </label>
+    <p class="hint">Im Probelauf schreibt der Bot nichts in den Twitch-Chat. Seine Antworten erscheinen nur im Protokoll.</p>
+
+    @if (DryRun.Enabled)
+    {
+        <form class="simulate" @onsubmit="SendAsync">
+            <div class="row">
+                <label>
+                    Name
+                    <input @bind="_name" placeholder="Testzuschauer" />
+                </label>
+                <label class="inline">
+                    <input type="checkbox" @bind="_moderator" />
+                    Moderator
+                </label>
+            </div>
+            <div class="row">
+                <input class="grow" @bind="_text" @bind:event="oninput" placeholder="z. B. !pokearena" aria-label="Nachricht" />
+                <button class="btn btn-primary" type="submit" disabled="@string.IsNullOrWhiteSpace(_text)">Senden</button>
+            </div>
+        </form>
+    }
+</section>
+
+@code {
+    private string _name = "Testzuschauer";
+    private bool _moderator;
+    private string _text = "";
+
+    protected override void OnInitialized() => DryRun.Changed += OnChanged;
+
+    private void Toggle(ChangeEventArgs e) => DryRun.Enabled = e.Value is true;
+
+    private Task SendAsync()
+    {
+        var text = _text.Trim();
+        if (text.Length == 0)
+        {
+            return Task.CompletedTask;
+        }
+
+        var name = string.IsNullOrWhiteSpace(_name) ? "Testzuschauer" : _name.Trim();
+        var login = name.ToLowerInvariant();
+        Inbox.Post(new ChatMessage(
+            Guid.NewGuid().ToString(),
+            "probelauf:" + login,
+            login,
+            name,
+            text,
+            _moderator ? ChatRole.Moderator : ChatRole.Viewer,
+            IsSimulated: true));
+        _text = "";
+        return Task.CompletedTask;
+    }
+
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => DryRun.Changed -= OnChanged;
+}

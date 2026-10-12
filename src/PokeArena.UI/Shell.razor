@@ -8,9 +8,14 @@
     </header>
 
     <main class="content">
-        <section class="card">
-            <h1>Willkommen</h1>
-            <p>Hier entsteht die Steuerzentrale für den PokeArena-Bot. Die Verbindung zu Twitch folgt im nächsten Schritt.</p>
-        </section>
+        <div class="columns">
+            <div class="column">
+                <ConnectionPanel />
+                <DryRunPanel />
+            </div>
+            <div class="column column-wide">
+                <ChatLogPanel />
+            </div>
+        </div>
     </main>
 </div>

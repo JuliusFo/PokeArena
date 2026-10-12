@@ -1,0 +1,27 @@
+@* Turns the reason of the last failed attempt into a plain German hint. *@
+@using PokeArena.Core.Twitch
+
+@if (Text is { } text)
+{
+    <p class="problem">@text</p>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public TwitchConnectionState State { get; set; } = default!;
+
+    [Parameter]
+    public string Channel { get; set; } = "";
+
+    private string? Text => State.Problem switch
+    {
+        TwitchProblem.LoginExpired => "Der Code ist abgelaufen, bevor er bestätigt wurde. Bitte noch einmal anmelden.",
+        TwitchProblem.LoginFailed => "Die Anmeldung hat nicht geklappt. Bitte prüfe die Internetverbindung und versuche es noch einmal.",
+        TwitchProblem.SessionExpired => "Die Anmeldung des Bots ist abgelaufen oder wurde bei Twitch zurückgezogen. Bitte den Bot-Account neu anmelden.",
+        TwitchProblem.ChannelNotFound => $"Den Twitch-Kanal „{Channel}“ gibt es nicht. Bitte lass die Einstellung prüfen.",
+        TwitchProblem.MissingPermission => "Twitch lässt den Bot nicht in den Chat. Ist der Bot im Kanal gebannt? Am besten machst du ihn zum Moderator: /mod Botname",
+        TwitchProblem.SubscriptionRevoked => "Twitch hat die Verbindung beendet, zum Beispiel weil der Bot-Account gesperrt wurde.",
+        TwitchProblem.ConnectionLost => "Die Verbindung zu Twitch ist abgebrochen.",
+        _ => null,
+    };
+}
