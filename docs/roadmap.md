@@ -26,8 +26,8 @@ Demo: the bot answers `!pokearena` in the channel.
   client, client ID in `appsettings.json`. Test channel during development:
   the user's own channel `ShiyoFurball`.
 - Answered by the docs (ADR-0002 addendum 2026-10-13): with a user token over
-  WebSocket neither `channel:bot` nor moderator status is required.
-- **Done 2026-10-13**: live test passed — bot account signed in via device
+  WebSocket neither `channel:bot` nor moderator status is required (live
+  test ran with the bot as moderator; without it untested).- **Done 2026-10-13**: live test passed — bot account signed in via device
   code, `!pokearena` answered in the test channel, integration test green
   against the real API. See the log in work-packages.md.
 - Proposal (review 2026-10-11, accepted for WP-01): process all chat commands
