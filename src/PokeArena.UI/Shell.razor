@@ -1,21 +1,55 @@
-@* Root component of the desktop app. *@
+@* Root component of the desktop app: top bar with the areas, then the active area. *@
+@implements IDisposable
 @inject AppInfo App
+@inject DryRunMode DryRun
 
 <div class="shell">
     <header class="topbar">
         <span class="brand">PokeArena</span>
+        <nav class="tabs">
+            <button class="tab @(_area == Area.Bot ? "active" : "")" @onclick="() => _area = Area.Bot">Bot</button>
+            <button class="tab @(_area == Area.Trainers ? "active" : "")" @onclick="() => _area = Area.Trainers">Trainer</button>
+        </nav>
+        @if (DryRun.Enabled)
+        {
+            <span class="tag tag-dry-run">Probelauf aktiv</span>
+        }
         <span class="version">Version @App.Version</span>
     </header>
 
     <main class="content">
-        <div class="columns">
-            <div class="column">
-                <ConnectionPanel />
-                <DryRunPanel />
-            </div>
-            <div class="column column-wide">
-                <ChatLogPanel />
-            </div>
-        </div>
+        @switch (_area)
+        {
+            case Area.Bot:
+                <div class="columns">
+                    <div class="column">
+                        <ConnectionPanel />
+                        <DryRunPanel />
+                    </div>
+                    <div class="column column-wide">
+                        <ChatLogPanel />
+                    </div>
+                </div>
+                break;
+            case Area.Trainers:
+                <TrainerListPanel />
+                break;
+        }
     </main>
 </div>
+
+@code {
+    private enum Area
+    {
+        Bot,
+        Trainers,
+    }
+
+    private Area _area = Area.Bot;
+
+    protected override void OnInitialized() => DryRun.Changed += OnDryRunChanged;
+
+    private void OnDryRunChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => DryRun.Changed -= OnDryRunChanged;
+}

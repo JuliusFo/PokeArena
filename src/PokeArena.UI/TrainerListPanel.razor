@@ -1,0 +1,89 @@
+@* All registered trainers, newest first. Read-only for now; corrections and deletion follow in WP-07. *@
+@using PokeArena.Core.Data
+@using PokeArena.Core.Game
+@implements IDisposable
+@inject TrainerService Trainers
+@inject GameDatabase Database
+
+<section class="card">
+    <div class="card-head">
+        <h2>Trainer</h2>
+        <span class="count">@CountText</span>
+        <input class="search" type="search" placeholder="Name suchen" aria-label="Name suchen" @bind="_search" @bind:event="oninput" />
+    </div>
+
+    @if (_sandbox)
+    {
+        <p class="hint">Probelauf: Hier stehen nur Testtrainer. Sie verschwinden, sobald der Probelauf endet.</p>
+    }
+
+    @if (_trainers is null)
+    {
+        <p class="hint">Lade …</p>
+    }
+    else if (_trainers.Count == 0)
+    {
+        <p class="hint">Noch niemand registriert. Zuschauer machen mit <strong>!registrieren &lt;Starter&gt;</strong> mit.</p>
+    }
+    else if (Visible.Count == 0)
+    {
+        <p class="hint">Niemand passt zu „@_search“.</p>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Starter</th>
+                    <th class="num">Pokémon</th>
+                    <th>Dabei seit</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var trainer in Visible)
+                {
+                    <tr>
+                        <td class="strong">@trainer.DisplayName</td>
+                        <td>@trainer.Starter.Name</td>
+                        <td class="num">@trainer.SpecimenCount</td>
+                        <td>@trainer.RegisteredAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</section>
+
+@code {
+    private IReadOnlyList<TrainerSummary>? _trainers;
+    private string _search = "";
+    private bool _sandbox;
+
+    private IReadOnlyList<TrainerSummary> Visible =>
+        string.IsNullOrWhiteSpace(_search)
+            ? _trainers ?? []
+            : (_trainers ?? []).Where(t => t.DisplayName.Contains(_search.Trim(), StringComparison.OrdinalIgnoreCase)).ToList();
+
+    private string CountText => _trainers is null ? "" : _trainers.Count == 1 ? "1 Trainer" : $"{_trainers.Count} Trainer";
+
+    protected override async Task OnInitializedAsync()
+    {
+        Trainers.Changed += OnChanged;
+        await ReloadAsync();
+    }
+
+    private void OnChanged() => _ = InvokeAsync(async () =>
+    {
+        await ReloadAsync();
+        StateHasChanged();
+    });
+
+    private async Task ReloadAsync()
+    {
+        _sandbox = Database.IsSandbox;
+        _trainers = await Trainers.ListAsync(CancellationToken.None);
+    }
+
+    public void Dispose() => Trainers.Changed -= OnChanged;
+}

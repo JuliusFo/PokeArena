@@ -10,7 +10,11 @@
         <input type="checkbox" checked="@DryRun.Enabled" @onchange="Toggle" />
         <span>Probelauf einschalten</span>
     </label>
-    <p class="hint">Im Probelauf schreibt der Bot nichts in den Twitch-Chat. Seine Antworten erscheinen nur im Protokoll.</p>
+    <p class="hint">
+        Im Probelauf schreibt der Bot nichts in den Twitch-Chat, seine Antworten erscheinen nur im Protokoll. Er arbeitet
+        mit Testdaten, die beim Ausschalten verschwinden – echte Trainer bleiben unberührt. Befehle aus dem echten Chat
+        werden währenddessen nur angezeigt, nicht ausgeführt.
+    </p>
 
     @if (DryRun.Enabled)
     {

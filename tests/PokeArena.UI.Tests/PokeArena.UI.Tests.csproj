@@ -15,6 +15,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\..\data\pokemon.json" Link="data\pokemon.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Using Include="Bunit" />
     <Using Include="Xunit" />
   </ItemGroup>
