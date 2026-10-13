@@ -19,3 +19,7 @@ Thin WPF host around a `BlazorWebView` (ADR-0007). UI belongs in PokeArena.UI, l
   to the output only if it exists. The command line still overrides both.
 - The Twitch login is stored in the Credential Manager as `PokeArena:twitch-token` — independent of
   `--PokeArena:DataDirectory`, so a test profile shares the real login.
+- `data/pokemon.json` is linked into the output (`data\pokemon.json`); the app refuses to start if it is missing or
+  invalid. Startup order matters: `AddPokeArenaGame` (base data check, migration) before `AddPokeArenaChat`.
+- Smoke tests without touching the real chat: `--PokeArena:DataDirectory=<scratch> --PokeArena:Twitch:Channel=`
+  (empty channel = not configured, the bot stays offline).

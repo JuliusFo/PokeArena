@@ -99,7 +99,18 @@ To connect the bot during development, put the test channel into
 { "PokeArena": { "Twitch": { "Channel": "yourchannel" } } }
 ```
 
-Then sign in the bot account in the app. `data/pokemon.json` is generated from
+Then sign in the bot account in the app.
+
+The game database lives in `%LOCALAPPDATA%\PokeArena\pokearena.db` and is
+created or upgraded on start. After a model change, add a migration:
+
+```bash
+dotnet tool restore
+```
+
+```bash
+dotnet ef migrations add <Name> --project src/PokeArena.Core --startup-project src/PokeArena.Core --output-dir Data/Migrations
+``` `data/pokemon.json` is generated from
 [PokeAPI](https://pokeapi.co/) with `dotnet run tools/GeneratePokemonData.cs`;
 don't edit it by hand.
 

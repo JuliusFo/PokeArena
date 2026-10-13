@@ -64,6 +64,16 @@ the type that has the **higher** factor against the defender.
 - Creates the trainer and their starter specimen.
 - Any game command from an unregistered user gets a hint pointing to
   `!registrieren` (no auto-registration).
+- Only the first word after the command counts; name or slug, any case.
+- Replies (drafts, wording pass in WP-07):
+  - success: „@Name, willkommen bei PokeArena! Dein Starter ist Pikachu."
+  - already registered: „@Name, du bist schon dabei – dein Starter ist
+    Pikachu."
+  - missing or invalid starter: „@Name, wähle deinen Starter: Bisasam,
+    Schiggy, Glumanda, Pikachu oder Evoli – zum Beispiel: !registrieren
+    Pikachu"
+  - unregistered user, game command: „@Name, du bist noch nicht dabei. Melde
+    dich mit !registrieren <Starter> an."
 - Everyone may play; no follower/sub gate. One configured channel only.
 
 ## 4. Boss encounter (`!boss`)
@@ -278,8 +288,11 @@ Data files (all derived — fully regenerable from the DB; the UI has a
   failures lose nothing.
 - **Secrets** (Twitch tokens for the dedicated bot account, R2 API token) go
   into the Windows credential store — never into the DB, config files or the
-  repo. The UI shows token expiry dates.
+  repo. The UI shows the signed-in bot account (ADR-0002 addendum).
 - **Backup:** DB file copy on app exit plus a manual "backup now" button.
+- **Dry run:** game data goes to an in-memory sandbox database that starts
+  empty each time the dry run is switched on; real chat messages are not
+  processed meanwhile.
 
 ## 11. Privacy
 

@@ -1,7 +1,8 @@
 # Architecture
 
 Gameplay rules live in [spec.md](spec.md); this file describes how the code is
-organised around them. Status: WP-01 built (Twitch, chat queue, commands); the rest is planned.
+organised around them. Status: WP-01 (Twitch, chat queue, commands) and
+WP-02 (database, base data, registration) built; the rest is planned.
 
 ## Core modules (`PokeArena.Core`)
 
@@ -10,8 +11,8 @@ organised around them. Status: WP-01 built (Twitch, chat queue, commands); the r
 | `Twitch/` | Device-code auth and tokens, Helix client, EventSub WebSocket session, `TwitchConnection` (login, reconnects, state for the UI) |
 | `Chat/` | `ChatInbox` (single serialized queue of incoming messages), `ChatSender` (rate limit, splitting, dry run), `ChatLog` for the UI |
 | `Commands/` | Parsing, routing, permission and cooldown checks, dialog states (open challenges, lobby) |
-| `Game/` | Battle engine, boss encounter, PvP, NPC fights, achievements |
-| `Data/` | EF Core model, SQLite, migrations, base-data loader (`data/*.json`) |
+| `Game/` | `TrainerService` (registration, display names, trainer list); later battle engine, boss, PvP, NPC fights, achievements |
+| `Data/` | EF Core model (`PokeArenaDb`), migrations, `GameDatabase` (live database or dry-run sandbox), `SpeciesCatalog` (validated `data/pokemon.json`) |
 | `Publishing/` | `ISitePublisher`, R2 implementation, outbox worker |
 
 External systems sit behind seams with fakes for tests: HTTP via `HttpClient`
@@ -19,14 +20,21 @@ External systems sit behind seams with fakes for tests: HTTP via `HttpClient`
 via `IChatSender`, later `ISitePublisher`. Incoming messages from Twitch and
 from the dry run both go into `ChatInbox`; the single `CommandProcessor`
 consumes it, so game commands never run concurrently. In the dry run
-("Probelauf") replies only go to the chat log.
+("Probelauf") replies only go to the chat log, game data goes to a fresh
+in-memory sandbox database, and real chat messages are logged but not
+processed (WP-02 decision).
 
-## Data model (sketch)
+## Data model
+
+Built in WP-02: `Trainer` and `Specimen`. The rest is a sketch for later
+packages. Timestamps are stored as UTC ticks (SQLite cannot compare
+`DateTimeOffset`); enums as text. The live database is
+`%LOCALAPPDATA%\PokeArena\pokearena.db` (WAL), migrated at startup.
 
 | Entity | Fields | Notes |
 |---|---|---|
 | `Trainer` | TwitchUserId (PK), DisplayName, RegisteredAt | Display name refreshed when seen |
-| `Specimen` | Id, TrainerId, SpeciesId, CaughtAt, Origin, IsStarter | PvP loot changes `TrainerId` |
+| `Specimen` | Id, TrainerId, SpeciesId, CaughtAt, Origin, IsStarter | PvP loot changes `TrainerId`; unique filtered index: one starter per trainer |
 | `Battle` | Id, Kind, StartedAt, Seed, WinnerRef, LogJson, TransferredSpecimenId? | Log stored verbatim (ADR-0004) |
 | `BattleParticipant` | BattleId, TrainerId/NpcId, TeamJson | |
 | `AchievementUnlock` | TrainerId, Threshold, UnlockedAt | Never deleted except with the trainer |
@@ -58,14 +66,16 @@ all screens are Razor components in `PokeArena.UI` with CSS design tokens.
 Operated by the streamer, so every screen must be usable without technical
 knowledge. Areas:
 
-- Built (WP-01), one page: connection (device-code login with the code shown
+- Built (WP-01), area "Bot": connection (device-code login with the code shown
   large, connect/disconnect, sign out, status with a plain-German reason),
   dry run (toggle plus a field to type commands as a simulated viewer) and the
   live chat log (newest first, in memory, last 500 entries).
-- Planned: trainer list with manual corrections and deletion; balancing config
+- Built (WP-02), area "Trainer": read-only list (name, starter, number of
+  Pokemon, registration date) with search; tabs in the top bar, a
+  "Probelauf aktiv" badge while the dry run is on.
+- Planned: manual corrections and deletion of trainers; balancing config
   editor (all values from spec §13, live); operations (backup now, republish
-  everything); local Kestrel endpoint serving the OBS overlay. Navigation
-  between areas comes with the second area.
+  everything); local Kestrel endpoint serving the OBS overlay.
 
 ## Keyboard shortcuts
 

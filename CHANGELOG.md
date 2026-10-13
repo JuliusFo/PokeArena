@@ -7,6 +7,14 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+### Added
+- Viewers register with `!registrieren <Starter>` (Bisasam, Schiggy, Glumanda,
+  Pikachu or Evoli); the choice is final and survives restarts.
+- Game commands for registered players point newcomers to `!registrieren`.
+- Desktop app: "Trainer" area with a searchable list of all trainers.
+- The dry run now uses its own test data that disappears when it ends; real
+  chat commands are not carried out while it is on.
+
 ## [0.1.0] - 2026-10-13
 
 ### Added

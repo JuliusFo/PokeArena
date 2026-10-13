@@ -22,3 +22,13 @@
   timeProvider)`, so tests drive them with `FakeTimeProvider.Advance`.
 - SQLite (WP-02/07): copying the database file while it is open loses the WAL content — back up with
   `VACUUM INTO` or the SQLite backup API.
+- Database access only through `GameDatabase.Open()` (one short-lived context per unit of work, `await using`):
+  it picks the live database or the dry-run sandbox. Never cache a `PokeArenaDb` or a connection string.
+- `DateTimeOffset` is stored as UTC ticks (`ConfigureConventions`); SQLite cannot compare or sort it otherwise.
+  Values read back always have offset zero.
+- Model change → new migration, never edit an applied one:
+  `dotnet tool restore`, then
+  `dotnet ef migrations add <Name> --project src/PokeArena.Core --startup-project src/PokeArena.Core --output-dir Data/Migrations`.
+  The test `Migrations_cover_the_whole_model` fails if one is missing.
+- Game services that cache data (e.g. `TrainerService`'s registration cache) must reset on
+  `GameDatabase.Switched` — the dry run swaps the whole database underneath them.
