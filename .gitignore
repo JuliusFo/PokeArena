@@ -483,3 +483,8 @@ $RECYCLE.BIN/
 
 # Local overrides of the desktop app (e.g. the test channel during development)
 appsettings.local.json
+
+# Game databases must never enter the repository (ADR-0003: no player data in git)
+*.db
+*.db-wal
+*.db-shm
