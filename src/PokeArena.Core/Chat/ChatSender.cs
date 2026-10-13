@@ -12,27 +12,6 @@ public interface IChatSender
     void Send(string text);
 }
 
-/// <summary>Dry run ("Probelauf"): replies only go to the chat log, nothing reaches Twitch.</summary>
-public sealed class DryRunMode
-{
-    private volatile bool _enabled;
-
-    public event Action? Changed;
-
-    public bool Enabled
-    {
-        get => _enabled;
-        set
-        {
-            if (_enabled != value)
-            {
-                _enabled = value;
-                Changed?.Invoke();
-            }
-        }
-    }
-}
-
 /// <summary>Where the bot writes: the channel and the bot account, known once connected.</summary>
 public sealed record ChatTarget(string BroadcasterId, string BroadcasterLogin, string BotUserId, string BotLogin);
 

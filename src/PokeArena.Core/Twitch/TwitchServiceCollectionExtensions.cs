@@ -37,7 +37,6 @@ public static class TwitchServiceCollectionExtensions
 
         services.AddSingleton<ChatInbox>();
         services.AddSingleton<ChatLog>();
-        services.AddSingleton<DryRunMode>();
         services.AddSingleton<ChatSender>();
         services.AddSingleton<IChatSender>(sp => sp.GetRequiredService<ChatSender>());
         services.AddHostedService(sp => sp.GetRequiredService<ChatSender>());

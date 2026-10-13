@@ -1,17 +1,21 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using PokeArena.Core.Chat;
+using PokeArena.Core.Game;
 
 namespace PokeArena.Core.Commands;
 
 /// <summary>
 /// The single consumer of <see cref="ChatInbox"/>: logs every message and runs the matching command, one message
-/// at a time. Unknown commands are ignored silently — they may belong to another bot in the channel.
+/// at a time. Unknown commands are ignored silently — they may belong to another bot in the channel. During the
+/// dry run only simulated messages are processed; outside it only real ones.
 /// </summary>
 public sealed class CommandProcessor(
     ChatInbox inbox,
     IEnumerable<IChatCommand> commands,
     IChatSender chat,
+    TrainerService trainers,
+    DryRunMode dryRun,
     ChatLog chatLog,
     ILogger<CommandProcessor> log) : BackgroundService
 {
@@ -29,21 +33,38 @@ public sealed class CommandProcessor(
     {
         chatLog.Add(ChatLogKind.Incoming, message.DisplayName, message.Text, message.IsSimulated);
 
-        if (ParsedCommand.TryParse(message.Text) is not { } parsed
-            || !_commands.TryGetValue(parsed.Name, out var command)
-            || (command.Access == CommandAccess.Moderators && !message.IsModerator))
+        // Real messages must not change data during the dry run, and a simulated message still queued when the dry
+        // run ended must not reach the live database.
+        if (message.IsSimulated != dryRun.Enabled)
         {
             return;
         }
 
+        var parsed = ParsedCommand.TryParse(message.Text);
         try
         {
+            var registered = await trainers.ObserveAsync(message, ct);
+            if (parsed is null || !_commands.TryGetValue(parsed.Name, out var command))
+            {
+                return;
+            }
+
+            switch (command.Access)
+            {
+                case CommandAccess.Moderators when !message.IsModerator:
+                    return;
+                case CommandAccess.Registered when !registered:
+                    chat.Send($"@{message.DisplayName}, du bist noch nicht dabei. Melde dich mit !registrieren <Starter> an.");
+                    return;
+            }
+
             await command.ExecuteAsync(new CommandContext(message, parsed.Arguments, chat), ct);
         }
         catch (Exception ex) when (!ct.IsCancellationRequested)
         {
-            log.LogError(ex, "Command !{Command} from {UserId} failed", parsed.Name, message.UserId);
-            chatLog.Add(ChatLogKind.Warning, null, $"Fehler bei !{parsed.Name} – Details stehen in der Logdatei.");
+            log.LogError(ex, "Processing \"{Text}\" from {UserId} failed", message.Text, message.UserId);
+            var what = parsed is null ? "einer Chatnachricht" : $"!{parsed.Name}";
+            chatLog.Add(ChatLogKind.Warning, null, $"Fehler bei {what} – Details stehen in der Logdatei.");
         }
     }
 }

@@ -5,6 +5,10 @@ namespace PokeArena.Core.Commands;
 public enum CommandAccess
 {
     Everyone,
+
+    /// <summary>Registered trainers; everyone else gets a hint to register (spec §3).</summary>
+    Registered,
+
     Moderators,
 }
 

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PokeArena.Core;
+using PokeArena.Core.Game;
 using PokeArena.Core.Secrets;
 using PokeArena.Core.Twitch;
 using PokeArena.Desktop.Services;
@@ -89,6 +90,7 @@ public partial class App : Application
         builder.Services.AddSingleton(TimeProvider.System);
         builder.Services.AddSingleton<ISecretStore, CredentialManagerSecretStore>();
         builder.Services.AddSingleton(new AppInfo(version));
+        builder.Services.AddPokeArenaGame(Path.Combine(AppContext.BaseDirectory, "data"));
         builder.Services.AddPokeArenaChat(twitchOptions);
         builder.Services.AddSingleton<MainWindow>();
 

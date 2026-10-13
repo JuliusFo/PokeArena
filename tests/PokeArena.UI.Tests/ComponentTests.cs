@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
+using PokeArena.Core;
 using PokeArena.Core.Chat;
 using PokeArena.Core.Twitch;
 using PokeArena.Core.Twitch.Auth;
