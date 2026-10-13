@@ -45,6 +45,15 @@ EF Core model + migrations, base-data loader, `!registrieren`, trainer list
 in the UI.
 Demo: viewers can register; data survives a restart.
 
+- Plan (agreed 2026-10-13, ≈ 3 days): only `Trainer` and `Specimen` tables;
+  `dotnet-ef` as local tool; `SpeciesCatalog` validates `data/pokemon.json` at
+  startup; "registered only" command access with a hint for unregistered
+  users (spec §3); display-name refresh; "Bot" / "Trainer" navigation with a
+  read-only trainer list.
+- User decision (2026-10-13): the dry run gets its own sandbox database that
+  starts empty each time it is switched on. While it is on, real chat
+  messages are only logged, not processed — real player data stays untouched.
+
 ## WP-03 — Battle engine + boss (4–5 days) → v0.3.0
 
 Damage, types, crits, seed, log; boss lobby, rarity draw, cooldowns,
