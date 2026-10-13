@@ -124,6 +124,16 @@ PokeArena.slnx
   test).
 - Small, topical commits, Conventional Commits (`feat:`, `fix:`, `test:`,
   `docs:`, `refactor:`).
+- Integration (user decision 2026-10-13): code goes through a PR — `main`
+  requires the CI check "Build and test (Windows)", which builds from a clean
+  checkout. Once it is green, merge locally (`git merge --ff-only <branch>` on
+  an up-to-date `main`, then push): the commit ids stay the same, GitHub marks
+  the PR as merged, and the release tag can be set right away. No GitHub
+  rebase/auto-merge — it rewrites commit ids. Small docs-only fixes may go
+  straight to `main`.
+- Release: after the live test, add the `[X.Y.Z] - date` section to the
+  CHANGELOG and set `<Version>` in `Directory.Build.props` on the package
+  branch; after the merge tag `vX.Y.Z` on `main` and push the tag.
 - Core logic first with tests, then UI. Unit tests without external
   dependencies; integration tests (Twitch, R2) separate and skip cleanly when
   the infrastructure is missing.
