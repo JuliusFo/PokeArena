@@ -7,7 +7,7 @@ in [roadmap.md](roadmap.md).
 |---|---|---|---|
 | WP-00 | Scaffold | 0.1.0 | done 2026-10-11 |
 | WP-01 | Twitch connection | 0.1.0 | done 2026-10-13 |
-| WP-02 | Domain foundation | 0.2.0 | built 2026-10-13, live test pending |
+| WP-02 | Domain foundation | 0.2.0 | done 2026-10-13 |
 | WP-03 | Battle engine + boss | 0.3.0 | planned |
 | WP-04 | PvP | 0.4.0 | planned |
 | WP-05 | NPC fights | 0.5.0 | planned |
@@ -82,6 +82,8 @@ in [roadmap.md](roadmap.md).
   the dry run and simulated ones outside it. UI: Bot/Trainer tabs, read-only
   trainer list with search, "Probelauf aktiv" badge. Tests: 80 unit (in-memory
   SQLite, real base data), 12 bUnit.
+- Live test 2026-10-13: `!registrieren` answered in `ShiyoFurball`, the
+  registration survived a restart, the dry run kept its test trainers apart.
 - User decisions: the dry run gets its own sandbox database that starts empty
   each time; real messages are not processed meanwhile.
 - Addenda: none (EF Core + SQLite already in ADR-0001). `DryRunMode` moved to

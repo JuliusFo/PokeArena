@@ -7,6 +7,8 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-13
+
 ### Added
 - Viewers register with `!registrieren <Starter>` (Bisasam, Schiggy, Glumanda,
   Pikachu or Evoli); the choice is final and survives restarts.

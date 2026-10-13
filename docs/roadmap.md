@@ -53,8 +53,8 @@ Demo: viewers can register; data survives a restart.
 - User decision (2026-10-13): the dry run gets its own sandbox database that
   starts empty each time it is switched on. While it is on, real chat
   messages are only logged, not processed — real player data stays untouched.
-- Status 2026-10-13: built and tested (in-memory SQLite, bUnit); live test
-  pending (`!registrieren` in the test channel, restart, dry run).
+- **Done 2026-10-13**: live test passed — registration in the test channel,
+  data survived a restart, dry run isolated. See the log in work-packages.md.
 
 ## WP-03 — Battle engine + boss (4–5 days) → v0.3.0
 
