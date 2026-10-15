@@ -16,6 +16,102 @@ namespace PokeArena.Core.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.13");
 
+            modelBuilder.Entity("PokeArena.Core.Data.AchievementUnlock", b =>
+                {
+                    b.Property<string>("TrainerId")
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Threshold")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("UnlockedAt")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("TrainerId", "Threshold");
+
+                    b.ToTable("AchievementUnlocks");
+                });
+
+            modelBuilder.Entity("PokeArena.Core.Data.Battle", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("BossSpeciesId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("FoughtAt")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LogJson")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Outcome")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Rounds")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Seed")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FoughtAt");
+
+                    b.ToTable("Battles");
+                });
+
+            modelBuilder.Entity("PokeArena.Core.Data.BattleParticipant", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("BattleId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("TrainerId")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("Won")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BattleId");
+
+                    b.HasIndex("TrainerId");
+
+                    b.ToTable("BattleParticipants");
+                });
+
+            modelBuilder.Entity("PokeArena.Core.Data.Cooldown", b =>
+                {
+                    b.Property<string>("Key")
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("Until")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Key");
+
+                    b.ToTable("Cooldowns");
+                });
+
             modelBuilder.Entity("PokeArena.Core.Data.Specimen", b =>
                 {
                     b.Property<long>("Id")
@@ -70,6 +166,34 @@ namespace PokeArena.Core.Data.Migrations
                     b.ToTable("Trainers");
                 });
 
+            modelBuilder.Entity("PokeArena.Core.Data.AchievementUnlock", b =>
+                {
+                    b.HasOne("PokeArena.Core.Data.Trainer", "Trainer")
+                        .WithMany()
+                        .HasForeignKey("TrainerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Trainer");
+                });
+
+            modelBuilder.Entity("PokeArena.Core.Data.BattleParticipant", b =>
+                {
+                    b.HasOne("PokeArena.Core.Data.Battle", null)
+                        .WithMany("Participants")
+                        .HasForeignKey("BattleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PokeArena.Core.Data.Trainer", "Trainer")
+                        .WithMany()
+                        .HasForeignKey("TrainerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Trainer");
+                });
+
             modelBuilder.Entity("PokeArena.Core.Data.Specimen", b =>
                 {
                     b.HasOne("PokeArena.Core.Data.Trainer", "Trainer")
@@ -79,6 +203,11 @@ namespace PokeArena.Core.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Trainer");
+                });
+
+            modelBuilder.Entity("PokeArena.Core.Data.Battle", b =>
+                {
+                    b.Navigation("Participants");
                 });
 
             modelBuilder.Entity("PokeArena.Core.Data.Trainer", b =>

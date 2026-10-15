@@ -11,6 +11,14 @@ public sealed class PokeArenaDb(DbContextOptions<PokeArenaDb> options) : DbConte
 
     public DbSet<Specimen> Specimens => Set<Specimen>();
 
+    public DbSet<Battle> Battles => Set<Battle>();
+
+    public DbSet<BattleParticipant> BattleParticipants => Set<BattleParticipant>();
+
+    public DbSet<AchievementUnlock> AchievementUnlocks => Set<AchievementUnlock>();
+
+    public DbSet<Cooldown> Cooldowns => Set<Cooldown>();
+
     public static DbContextOptions<PokeArenaDb> Options(string connectionString) =>
         new DbContextOptionsBuilder<PokeArenaDb>().UseSqlite(connectionString).Options;
 
@@ -37,6 +45,31 @@ public sealed class PokeArenaDb(DbContextOptions<PokeArenaDb> options) : DbConte
             specimen.HasIndex(s => s.TrainerId, "IX_Specimens_OneStarterPerTrainer")
                 .IsUnique()
                 .HasFilter("\"IsStarter\" = 1");
+        });
+
+        modelBuilder.Entity<Battle>(battle =>
+        {
+            battle.HasIndex(b => b.FoughtAt);
+            battle.HasMany(b => b.Participants).WithOne().HasForeignKey(p => p.BattleId);
+        });
+
+        modelBuilder.Entity<BattleParticipant>(participant =>
+        {
+            participant.Property(p => p.TrainerId).HasMaxLength(32);
+            participant.HasOne(p => p.Trainer).WithMany().HasForeignKey(p => p.TrainerId);
+        });
+
+        modelBuilder.Entity<AchievementUnlock>(unlock =>
+        {
+            unlock.HasKey(u => new { u.TrainerId, u.Threshold });
+            unlock.Property(u => u.TrainerId).HasMaxLength(32);
+            unlock.HasOne(u => u.Trainer).WithMany().HasForeignKey(u => u.TrainerId);
+        });
+
+        modelBuilder.Entity<Cooldown>(cooldown =>
+        {
+            cooldown.HasKey(c => c.Key);
+            cooldown.Property(c => c.Key).HasMaxLength(64);
         });
     }
 
