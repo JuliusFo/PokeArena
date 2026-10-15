@@ -371,6 +371,31 @@ input:not([type="checkbox"]) {
   font-weight: 600;
 }
 
+/* Battle list */
+
+.table-select tbody tr {
+  cursor: pointer;
+}
+
+.table-select tbody tr:hover td {
+  background: var(--bg);
+}
+
+.table-select tbody tr.selected td {
+  background: var(--tag-bg);
+}
+
+.battle-line {
+  padding: 3px 0 3px 12px;
+  line-height: 1.4;
+}
+
+.battle-round {
+  padding: 8px 0 2px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
 /* Chat log */
 
 .log-card {

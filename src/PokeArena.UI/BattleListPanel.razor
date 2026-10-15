@@ -1,0 +1,128 @@
+@* The latest fights, newest first; clicking one shows its course. Read-only. *@
+@using PokeArena.Core.Data
+@using PokeArena.Core.Game
+@implements IDisposable
+@inject BattleService Battles
+@inject GameDatabase Database
+
+<div class="columns">
+    <div class="column column-wide">
+        <section class="card">
+            <div class="card-head">
+                <h2>Kämpfe</h2>
+                <span class="count">@CountText</span>
+            </div>
+
+            @if (_sandbox)
+            {
+                <p class="hint">Probelauf: Hier stehen nur Testkämpfe. Sie verschwinden, sobald der Probelauf endet.</p>
+            }
+
+            @if (_battles is null)
+            {
+                <p class="hint">Lade …</p>
+            }
+            else if (_battles.Count == 0)
+            {
+                <p class="hint">Noch keine Kämpfe. Ein Boss-Kampf beginnt, wenn jemand im Chat <strong>!boss</strong> schreibt.</p>
+            }
+            else
+            {
+                <table class="table table-select">
+                    <thead>
+                        <tr>
+                            <th>Zeit</th>
+                            <th>Gegner</th>
+                            <th class="num">Trainer</th>
+                            <th>Ergebnis</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var battle in _battles)
+                        {
+                            <tr class="@(battle.Id == _selectedId ? "selected" : "")" @onclick="() => SelectAsync(battle.Id)">
+                                <td>@battle.FoughtAt.ToLocalTime().ToString("dd.MM. HH:mm")</td>
+                                <td class="strong">@Opponent(battle)</td>
+                                <td class="num">@battle.Participants</td>
+                                <td>@Result(battle)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </section>
+    </div>
+    <div class="column column-wide">
+        <section class="card log-card">
+            <h2>Kampfverlauf</h2>
+            @if (_lines is null)
+            {
+                <p class="hint">Wähle links einen Kampf aus.</p>
+            }
+            else
+            {
+                <ol class="log battle-log">
+                    @foreach (var line in _lines)
+                    {
+                        <li class="@(line.StartsWith("Runde ", StringComparison.Ordinal) ? "battle-round" : "battle-line")">@line</li>
+                    }
+                </ol>
+            }
+        </section>
+    </div>
+</div>
+
+@code {
+    private const int Limit = 50;
+
+    private IReadOnlyList<BattleSummary>? _battles;
+    private IReadOnlyList<string>? _lines;
+    private long? _selectedId;
+    private bool _sandbox;
+
+    private string CountText => _battles is null ? "" : _battles.Count == 1 ? "1 Kampf" : $"{_battles.Count} Kämpfe";
+
+    protected override async Task OnInitializedAsync()
+    {
+        Battles.Changed += OnChanged;
+        await ReloadAsync();
+    }
+
+    private static string Opponent(BattleSummary battle) => battle.Boss is { } boss
+        ? boss.Name + boss.Rarity switch { 3 => " (legendär)", 2 => " (selten)", _ => "" }
+        : "–";
+
+    private static string Result(BattleSummary battle) => battle.Outcome switch
+    {
+        BattleOutcome.BossDefeated => battle.Winners == 1 ? "besiegt, 1 Fang" : $"besiegt, {battle.Winners} Fänge",
+        _ => "entkommen",
+    };
+
+    private async Task SelectAsync(long id)
+    {
+        _selectedId = id;
+        _lines = await Battles.LinesAsync(id, CancellationToken.None);
+    }
+
+    private void OnChanged() => _ = InvokeAsync(async () =>
+    {
+        await ReloadAsync();
+        StateHasChanged();
+    });
+
+    private async Task ReloadAsync()
+    {
+        var sandbox = Database.IsSandbox;
+        if (sandbox != _sandbox)
+        {
+            // Another database: the selected fight does not exist there.
+            _selectedId = null;
+            _lines = null;
+        }
+
+        _sandbox = sandbox;
+        _battles = await Battles.ListAsync(Limit, CancellationToken.None);
+    }
+
+    public void Dispose() => Battles.Changed -= OnChanged;
+}

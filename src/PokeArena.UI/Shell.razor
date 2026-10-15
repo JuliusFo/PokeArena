@@ -9,6 +9,7 @@
         <nav class="tabs">
             <button class="tab @(_area == Area.Bot ? "active" : "")" @onclick="() => _area = Area.Bot">Bot</button>
             <button class="tab @(_area == Area.Trainers ? "active" : "")" @onclick="() => _area = Area.Trainers">Trainer</button>
+            <button class="tab @(_area == Area.Battles ? "active" : "")" @onclick="() => _area = Area.Battles">Kämpfe</button>
         </nav>
         @if (DryRun.Enabled)
         {
@@ -34,6 +35,9 @@
             case Area.Trainers:
                 <TrainerListPanel />
                 break;
+            case Area.Battles:
+                <BattleListPanel />
+                break;
         }
     </main>
 </div>
@@ -43,6 +47,7 @@
     {
         Bot,
         Trainers,
+        Battles,
     }
 
     private Area _area = Area.Bot;

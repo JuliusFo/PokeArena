@@ -33,6 +33,7 @@ public class TrainerListTests : BunitContext
         Services.AddSingleton(_dryRun);
         Services.AddSingleton(_database);
         Services.AddSingleton(_trainers);
+        Services.AddSingleton(new BattleService(_database, _species));
         Services.AddSingleton(new AppInfo("0.2.0"));
         Services.AddSingleton(new ChatLog(_time));
         Services.AddSingleton(new ChatInbox());
@@ -108,6 +109,20 @@ public class TrainerListTests : BunitContext
         {
             Assert.Contains(cut.FindAll("section h2"), h => h.TextContent == "Trainer");
             Assert.Equal("Probelauf aktiv", cut.Find(".tag-dry-run").TextContent);
+        });
+    }
+
+    [Fact]
+    public void Navigation_switches_to_the_battle_area()
+    {
+        var cut = Render<Shell>();
+
+        cut.FindAll("button.tab").Single(b => b.TextContent == "Kämpfe").Click();
+
+        cut.WaitForAssertion(() =>
+        {
+            Assert.Contains(cut.FindAll("section h2"), h => h.TextContent == "Kämpfe");
+            Assert.Contains(cut.FindAll("section h2"), h => h.TextContent == "Kampfverlauf");
         });
     }
 
