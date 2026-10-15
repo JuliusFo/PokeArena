@@ -51,3 +51,25 @@ already stronger through their stats).
 - Fine-tuning (`Skalierung`, `k`, first-strike advantage with 18 % one-hit
   KOs) is left to the balancing simulator in WP-03, which should reproduce the
   numbers above as a sanity check.
+
+## Addendum 2026-10-15 (WP-03)
+
+`tools/BalancingSimulator.cs` runs the real engine (fixed seeds; 151 × 150
+ordered pairings × 10, 5 000 boss encounters per `N`). With the defaults it
+reproduces the table above:
+
+| `Skalierung` | Chaneira | Simsala | < 15 % / > 85 % | One-hit KOs | First strike wins | Hits avg / max | Boss group wins N=2 / 3 / 4 / 5 / 10 / 20 | Log lines per participant |
+|---|---|---|---|---|---|---|---|---|
+| 25 (default) | 87 % | 60 % | 9 / 11 | 20.4 % | 58.9 % | 3.1 / 20 | 62 / 77 / 66 / 73 / 75 / 75 % | 5.2–6.7 |
+| 20 | 87 % | 63 % | 10 / 11 | 13.2 % | 57.5 % | 3.8 / 24 | 60 / 76 / 64 / 71 / 74 / 75 % | 6.4–8.1 |
+| 15 | 88 % | 61 % | 9 / 11 | 7.6 % | 55.6 % | 4.9 / 32 | 58 / 74 / 62 / 70 / 71 / 74 % | 8.3–10.2 |
+
+- "One-hit KOs" = 1-vs-1 fights decided by the first hit. Lower `Skalierung`
+  mainly cuts them and the first-strike advantage; type and stat balance stay
+  the same; boss win rates drop slightly and logs grow.
+- `N = 4` is a dip (≈ 65 %): `⌈4/3⌉ = 2` boss targets hit half the group per
+  round.
+- Catch chance per participant ≈ 52–65 %, about 4–5 rounds per boss fight; the
+  round limit was never reached.
+- The defaults stay unchanged until the user decides on fine-tuning (open in
+  roadmap.md).

@@ -1,55 +1,64 @@
 # Architecture
 
 Gameplay rules live in [spec.md](spec.md); this file describes how the code is
-organised around them. Status: WP-01 (Twitch, chat queue, commands) and
-WP-02 (database, base data, registration) built; the rest is planned.
+organised around them. Status: WP-01 (Twitch, chat queue, commands), WP-02
+(database, base data, registration) and WP-03 (battle engine, boss,
+achievements) built; the rest is planned.
 
 ## Core modules (`PokeArena.Core`)
 
 | Folder | Responsibility |
 |---|---|
 | `Twitch/` | Device-code auth and tokens, Helix client, EventSub WebSocket session, `TwitchConnection` (login, reconnects, state for the UI) |
-| `Chat/` | `ChatInbox` (single serialized queue of incoming messages), `ChatSender` (rate limit, splitting, dry run), `ChatLog` for the UI |
-| `Commands/` | Parsing, routing, permission and cooldown checks, dialog states (open challenges, lobby) |
-| `Game/` | `TrainerService` (registration, display names, trainer list); later battle engine, boss, PvP, NPC fights, achievements |
-| `Data/` | EF Core model (`PokeArenaDb`), migrations, `GameDatabase` (live database or dry-run sandbox), `SpeciesCatalog` (validated `data/pokemon.json`) |
+| `Chat/` | `ChatInbox` (single serialized queue of incoming messages and `QueuedWork`), `ChatSender` (rate limit, splitting, dry run), `ChatLog` for the UI |
+| `Commands/` | Parsing, routing, permission and cooldown checks |
+| `Game/` | `TrainerService` (registration, display names, trainer list), `BossEncounter` (lobby, fight, catches, cooldown), `Achievements`, `BattleService` (battle list for the UI); later PvP, NPC fights |
+| `Game/Battles/` | Pure engine without database: `DamageCalculator`, `BossBattle`, `TeamBattle` (1-vs-1 with teams, for PvP/NPC), `BossDraw`, `BattleLog` (structured events, JSON, German lines), `BattleSettings` / `BossSettings`, `BattleRandom` + `ISeedSource` |
+| `Data/` | EF Core model (`PokeArenaDb`), migrations, `GameDatabase` (live database or dry-run sandbox), `SpeciesCatalog`, `TypeChart`, `NpcCatalog` (validated `data/*.json`) |
 | `Publishing/` | `ISitePublisher`, R2 implementation, outbox worker |
 
 External systems sit behind seams with fakes for tests: HTTP via `HttpClient`
 (fake handler), the EventSub socket via `IEventSubSocketFactory`, outgoing chat
-via `IChatSender`, later `ISitePublisher`. Incoming messages from Twitch and
-from the dry run both go into `ChatInbox`; the single `CommandProcessor`
-consumes it, so game commands never run concurrently. In the dry run
-("Probelauf") replies only go to the chat log, game data goes to a fresh
-in-memory sandbox database, and real chat messages are logged but not
+via `IChatSender`, battle seeds via `ISeedSource`, later `ISitePublisher`.
+Incoming messages from Twitch and from the dry run both go into `ChatInbox`;
+the single `CommandProcessor` consumes it, so game commands never run
+concurrently. Timed game steps (the end of a boss countdown) post a
+`QueuedWork` into the same queue instead of running on a timer thread. In the
+dry run ("Probelauf") replies only go to the chat log, game data goes to a
+fresh in-memory sandbox database, and real chat messages are logged but not
 processed (WP-02 decision).
 
 ## Data model
 
-Built in WP-02: `Trainer` and `Specimen`. The rest is a sketch for later
-packages. Timestamps are stored as UTC ticks (SQLite cannot compare
+Built in WP-02: `Trainer` and `Specimen`; in WP-03: `Battle`,
+`BattleParticipant`, `AchievementUnlock`, `Cooldown`. The rest is a sketch for
+later packages. Timestamps are stored as UTC ticks (SQLite cannot compare
 `DateTimeOffset`); enums as text. The live database is
 `%LOCALAPPDATA%\PokeArena\pokearena.db` (WAL), migrated at startup.
 
 | Entity | Fields | Notes |
 |---|---|---|
 | `Trainer` | TwitchUserId (PK), DisplayName, RegisteredAt | Display name refreshed when seen |
-| `Specimen` | Id, TrainerId, SpeciesId, CaughtAt, Origin, IsStarter | PvP loot changes `TrainerId`; unique filtered index: one starter per trainer |
-| `Battle` | Id, Kind, StartedAt, Seed, WinnerRef, LogJson, TransferredSpecimenId? | Log stored verbatim (ADR-0004) |
-| `BattleParticipant` | BattleId, TrainerId/NpcId, TeamJson | |
-| `AchievementUnlock` | TrainerId, Threshold, UnlockedAt | Never deleted except with the trainer |
-| `Cooldown` | Key, Until | Boss global, failed-lobby retry, per trainer+NPC |
+| `Specimen` | Id, TrainerId, SpeciesId, CaughtAt, Origin (Starter, Boss), IsStarter | PvP loot changes `TrainerId`; unique filtered index: one starter per trainer |
+| `Battle` | Id, Kind, FoughtAt, Seed, BossSpeciesId?, Outcome, Rounds, LogJson | Log stored verbatim (ADR-0004); fighters, owners and HP are in the log. Later: winner and transferred specimen for PvP |
+| `BattleParticipant` | Id, BattleId, TrainerId, Won | Boss: `Won` = caught the boss. Bosses and NPCs need no row, they are in the log |
+| `AchievementUnlock` | TrainerId + Threshold (PK), UnlockedAt | Never deleted except with the trainer |
+| `Cooldown` | Key (PK), Until | `boss` (global cooldown and failed-lobby retry share it); later per trainer+NPC |
 | `OpenChallenge` | ChallengerId, TargetId, ExpiresAt | One per trainer, either direction |
 | `PublishQueueItem` | Id, Path, Payload, State, Attempts | Outbox for R2 uploads |
 
-Species, type chart and NPC teams stay in `data/*.json`, referenced by id.
-Runtime balancing values (spec §13) are stored in the DB and editable in the UI.
+Species, type chart and NPC teams stay in `data/*.json`, referenced by id (NPC
+teams by slug). Runtime balancing values (spec §13) are planned in the DB and
+editable in the UI; until then `BattleSettings` / `BossSettings` hold the spec
+defaults in code.
 
 ## Flows
 
-- **Boss** (spec §4): `!boss` opens a lobby → countdown → participant check →
-  tier draw by participant count → fight resolved instantly → catches,
-  achievements, publish, cooldown.
+- **Boss** (spec §4, built): `!boss` opens a lobby (in memory, lost on restart)
+  → countdown → `QueuedWork` closes it on the command queue → participant check
+  → one seed per encounter draws tier, boss species, each participant's
+  specimen and all hits → `BossBattle` → battle, catches, achievements and
+  cooldown in one transaction → chat messages. Later: publish.
 - **PvP** (spec §6): `!fight @x` creates an `OpenChallenge`; the same command
   from the target accepts → random teams of 6 → fight → loot transfer in one
   transaction.
@@ -73,6 +82,8 @@ knowledge. Areas:
 - Built (WP-02), area "Trainer": read-only list (name, starter, number of
   Pokemon, registration date) with search; tabs in the top bar, a
   "Probelauf aktiv" badge while the dry run is on.
+- Built (WP-03), area "Kämpfe": the latest 50 fights (time, opponent,
+  trainers, result); clicking one shows its course as German log lines.
 - Planned: manual corrections and deletion of trainers; balancing config
   editor (all values from spec §13, live); operations (backup now, republish
   everything); local Kestrel endpoint serving the OBS overlay.

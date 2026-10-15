@@ -74,6 +74,19 @@ Demo: `!boss` playable end-to-end.
 - Build a Monte Carlo balancing simulator (≈ 0.5 day) on the real engine:
   first reproduce the ADR-0006 numbers, then fine-tune `Skalierung`, `k` and
   the first-strike advantage (18 % one-hit KOs in 1-vs-1).
+- Plan (agreed 2026-10-15): `typen.json` and new `npcs.json` loaded and
+  validated at startup; one seed per encounter; structured battle log as JSON,
+  German lines rendered from it; the lobby countdown posts its close into the
+  command queue; read-only "Kämpfe" area. Proposals taken over with the plan:
+  balancing values as code defaults for now (runtime editor later), no boss
+  cooldowns in the dry run, cooldown reply „der nächste Boss kann in X Minuten
+  gerufen werden" at most every 30 s, no battle link in chat until WP-06.
+- Built 2026-10-15 (live test open): see the log in work-packages.md.
+- Open: fine-tuning `Skalierung` / `k` / first strike — simulator results in
+  the ADR-0006 addendum 2026-10-15 (defaults: 20 % one-hit KOs, first strike
+  wins 59 %; `Skalierung` 20 → 13 % / 57 %). Also the `N = 4` dip (≈ 65 %).
+- Open: when does the runtime balancing editor come (spec §13 says "editable
+  in the UI")? Proposal: WP-07 together with the other operations screens.
 - Open: progression length. Expected catches for k distinct species (uniform
   lower bound) — 15: ~16, 60: ~76, 100: ~163, 151: ~845; with ≈ 60 % catch
   chance per boss that is ≈ 1.7× as many boss fights. Intended, or add a

@@ -118,6 +118,17 @@ possible, so no artificial pacing):
   starts when the encounter **ends**.
 - Achievement unlocks caused by the catches are announced afterwards:
   „X hat AV Y freigeschalten und kann NPC Z herausfordern."
+- Joining is not confirmed per player (30 viewers would flood the chat).
+  `!boss` during a cooldown answers „@Name, der nächste Boss kann in X Minuten
+  gerufen werden." — at most every 30 s for the whole chat (WP-03 decision).
+- Replies (drafts, wording pass in WP-07): lobby „Ein wilder Boss nähert sich!
+  Schreibt !boss, um mitzukämpfen – noch 30 Sekunden.“; start „Ein wildes
+  Arkani (selten) erscheint! 5 Trainer kämpfen mit.“; result „Arkani wurde
+  besiegt! Gefangen von: A, B.“ or „Arkani ist entkommen – alle Pokémon wurden
+  besiegt.“; too few „Der Boss entkommt mangels Herausforderern.“ Until the
+  website exists (WP-06) the result carries no battle link.
+- Dry run: cooldowns are skipped so a test can be repeated at once; an open
+  lobby is dropped when the dry run is switched.
 
 ## 5. Battle engine
 
@@ -339,7 +350,8 @@ Display names appear permanently on a public website. Therefore:
 | NPCSiegCooldownMinutes         | 60        |
 | WebsitePollSeconds             | 15        |
 
-All balancing values are editable in the UI at runtime.
+All balancing values are editable in the UI at runtime. (Until that editor
+exists they are code defaults, WP-03 decision; see roadmap.md.)
 
 ## 14. Open points and later versions
 

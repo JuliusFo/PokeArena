@@ -32,3 +32,11 @@
   The test `Migrations_cover_the_whole_model` fails if one is missing.
 - Game services that cache data (e.g. `TrainerService`'s registration cache) must reset on
   `GameDatabase.Switched` — the dry run swaps the whole database underneath them.
+- Timed game steps (WP-03, e.g. the end of a boss countdown) must not touch game state from the timer: wait with
+  `Task.Delay(…, timeProvider, ct)`, then post a `QueuedWork` to `ChatInbox` and do the work there. State that
+  belongs to one mode (an open lobby) remembers `IsSimulated` and is dropped when the dry run was switched.
+- Battles: draw everything of one encounter from one `BattleRandom(seed)`, in a fixed order (boss, specimens,
+  hits). Changing the order changes what a seed means — fine, logs are data (ADR-0004), but tests that predict
+  the boss with `BossDraw.Species(…, new BattleRandom(seed))` rely on the boss being drawn first.
+- `tools/*.cs` file-based apps default to AOT, which disables reflection-based `System.Text.Json` and breaks the
+  base data loaders: keep `#:property PublishAot=false` next to `#:project`.

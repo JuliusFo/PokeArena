@@ -8,7 +8,7 @@ in [roadmap.md](roadmap.md).
 | WP-00 | Scaffold | 0.1.0 | done 2026-10-11 |
 | WP-01 | Twitch connection | 0.1.0 | done 2026-10-13 |
 | WP-02 | Domain foundation | 0.2.0 | done 2026-10-13 |
-| WP-03 | Battle engine + boss | 0.3.0 | planned |
+| WP-03 | Battle engine + boss | 0.3.0 | built, live test open |
 | WP-04 | PvP | 0.4.0 | planned |
 | WP-05 | NPC fights | 0.5.0 | planned |
 | WP-06 | Website | 0.6.0 | planned |
@@ -96,6 +96,33 @@ in [roadmap.md](roadmap.md).
 - Deliberately not done: backup before migrations (WP-07), editing or
   deleting trainers (WP-07), balancing values in the database (WP-03),
   throttling repeated hints (backlog).
+
+### WP-03 — Battle engine + boss (2026-10-15, branch wp/03-battle-engine-boss)
+- Built: `TypeChart` (`data/typen.json`) and `NpcCatalog` (new `data/npcs.json`,
+  17 NPCs with threshold, team as slugs, strength 1.0) validated at startup;
+  all `data/*.json` shipped with app and tests. Engine in `Game/Battles/`:
+  `DamageCalculator` (ADR-0006 formula, round half away from zero, minimum 1),
+  `BossBattle`, `TeamBattle` (1-vs-1 with teams for WP-04/05), `BossDraw`,
+  structured `BattleLog` (JSON in the DB, German lines rendered),
+  `BattleSettings`/`BossSettings` with the spec defaults, `ISeedSource` +
+  `BattleRandom`. `ChatInbox` carries `QueuedWork`; `BossEncounter` with lobby,
+  countdown, fight, catches, achievements and cooldown in one transaction;
+  `!boss`. Tables `Battles`, `BattleParticipants`, `AchievementUnlocks`,
+  `Cooldowns` (migration `BossEncounters`). UI: "Kämpfe" area with list and
+  log. `tools/BalancingSimulator.cs`. Tests: 108 unit, 15 bUnit.
+- User decisions: plan agreed 2026-10-15 (boss flow as in spec §4), with it
+  the four proposals: code defaults for balancing, no cooldowns in the dry run,
+  throttled cooldown reply, no battle link before WP-06.
+- Addenda: ADR-0006 (simulator results 2026-10-15; defaults unchanged); spec
+  §4 (reply drafts, cooldown reply, dry run) and §13 (code defaults for now).
+- Pitfalls: see `src/PokeArena.Core/CLAUDE.md` (timed steps via `QueuedWork`,
+  draw order per seed, `PublishAot=false` for file-based tools). In PowerShell
+  scripts `R` is an alias of `Invoke-History` — don't name helpers `R`.
+- Live test: open (dry run with several simulated viewers, then the real
+  channel).
+- Deliberately not done: runtime balancing editor (roadmap question),
+  battle link in chat (WP-06), publishing (WP-06), `!bossreset` (WP-07),
+  distinct-species column in the trainer list (not planned).
 
 Template per entry:
 

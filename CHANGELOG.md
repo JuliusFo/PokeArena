@@ -7,6 +7,21 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+### Added
+- Boss fights: `!boss` opens a lobby for 30 seconds, other registered players
+  join with `!boss`. With at least two players a boss appears — rare and
+  legendary bosses get likelier the more players join — and the fight is
+  decided at once. Everyone whose Pokémon is still standing catches the boss.
+  Afterwards the next boss can be called after 30 minutes (2 minutes if too
+  few joined).
+- Achievements: reaching 15, 25, … distinct species is announced in chat
+  together with the NPC it unlocks; achievements are never lost.
+- Battle engine with damage formula, types, critical hits and a stored seed
+  and full log for every fight.
+- Desktop app: "Kämpfe" area with the latest fights and their course.
+- In the dry run boss cooldowns are skipped, so a test can be repeated at once.
+- `tools/BalancingSimulator.cs` simulates fights to check the balancing values.
+
 ## [0.2.0] - 2026-10-13
 
 ### Added
