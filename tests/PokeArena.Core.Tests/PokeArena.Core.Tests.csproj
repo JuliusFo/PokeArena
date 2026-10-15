@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <!-- The real base data, so tests catch a broken generator run. -->
-    <None Include="..\..\data\pokemon.json" Link="data\pokemon.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\data\*.json" Link="data\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

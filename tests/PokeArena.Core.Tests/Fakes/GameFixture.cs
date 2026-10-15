@@ -15,6 +15,12 @@ public sealed class GameFixture : IDisposable
     private static readonly Lazy<SpeciesCatalog> RealCatalog = new(() =>
         SpeciesCatalog.Load(Path.Combine(AppContext.BaseDirectory, "data", "pokemon.json")));
 
+    private static readonly Lazy<TypeChart> RealTypes = new(() =>
+        TypeChart.Load(Path.Combine(AppContext.BaseDirectory, "data", "typen.json"), Species));
+
+    private static readonly Lazy<NpcCatalog> RealNpcs = new(() =>
+        NpcCatalog.Load(Path.Combine(AppContext.BaseDirectory, "data", "npcs.json"), Species));
+
     private readonly SqliteConnection _keeper;
 
     public GameFixture()
@@ -34,6 +40,10 @@ public sealed class GameFixture : IDisposable
     }
 
     public static SpeciesCatalog Species => RealCatalog.Value;
+
+    public static TypeChart Types => RealTypes.Value;
+
+    public static NpcCatalog Npcs => RealNpcs.Value;
 
     public string LiveConnectionString { get; }
 
