@@ -6,8 +6,8 @@ using PokeArena.Core.Game;
 namespace PokeArena.Core.Commands;
 
 /// <summary>
-/// The single consumer of <see cref="ChatInbox"/>: logs every message and runs the matching command, one message
-/// at a time. Unknown commands are ignored silently — they may belong to another bot in the channel. During the
+/// The single consumer of <see cref="ChatInbox"/>: logs every message and runs the matching command, one item
+/// at a time, interleaved with <see cref="QueuedWork"/> such as a closing boss lobby. Unknown commands are ignored silently — they may belong to another bot in the channel. During the
 /// dry run only simulated messages are processed; outside it only real ones.
 /// </summary>
 public sealed class CommandProcessor(
@@ -23,9 +23,30 @@ public sealed class CommandProcessor(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await foreach (var message in inbox.Reader.ReadAllAsync(stoppingToken))
+        await foreach (var item in inbox.Reader.ReadAllAsync(stoppingToken))
         {
-            await ProcessAsync(message, stoppingToken);
+            switch (item)
+            {
+                case ChatMessage message:
+                    await ProcessAsync(message, stoppingToken);
+                    break;
+                case QueuedWork work:
+                    await RunAsync(work, stoppingToken);
+                    break;
+            }
+        }
+    }
+
+    internal async Task RunAsync(QueuedWork work, CancellationToken ct)
+    {
+        try
+        {
+            await work.RunAsync(ct);
+        }
+        catch (Exception ex) when (!ct.IsCancellationRequested)
+        {
+            log.LogError(ex, "Queued work {Name} failed", work.Name);
+            chatLog.Add(ChatLogKind.Warning, null, $"Fehler bei {work.Name} – Details stehen in der Logdatei.");
         }
     }
 

@@ -87,6 +87,16 @@ public class CommandTests : IDisposable
     }
 
     [Fact]
+    public async Task Processor_survives_failing_queued_work_and_notes_it_in_the_log()
+    {
+        var processor = Processor();
+
+        await processor.RunAsync(new QueuedWork("Boss-Kampf", _ => throw new InvalidOperationException("kaputt")), _ct);
+
+        Assert.Contains(_chatLog.Snapshot(), e => e.Kind == ChatLogKind.Warning && e.Text.Contains("Boss-Kampf"));
+    }
+
+    [Fact]
     public async Task Processor_ignores_real_messages_during_the_dry_run_and_simulated_ones_outside_it()
     {
         var open = new RecordingCommand("offen", CommandAccess.Everyone);

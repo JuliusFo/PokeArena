@@ -17,7 +17,7 @@ public sealed record ChatMessage(
     string DisplayName,
     string Text,
     ChatRole Role,
-    bool IsSimulated = false)
+    bool IsSimulated = false) : InboxItem
 {
     public bool IsModerator => Role is ChatRole.Moderator or ChatRole.Broadcaster;
 }

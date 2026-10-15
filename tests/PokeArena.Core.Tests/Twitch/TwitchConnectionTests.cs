@@ -196,7 +196,7 @@ public class TwitchConnectionTests
     private async Task<ChatMessage> ReadInboxAsync()
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        return await _inbox.Reader.ReadAsync(timeout.Token);
+        return Assert.IsType<ChatMessage>(await _inbox.Reader.ReadAsync(timeout.Token));
     }
 
     /// <summary>Advances fake time in steps until <paramref name="condition"/> holds (for polling loops).</summary>

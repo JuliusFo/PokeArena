@@ -45,8 +45,11 @@ public sealed class TrainerService
         };
     }
 
-    /// <summary>Raised after trainers were added or renamed, or the database was switched.</summary>
+    /// <summary>Raised after trainers were added, renamed or gained specimens, or the database was switched.</summary>
     public event Action? Changed;
+
+    /// <summary>Called by game logic that changed specimens (e.g. boss catches), so lists reload.</summary>
+    public void NotifyChanged() => Changed?.Invoke();
 
     /// <summary>
     /// Registers a viewer with their starter (spec §3): creates the trainer and the protected starter specimen in

@@ -84,7 +84,8 @@ public class ComponentTests : BunitContext
         cut.Find("form").Submit();
 
         Assert.True(_dryRun.Enabled);
-        Assert.True(_inbox.Reader.TryRead(out var message));
+        Assert.True(_inbox.Reader.TryRead(out var item));
+        var message = Assert.IsType<ChatMessage>(item);
         Assert.Equal("!pokearena", message.Text);
         Assert.Equal("Testzuschauer", message.DisplayName);
         Assert.True(message.IsSimulated);
