@@ -100,6 +100,21 @@ Challenge/accept dialog, timeout, random teams, loot transfer.
 Demo: `!fight` playable.
 
 - Spec gap: achievement unlocks caused by PvP loot must be announced too.
+- Plan (agreed 2026-10-19, ≈ 3 days): one seed per fight draws both teams
+  (challenger first), all hits and the loot; fight, loot transfer and the
+  winner's achievements in one transaction (closes the spec gap above);
+  requirements re-checked on accept. Proposals taken over with the plan:
+  `Trainer.Login` (refreshed like the display name, migration pre-fills the
+  lower-cased display name) so `@name` resolves by login, falling back to the
+  display name; the open challenge lives in memory like the boss lobby,
+  expires lazily without a timer (spec: silently) and is dropped when the dry
+  run is switched — no `OpenChallenge` table; `BattleKind.Pvp`, outcomes
+  `ChallengerWon` / `OpponentWon`, `Battle.LootSpecimenId` /
+  `LootSpeciesId`, two participant rows; specimen origin and catch time stay
+  unchanged on transfer; drafted replies for challenge, result and
+  rejections, no battle log or link in chat; PvP rows in the "Kämpfe" list.
+  Not included: pair cooldown (spec §6), withdrawing or declining a
+  challenge, the PDF's pick-your-team mode, battle link (WP-06).
 
 ## WP-05 — NPC fights (2–3 days) → v0.5.0
 
