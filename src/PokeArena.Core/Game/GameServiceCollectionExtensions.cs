@@ -31,12 +31,15 @@ public static class GameServiceCollectionExtensions
         // Balancing values: spec defaults for now; runtime editing comes with the config editor.
         services.AddSingleton(BattleSettings.Default);
         services.AddSingleton(BossSettings.Default);
+        services.AddSingleton(PvpSettings.Default);
         services.AddSingleton<DamageCalculator>();
         services.AddSingleton<ISeedSource, SystemSeedSource>();
         services.AddSingleton<BossEncounter>();
+        services.AddSingleton<PvpService>();
 
         services.AddSingleton<IChatCommand, RegisterCommand>();
         services.AddSingleton<IChatCommand, BossCommand>();
+        services.AddSingleton<IChatCommand, FightCommand>();
         services.AddHostedService<GameStartup>();
         return services;
     }

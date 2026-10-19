@@ -54,6 +54,12 @@ namespace PokeArena.Core.Data.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("LootSpeciesId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long?>("LootSpecimenId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Outcome")
                         .IsRequired()
                         .HasMaxLength(32)

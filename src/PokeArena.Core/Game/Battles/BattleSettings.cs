@@ -62,6 +62,18 @@ public sealed record BossSettings
     public TierOdds Rare { get; init; } = new(0.10, 0.02, 0.40);
 }
 
+/// <summary>PvP values of spec §6 and §13.</summary>
+public sealed record PvpSettings
+{
+    public static PvpSettings Default { get; } = new();
+
+    /// <summary>HerausforderungTimeoutMinutes: how long the challenged trainer has to accept.</summary>
+    public TimeSpan ChallengeTimeout { get; init; } = TimeSpan.FromMinutes(2);
+
+    /// <summary>Specimens per side; both trainers need at least this many.</summary>
+    public int TeamSize { get; init; } = 6;
+}
+
 /// <summary>Probability of a boss tier, growing with the participant count up to a cap.</summary>
 public sealed record TierOdds(double Base, double PerParticipant, double Cap)
 {

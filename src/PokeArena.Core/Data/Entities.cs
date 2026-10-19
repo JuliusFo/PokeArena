@@ -41,6 +41,7 @@ public sealed class Specimen
 
     public DateTimeOffset CaughtAt { get; init; }
 
+    /// <summary>How the specimen was first obtained; like <see cref="CaughtAt"/> it stays when PvP moves it to another trainer.</summary>
     public SpecimenOrigin Origin { get; init; }
 
     /// <summary>The protected starter: exactly one per trainer, never transferred (spec §1, §6).</summary>
@@ -50,12 +51,21 @@ public sealed class Specimen
 public enum BattleKind
 {
     Boss,
+
+    /// <summary>Trainer against trainer (spec §6).</summary>
+    Pvp,
 }
 
 public enum BattleOutcome
 {
     BossDefeated,
     BossEscaped,
+
+    /// <summary>PvP: the trainer who issued the challenge won.</summary>
+    ChallengerWon,
+
+    /// <summary>PvP: the challenged trainer won.</summary>
+    OpponentWon,
 }
 
 /// <summary>One resolved fight with its seed and full log (ADR-0004). Logs are data, never rebuilt from the seed.</summary>
@@ -71,6 +81,12 @@ public sealed class Battle
 
     /// <summary>Boss fights: the boss species.</summary>
     public int? BossSpeciesId { get; init; }
+
+    /// <summary>PvP: the specimen the winner took from the loser. No foreign key — the battle outlives it.</summary>
+    public long? LootSpecimenId { get; init; }
+
+    /// <summary>PvP: species of the loot, so the battle stays readable after the specimen is gone.</summary>
+    public int? LootSpeciesId { get; init; }
 
     public BattleOutcome Outcome { get; init; }
 
@@ -93,7 +109,7 @@ public sealed class BattleParticipant
 
     public Trainer? Trainer { get; set; }
 
-    /// <summary>Boss fights: survived and caught the boss.</summary>
+    /// <summary>Boss fights: survived and caught the boss. PvP: won the fight.</summary>
     public bool Won { get; init; }
 }
 
