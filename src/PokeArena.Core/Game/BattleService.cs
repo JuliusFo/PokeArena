@@ -6,8 +6,21 @@ namespace PokeArena.Core.Game;
 
 /// <summary>A row of the battle list in the desktop app.</summary>
 /// <param name="Boss">Boss fights: the boss species.</param>
-/// <param name="Winners">Boss fights: participants who caught the boss.</param>
-public sealed record BattleSummary(long Id, BattleKind Kind, DateTimeOffset FoughtAt, Species? Boss, BattleOutcome Outcome, int Participants, int Winners);
+/// <param name="Winners">Boss fights: participants who caught the boss. PvP: 1.</param>
+/// <param name="Winner">PvP: display name of the winner; null if the trainer is gone.</param>
+/// <param name="Loser">PvP: display name of the loser; null if the trainer is gone.</param>
+/// <param name="Loot">PvP: species the winner took.</param>
+public sealed record BattleSummary(
+    long Id,
+    BattleKind Kind,
+    DateTimeOffset FoughtAt,
+    Species? Boss,
+    BattleOutcome Outcome,
+    int Participants,
+    int Winners,
+    string? Winner = null,
+    string? Loser = null,
+    Species? Loot = null);
 
 /// <summary>Reads stored battles for the desktop app. Game logic writes them and calls <see cref="NotifyChanged"/>.</summary>
 public sealed class BattleService
@@ -42,8 +55,11 @@ public sealed class BattleService
                 b.FoughtAt,
                 b.BossSpeciesId,
                 b.Outcome,
+                b.LootSpeciesId,
                 Participants = b.Participants.Count,
                 Winners = b.Participants.Count(p => p.Won),
+                Winner = b.Participants.Where(p => p.Won).Select(p => p.Trainer!.DisplayName).FirstOrDefault(),
+                Loser = b.Participants.Where(p => !p.Won).Select(p => p.Trainer!.DisplayName).FirstOrDefault(),
             })
             .ToListAsync(ct);
 
@@ -54,7 +70,10 @@ public sealed class BattleService
             r.BossSpeciesId is { } id ? _species.Get(id) : null,
             r.Outcome,
             r.Participants,
-            r.Winners))];
+            r.Winners,
+            r.Kind == BattleKind.Pvp ? r.Winner : null,
+            r.Kind == BattleKind.Pvp ? r.Loser : null,
+            r.LootSpeciesId is { } loot ? _species.Get(loot) : null))];
     }
 
     /// <summary>The German log lines of a battle, or null if it does not exist (any more).</summary>

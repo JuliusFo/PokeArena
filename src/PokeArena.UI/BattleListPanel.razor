@@ -24,7 +24,10 @@
             }
             else if (_battles.Count == 0)
             {
-                <p class="hint">Noch keine Kämpfe. Ein Boss-Kampf beginnt, wenn jemand im Chat <strong>!boss</strong> schreibt.</p>
+                <p class="hint">
+                    Noch keine Kämpfe. Ein Boss-Kampf beginnt, wenn jemand im Chat <strong>!boss</strong> schreibt, ein
+                    Trainerkampf mit <strong>!fight @@Name</strong>.
+                </p>
             }
             else
             {
@@ -88,13 +91,22 @@
         await ReloadAsync();
     }
 
-    private static string Opponent(BattleSummary battle) => battle.Boss is { } boss
-        ? boss.Name + boss.Rarity switch { 3 => " (legendär)", 2 => " (selten)", _ => "" }
-        : "–";
+    // A deleted trainer has no name any more.
+    private const string Unknown = "(gelöscht)";
+
+    private static string Opponent(BattleSummary battle) => battle switch
+    {
+        { Boss: { } boss } => boss.Name + boss.Rarity switch { 3 => " (legendär)", 2 => " (selten)", _ => "" },
+        { Outcome: BattleOutcome.ChallengerWon } => $"{battle.Winner ?? Unknown} gegen {battle.Loser ?? Unknown}",
+        { Outcome: BattleOutcome.OpponentWon } => $"{battle.Loser ?? Unknown} gegen {battle.Winner ?? Unknown}",
+        _ => "–",
+    };
 
     private static string Result(BattleSummary battle) => battle.Outcome switch
     {
         BattleOutcome.BossDefeated => battle.Winners == 1 ? "besiegt, 1 Fang" : $"besiegt, {battle.Winners} Fänge",
+        BattleOutcome.ChallengerWon or BattleOutcome.OpponentWon =>
+            $"{battle.Winner ?? Unknown} gewinnt {battle.Loot?.Name ?? "ein Pokémon"}",
         _ => "entkommen",
     };
 

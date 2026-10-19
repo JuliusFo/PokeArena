@@ -72,6 +72,42 @@ public class BattleListTests : BunitContext
         });
     }
 
+    [Theory]
+    [InlineData(BattleOutcome.ChallengerWon, "Ash gegen Misty", "Ash gewinnt Karpador")]
+    [InlineData(BattleOutcome.OpponentWon, "Misty gegen Ash", "Ash gewinnt Karpador")]
+    public async Task Pvp_fight_shows_challenger_opponent_winner_and_loot(BattleOutcome outcome, string opponent, string result)
+    {
+        var cut = Render<BattleListPanel>();
+        await _trainers.RegisterAsync("1", "ash", "Ash", _species.Get(25), _ct);
+        await _trainers.RegisterAsync("2", "misty", "Misty", _species.Get(7), _ct);
+
+        // Ash wins in both cases; the outcome says who issued the challenge.
+        await using (var db = _database.Open())
+        {
+            db.Battles.Add(new Battle
+            {
+                Kind = BattleKind.Pvp,
+                FoughtAt = _time.GetUtcNow(),
+                Seed = 7,
+                LootSpecimenId = 99,
+                LootSpeciesId = 129,
+                Outcome = outcome,
+                Rounds = 6,
+                LogJson = new BattleLog([], []).ToJson(),
+                Participants = [new BattleParticipant { TrainerId = "1", Won = true }, new BattleParticipant { TrainerId = "2", Won = false }],
+            });
+            await db.SaveChangesAsync(_ct);
+        }
+
+        _battles.NotifyChanged();
+
+        cut.WaitForAssertion(() =>
+        {
+            var cells = cut.FindAll("tbody tr td").Select(td => td.TextContent).ToList();
+            Assert.Equal([opponent, "2", result], cells.Skip(1));
+        });
+    }
+
     private async Task StoreBossFightAsync()
     {
         var log = new BattleLog(
