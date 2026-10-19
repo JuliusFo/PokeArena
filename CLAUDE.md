@@ -153,7 +153,7 @@ PokeArena.slnx
 
 ## 9. Next
 
-Finish WP-03: live test of `!boss` (dry run, then the channel), decide balancing
-fine-tuning (ADR-0006 addendum 2026-10-15), then release 0.3.0. Still open before
+Finish WP-03: live test of `!boss` (dry run, then the channel; `Skalierung` 20
+since 2026-10-19, ADR-0006 addendum), then release 0.3.0. Still open before
 later packages: NPC reward (E22), operations on the streamer's PC. Details:
 docs/roadmap.md.

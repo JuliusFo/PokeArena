@@ -22,7 +22,7 @@ public class BattleEngineTests
         // Pikachu → Schiggy: physical (55+50)/(65+50) < special (50+50)/(50+50) = 1; Elektro → Wasser 2.
         var hit = Damage().Hit(F("Pikachu"), F("Schiggy"), new BattleRandom(1));
 
-        Assert.Equal(new Hit(50, false, 2.0), hit);
+        Assert.Equal(new Hit(40, false, 2.0), hit);
     }
 
     [Fact]
@@ -31,7 +31,7 @@ public class BattleEngineTests
         Assert.Equal(1, Damage(Exact with { Scaling = 0.01 }).Hit(F("Karpador"), F("Onix"), new BattleRandom(1)).Damage);
 
         var crit = Damage(Exact with { CritChance = 1 }).Hit(F("Pikachu"), F("Schiggy"), new BattleRandom(1));
-        Assert.Equal(new Hit(100, true, 2.0), crit);
+        Assert.Equal(new Hit(80, true, 2.0), crit);
     }
 
     [Fact]
@@ -42,8 +42,8 @@ public class BattleEngineTests
 
         var hits = Enumerable.Range(0, 500).Select(_ => damage.Hit(F("Pikachu"), F("Schiggy"), random).Damage).ToList();
 
-        Assert.InRange(hits.Min(), 42, 43);
-        Assert.Equal(50, hits.Max());
+        Assert.InRange(hits.Min(), 34, 35);
+        Assert.Equal(40, hits.Max());
     }
 
     [Fact]
@@ -130,7 +130,9 @@ public class BattleEngineTests
     [Fact]
     public void Log_lines_name_species_owner_and_hp()
     {
-        var result = new TeamBattle(Damage()).Fight([F("Pikachu", owner: "Ash")], [F("Schiggy", owner: "Misty")], new BattleRandom(1));
+        // Skalierung pinned so that Pikachu knocks Schiggy out with its first hit.
+        var result = new TeamBattle(Damage(Exact with { Scaling = 25 })).Fight(
+            [F("Pikachu", owner: "Ash")], [F("Schiggy", owner: "Misty")], new BattleRandom(1));
 
         var lines = result.Log.ToLines(Species);
 

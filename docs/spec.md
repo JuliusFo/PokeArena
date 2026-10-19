@@ -140,7 +140,7 @@ Used by boss, PvP and NPC fights.
     `k` = `Daempfung` (default 50). As in Gen 1, Special serves as both
     special attack and special defense. The damping keeps outliers (Chaneira
     DEF 5, Onix DEF 160) from deciding fights on their own.
-  - `Skalierung` default 25
+  - `Skalierung` default 20 (ADR-0006 addendum 2026-10-19)
   - `Streuung` uniform in [0.85, 1.00]
   - Crit: factor `KritFaktor` (default 2.0) with chance `KritChance`
     (default 6.25 %)
@@ -332,7 +332,7 @@ Display names appear permanently on a public website. Therefore:
 
 | Key                            | Default   |
 |--------------------------------|-----------|
-| Skalierung                     | 25        |
+| Skalierung                     | 20        |
 | Daempfung (k)                  | 50        |
 | Streuung                       | 0.85–1.00 |
 | KritChance / KritFaktor        | 6.25 % / 2.0 |

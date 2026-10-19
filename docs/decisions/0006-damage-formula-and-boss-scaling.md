@@ -60,8 +60,8 @@ reproduces the table above:
 
 | `Skalierung` | Chaneira | Simsala | < 15 % / > 85 % | One-hit KOs | First strike wins | Hits avg / max | Boss group wins N=2 / 3 / 4 / 5 / 10 / 20 | Log lines per participant |
 |---|---|---|---|---|---|---|---|---|
-| 25 (default) | 87 % | 60 % | 9 / 11 | 20.4 % | 58.9 % | 3.1 / 20 | 62 / 77 / 66 / 73 / 75 / 75 % | 5.2–6.7 |
-| 20 | 87 % | 63 % | 10 / 11 | 13.2 % | 57.5 % | 3.8 / 24 | 60 / 76 / 64 / 71 / 74 / 75 % | 6.4–8.1 |
+| 25 (old default) | 87 % | 60 % | 9 / 11 | 20.4 % | 58.9 % | 3.1 / 20 | 62 / 77 / 66 / 73 / 75 / 75 % | 5.2–6.7 |
+| 20 (default since 2026-10-19) | 87 % | 63 % | 10 / 11 | 13.2 % | 57.5 % | 3.8 / 24 | 60 / 76 / 64 / 71 / 74 / 75 % | 6.4–8.1 |
 | 15 | 88 % | 61 % | 9 / 11 | 7.6 % | 55.6 % | 4.9 / 32 | 58 / 74 / 62 / 70 / 71 / 74 % | 8.3–10.2 |
 
 - "One-hit KOs" = 1-vs-1 fights decided by the first hit. Lower `Skalierung`
@@ -71,5 +71,13 @@ reproduces the table above:
   round.
 - Catch chance per participant ≈ 52–65 %, about 4–5 rounds per boss fight; the
   round limit was never reached.
-- The defaults stay unchanged until the user decides on fine-tuning (open in
-  roadmap.md).
+- The defaults stayed unchanged until the user decided on fine-tuning (see the
+  addendum 2026-10-19).
+
+## Addendum 2026-10-19 (WP-03)
+
+User decision: `Skalierung` default **20** (was 25), based on the simulator
+table of the 2026-10-15 addendum — one-hit KOs drop from 20 % to 13 %, the
+first-strike advantage from 59 % to 57.5 %; boss group win rates fall by only
+1–2 points, logs grow by about one line per participant. `k` stays 50. The
+`N = 4` dip (≈ 64 %) is still open (roadmap.md).

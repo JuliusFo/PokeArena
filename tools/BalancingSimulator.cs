@@ -2,7 +2,7 @@
 // Usage (from the repository root): dotnet run tools/BalancingSimulator.cs [-- options]
 //
 // Options (defaults = spec §13):
-//   --scaling 25      Skalierung
+//   --scaling 20      Skalierung
 //   --damping 50      Daempfung (k)
 //   --boss-hp 1.8     BossHPProSpieler
 //   --divisor 3       BossZieleTeiler
@@ -116,7 +116,7 @@ static Dictionary<string, double> ParseOptions(string[] args)
 {
     var options = new Dictionary<string, double>
     {
-        ["scaling"] = 25,
+        ["scaling"] = 20,
         ["damping"] = 50,
         ["boss-hp"] = 1.8,
         ["divisor"] = 3,

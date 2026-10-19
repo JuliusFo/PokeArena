@@ -9,7 +9,7 @@ public sealed record BattleSettings
     public static BattleSettings Default { get; } = new();
 
     /// <summary>Skalierung: base damage of a hit with ratio 1 and type factor 1.</summary>
-    public double Scaling { get; init; } = 25;
+    public double Scaling { get; init; } = 20;
 
     /// <summary>Daempfung (k): added to both sides of the attack/defence ratio (ADR-0006).</summary>
     public double Damping { get; init; } = 50;
