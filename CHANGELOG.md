@@ -7,6 +7,16 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+### Added
+- Trainer fights: `!fight @Name` challenges another player, who accepts with
+  `!fight @Name` within 2 minutes. Both need at least six Pokémon; each side
+  fights with six random ones, and the winner takes one Pokémon from the
+  loser's team — never the starter. Achievements reached this way are
+  announced in chat. `@Name` also matches the Twitch login, so players with a
+  non-Latin display name can be challenged too.
+- Desktop app: the "Kämpfe" area also lists trainer fights with winner and
+  loot.
+
 ## [0.3.0] - 2026-10-19
 
 ### Added
@@ -57,8 +67,4 @@ tagged `vX.Y.Z` once its section is complete.
 - Desktop app: connection status with plain-German hints, live chat log, and
   a dry run ("Probelauf") to try commands without writing to Twitch.
 
-### Changed
-- Website data moves from GitHub commits to Cloudflare R2 (ADR-0003).
-- Species have one or two types instead of exactly one (ADR-0005).
-- Damage uses a damped ratio and the better of physical/special; bosses
   scale with participant count via HP and number of targets (ADR-0006).

@@ -181,6 +181,23 @@ Used by boss, PvP and NPC fights.
   inventories are only touched when a fight resolves.
 - The PDF's original challenge mode (show team, opponent hand-picks a team,
   winner picks the reward) is **deferred to a later version**.
+- `@name` is matched case-insensitively against the trainer's Twitch login,
+  then against the display name (both refreshed whenever the trainer writes in
+  chat; WP-04).
+- Open challenges live in memory: a restart or switching the dry run drops
+  them. Requirements are checked again when the challenge is accepted.
+- Achievements reached through loot are announced like boss catches.
+- Reply drafts (WP-04, reviewed in WP-07): challenge „@Misty, Ash fordert dich
+  zum Kampf heraus! Nimm an mit !fight @ash – du hast 2 Minuten.“; result
+  „Ash besiegt Misty und bekommt Karpador von Misty!“; on accept with too few
+  specimens „Der Kampf fällt aus: Ash hat erst 5 Pokémon – …“; rejections:
+  no name („fordere jemanden zum Kampf heraus – zum Beispiel: !fight @Name“),
+  unknown name („gary ist noch kein Trainer.“), oneself („du kannst dich nicht
+  selbst herausfordern.“), too few specimens („du hast erst 3 Pokémon – für
+  einen Kampf braucht ihr beide mindestens 6.“), an open challenge on either
+  side („du hast schon eine offene Herausforderung.“ / „Misty hat schon eine
+  offene Herausforderung.“). Until the website exists (WP-06) the result
+  carries no battle link.
 
 ## 7. NPC fights (`!challenge <NPC>`)
 
@@ -292,9 +309,9 @@ Data files (all derived — fully regenerable from the DB; the UI has a
 ## 10. Storage
 
 - **SQLite (EF Core) is the single source of truth**: trainers, specimens,
-  fights (including full logs and seeds), achievements, cooldowns, open
-  challenges, publish queue, balancing config. Loot transfers run in one
-  transaction.
+  fights (including full logs and seeds), achievements, cooldowns, publish
+  queue, balancing config. Loot transfers run in one transaction. Open PvP
+  challenges and the boss lobby are short-lived and stay in memory.
 - A **publish queue** (outbox) decouples game logic from uploads; network
   failures lose nothing.
 - **Secrets** (Twitch tokens for the dedicated bot account, R2 API token) go

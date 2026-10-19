@@ -115,6 +115,7 @@ Demo: `!fight` playable.
   rejections, no battle log or link in chat; PvP rows in the "Kämpfe" list.
   Not included: pair cooldown (spec §6), withdrawing or declining a
   challenge, the PDF's pick-your-team mode, battle link (WP-06).
+- Built 2026-10-19 (live test open): see the log in work-packages.md.
 
 ## WP-05 — NPC fights (2–3 days) → v0.5.0
 

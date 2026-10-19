@@ -40,3 +40,8 @@
   the boss with `BossDraw.Species(…, new BattleRandom(seed))` rely on the boss being drawn first.
 - `tools/*.cs` file-based apps default to AOT, which disables reflection-based `System.Text.Json` and breaks the
   base data loaders: keep `#:property PublishAot=false` next to `#:project`.
+- In-memory game state tied to one database (WP-04, open PvP challenges) must not be mutated from
+  `GameDatabase.Switched` — it fires on the UI thread. Bump a generation counter there (`Interlocked`) and drop
+  stale entries on the command queue (see `PvpService`).
+- Chat mentions (`@name`) resolve by `Trainer.Login` first, then by display name (`TrainerService.FindByNameAsync`);
+  the bot's own replies should mention the login when the viewer has to type it (`!fight @login`).

@@ -10,3 +10,4 @@
   `Dispose`.
 - Times from Core are UTC `DateTimeOffset`; show them with `.ToLocalTime()`.
 - Component tests: `tests/PokeArena.UI.Tests` (bUnit, inherit `BunitContext`, register fakes in `Services`).
+- A literal `@` in Razor markup (e.g. „!fight @Name“) must be written `@@`, or Razor parses it as code.
