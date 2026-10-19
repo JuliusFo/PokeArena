@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-10-15 · v0.2.0 (WP-00 – WP-02 done) · WP-03 built on `wp/03-battle-engine-boss`, live test open
+Status: 2026-10-19 · v0.3.0 (WP-00 – WP-03 done) · WP-04 next
 
 ## 1. Where to find what
 
@@ -153,7 +153,6 @@ PokeArena.slnx
 
 ## 9. Next
 
-Finish WP-03: live test of `!boss` (dry run, then the channel; `Skalierung` 20
-since 2026-10-19, ADR-0006 addendum), then release 0.3.0. Still open before
-later packages: NPC reward (E22), operations on the streamer's PC. Details:
-docs/roadmap.md.
+Start WP-04 (PvP, `!fight` playable). Still open before later packages: NPC
+reward (E22), operations on the streamer's PC; from WP-03 the `N = 4` boss dip,
+the runtime balancing editor and progression length. Details: docs/roadmap.md.

@@ -7,6 +7,8 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-19
+
 ### Added
 - Boss fights: `!boss` opens a lobby for 30 seconds, other registered players
   join with `!boss`. With at least two players a boss appears — rare and

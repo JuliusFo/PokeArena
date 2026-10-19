@@ -81,11 +81,12 @@ Demo: `!boss` playable end-to-end.
   balancing values as code defaults for now (runtime editor later), no boss
   cooldowns in the dry run, cooldown reply „der nächste Boss kann in X Minuten
   gerufen werden" at most every 30 s, no battle link in chat until WP-06.
-- Built 2026-10-15 (live test open): see the log in work-packages.md.
+- **Done 2026-10-19**: built 2026-10-15; dry run with simulated viewers passed,
+  the user waived the separate channel test. See the log in work-packages.md.
 - User decision (2026-10-19, ADR-0006 addendum): `Skalierung` 20 instead of
   25 (13 % one-hit KOs, first strike wins 57.5 %); `k` stays 50.
-- Open: the `N = 4` dip (≈ 64 % group wins vs. ≈ 75 % target) — check in the
-  live test whether it is noticeable.
+- Open: the `N = 4` dip (≈ 64 % group wins vs. ≈ 75 % target) — watch on
+  stream whether players notice it.
 - Open: when does the runtime balancing editor come (spec §13 says "editable
   in the UI")? Proposal: WP-07 together with the other operations screens.
 - Open: progression length. Expected catches for k distinct species (uniform

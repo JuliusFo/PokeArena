@@ -8,7 +8,7 @@ in [roadmap.md](roadmap.md).
 | WP-00 | Scaffold | 0.1.0 | done 2026-10-11 |
 | WP-01 | Twitch connection | 0.1.0 | done 2026-10-13 |
 | WP-02 | Domain foundation | 0.2.0 | done 2026-10-13 |
-| WP-03 | Battle engine + boss | 0.3.0 | built, live test open |
+| WP-03 | Battle engine + boss | 0.3.0 | done 2026-10-19 |
 | WP-04 | PvP | 0.4.0 | planned |
 | WP-05 | NPC fights | 0.5.0 | planned |
 | WP-06 | Website | 0.6.0 | planned |
@@ -120,8 +120,9 @@ in [roadmap.md](roadmap.md).
 - Pitfalls: see `src/PokeArena.Core/CLAUDE.md` (timed steps via `QueuedWork`,
   draw order per seed, `PublishAot=false` for file-based tools). In PowerShell
   scripts `R` is an alias of `Invoke-History` — don't name helpers `R`.
-- Live test: open (dry run with several simulated viewers, then the real
-  channel).
+- Live test 2026-10-19: dry run with four simulated viewers — registration,
+  too-few lobby, boss fights won and lost, catches, "Kämpfe" view, switching
+  back to the live database. User decision: no separate channel test.
 - Deliberately not done: runtime balancing editor (roadmap question),
   battle link in chat (WP-06), publishing (WP-06), `!bossreset` (WP-07),
   distinct-species column in the trainer list (not planned).
