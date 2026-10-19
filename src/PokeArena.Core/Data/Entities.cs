@@ -8,6 +8,12 @@ public sealed class Trainer
     /// <summary>Current Twitch display name; refreshed when the trainer is seen in chat.</summary>
     public required string DisplayName { get; set; }
 
+    /// <summary>
+    /// Current Twitch login (lower case), refreshed together with the display name. Chat mentions use it
+    /// (<c>@login</c>); for localized display names it is the only name that can be typed.
+    /// </summary>
+    public required string Login { get; set; }
+
     public DateTimeOffset RegisteredAt { get; init; }
 
     public List<Specimen> Specimens { get; init; } = [];

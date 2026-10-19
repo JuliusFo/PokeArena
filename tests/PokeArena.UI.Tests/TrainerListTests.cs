@@ -53,7 +53,7 @@ public class TrainerListTests : BunitContext
     {
         var cut = Render<TrainerListPanel>();
 
-        await _trainers.RegisterAsync("1001", "Ash", _species.Get(25), _ct);
+        await _trainers.RegisterAsync("1001", "ash", "Ash", _species.Get(25), _ct);
 
         cut.WaitForAssertion(() =>
         {
@@ -68,8 +68,8 @@ public class TrainerListTests : BunitContext
     [Fact]
     public async Task Search_filters_by_name()
     {
-        await _trainers.RegisterAsync("1", "Misty", _species.Get(7), _ct);
-        await _trainers.RegisterAsync("2", "Rocko", _species.Get(4), _ct);
+        await _trainers.RegisterAsync("1", "misty", "Misty", _species.Get(7), _ct);
+        await _trainers.RegisterAsync("2", "rocko", "Rocko", _species.Get(4), _ct);
         var cut = Render<TrainerListPanel>();
         cut.WaitForAssertion(() => Assert.Equal(2, cut.FindAll("tbody tr").Count));
 
@@ -83,7 +83,7 @@ public class TrainerListTests : BunitContext
     [Fact]
     public async Task Dry_run_shows_only_test_trainers_and_says_so()
     {
-        await _trainers.RegisterAsync("1", "Misty", _species.Get(7), _ct);
+        await _trainers.RegisterAsync("1", "misty", "Misty", _species.Get(7), _ct);
         var cut = Render<TrainerListPanel>();
         cut.WaitForAssertion(() => Assert.Single(cut.FindAll("tbody tr")));
 

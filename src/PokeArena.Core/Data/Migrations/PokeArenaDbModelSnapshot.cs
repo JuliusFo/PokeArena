@@ -158,10 +158,17 @@ namespace PokeArena.Core.Data.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Login")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
                     b.Property<long>("RegisteredAt")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("TwitchUserId");
+
+                    b.HasIndex("Login");
 
                     b.ToTable("Trainers");
                 });

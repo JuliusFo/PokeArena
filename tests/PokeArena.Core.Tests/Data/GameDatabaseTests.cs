@@ -1,4 +1,7 @@
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using PokeArena.Core.Data;
 using PokeArena.Core.Tests.Fakes;
 
@@ -19,6 +22,22 @@ public class GameDatabaseTests : IDisposable
     }
 
     [Fact]
+    public async Task Login_migration_prefills_the_lower_cased_display_name()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync(_ct);
+        await using var db = new PokeArenaDb(new DbContextOptionsBuilder<PokeArenaDb>().UseSqlite(connection).Options);
+        var migrator = db.GetService<IMigrator>();
+        await migrator.MigrateAsync("20261015192508_BossEncounters", _ct);
+        await db.Database.ExecuteSqlRawAsync(
+            "INSERT INTO \"Trainers\" (\"TwitchUserId\", \"DisplayName\", \"RegisteredAt\") VALUES ('1001', 'AshKetchum', 0)", _ct);
+
+        await migrator.MigrateAsync(cancellationToken: _ct);
+
+        Assert.Equal("ashketchum", (await db.Trainers.SingleAsync(_ct)).Login);
+    }
+
+    [Fact]
     public async Task A_trainer_cannot_have_two_starters()
     {
         await using var db = _game.OpenLive();
@@ -26,6 +45,7 @@ public class GameDatabaseTests : IDisposable
         {
             TwitchUserId = "1001",
             DisplayName = "Ash",
+            Login = "ash",
             Specimens =
             [
                 new Specimen { TrainerId = "1001", SpeciesId = 25, IsStarter = true },
@@ -42,8 +62,8 @@ public class GameDatabaseTests : IDisposable
         var early = new DateTimeOffset(2026, 10, 13, 20, 0, 0, TimeSpan.FromHours(2));
         await using (var db = _game.OpenLive())
         {
-            db.Trainers.Add(new Trainer { TwitchUserId = "1", DisplayName = "Spät", RegisteredAt = early.AddMinutes(5) });
-            db.Trainers.Add(new Trainer { TwitchUserId = "2", DisplayName = "Früh", RegisteredAt = early });
+            db.Trainers.Add(new Trainer { TwitchUserId = "1", DisplayName = "Spät", Login = "spaet", RegisteredAt = early.AddMinutes(5) });
+            db.Trainers.Add(new Trainer { TwitchUserId = "2", DisplayName = "Früh", Login = "frueh", RegisteredAt = early });
             await db.SaveChangesAsync(_ct);
         }
 
@@ -65,7 +85,7 @@ public class GameDatabaseTests : IDisposable
         Assert.True(_game.Database.IsSandbox);
         await using (var sandbox = _game.Database.Open())
         {
-            sandbox.Trainers.Add(new Trainer { TwitchUserId = "sim", DisplayName = "Test" });
+            sandbox.Trainers.Add(new Trainer { TwitchUserId = "sim", DisplayName = "Test", Login = "test" });
             await sandbox.SaveChangesAsync(_ct);
         }
 

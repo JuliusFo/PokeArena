@@ -18,6 +18,9 @@ public sealed record RegistrationResult(RegistrationStatus Status, Species Start
 /// <summary>A row of the trainer list in the desktop app.</summary>
 public sealed record TrainerSummary(string TwitchUserId, string DisplayName, Species Starter, int SpecimenCount, DateTimeOffset RegisteredAt);
 
+/// <summary>A trainer found by a chat mention.</summary>
+public sealed record TrainerName(string TwitchUserId, string DisplayName, string Login);
+
 /// <summary>
 /// Registration and the trainer directory. Commands call it from the single command queue; the UI reads lists
 /// from its own thread. Remembers who is registered so that not every chat message hits the database.
@@ -29,8 +32,8 @@ public sealed class TrainerService
     private readonly TimeProvider _time;
     private readonly ILogger<TrainerService> _log;
 
-    /// <summary>User id → last known display name, or null if not registered. Cleared on a database switch.</summary>
-    private readonly ConcurrentDictionary<string, string?> _known = new();
+    /// <summary>User id → last known names, or null if not registered. Cleared on a database switch.</summary>
+    private readonly ConcurrentDictionary<string, KnownNames?> _known = new();
 
     public TrainerService(GameDatabase database, SpeciesCatalog species, TimeProvider time, ILogger<TrainerService> log)
     {
@@ -55,7 +58,7 @@ public sealed class TrainerService
     /// Registers a viewer with their starter (spec §3): creates the trainer and the protected starter specimen in
     /// one transaction. The choice is final — a second call reports the existing starter.
     /// </summary>
-    public async Task<RegistrationResult> RegisterAsync(string twitchUserId, string displayName, Species starter, CancellationToken ct)
+    public async Task<RegistrationResult> RegisterAsync(string twitchUserId, string login, string displayName, Species starter, CancellationToken ct)
     {
         await using var db = _database.Open();
         var existingStarter = await db.Specimens
@@ -72,6 +75,7 @@ public sealed class TrainerService
         {
             TwitchUserId = twitchUserId,
             DisplayName = displayName,
+            Login = login,
             RegisteredAt = now,
             Specimens =
             [
@@ -87,26 +91,28 @@ public sealed class TrainerService
         });
         await db.SaveChangesAsync(ct);
 
-        _known[twitchUserId] = displayName;
+        _known[twitchUserId] = new KnownNames(displayName, login);
         _log.LogInformation("Trainer {UserId} registered with {Starter}", twitchUserId, starter.Slug);
         Changed?.Invoke();
         return new RegistrationResult(RegistrationStatus.Registered, starter);
     }
 
     /// <summary>
-    /// Called for every processed chat message: refreshes the stored display name if it changed (spec §1).
+    /// Called for every processed chat message: refreshes the stored display name and login if they changed
+    /// (spec §1).
     /// </summary>
     /// <returns>Whether the author is a registered trainer.</returns>
     public async Task<bool> ObserveAsync(ChatMessage message, CancellationToken ct)
     {
-        if (_known.TryGetValue(message.UserId, out var knownName))
+        var names = new KnownNames(message.DisplayName, message.Login);
+        if (_known.TryGetValue(message.UserId, out var known))
         {
-            if (knownName is null)
+            if (known is null)
             {
                 return false;
             }
 
-            if (knownName == message.DisplayName)
+            if (known == names)
             {
                 return true;
             }
@@ -120,16 +126,37 @@ public sealed class TrainerService
             return false;
         }
 
-        if (trainer.DisplayName != message.DisplayName)
+        if (trainer.DisplayName != message.DisplayName || trainer.Login != message.Login)
         {
-            _log.LogInformation("Trainer {UserId} renamed to {DisplayName}", trainer.TwitchUserId, message.DisplayName);
+            _log.LogInformation("Trainer {UserId} renamed to {DisplayName} ({Login})", trainer.TwitchUserId, message.DisplayName, message.Login);
             trainer.DisplayName = message.DisplayName;
+            trainer.Login = message.Login;
             await db.SaveChangesAsync(ct);
             Changed?.Invoke();
         }
 
-        _known[message.UserId] = message.DisplayName;
+        _known[message.UserId] = names;
         return true;
+    }
+
+    /// <summary>
+    /// Resolves a chat mention (<c>@name</c> or <c>name</c>) to a trainer: by login first, then by display name,
+    /// both case-insensitive. Names are only as current as the trainer's last chat message.
+    /// </summary>
+    public async Task<TrainerName?> FindByNameAsync(string mention, CancellationToken ct)
+    {
+        var name = mention.Trim().TrimStart('@').ToLowerInvariant();
+        if (name.Length == 0)
+        {
+            return null;
+        }
+
+        await using var db = _database.Open();
+        var matches = await db.Trainers
+            .Where(t => t.Login == name || t.DisplayName.ToLower() == name)
+            .Select(t => new TrainerName(t.TwitchUserId, t.DisplayName, t.Login))
+            .ToListAsync(ct);
+        return matches.FirstOrDefault(t => t.Login == name) ?? matches.FirstOrDefault();
     }
 
     /// <summary>All trainers, newest first.</summary>
@@ -150,4 +177,6 @@ public sealed class TrainerService
 
         return [.. rows.Select(r => new TrainerSummary(r.TwitchUserId, r.DisplayName, _species.Get(r.StarterId), r.Count, r.RegisteredAt))];
     }
+
+    private sealed record KnownNames(string DisplayName, string Login);
 }

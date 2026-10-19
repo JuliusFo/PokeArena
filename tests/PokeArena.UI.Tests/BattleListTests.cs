@@ -48,7 +48,7 @@ public class BattleListTests : BunitContext
     public async Task Stored_fight_appears_and_a_click_shows_its_course()
     {
         var cut = Render<BattleListPanel>();
-        await _trainers.RegisterAsync("1", "Ash", _species.Get(25), _ct);
+        await _trainers.RegisterAsync("1", "ash", "Ash", _species.Get(25), _ct);
 
         await StoreBossFightAsync();
         _battles.NotifyChanged();

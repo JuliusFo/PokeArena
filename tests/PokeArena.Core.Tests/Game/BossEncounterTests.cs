@@ -196,7 +196,7 @@ public class BossEncounterTests : IDisposable
     {
         for (var i = 0; i < idsAndNames.Length; i += 2)
         {
-            await _game.Trainers.RegisterAsync(idsAndNames[i], idsAndNames[i + 1], Species.Starters[0], _ct);
+            await _game.Trainers.RegisterAsync(idsAndNames[i], idsAndNames[i + 1].ToLowerInvariant(), idsAndNames[i + 1], Species.Starters[0], _ct);
         }
     }
 
