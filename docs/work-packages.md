@@ -9,7 +9,7 @@ in [roadmap.md](roadmap.md).
 | WP-01 | Twitch connection | 0.1.0 | done 2026-10-13 |
 | WP-02 | Domain foundation | 0.2.0 | done 2026-10-13 |
 | WP-03 | Battle engine + boss | 0.3.0 | done 2026-10-19 |
-| WP-04 | PvP | 0.4.0 | built, live test open |
+| WP-04 | PvP | 0.4.0 | done 2026-10-20 |
 | WP-05 | NPC fights | 0.5.0 | planned |
 | WP-06 | Website | 0.6.0 | planned |
 | WP-07 | Operations | 1.0.0 | planned |
@@ -153,8 +153,9 @@ in [roadmap.md](roadmap.md).
   `src/PokeArena.UI/CLAUDE.md` (`@@` in Razor markup). The result reads „…
   bekommt Karpador von Misty“ instead of the planned „dessen Karpador“, which
   assumes a gender.
-- Live test: open (dry run with several simulated viewers, then the real
-  channel).
+- Live test 2026-10-20: dry run — two test viewers equipped with the new
+  button, challenge and accept, fight resolved with loot transfer. User
+  decision: no separate channel test.
 - Deliberately not done: pair cooldown (spec §6), withdrawing or declining a
   challenge, the PDF's pick-your-team mode, battle link (WP-06).
 

@@ -117,7 +117,8 @@ Demo: `!fight` playable.
   challenge, the PDF's pick-your-team mode, battle link (WP-06).
 - User decision (2026-10-20): the dry run gets a button that tops a test
   viewer up to a full team, so `!fight` can be tested without boss fights.
-- Built 2026-10-19 (live test open): see the log in work-packages.md.
+- **Done 2026-10-20**: built 2026-10-19; dry run with test viewers passed, the
+  user waived the separate channel test. See the log in work-packages.md.
 
 ## WP-05 — NPC fights (2–3 days) → v0.5.0
 

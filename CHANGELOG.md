@@ -7,6 +7,8 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-20
+
 ### Added
 - Trainer fights: `!fight @Name` challenges another player, who accepts with
   `!fight @Name` within 2 minutes. Both need at least six Pokémon; each side
