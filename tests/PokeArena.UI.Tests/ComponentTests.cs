@@ -1,7 +1,11 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Time.Testing;
 using PokeArena.Core;
 using PokeArena.Core.Chat;
+using PokeArena.Core.Data;
+using PokeArena.Core.Game;
+using PokeArena.Core.Game.Battles;
 using PokeArena.Core.Twitch;
 using PokeArena.Core.Twitch.Auth;
 
@@ -13,6 +17,7 @@ public class ComponentTests : BunitContext
     private readonly ChatLog _chatLog = new(new FakeTimeProvider());
     private readonly ChatInbox _inbox = new();
     private readonly DryRunMode _dryRun = new();
+    private readonly GameDatabase _database;
 
     public ComponentTests()
     {
@@ -20,6 +25,13 @@ public class ComponentTests : BunitContext
         Services.AddSingleton(_chatLog);
         Services.AddSingleton(_inbox);
         Services.AddSingleton(_dryRun);
+
+        // The dry-run panel only queues work for the test-viewer button; the database is never opened here.
+        var time = new FakeTimeProvider();
+        var species = SpeciesCatalog.Load(Path.Combine(AppContext.BaseDirectory, "data", "pokemon.json"));
+        _database = new GameDatabase("Data Source=:memory:", _dryRun, NullLogger<GameDatabase>.Instance);
+        var trainers = new TrainerService(_database, species, time, NullLogger<TrainerService>.Instance);
+        Services.AddSingleton(new DryRunTrainers(_database, species, trainers, PvpSettings.Default, new SystemSeedSource(), _inbox, _chatLog, time));
     }
 
     [Fact]
@@ -94,6 +106,21 @@ public class ComponentTests : BunitContext
     }
 
     [Fact]
+    public void Test_viewer_button_queues_a_full_team_for_the_typed_name()
+    {
+        _dryRun.Enabled = true;
+        var cut = Render<DryRunPanel>();
+
+        cut.Find("input[placeholder=Testzuschauer]").Change("Misty");
+        cut.Find("button[type=button]").Click();
+
+        Assert.Contains("Mit 6 Pokémon ausstatten", cut.Find("button[type=button]").TextContent);
+        Assert.True(_inbox.Reader.TryRead(out var item));
+        Assert.Equal("Testzuschauer", Assert.IsType<QueuedWork>(item).Name);
+        Assert.False(_inbox.Reader.TryRead(out _));
+    }
+
+    [Fact]
     public void Chat_log_lists_new_entries_first_and_marks_the_dry_run()
     {
         var cut = Render<ChatLogPanel>();
@@ -107,6 +134,16 @@ public class ComponentTests : BunitContext
         Assert.Contains("PokeArena-Bot ist online", entries[0].TextContent);
         Assert.Contains("log-outgoing", entries[0].ClassName);
         Assert.Equal(2, cut.FindAll(".tag").Count);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _database.Dispose();
+        }
+
+        base.Dispose(disposing);
     }
 
     private sealed class FakeTwitchConnection : ITwitchConnection

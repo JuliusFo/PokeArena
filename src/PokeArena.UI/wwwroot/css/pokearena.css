@@ -312,6 +312,14 @@ input:not([type="checkbox"]) {
   color: var(--muted);
 }
 
+.simulate .tools {
+  align-items: center;
+}
+
+.simulate .tools .btn {
+  flex: none;
+}
+
 .simulate .inline {
   flex-direction: row;
   padding-bottom: 8px;

@@ -6,6 +6,7 @@ using PokeArena.Core;
 using PokeArena.Core.Chat;
 using PokeArena.Core.Data;
 using PokeArena.Core.Game;
+using PokeArena.Core.Game.Battles;
 using PokeArena.Core.Twitch;
 
 namespace PokeArena.UI.Tests;
@@ -35,8 +36,11 @@ public class TrainerListTests : BunitContext
         Services.AddSingleton(_trainers);
         Services.AddSingleton(new BattleService(_database, _species));
         Services.AddSingleton(new AppInfo("0.2.0"));
-        Services.AddSingleton(new ChatLog(_time));
-        Services.AddSingleton(new ChatInbox());
+        var chatLog = new ChatLog(_time);
+        var inbox = new ChatInbox();
+        Services.AddSingleton(chatLog);
+        Services.AddSingleton(inbox);
+        Services.AddSingleton(new DryRunTrainers(_database, _species, _trainers, PvpSettings.Default, new SystemSeedSource(), inbox, chatLog, _time));
         Services.AddSingleton<ITwitchConnection>(new FakeTwitchConnection());
     }
 

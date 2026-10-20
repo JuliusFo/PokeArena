@@ -1,8 +1,10 @@
 @* Dry run ("Probelauf"): try commands without writing to the real chat. *@
 @using PokeArena.Core.Chat
+@using PokeArena.Core.Game
 @implements IDisposable
 @inject DryRunMode DryRun
 @inject ChatInbox Inbox
+@inject DryRunTrainers TestViewers
 
 <section class="card">
     <h2>Probelauf</h2>
@@ -33,6 +35,10 @@
                 <input class="grow" @bind="_text" @bind:event="oninput" placeholder="z. B. !pokearena" aria-label="Nachricht" />
                 <button class="btn btn-primary" type="submit" disabled="@string.IsNullOrWhiteSpace(_text)">Senden</button>
             </div>
+            <div class="row tools">
+                <button class="btn" type="button" @onclick="PrepareTestViewer">Mit @TestViewers.TeamSize Pokémon ausstatten</button>
+                <span class="hint">Meldet den Testzuschauer an, falls nötig, und füllt ihn auf @TestViewers.TeamSize Pokémon auf – zum Beispiel für !fight.</span>
+            </div>
         </form>
     }
 </section>
@@ -54,12 +60,11 @@
             return Task.CompletedTask;
         }
 
-        var name = string.IsNullOrWhiteSpace(_name) ? "Testzuschauer" : _name.Trim();
-        var login = name.ToLowerInvariant();
+        var name = Name;
         Inbox.Post(new ChatMessage(
             Guid.NewGuid().ToString(),
-            "probelauf:" + login,
-            login,
+            DryRunTrainers.UserId(name),
+            DryRunTrainers.Login(name),
             name,
             text,
             _moderator ? ChatRole.Moderator : ChatRole.Viewer,
@@ -67,6 +72,10 @@
         _text = "";
         return Task.CompletedTask;
     }
+
+    private string Name => string.IsNullOrWhiteSpace(_name) ? "Testzuschauer" : _name.Trim();
+
+    private void PrepareTestViewer() => TestViewers.Prepare(Name);
 
     private void OnChanged() => _ = InvokeAsync(StateHasChanged);
 

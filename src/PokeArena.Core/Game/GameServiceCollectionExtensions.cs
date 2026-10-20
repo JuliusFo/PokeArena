@@ -36,6 +36,7 @@ public static class GameServiceCollectionExtensions
         services.AddSingleton<ISeedSource, SystemSeedSource>();
         services.AddSingleton<BossEncounter>();
         services.AddSingleton<PvpService>();
+        services.AddSingleton<DryRunTrainers>();
 
         services.AddSingleton<IChatCommand, RegisterCommand>();
         services.AddSingleton<IChatCommand, BossCommand>();
