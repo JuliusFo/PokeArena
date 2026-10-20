@@ -14,6 +14,8 @@ tagged `vX.Y.Z` once its section is complete.
   loser's team — never the starter. Achievements reached this way are
   announced in chat. `@Name` also matches the Twitch login, so players with a
   non-Latin display name can be challenged too.
+- Dry run: a button gives the typed test viewer six Pokémon (registering them
+  if needed), so trainer fights can be tried right away.
 - Desktop app: the "Kämpfe" area also lists trainer fights with winner and
   loot.
 

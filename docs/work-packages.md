@@ -138,11 +138,13 @@ in [roadmap.md](roadmap.md).
   the winner's achievements in one transaction; `PvpSettings`;
   `BattleKind.Pvp`, outcomes `ChallengerWon` / `OpponentWon`,
   `Battle.LootSpecimenId` / `LootSpeciesId` (migration `PvpBattles`). UI:
-  PvP rows in "Kämpfe" („Ash gegen Misty“, winner and loot). Tests: 130 unit,
-  17 bUnit.
+  PvP rows in "Kämpfe" („Ash gegen Misty“, winner and loot); dry-run button
+  „Mit 6 Pokémon ausstatten“ (`DryRunTrainers`, runs on the command queue,
+  sandbox only). Tests: 133 unit, 18 bUnit.
 - User decisions: plan agreed 2026-10-19 with all five proposals (login
   column, in-memory challenge, DB columns, reply drafts, PvP rows in the
-  battle list).
+  battle list); 2026-10-20: a dry-run button that tops a test viewer up to
+  six Pokémon, because reaching six through boss fights made testing slow.
 - Addenda: spec §6 (mention matching, in-memory challenges, achievements by
   loot, reply drafts) and §10 (open challenges in memory); architecture (data
   model, PvP flow, no `OpenChallenge` table).

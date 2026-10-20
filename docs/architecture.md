@@ -88,6 +88,8 @@ knowledge. Areas:
 - Built (WP-03), area "Kämpfe": the latest 50 fights (time, opponent,
   trainers, result); clicking one shows its course as German log lines. WP-04
   adds PvP fights („Ash gegen Misty“, winner and loot).
+- Built (WP-04), dry run: a button tops the typed test viewer up to a full PvP
+  team (`DryRunTrainers`, queued work, sandbox only).
 - Planned: manual corrections and deletion of trainers; balancing config
   editor (all values from spec §13, live); operations (backup now, republish
   everything); local Kestrel endpoint serving the OBS overlay.
