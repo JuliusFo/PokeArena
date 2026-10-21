@@ -27,6 +27,15 @@ roadmap.md first. Format: idea — date, origin.
 - Cooldown between the same trainer pair if trading-by-losing is abused —
   2026-09-03, spec §6.
 
+## Continuation of WP-05 (NPC, tokens)
+
+- Redeeming tokens with the streamer: chat command plus a desktop screen to
+  confirm and book redemptions — 2026-10-21, user decision E22.
+- Token ledger (who earned or spent how many, when, why) instead of the plain
+  balance, once tokens can be spent or corrected — 2026-10-21, WP-05 plan.
+- Chat command for the own token balance and badges (or fold it into `!dex`)
+  — 2026-10-21, WP-05 plan.
+
 ## Battle system
 
 - Attacks per Pokemon with per-attack types — 2026-09-03, spec §14.

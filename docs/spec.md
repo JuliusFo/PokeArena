@@ -26,6 +26,10 @@ all chat output and UI text in German.
   151). Once unlocked, an achievement is **never lost**, even if the distinct
   count later drops below the threshold. Each achievement unlocks the
   corresponding NPC.
+- **Badge (Orden)** — earned by the first win against an NPC (§7); permanent
+  like an achievement.
+- **Tokens** — a per-trainer balance earned by every NPC win (§7), to be
+  redeemed with the streamer for rewards later (not in v1 yet, backlog).
 
 ## 2. Base data
 
@@ -235,8 +239,14 @@ Used by boss, PvP and NPC fights.
   farming.
 - Error replies per PDF: „Du kannst diesen NPC noch nicht herausfordern
   (Cooldown XX:XX)" / „… (noch x Pokemon benötigt)".
-- **OPEN (E22):** the reward for beating an NPC is not yet defined. Blocks
-  only this milestone's reward step; fights themselves are specified.
+- Reward (E22, user decision 2026-10-21):
+  - **Every win** credits the NPC's tokens (`tokens` per NPC in `npcs.json`;
+    default rising with the threshold: Eich 1 … Ash 17).
+  - The **first win** against an NPC also brings its badge and one specimen of
+    the NPC's team: a random species the trainer does not own yet, or a random
+    team species if they own all six. It counts for achievements like a catch.
+  - A loss brings nothing. The win cooldown limits token farming.
+- In the dry run the cooldowns are skipped, as for the boss.
 
 ## 8. Commands
 
@@ -374,8 +384,9 @@ exists they are code defaults, WP-03 decision; see roadmap.md.)
 
 **OPEN for v1:**
 
-1. NPC reward (E22).
-2. Exact German wording of all chat messages (drafted during implementation).
+1. Exact German wording of all chat messages (drafted during implementation).
+
+Decided: NPC reward (E22) on 2026-10-21, see §7.
 
 **Deferred (v2+):** everything not in v1 — from the PDF, the design review
 and later ideas — is collected in [backlog.md](backlog.md).
