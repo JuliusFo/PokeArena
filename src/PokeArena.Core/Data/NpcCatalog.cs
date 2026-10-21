@@ -34,6 +34,14 @@ public sealed class NpcCatalog
     /// <exception cref="KeyNotFoundException">No achievement has this threshold.</exception>
     public Npc ForThreshold(int threshold) => _byThreshold[threshold];
 
+    /// <summary>The NPC called <paramref name="name"/> (name or id, case-insensitive), or null.</summary>
+    public Npc? Find(string name)
+    {
+        var trimmed = name.Trim();
+        return All.FirstOrDefault(n =>
+            string.Equals(n.Name, trimmed, StringComparison.OrdinalIgnoreCase) || string.Equals(n.Id, trimmed, StringComparison.OrdinalIgnoreCase));
+    }
+
     /// <summary>Thresholds reached with <paramref name="distinctSpecies"/> distinct species, ascending.</summary>
     public IEnumerable<int> ThresholdsReached(int distinctSpecies) =>
         All.Select(n => n.Threshold).Where(t => t <= distinctSpecies);

@@ -74,6 +74,18 @@ public sealed record PvpSettings
     public int TeamSize { get; init; } = 6;
 }
 
+/// <summary>NPC values of spec §7 and §13; the player's team size is <see cref="PvpSettings.TeamSize"/>.</summary>
+public sealed record NpcSettings
+{
+    public static NpcSettings Default { get; } = new();
+
+    /// <summary>NPCNiederlageCooldownHours: per trainer and NPC, after a loss.</summary>
+    public TimeSpan LossCooldown { get; init; } = TimeSpan.FromHours(48);
+
+    /// <summary>NPCSiegCooldownMinutes: per trainer and NPC, after a win; limits token farming.</summary>
+    public TimeSpan WinCooldown { get; init; } = TimeSpan.FromMinutes(60);
+}
+
 /// <summary>Probability of a boss tier, growing with the participant count up to a cap.</summary>
 public sealed record TierOdds(double Base, double PerParticipant, double Cap)
 {
