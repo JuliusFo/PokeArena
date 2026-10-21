@@ -37,6 +37,8 @@
                     <th>Name</th>
                     <th>Starter</th>
                     <th class="num">Pokémon</th>
+                    <th class="num">Orden</th>
+                    <th class="num">Tokens</th>
                     <th>Dabei seit</th>
                 </tr>
             </thead>
@@ -47,6 +49,8 @@
                         <td class="strong">@trainer.DisplayName</td>
                         <td>@trainer.Starter.Name</td>
                         <td class="num">@trainer.SpecimenCount</td>
+                        <td class="num">@trainer.Badges</td>
+                        <td class="num">@trainer.Tokens</td>
                         <td>@trainer.RegisteredAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
                     </tr>
                 }

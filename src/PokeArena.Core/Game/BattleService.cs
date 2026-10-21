@@ -7,9 +7,11 @@ namespace PokeArena.Core.Game;
 /// <summary>A row of the battle list in the desktop app.</summary>
 /// <param name="Boss">Boss fights: the boss species.</param>
 /// <param name="Winners">Boss fights: participants who caught the boss. PvP: 1.</param>
-/// <param name="Winner">PvP: display name of the winner; null if the trainer is gone.</param>
-/// <param name="Loser">PvP: display name of the loser; null if the trainer is gone.</param>
-/// <param name="Loot">PvP: species the winner took.</param>
+/// <param name="Winner">PvP and NPC: display name of the winning trainer; null if gone or the NPC won.</param>
+/// <param name="Loser">PvP and NPC: display name of the losing trainer; null if gone or the trainer won.</param>
+/// <param name="Loot">PvP: species the winner took. NPC: reward species of a first win.</param>
+/// <param name="Npc">NPC fights: the NPC.</param>
+/// <param name="Tokens">NPC first wins: tokens credited.</param>
 public sealed record BattleSummary(
     long Id,
     BattleKind Kind,
@@ -20,18 +22,22 @@ public sealed record BattleSummary(
     int Winners,
     string? Winner = null,
     string? Loser = null,
-    Species? Loot = null);
+    Species? Loot = null,
+    Npc? Npc = null,
+    int? Tokens = null);
 
 /// <summary>Reads stored battles for the desktop app. Game logic writes them and calls <see cref="NotifyChanged"/>.</summary>
 public sealed class BattleService
 {
     private readonly GameDatabase _database;
     private readonly SpeciesCatalog _species;
+    private readonly NpcCatalog _npcs;
 
-    public BattleService(GameDatabase database, SpeciesCatalog species)
+    public BattleService(GameDatabase database, SpeciesCatalog species, NpcCatalog npcs)
     {
         _database = database;
         _species = species;
+        _npcs = npcs;
         _database.Switched += NotifyChanged;
     }
 
@@ -56,6 +62,8 @@ public sealed class BattleService
                 b.BossSpeciesId,
                 b.Outcome,
                 b.LootSpeciesId,
+                b.NpcId,
+                b.Tokens,
                 Participants = b.Participants.Count,
                 Winners = b.Participants.Count(p => p.Won),
                 Winner = b.Participants.Where(p => p.Won).Select(p => p.Trainer!.DisplayName).FirstOrDefault(),
@@ -71,9 +79,11 @@ public sealed class BattleService
             r.Outcome,
             r.Participants,
             r.Winners,
-            r.Kind == BattleKind.Pvp ? r.Winner : null,
-            r.Kind == BattleKind.Pvp ? r.Loser : null,
-            r.LootSpeciesId is { } loot ? _species.Get(loot) : null))];
+            r.Kind == BattleKind.Boss ? null : r.Winner,
+            r.Kind == BattleKind.Boss ? null : r.Loser,
+            r.LootSpeciesId is { } loot ? _species.Get(loot) : null,
+            r.NpcId is { } npc ? _npcs.Find(npc) : null,
+            r.Tokens))];
     }
 
     /// <summary>The German log lines of a battle, or null if it does not exist (any more).</summary>

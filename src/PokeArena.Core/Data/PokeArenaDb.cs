@@ -17,6 +17,8 @@ public sealed class PokeArenaDb(DbContextOptions<PokeArenaDb> options) : DbConte
 
     public DbSet<AchievementUnlock> AchievementUnlocks => Set<AchievementUnlock>();
 
+    public DbSet<NpcBadge> NpcBadges => Set<NpcBadge>();
+
     public DbSet<Cooldown> Cooldowns => Set<Cooldown>();
 
     public static DbContextOptions<PokeArenaDb> Options(string connectionString) =>
@@ -52,6 +54,7 @@ public sealed class PokeArenaDb(DbContextOptions<PokeArenaDb> options) : DbConte
         modelBuilder.Entity<Battle>(battle =>
         {
             battle.HasIndex(b => b.FoughtAt);
+            battle.Property(b => b.NpcId).HasMaxLength(32);
             battle.HasMany(b => b.Participants).WithOne().HasForeignKey(p => p.BattleId);
         });
 
@@ -66,6 +69,14 @@ public sealed class PokeArenaDb(DbContextOptions<PokeArenaDb> options) : DbConte
             unlock.HasKey(u => new { u.TrainerId, u.Threshold });
             unlock.Property(u => u.TrainerId).HasMaxLength(32);
             unlock.HasOne(u => u.Trainer).WithMany().HasForeignKey(u => u.TrainerId);
+        });
+
+        modelBuilder.Entity<NpcBadge>(badge =>
+        {
+            badge.HasKey(b => new { b.TrainerId, b.NpcId });
+            badge.Property(b => b.TrainerId).HasMaxLength(32);
+            badge.Property(b => b.NpcId).HasMaxLength(32);
+            badge.HasOne(b => b.Trainer).WithMany().HasForeignKey(b => b.TrainerId);
         });
 
         modelBuilder.Entity<Cooldown>(cooldown =>

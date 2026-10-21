@@ -29,9 +29,10 @@ public class ComponentTests : BunitContext
         // The dry-run panel only queues work for the test-viewer button; the database is never opened here.
         var time = new FakeTimeProvider();
         var species = SpeciesCatalog.Load(Path.Combine(AppContext.BaseDirectory, "data", "pokemon.json"));
+        var npcs = NpcCatalog.Load(Path.Combine(AppContext.BaseDirectory, "data", "npcs.json"), species);
         _database = new GameDatabase("Data Source=:memory:", _dryRun, NullLogger<GameDatabase>.Instance);
         var trainers = new TrainerService(_database, species, time, NullLogger<TrainerService>.Instance);
-        Services.AddSingleton(new DryRunTrainers(_database, species, trainers, PvpSettings.Default, new SystemSeedSource(), _inbox, _chatLog, time));
+        Services.AddSingleton(new DryRunTrainers(_database, species, npcs, trainers, PvpSettings.Default, new SystemSeedSource(), _inbox, _chatLog, time));
     }
 
     [Fact]
@@ -115,6 +116,23 @@ public class ComponentTests : BunitContext
         cut.Find("button[type=button]").Click();
 
         Assert.Contains("Mit 6 Pokémon ausstatten", cut.Find("button[type=button]").TextContent);
+        Assert.True(_inbox.Reader.TryRead(out var item));
+        Assert.Equal("Testzuschauer", Assert.IsType<QueuedWork>(item).Name);
+        Assert.False(_inbox.Reader.TryRead(out _));
+    }
+
+    [Fact]
+    public void Unlock_button_offers_every_npc_and_queues_the_unlock()
+    {
+        _dryRun.Enabled = true;
+        var cut = Render<DryRunPanel>();
+
+        var options = cut.FindAll("select[aria-label=NPC] option");
+        Assert.Equal(17, options.Count);
+        Assert.Equal("Eich (15 Arten)", options[0].TextContent);
+        cut.Find("select[aria-label=NPC]").Change("rocko");
+        cut.FindAll("button[type=button]").Single(b => b.TextContent == "Freischalten").Click();
+
         Assert.True(_inbox.Reader.TryRead(out var item));
         Assert.Equal("Testzuschauer", Assert.IsType<QueuedWork>(item).Name);
         Assert.False(_inbox.Reader.TryRead(out _));

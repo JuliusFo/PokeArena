@@ -39,6 +39,16 @@
                 <button class="btn" type="button" @onclick="PrepareTestViewer">Mit @TestViewers.TeamSize Pokémon ausstatten</button>
                 <span class="hint">Meldet den Testzuschauer an, falls nötig, und füllt ihn auf @TestViewers.TeamSize Pokémon auf – zum Beispiel für !fight.</span>
             </div>
+            <div class="row tools">
+                <select @bind="_npcId" aria-label="NPC">
+                    @foreach (var npc in TestViewers.Npcs)
+                    {
+                        <option value="@npc.Id">@npc.Name (@npc.Threshold Arten)</option>
+                    }
+                </select>
+                <button class="btn" type="button" @onclick="UnlockTestViewer">Freischalten</button>
+                <span class="hint">Gibt dem Testzuschauer so viele verschiedene Pokémon, dass er diesen NPC mit !challenge herausfordern kann.</span>
+            </div>
         </form>
     }
 </section>
@@ -47,6 +57,7 @@
     private string _name = "Testzuschauer";
     private bool _moderator;
     private string _text = "";
+    private string _npcId = "eich";
 
     protected override void OnInitialized() => DryRun.Changed += OnChanged;
 
@@ -76,6 +87,8 @@
     private string Name => string.IsNullOrWhiteSpace(_name) ? "Testzuschauer" : _name.Trim();
 
     private void PrepareTestViewer() => TestViewers.Prepare(Name);
+
+    private void UnlockTestViewer() => TestViewers.Unlock(Name, TestViewers.Npcs.FirstOrDefault(n => n.Id == _npcId) ?? TestViewers.Npcs[0]);
 
     private void OnChanged() => _ = InvokeAsync(StateHasChanged);
 

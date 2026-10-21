@@ -16,7 +16,9 @@ public enum RegistrationStatus
 public sealed record RegistrationResult(RegistrationStatus Status, Species Starter);
 
 /// <summary>A row of the trainer list in the desktop app.</summary>
-public sealed record TrainerSummary(string TwitchUserId, string DisplayName, Species Starter, int SpecimenCount, DateTimeOffset RegisteredAt);
+/// <param name="Badges">NPC badges earned (spec §7).</param>
+public sealed record TrainerSummary(
+    string TwitchUserId, string DisplayName, Species Starter, int SpecimenCount, DateTimeOffset RegisteredAt, int Tokens = 0, int Badges = 0);
 
 /// <summary>A trainer found by a chat mention.</summary>
 public sealed record TrainerName(string TwitchUserId, string DisplayName, string Login);
@@ -171,11 +173,14 @@ public sealed class TrainerService
                 t.RegisteredAt,
                 StarterId = t.Specimens.Where(s => s.IsStarter).Select(s => s.SpeciesId).FirstOrDefault(),
                 Count = t.Specimens.Count,
+                t.Tokens,
+                Badges = db.NpcBadges.Count(b => b.TrainerId == t.TwitchUserId),
             })
             .OrderByDescending(t => t.RegisteredAt)
             .ToListAsync(ct);
 
-        return [.. rows.Select(r => new TrainerSummary(r.TwitchUserId, r.DisplayName, _species.Get(r.StarterId), r.Count, r.RegisteredAt))];
+        return [.. rows.Select(r => new TrainerSummary(
+            r.TwitchUserId, r.DisplayName, _species.Get(r.StarterId), r.Count, r.RegisteredAt, r.Tokens, r.Badges))];
     }
 
     private sealed record KnownNames(string DisplayName, string Login);

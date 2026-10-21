@@ -12,8 +12,8 @@ achievements) and WP-04 (PvP) built; the rest is planned.
 | `Twitch/` | Device-code auth and tokens, Helix client, EventSub WebSocket session, `TwitchConnection` (login, reconnects, state for the UI) |
 | `Chat/` | `ChatInbox` (single serialized queue of incoming messages and `QueuedWork`), `ChatSender` (rate limit, splitting, dry run), `ChatLog` for the UI |
 | `Commands/` | Parsing, routing, permission and cooldown checks |
-| `Game/` | `TrainerService` (registration, display names, trainer list), `BossEncounter` (lobby, fight, catches, cooldown), `Achievements`, `BattleService` (battle list for the UI), `PvpService` (open challenges, fight, loot transfer); later NPC fights |
-| `Game/Battles/` | Pure engine without database: `DamageCalculator`, `BossBattle`, `TeamBattle` (1-vs-1 with teams, for PvP/NPC), `BossDraw`, `BattleLog` (structured events, JSON, German lines), `BattleSettings` / `BossSettings` / `PvpSettings`, `BattleRandom` + `ISeedSource` |
+| `Game/` | `TrainerService` (registration, display names, trainer list), `BossEncounter` (lobby, fight, catches, cooldown), `Achievements`, `BattleService` (battle list for the UI), `PvpService` (open challenges, fight, loot transfer), `NpcService` (NPC fights, rewards, cooldowns) |
+| `Game/Battles/` | Pure engine without database: `DamageCalculator`, `BossBattle`, `TeamBattle` (1-vs-1 with teams, for PvP/NPC), `BossDraw`, `BattleLog` (structured events, JSON, German lines), `BattleSettings` / `BossSettings` / `PvpSettings` / `NpcSettings`, `BattleRandom` + `ISeedSource` |
 | `Data/` | EF Core model (`PokeArenaDb`), migrations, `GameDatabase` (live database or dry-run sandbox), `SpeciesCatalog`, `TypeChart`, `NpcCatalog` (validated `data/*.json`) |
 | `Publishing/` | `ISitePublisher`, R2 implementation, outbox worker |
 
@@ -32,19 +32,21 @@ processed (WP-02 decision).
 
 Built in WP-02: `Trainer` and `Specimen`; in WP-03: `Battle`,
 `BattleParticipant`, `AchievementUnlock`, `Cooldown`; in WP-04: `Trainer.Login` and the
-PvP loot columns of `Battle`. The rest is a sketch for
+PvP loot columns of `Battle`; in WP-05: `Trainer.Tokens`, `Battle.NpcId` /
+`Tokens` and `NpcBadge`. The rest is a sketch for
 later packages. Timestamps are stored as UTC ticks (SQLite cannot compare
 `DateTimeOffset`); enums as text. The live database is
 `%LOCALAPPDATA%\PokeArena\pokearena.db` (WAL), migrated at startup.
 
 | Entity | Fields | Notes |
 |---|---|---|
-| `Trainer` | TwitchUserId (PK), DisplayName, Login, RegisteredAt | Display name and login refreshed when seen; `@name` mentions resolve by login, then display name |
-| `Specimen` | Id, TrainerId, SpeciesId, CaughtAt, Origin (Starter, Boss), IsStarter | PvP loot changes `TrainerId`; unique filtered index: one starter per trainer |
-| `Battle` | Id, Kind, FoughtAt, Seed, BossSpeciesId?, LootSpecimenId?, LootSpeciesId?, Outcome, Rounds, LogJson | Log stored verbatim (ADR-0004); fighters, owners and HP are in the log. PvP: outcome `ChallengerWon` / `OpponentWon`, loot without foreign key |
-| `BattleParticipant` | Id, BattleId, TrainerId, Won | Boss: `Won` = caught the boss; PvP: `Won` = winner. Bosses and NPCs need no row, they are in the log |
+| `Trainer` | TwitchUserId (PK), DisplayName, Login, RegisteredAt, Tokens | Display name and login refreshed when seen; `@name` mentions resolve by login, then display name. Tokens: plain balance, the first win against an NPC adds its tokens |
+| `Specimen` | Id, TrainerId, SpeciesId, CaughtAt, Origin (Starter, Boss, Npc), IsStarter | PvP loot changes `TrainerId`; unique filtered index: one starter per trainer |
+| `Battle` | Id, Kind, FoughtAt, Seed, BossSpeciesId?, NpcId?, LootSpecimenId?, LootSpeciesId?, Tokens?, Outcome, Rounds, LogJson | Log stored verbatim (ADR-0004); fighters, owners and HP are in the log. PvP: outcome `ChallengerWon` / `OpponentWon`, loot without foreign key. NPC: the trainer is the challenger, loot = reward specimen of a first win, `Tokens` = tokens of a first win |
+| `BattleParticipant` | Id, BattleId, TrainerId, Won | Boss: `Won` = caught the boss; PvP and NPC: `Won` = winner. Bosses and NPCs need no row, they are in the log |
 | `AchievementUnlock` | TrainerId + Threshold (PK), UnlockedAt | Never deleted except with the trainer |
-| `Cooldown` | Key (PK), Until | `boss` (global cooldown and failed-lobby retry share it); later per trainer+NPC |
+| `NpcBadge` | TrainerId + NpcId (PK), WonAt, BattleId | First win against an NPC; never deleted except with the trainer |
+| `Cooldown` | Key (PK), Until | `boss` (global cooldown and failed-lobby retry share it); `npc:<trainer>:<npc>` per trainer and NPC |
 | `PublishQueueItem` | Id, Path, Payload, State, Attempts | Outbox for R2 uploads |
 
 Species, type chart and NPC teams stay in `data/*.json`, referenced by id (NPC
@@ -65,8 +67,12 @@ defaults in code.
   seed draws both teams of 6 (challenger first), all hits and the loot →
   `TeamBattle` → battle, loot transfer and the winner's achievements in one
   transaction → chat messages. Later: publish.
-- **NPC** (spec §7): `!challenge <NPC>` → unlock and cooldown check → fight
-  against the fixed team with strength multiplier.
+- **NPC** (spec §7, built): `!challenge <NPC>` (name or id) → unlock check
+  against `AchievementUnlock`, cooldown check (skipped in the dry run), team
+  size → one seed draws the trainer's team of 6, all hits and the reward
+  specimen → `TeamBattle` against the fixed team × strength → battle, tokens,
+  on a first win badge and reward specimen, achievements and cooldown in one
+  transaction → chat messages. Later: publish.
 - **Publishing** (spec §9): game logic only enqueues `PublishQueueItem`s; a
   background worker uploads to R2 and retries on failure. "Republish
   everything" regenerates all files from the DB.

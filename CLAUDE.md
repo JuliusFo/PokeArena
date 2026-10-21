@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-10-20 · v0.4.0 (WP-00 – WP-04 done) · WP-05 next
+Status: 2026-10-21 · v0.4.0 (WP-00 – WP-04 done) · WP-05 built, live test pending
 
 ## 1. Where to find what
 
@@ -153,7 +153,7 @@ PokeArena.slnx
 
 ## 9. Next
 
-Start WP-05 (NPC fights, `!challenge` playable); its reward step stays stubbed
-until E22 (NPC reward) is decided. Still open: operations on the streamer's PC;
+Live test of WP-05 (NPC fights, `!challenge`, tokens and badges) in the dry
+run, then release 0.5.0. Still open: operations on the streamer's PC;
 from WP-03 the `N = 4` boss dip, the runtime balancing editor and progression
 length. Details: docs/roadmap.md.

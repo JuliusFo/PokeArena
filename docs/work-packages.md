@@ -10,7 +10,7 @@ in [roadmap.md](roadmap.md).
 | WP-02 | Domain foundation | 0.2.0 | done 2026-10-13 |
 | WP-03 | Battle engine + boss | 0.3.0 | done 2026-10-19 |
 | WP-04 | PvP | 0.4.0 | done 2026-10-20 |
-| WP-05 | NPC fights | 0.5.0 | planned |
+| WP-05 | NPC fights | 0.5.0 | built 2026-10-21, live test pending |
 | WP-06 | Website | 0.6.0 | planned |
 | WP-07 | Operations | 1.0.0 | planned |
 
@@ -158,6 +158,34 @@ in [roadmap.md](roadmap.md).
   decision: no separate channel test.
 - Deliberately not done: pair cooldown (spec §6), withdrawing or declining a
   challenge, the PDF's pick-your-team mode, battle link (WP-06).
+
+### WP-05 — NPC fights (2026-10-21, branch wp/05-npc-fights)
+- Built: `NpcService` + `!challenge <NPC>` (name or id, case-insensitive) —
+  unlock check against `AchievementUnlock`, cooldown per trainer and NPC in
+  the `Cooldown` table (`npc:<trainer>:<npc>`, 48 h after a loss, 60 min
+  after a win, skipped in the dry run), team size check, one seed for the
+  trainer's team of 6, the hits and the reward specimen, `TeamBattle` against
+  the fixed team × strength; battle, tokens, badge and reward specimen, the
+  achievements it reaches and the cooldown in one transaction. `NpcSettings`;
+  `npcs.json` field `tokens` (Eich 1 … Ash 17); `BattleKind.Npc`,
+  `Battle.NpcId` / `Tokens`, `Trainer.Tokens`, `NpcBadge`,
+  `SpecimenOrigin.Npc` (migration `NpcFights`). UI: NPC rows in "Kämpfe"
+  („Ash gegen Eich“, reward or „Eich gewinnt“), columns „Orden“ and „Tokens“
+  in the trainer list, dry-run NPC picker „Freischalten“ that tops a test
+  viewer up to the NPC's threshold and unlocks the achievements. Tests:
+  150 unit, 23 bUnit.
+- User decisions: E22 on 2026-10-21 — only the first win brings a reward:
+  badge, tokens staggered per NPC in `npcs.json` and a team specimen the
+  trainer lacks (first built as tokens for every win, corrected the same
+  day); redeeming tokens later. Plan agreed with the proposals (rising token
+  amounts, cooldowns kept, plain balance, reply drafts).
+- Addenda: spec §1 (badge, tokens), §7 (reward, dry run, reply drafts), §10,
+  §14 (E22 closed); architecture (data model, NPC flow); backlog (token
+  redemption, ledger, balance command).
+- Pitfalls: none new.
+- Live test: pending (dry run with a test viewer unlocked via the NPC picker).
+- Deliberately not done: redeeming tokens, a token or badge command in chat,
+  badges on the website (WP-06).
 
 Template per entry:
 

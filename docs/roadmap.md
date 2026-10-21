@@ -122,12 +122,25 @@ Demo: `!fight` playable.
 
 ## WP-05 — NPC fights (2–3 days) → v0.5.0
 
-NPC fights + unlock announcements; reward step stubbed until E22 is decided.
+NPC fights, reward, unlock announcements.
 Demo: `!challenge Eich` playable.
 
-- Open (E22): NPC reward. Proposal (review): first win only — a badge on the
-  website plus one random specimen from the NPC's team, preferring species
-  the trainer lacks; makes the win cooldown unnecessary.
+- User decisions (2026-10-21, E22): only the first win against an NPC brings
+  a reward — a badge, the NPC's tokens (staggered per NPC in `npcs.json`,
+  Eich 1 … Ash 17) and one specimen of the NPC's team, preferring species the
+  trainer lacks. (Briefly decided as tokens for every win, corrected the same
+  day.) Both cooldowns stay as specified. Redeeming tokens is not part of
+  WP-05 (backlog).
+- Plan (agreed 2026-10-21, ≈ 3 days): cooldowns in the `Cooldown` table
+  (key `npc:<trainer>:<npc>`); `BattleKind.Npc` with `Battle.NpcId`; new
+  `NpcBadge` table (first win, permanent); `Trainer.Tokens` as a plain
+  balance; one seed draws the player team, the hits and the reward specimen;
+  fight, reward, achievements and cooldown in one transaction; NPC rows in
+  "Kämpfe", tokens and badges in the trainer list; the dry run can top a test
+  viewer up to an NPC's threshold. Not included: redeeming tokens, a token
+  command in chat, badges on the website (WP-06).
+- Built 2026-10-21; live test (dry run) pending. See the log in
+  work-packages.md.
 
 ## WP-06 — Website (4–5 days) → v0.6.0
 

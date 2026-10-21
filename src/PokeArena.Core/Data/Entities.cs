@@ -16,6 +16,9 @@ public sealed class Trainer
 
     public DateTimeOffset RegisteredAt { get; init; }
 
+    /// <summary>Token balance: the first win against an NPC adds its tokens (spec §7); spending them comes later.</summary>
+    public int Tokens { get; set; }
+
     public List<Specimen> Specimens { get; init; } = [];
 }
 
@@ -25,6 +28,9 @@ public enum SpecimenOrigin
 
     /// <summary>Caught by surviving a boss fight (spec §4).</summary>
     Boss,
+
+    /// <summary>Reward for the first win against an NPC (spec §7).</summary>
+    Npc,
 }
 
 /// <summary>One owned Pokemon. Duplicates of a species are separate specimens (spec §1).</summary>
@@ -54,6 +60,9 @@ public enum BattleKind
 
     /// <summary>Trainer against trainer (spec §6).</summary>
     Pvp,
+
+    /// <summary>Trainer against an NPC (spec §7).</summary>
+    Npc,
 }
 
 public enum BattleOutcome
@@ -61,10 +70,10 @@ public enum BattleOutcome
     BossDefeated,
     BossEscaped,
 
-    /// <summary>PvP: the trainer who issued the challenge won.</summary>
+    /// <summary>PvP: the trainer who issued the challenge won. NPC: the trainer won.</summary>
     ChallengerWon,
 
-    /// <summary>PvP: the challenged trainer won.</summary>
+    /// <summary>PvP: the challenged trainer won. NPC: the NPC won.</summary>
     OpponentWon,
 }
 
@@ -82,11 +91,20 @@ public sealed class Battle
     /// <summary>Boss fights: the boss species.</summary>
     public int? BossSpeciesId { get; init; }
 
-    /// <summary>PvP: the specimen the winner took from the loser. No foreign key — the battle outlives it.</summary>
+    /// <summary>NPC fights: id in <see cref="NpcCatalog"/>.</summary>
+    public string? NpcId { get; init; }
+
+    /// <summary>
+    /// PvP: the specimen the winner took from the loser. NPC: the reward specimen of a first win. No foreign
+    /// key — the battle outlives it.
+    /// </summary>
     public long? LootSpecimenId { get; init; }
 
-    /// <summary>PvP: species of the loot, so the battle stays readable after the specimen is gone.</summary>
+    /// <summary>Species of the loot, so the battle stays readable after the specimen is gone.</summary>
     public int? LootSpeciesId { get; init; }
+
+    /// <summary>NPC first wins: tokens credited to the trainer.</summary>
+    public int? Tokens { get; init; }
 
     public BattleOutcome Outcome { get; init; }
 
@@ -109,7 +127,7 @@ public sealed class BattleParticipant
 
     public Trainer? Trainer { get; set; }
 
-    /// <summary>Boss fights: survived and caught the boss. PvP: won the fight.</summary>
+    /// <summary>Boss fights: survived and caught the boss. PvP and NPC: won the fight.</summary>
     public bool Won { get; init; }
 }
 
@@ -126,7 +144,23 @@ public sealed class AchievementUnlock
     public DateTimeOffset UnlockedAt { get; init; }
 }
 
-/// <summary>A cooldown that must survive a restart, e.g. the global boss cooldown.</summary>
+/// <summary>A trainer's badge of an NPC: earned by the first win against it (spec §7), never revoked.</summary>
+public sealed class NpcBadge
+{
+    public required string TrainerId { get; init; }
+
+    public Trainer? Trainer { get; set; }
+
+    /// <summary>Id in <see cref="NpcCatalog"/>.</summary>
+    public required string NpcId { get; init; }
+
+    public DateTimeOffset WonAt { get; init; }
+
+    /// <summary>The winning battle. No foreign key, like the loot columns of <see cref="Battle"/>.</summary>
+    public long BattleId { get; init; }
+}
+
+/// <summary>A cooldown that must survive a restart: the global boss cooldown, one per trainer and NPC.</summary>
 public sealed class Cooldown
 {
     public required string Key { get; init; }

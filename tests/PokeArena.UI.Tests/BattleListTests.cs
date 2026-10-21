@@ -15,6 +15,7 @@ public class BattleListTests : BunitContext
     private readonly SqliteConnection _keeper;
     private readonly DryRunMode _dryRun = new();
     private readonly SpeciesCatalog _species = SpeciesCatalog.Load(Path.Combine(AppContext.BaseDirectory, "data", "pokemon.json"));
+    private readonly NpcCatalog _npcs;
     private readonly FakeTimeProvider _time = new(new DateTimeOffset(2026, 10, 15, 18, 30, 0, TimeSpan.Zero));
     private readonly GameDatabase _database;
     private readonly TrainerService _trainers;
@@ -26,10 +27,11 @@ public class BattleListTests : BunitContext
         var connectionString = $"Data Source=ui-{Guid.NewGuid():N};Mode=Memory;Cache=Shared";
         _keeper = new SqliteConnection(connectionString);
         _keeper.Open();
+        _npcs = NpcCatalog.Load(Path.Combine(AppContext.BaseDirectory, "data", "npcs.json"), _species);
         _database = new GameDatabase(connectionString, _dryRun, NullLogger<GameDatabase>.Instance);
         _database.MigrateLiveAsync(_ct).GetAwaiter().GetResult();
         _trainers = new TrainerService(_database, _species, _time, NullLogger<TrainerService>.Instance);
-        _battles = new BattleService(_database, _species);
+        _battles = new BattleService(_database, _species, _npcs);
 
         Services.AddSingleton(_database);
         Services.AddSingleton(_battles);
@@ -105,6 +107,42 @@ public class BattleListTests : BunitContext
         {
             var cells = cut.FindAll("tbody tr td").Select(td => td.TextContent).ToList();
             Assert.Equal([opponent, "2", result], cells.Skip(1));
+        });
+    }
+
+    [Theory]
+    [InlineData(BattleOutcome.ChallengerWon, 129, 1, "Ash gewinnt Orden, Karpador, 1 Token")]
+    [InlineData(BattleOutcome.ChallengerWon, null, null, "Ash gewinnt erneut")]
+    [InlineData(BattleOutcome.OpponentWon, null, null, "Eich gewinnt")]
+    public async Task Npc_fight_shows_trainer_npc_and_reward(BattleOutcome outcome, int? rewardSpecies, int? tokens, string result)
+    {
+        var cut = Render<BattleListPanel>();
+        await _trainers.RegisterAsync("1", "ash", "Ash", _species.Get(25), _ct);
+
+        await using (var db = _database.Open())
+        {
+            db.Battles.Add(new Battle
+            {
+                Kind = BattleKind.Npc,
+                FoughtAt = _time.GetUtcNow(),
+                Seed = 7,
+                NpcId = "eich",
+                LootSpeciesId = rewardSpecies,
+                Tokens = tokens,
+                Outcome = outcome,
+                Rounds = 6,
+                LogJson = new BattleLog([], []).ToJson(),
+                Participants = [new BattleParticipant { TrainerId = "1", Won = outcome == BattleOutcome.ChallengerWon }],
+            });
+            await db.SaveChangesAsync(_ct);
+        }
+
+        _battles.NotifyChanged();
+
+        cut.WaitForAssertion(() =>
+        {
+            var cells = cut.FindAll("tbody tr td").Select(td => td.TextContent).ToList();
+            Assert.Equal(["Ash gegen Eich", "1", result], cells.Skip(1));
         });
     }
 

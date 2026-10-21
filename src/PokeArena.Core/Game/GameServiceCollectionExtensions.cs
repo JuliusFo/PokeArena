@@ -32,15 +32,18 @@ public static class GameServiceCollectionExtensions
         services.AddSingleton(BattleSettings.Default);
         services.AddSingleton(BossSettings.Default);
         services.AddSingleton(PvpSettings.Default);
+        services.AddSingleton(NpcSettings.Default);
         services.AddSingleton<DamageCalculator>();
         services.AddSingleton<ISeedSource, SystemSeedSource>();
         services.AddSingleton<BossEncounter>();
         services.AddSingleton<PvpService>();
+        services.AddSingleton<NpcService>();
         services.AddSingleton<DryRunTrainers>();
 
         services.AddSingleton<IChatCommand, RegisterCommand>();
         services.AddSingleton<IChatCommand, BossCommand>();
         services.AddSingleton<IChatCommand, FightCommand>();
+        services.AddSingleton<IChatCommand, ChallengeCommand>();
         services.AddHostedService<GameStartup>();
         return services;
     }

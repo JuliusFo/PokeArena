@@ -59,15 +59,26 @@ public class BaseDataTests
         Assert.Equal("Eich", npcs.ForThreshold(15).Name);
         Assert.Equal(["Bisasam", "Schiggy", "Glumanda", "Raupy", "Hornliu", "Pikachu"], npcs.ForThreshold(15).Team.Select(s => s.Name));
         Assert.Equal([15, 25], npcs.ThresholdsReached(39));
+        Assert.Equal(Enumerable.Range(1, 17), npcs.All.Select(n => n.Tokens));
     }
 
+    [Theory]
+    [InlineData("Eich", "eich")]
+    [InlineData(" EICH ", "eich")]
+    [InlineData("siegfried", "siegfried")]
+    [InlineData("Agumon", null)]
+    public void Npcs_are_found_by_name_or_id_ignoring_case(string name, string? id) =>
+        Assert.Equal(id, GameFixture.Npcs.Find(name)?.Id);
+
     [Fact]
-    public void Npcs_reject_unknown_species_and_duplicate_thresholds()
+    public void Npcs_reject_unknown_species_duplicate_thresholds_and_negative_tokens()
     {
         var unknown = RealNpcsJson.Replace("\"hornliu\"", "\"agumon\"");
         var duplicate = RealNpcsJson.Replace("\"schwelle\": 25", "\"schwelle\": 15");
+        var negative = RealNpcsJson.Replace("\"tokens\": 1,", "\"tokens\": -1,");
 
         Assert.Contains("unknown species 'agumon'", Assert.Throws<InvalidDataException>(() => NpcCatalog.Parse(unknown, GameFixture.Species)).Message);
         Assert.Contains("duplicate threshold 15", Assert.Throws<InvalidDataException>(() => NpcCatalog.Parse(duplicate, GameFixture.Species)).Message);
+        Assert.Contains("Eich: tokens must not be negative", Assert.Throws<InvalidDataException>(() => NpcCatalog.Parse(negative, GameFixture.Species)).Message);
     }
 }

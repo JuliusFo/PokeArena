@@ -26,6 +26,11 @@ all chat output and UI text in German.
   151). Once unlocked, an achievement is **never lost**, even if the distinct
   count later drops below the threshold. Each achievement unlocks the
   corresponding NPC.
+- **Badge (Orden)** — earned by the first win against an NPC (§7); permanent
+  like an achievement.
+- **Tokens** — a per-trainer balance earned by the first win against each NPC
+  (§7), to be redeemed with the streamer for rewards later (not in v1 yet,
+  backlog).
 
 ## 2. Base data
 
@@ -235,8 +240,22 @@ Used by boss, PvP and NPC fights.
   farming.
 - Error replies per PDF: „Du kannst diesen NPC noch nicht herausfordern
   (Cooldown XX:XX)" / „… (noch x Pokemon benötigt)".
-- **OPEN (E22):** the reward for beating an NPC is not yet defined. Blocks
-  only this milestone's reward step; fights themselves are specified.
+- Reward (E22, user decisions 2026-10-21): only the **first win** against an
+  NPC brings a reward —
+  - its badge,
+  - its tokens, staggered per NPC (`tokens` in `npcs.json`; default rising
+    with the threshold: Eich 1 … Ash 17),
+  - one specimen of the NPC's team: a random species the trainer does not own
+    yet, or a random team species if they own all six. It counts for
+    achievements like a catch.
+
+  Further wins and losses bring nothing; NPCs can still be fought again.
+- Replies (drafts): „Ash besiegt Eich und bekommt den Orden von Eich,
+  Glumanda und 1 Token!“ (first win) / „Ash besiegt Eich erneut – eine
+  Belohnung gibt es nur beim ersten Sieg.“ / „Eich besiegt Ash! Nächster
+  Versuch in 48 Stunden.“; without or with an unknown name the bot lists the
+  unlocked NPCs.
+- In the dry run the cooldowns are skipped, as for the boss.
 
 ## 8. Commands
 
@@ -309,7 +328,8 @@ Data files (all derived — fully regenerable from the DB; the UI has a
 ## 10. Storage
 
 - **SQLite (EF Core) is the single source of truth**: trainers, specimens,
-  fights (including full logs and seeds), achievements, cooldowns, publish
+  fights (including full logs and seeds), achievements, NPC badges, token
+  balances, cooldowns, publish
   queue, balancing config. Loot transfers run in one transaction. Open PvP
   challenges and the boss lobby are short-lived and stay in memory.
 - A **publish queue** (outbox) decouples game logic from uploads; network
@@ -374,8 +394,9 @@ exists they are code defaults, WP-03 decision; see roadmap.md.)
 
 **OPEN for v1:**
 
-1. NPC reward (E22).
-2. Exact German wording of all chat messages (drafted during implementation).
+1. Exact German wording of all chat messages (drafted during implementation).
+
+Decided: NPC reward (E22) on 2026-10-21, see §7.
 
 **Deferred (v2+):** everything not in v1 — from the PDF, the design review
 and later ideas — is collected in [backlog.md](backlog.md).
