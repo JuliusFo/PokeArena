@@ -170,7 +170,7 @@ public class BossEncounterTests : IDisposable
         _inbox,
         _chat,
         _game.Trainers,
-        new BattleService(_game.Database, Species),
+        new BattleService(_game.Database, Species, GameFixture.Npcs),
         _game.DryRun,
         _game.Time,
         NullLogger<BossEncounter>.Instance);

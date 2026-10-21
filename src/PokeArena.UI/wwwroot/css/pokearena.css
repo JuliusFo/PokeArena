@@ -268,7 +268,8 @@ body {
   color: var(--muted);
 }
 
-input:not([type="checkbox"]) {
+input:not([type="checkbox"]),
+select {
   padding: 7px 10px;
   border: 1px solid var(--border);
   border-radius: 8px;

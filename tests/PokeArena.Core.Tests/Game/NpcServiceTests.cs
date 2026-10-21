@@ -204,7 +204,7 @@ public class NpcServiceTests : IDisposable
         new FixedSeeds(seed),
         _chat,
         _game.Trainers,
-        new BattleService(database ?? _game.Database, Species),
+        new BattleService(database ?? _game.Database, Species, GameFixture.Npcs),
         _game.Time,
         NullLogger<NpcService>.Instance);
 

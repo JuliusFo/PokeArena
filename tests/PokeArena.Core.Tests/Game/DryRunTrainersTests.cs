@@ -18,7 +18,7 @@ public class DryRunTrainersTests : IDisposable
     {
         _chatLog = new ChatLog(_game.Time);
         _trainers = new DryRunTrainers(
-            _game.Database, GameFixture.Species, _game.Trainers, PvpSettings.Default, new FixedSeeds(), _inbox, _chatLog, _game.Time);
+            _game.Database, GameFixture.Species, GameFixture.Npcs, _game.Trainers, PvpSettings.Default, new FixedSeeds(), _inbox, _chatLog, _game.Time);
     }
 
     [Fact]
@@ -49,6 +49,23 @@ public class DryRunTrainersTests : IDisposable
         var specimens = await db.Specimens.ToListAsync(_ct);
         Assert.Equal(6, specimens.Count);
         Assert.Equal(25, specimens.Single(s => s.IsStarter).SpeciesId);
+    }
+
+    [Fact]
+    public async Task Unlock_gives_a_test_viewer_enough_distinct_species_and_the_achievements()
+    {
+        _game.DryRun.Enabled = true;
+        await PrepareAsync("Ash");
+
+        _trainers.Unlock("Ash", GameFixture.Npcs.Find("rocko")!);
+        await RunQueuedAsync();
+
+        await using var db = _game.Database.Open();
+        var specimens = await db.Specimens.ToListAsync(_ct);
+        Assert.Equal(25, specimens.Select(s => s.SpeciesId).Distinct().Count());
+        Assert.Single(specimens, s => s.IsStarter);
+        Assert.Equal([15, 25], await db.AchievementUnlocks.OrderBy(u => u.Threshold).Select(u => u.Threshold).ToListAsync(_ct));
+        Assert.Equal("Testzuschauer Ash hat jetzt 25 verschiedene Pokémon und kann Rocko herausfordern.", _chatLog.Snapshot()[^1].Text);
     }
 
     [Fact]

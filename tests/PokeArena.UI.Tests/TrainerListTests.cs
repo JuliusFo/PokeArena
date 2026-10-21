@@ -1,4 +1,5 @@
 using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Time.Testing;
@@ -17,6 +18,7 @@ public class TrainerListTests : BunitContext
     private readonly SqliteConnection _keeper;
     private readonly DryRunMode _dryRun = new();
     private readonly SpeciesCatalog _species = SpeciesCatalog.Load(Path.Combine(AppContext.BaseDirectory, "data", "pokemon.json"));
+    private readonly NpcCatalog _npcs;
     private readonly FakeTimeProvider _time = new(new DateTimeOffset(2026, 10, 13, 18, 30, 0, TimeSpan.Zero));
     private readonly GameDatabase _database;
     private readonly TrainerService _trainers;
@@ -27,6 +29,7 @@ public class TrainerListTests : BunitContext
         var connectionString = $"Data Source=ui-{Guid.NewGuid():N};Mode=Memory;Cache=Shared";
         _keeper = new SqliteConnection(connectionString);
         _keeper.Open();
+        _npcs = NpcCatalog.Load(Path.Combine(AppContext.BaseDirectory, "data", "npcs.json"), _species);
         _database = new GameDatabase(connectionString, _dryRun, NullLogger<GameDatabase>.Instance);
         _database.MigrateLiveAsync(_ct).GetAwaiter().GetResult();
         _trainers = new TrainerService(_database, _species, _time, NullLogger<TrainerService>.Instance);
@@ -34,13 +37,13 @@ public class TrainerListTests : BunitContext
         Services.AddSingleton(_dryRun);
         Services.AddSingleton(_database);
         Services.AddSingleton(_trainers);
-        Services.AddSingleton(new BattleService(_database, _species));
+        Services.AddSingleton(new BattleService(_database, _species, _npcs));
         Services.AddSingleton(new AppInfo("0.2.0"));
         var chatLog = new ChatLog(_time);
         var inbox = new ChatInbox();
         Services.AddSingleton(chatLog);
         Services.AddSingleton(inbox);
-        Services.AddSingleton(new DryRunTrainers(_database, _species, _trainers, PvpSettings.Default, new SystemSeedSource(), inbox, chatLog, _time));
+        Services.AddSingleton(new DryRunTrainers(_database, _species, _npcs, _trainers, PvpSettings.Default, new SystemSeedSource(), inbox, chatLog, _time));
         Services.AddSingleton<ITwitchConnection>(new FakeTwitchConnection());
     }
 
@@ -67,6 +70,28 @@ public class TrainerListTests : BunitContext
             Assert.Equal("1", cells[2]);
         });
         Assert.Equal("1 Trainer", cut.Find(".count").TextContent);
+    }
+
+    [Fact]
+    public async Task Badges_and_tokens_are_listed()
+    {
+        await _trainers.RegisterAsync("1001", "ash", "Ash", _species.Get(25), _ct);
+        await using (var db = _database.Open())
+        {
+            (await db.Trainers.SingleAsync(_ct)).Tokens = 7;
+            db.NpcBadges.AddRange(
+                new NpcBadge { TrainerId = "1001", NpcId = "eich", BattleId = 1 },
+                new NpcBadge { TrainerId = "1001", NpcId = "rocko", BattleId = 2 });
+            await db.SaveChangesAsync(_ct);
+        }
+
+        var cut = Render<TrainerListPanel>();
+
+        cut.WaitForAssertion(() =>
+        {
+            var cells = cut.FindAll("tbody tr td").Select(td => td.TextContent).ToList();
+            Assert.Equal(["1", "2", "7"], cells[2..5]);
+        });
     }
 
     [Fact]

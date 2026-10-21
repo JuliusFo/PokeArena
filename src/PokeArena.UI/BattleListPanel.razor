@@ -26,7 +26,7 @@
             {
                 <p class="hint">
                     Noch keine Kämpfe. Ein Boss-Kampf beginnt, wenn jemand im Chat <strong>!boss</strong> schreibt, ein
-                    Trainerkampf mit <strong>!fight @@Name</strong>.
+                    Trainerkampf mit <strong>!fight @@Name</strong>, ein NPC-Kampf mit <strong>!challenge Eich</strong>.
                 </p>
             }
             else
@@ -97,18 +97,28 @@
     private static string Opponent(BattleSummary battle) => battle switch
     {
         { Boss: { } boss } => boss.Name + boss.Rarity switch { 3 => " (legendär)", 2 => " (selten)", _ => "" },
+        { Npc: { } npc } => $"{battle.Winner ?? battle.Loser ?? Unknown} gegen {npc.Name}",
         { Outcome: BattleOutcome.ChallengerWon } => $"{battle.Winner ?? Unknown} gegen {battle.Loser ?? Unknown}",
         { Outcome: BattleOutcome.OpponentWon } => $"{battle.Loser ?? Unknown} gegen {battle.Winner ?? Unknown}",
         _ => "–",
     };
 
-    private static string Result(BattleSummary battle) => battle.Outcome switch
+    private static string Result(BattleSummary battle) => battle switch
     {
-        BattleOutcome.BossDefeated => battle.Winners == 1 ? "besiegt, 1 Fang" : $"besiegt, {battle.Winners} Fänge",
-        BattleOutcome.ChallengerWon or BattleOutcome.OpponentWon =>
+        { Outcome: BattleOutcome.BossDefeated } => battle.Winners == 1 ? "besiegt, 1 Fang" : $"besiegt, {battle.Winners} Fänge",
+        { Npc: { } npc, Outcome: BattleOutcome.OpponentWon } => $"{npc.Name} gewinnt",
+        { Npc: not null } => $"{battle.Winner ?? Unknown} gewinnt {NpcGains(battle)}",
+        { Outcome: BattleOutcome.ChallengerWon or BattleOutcome.OpponentWon } =>
             $"{battle.Winner ?? Unknown} gewinnt {battle.Loot?.Name ?? "ein Pokémon"}",
         _ => "entkommen",
     };
+
+    // First win: badge, reward species and tokens; further wins: only tokens.
+    private static string NpcGains(BattleSummary battle)
+    {
+        var tokens = battle.Tokens == 1 ? "1 Token" : $"{battle.Tokens ?? 0} Tokens";
+        return battle.Loot is { } reward ? $"Orden, {reward.Name}, {tokens}" : tokens;
+    }
 
     private async Task SelectAsync(long id)
     {
