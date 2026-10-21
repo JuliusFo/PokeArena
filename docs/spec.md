@@ -28,8 +28,9 @@ all chat output and UI text in German.
   corresponding NPC.
 - **Badge (Orden)** — earned by the first win against an NPC (§7); permanent
   like an achievement.
-- **Tokens** — a per-trainer balance earned by every NPC win (§7), to be
-  redeemed with the streamer for rewards later (not in v1 yet, backlog).
+- **Tokens** — a per-trainer balance earned by the first win against each NPC
+  (§7), to be redeemed with the streamer for rewards later (not in v1 yet,
+  backlog).
 
 ## 2. Base data
 
@@ -239,17 +240,21 @@ Used by boss, PvP and NPC fights.
   farming.
 - Error replies per PDF: „Du kannst diesen NPC noch nicht herausfordern
   (Cooldown XX:XX)" / „… (noch x Pokemon benötigt)".
-- Reward (E22, user decision 2026-10-21):
-  - **Every win** credits the NPC's tokens (`tokens` per NPC in `npcs.json`;
-    default rising with the threshold: Eich 1 … Ash 17).
-  - The **first win** against an NPC also brings its badge and one specimen of
-    the NPC's team: a random species the trainer does not own yet, or a random
-    team species if they own all six. It counts for achievements like a catch.
-  - A loss brings nothing. The win cooldown limits token farming.
+- Reward (E22, user decisions 2026-10-21): only the **first win** against an
+  NPC brings a reward —
+  - its badge,
+  - its tokens, staggered per NPC (`tokens` in `npcs.json`; default rising
+    with the threshold: Eich 1 … Ash 17),
+  - one specimen of the NPC's team: a random species the trainer does not own
+    yet, or a random team species if they own all six. It counts for
+    achievements like a catch.
+
+  Further wins and losses bring nothing; NPCs can still be fought again.
 - Replies (drafts): „Ash besiegt Eich und bekommt den Orden von Eich,
-  Glumanda und 1 Token!“ (first win) / „Ash besiegt Eich erneut und bekommt
-  1 Token!“ / „Eich besiegt Ash! Nächster Versuch in 48 Stunden.“; without or
-  with an unknown name the bot lists the unlocked NPCs.
+  Glumanda und 1 Token!“ (first win) / „Ash besiegt Eich erneut – eine
+  Belohnung gibt es nur beim ersten Sieg.“ / „Eich besiegt Ash! Nächster
+  Versuch in 48 Stunden.“; without or with an unknown name the bot lists the
+  unlocked NPCs.
 - In the dry run the cooldowns are skipped, as for the boss.
 
 ## 8. Commands

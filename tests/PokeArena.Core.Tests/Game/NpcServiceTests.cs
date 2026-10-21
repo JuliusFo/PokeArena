@@ -54,7 +54,7 @@ public class NpcServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task Further_wins_bring_only_the_tokens()
+    public async Task Further_wins_bring_nothing()
     {
         await RegisterAsync("1", "Ash", "Karpador", 5, unlock: 15);
         var npc = Npc();
@@ -63,13 +63,26 @@ public class NpcServiceTests : IDisposable
         _game.Time.Advance(NpcSettings.Default.WinCooldown);
         await npc.ChallengeAsync(Challenge("1", "Ash"), "EICH", _ct);
 
-        Assert.Equal("Ash besiegt Eich erneut und bekommt 1 Token!", _chat.Sent[^1]);
+        Assert.Equal("Ash besiegt Eich erneut – eine Belohnung gibt es nur beim ersten Sieg.", _chat.Sent[^1]);
         await using var db = _game.OpenLive();
         Assert.Equal(2, await db.Battles.CountAsync(_ct));
-        Assert.Null((await db.Battles.OrderBy(b => b.Id).LastAsync(_ct)).LootSpeciesId);
+        var repeat = await db.Battles.OrderBy(b => b.Id).LastAsync(_ct);
+        Assert.Equal((BattleOutcome.ChallengerWon, (int?)null, (int?)null), (repeat.Outcome, repeat.LootSpeciesId, repeat.Tokens));
         Assert.Equal(7, await db.Specimens.CountAsync(_ct));
-        Assert.Equal(2, (await db.Trainers.SingleAsync(_ct)).Tokens);
+        Assert.Equal(1, (await db.Trainers.SingleAsync(_ct)).Tokens);
         Assert.Single(db.NpcBadges);
+    }
+
+    [Fact]
+    public async Task Tokens_rise_with_the_npc()
+    {
+        await RegisterAsync("1", "Ash", "Karpador", 30, unlock: 25);
+
+        await Npc().ChallengeAsync(Challenge("1", "Ash"), "rocko", _ct);
+
+        Assert.EndsWith(" und 2 Tokens!", _chat.Sent.Single());
+        await using var db = _game.OpenLive();
+        Assert.Equal(2, (await db.Trainers.SingleAsync(_ct)).Tokens);
     }
 
     [Fact]
@@ -119,7 +132,7 @@ public class NpcServiceTests : IDisposable
         await npc.ChallengeAsync(Challenge("1", "Ash", simulated: true), "eich", _ct);
         await npc.ChallengeAsync(Challenge("1", "Ash", simulated: true), "eich", _ct);
 
-        Assert.Equal("Ash besiegt Eich erneut und bekommt 1 Token!", _chat.Sent[^1]);
+        Assert.Equal("Ash besiegt Eich erneut – eine Belohnung gibt es nur beim ersten Sieg.", _chat.Sent[^1]);
         await using var db = _game.OpenLive();
         Assert.Empty(db.Cooldowns);
     }

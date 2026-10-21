@@ -82,7 +82,7 @@ public sealed record NpcSettings
     /// <summary>NPCNiederlageCooldownHours: per trainer and NPC, after a loss.</summary>
     public TimeSpan LossCooldown { get; init; } = TimeSpan.FromHours(48);
 
-    /// <summary>NPCSiegCooldownMinutes: per trainer and NPC, after a win; limits token farming.</summary>
+    /// <summary>NPCSiegCooldownMinutes: per trainer and NPC, after a win.</summary>
     public TimeSpan WinCooldown { get; init; } = TimeSpan.FromMinutes(60);
 }
 

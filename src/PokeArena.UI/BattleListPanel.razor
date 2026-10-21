@@ -107,18 +107,15 @@
     {
         { Outcome: BattleOutcome.BossDefeated } => battle.Winners == 1 ? "besiegt, 1 Fang" : $"besiegt, {battle.Winners} Fänge",
         { Npc: { } npc, Outcome: BattleOutcome.OpponentWon } => $"{npc.Name} gewinnt",
-        { Npc: not null } => $"{battle.Winner ?? Unknown} gewinnt {NpcGains(battle)}",
+        { Npc: not null, Loot: { } reward } => $"{battle.Winner ?? Unknown} gewinnt Orden, {reward.Name}, {Tokens(battle.Tokens ?? 0)}",
+        { Npc: not null } => $"{battle.Winner ?? Unknown} gewinnt erneut",
         { Outcome: BattleOutcome.ChallengerWon or BattleOutcome.OpponentWon } =>
             $"{battle.Winner ?? Unknown} gewinnt {battle.Loot?.Name ?? "ein Pokémon"}",
         _ => "entkommen",
     };
 
-    // First win: badge, reward species and tokens; further wins: only tokens.
-    private static string NpcGains(BattleSummary battle)
-    {
-        var tokens = battle.Tokens == 1 ? "1 Token" : $"{battle.Tokens ?? 0} Tokens";
-        return battle.Loot is { } reward ? $"Orden, {reward.Name}, {tokens}" : tokens;
-    }
+    // Only a first win against an NPC brings a reward.
+    private static string Tokens(int tokens) => tokens == 1 ? "1 Token" : $"{tokens} Tokens";
 
     private async Task SelectAsync(long id)
     {

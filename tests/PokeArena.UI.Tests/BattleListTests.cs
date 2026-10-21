@@ -112,7 +112,7 @@ public class BattleListTests : BunitContext
 
     [Theory]
     [InlineData(BattleOutcome.ChallengerWon, 129, 1, "Ash gewinnt Orden, Karpador, 1 Token")]
-    [InlineData(BattleOutcome.ChallengerWon, null, 3, "Ash gewinnt 3 Tokens")]
+    [InlineData(BattleOutcome.ChallengerWon, null, null, "Ash gewinnt erneut")]
     [InlineData(BattleOutcome.OpponentWon, null, null, "Eich gewinnt")]
     public async Task Npc_fight_shows_trainer_npc_and_reward(BattleOutcome outcome, int? rewardSpecies, int? tokens, string result)
     {

@@ -6,7 +6,7 @@ namespace PokeArena.Core.Data;
 /// <summary>An NPC from <c>data/npcs.json</c> (spec §7), unlocked by the achievement at <see cref="Threshold"/>.</summary>
 /// <param name="Threshold">Distinct species a trainer must own; also the achievement's number („AV 15“).</param>
 /// <param name="Strength">Factor on the team's base values in an NPC fight.</param>
-/// <param name="Tokens">Credited to the trainer for every win against this NPC (spec §7).</param>
+/// <param name="Tokens">Credited to the trainer for the first win against this NPC (spec §7).</param>
 public sealed record Npc(string Id, string Name, int Threshold, double Strength, int Tokens, IReadOnlyList<Species> Team);
 
 /// <summary>

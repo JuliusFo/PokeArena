@@ -8,8 +8,8 @@ namespace PokeArena.Core.Game;
 
 /// <summary>
 /// NPC fights (spec §7): <c>!challenge &lt;NPC&gt;</c> against an NPC unlocked by an achievement resolves at once —
-/// a random team of the trainer against the NPC's fixed team. Every win brings the NPC's tokens, the first one also
-/// its badge and a specimen of its team (E22). Cooldowns per trainer and NPC are stored in the database and
+/// a random team of the trainer against the NPC's fixed team. Only the first win brings a reward: the NPC's badge,
+/// its tokens and a specimen of its team (E22). Cooldowns per trainer and NPC are stored in the database and
 /// survive a restart; the dry run skips them. Runs only on the command queue.
 /// </summary>
 public sealed class NpcService(
@@ -118,23 +118,19 @@ public sealed class NpcService(
             NpcId = npc.Id,
             LootSpecimenId = rewardSpecimen?.Id,
             LootSpeciesId = reward?.Id,
-            Tokens = won ? npc.Tokens : null,
+            Tokens = firstWin ? npc.Tokens : null,
             Outcome = won ? BattleOutcome.ChallengerWon : BattleOutcome.OpponentWon,
             Rounds = (result.Attacks + 1) / 2,
             LogJson = result.Log.ToJson(),
             Participants = [new BattleParticipant { TrainerId = message.UserId, Won = won }],
         };
         db.Battles.Add(battle);
-        if (won)
-        {
-            var trainer = await db.Trainers.SingleAsync(t => t.TwitchUserId == message.UserId, ct);
-            trainer.Tokens += npc.Tokens;
-        }
-
         await db.SaveChangesAsync(ct);
 
         if (firstWin)
         {
+            var trainer = await db.Trainers.SingleAsync(t => t.TwitchUserId == message.UserId, ct);
+            trainer.Tokens += npc.Tokens;
             db.NpcBadges.Add(new NpcBadge { TrainerId = message.UserId, NpcId = npc.Id, WonAt = now, BattleId = battle.Id });
         }
 
@@ -149,10 +145,10 @@ public sealed class NpcService(
         await transaction.CommitAsync(ct);
         log.LogInformation(
             "NPC fight: {Trainer} vs {Npc}, {Outcome}, reward {Reward}, {Tokens} tokens, seed {Seed}",
-            message.UserId, npc.Id, won ? "won" : "lost", reward?.Slug, won ? npc.Tokens : 0, seed);
+            message.UserId, npc.Id, won ? "won" : "lost", reward?.Slug, firstWin ? npc.Tokens : 0, seed);
 
         chat.Send(won
-            ? WinText(message.DisplayName, npc, firstWin, reward)
+            ? WinText(message.DisplayName, npc, reward)
             : $"{npc.Name} besiegt {message.DisplayName}!" + (cooldown is { } wait ? $" Nächster Versuch in {Duration(wait)}." : ""));
         foreach (var a in achievements)
         {
@@ -163,27 +159,21 @@ public sealed class NpcService(
         trainers.NotifyChanged();
     }
 
-    private static string WinText(string trainer, Npc npc, bool firstWin, Species? reward)
+    /// <param name="reward">The reward specimen's species; null for a repeated win, which brings nothing.</param>
+    private static string WinText(string trainer, Npc npc, Species? reward)
     {
-        var gains = new List<string>();
-        if (firstWin)
+        if (reward is null)
         {
-            gains.Add($"den Orden von {npc.Name}");
-            gains.Add(reward!.Name);
+            return $"{trainer} besiegt {npc.Name} erneut – eine Belohnung gibt es nur beim ersten Sieg.";
         }
 
-        if (npc.Tokens > 0)
+        var gains = npc.Tokens switch
         {
-            gains.Add(npc.Tokens == 1 ? "1 Token" : $"{npc.Tokens} Tokens");
-        }
-
-        var beats = firstWin ? $"{trainer} besiegt {npc.Name}" : $"{trainer} besiegt {npc.Name} erneut";
-        return gains.Count switch
-        {
-            0 => beats + "!",
-            1 => $"{beats} und bekommt {gains[0]}!",
-            _ => $"{beats} und bekommt {string.Join(", ", gains[..^1])} und {gains[^1]}!",
+            0 => $"den Orden von {npc.Name} und {reward.Name}",
+            1 => $"den Orden von {npc.Name}, {reward.Name} und 1 Token",
+            _ => $"den Orden von {npc.Name}, {reward.Name} und {npc.Tokens} Tokens",
         };
+        return $"{trainer} besiegt {npc.Name} und bekommt {gains}!";
     }
 
     private static async Task SetCooldownAsync(PokeArenaDb db, string key, DateTimeOffset until, CancellationToken ct)

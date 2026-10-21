@@ -174,10 +174,11 @@ in [roadmap.md](roadmap.md).
   in the trainer list, dry-run NPC picker „Freischalten“ that tops a test
   viewer up to the NPC's threshold and unlocks the achievements. Tests:
   149 unit, 23 bUnit.
-- User decisions: E22 on 2026-10-21 — first win: badge plus a team specimen
-  the trainer lacks; every win: tokens, amount per NPC in `npcs.json`;
-  redeeming tokens later. Plan agreed with the proposals (rising token
-  amounts, win cooldown kept, plain balance, reply drafts).
+- User decisions: E22 on 2026-10-21 — only the first win brings a reward:
+  badge, tokens staggered per NPC in `npcs.json` and a team specimen the
+  trainer lacks (first built as tokens for every win, corrected the same
+  day); redeeming tokens later. Plan agreed with the proposals (rising token
+  amounts, cooldowns kept, plain balance, reply drafts).
 - Addenda: spec §1 (badge, tokens), §7 (reward, dry run, reply drafts), §10,
   §14 (E22 closed); architecture (data model, NPC flow); backlog (token
   redemption, ledger, balance command).

@@ -1,7 +1,7 @@
 {
   "hinweis": [
     "NPCs aus spec.md §7. schwelle = AV (Anzahl verschiedener Arten), die den NPC freischaltet.",
-    "team = Slugs aus pokemon.json. staerke = Faktor auf die Basiswerte im NPC-Kampf. tokens = Belohnung für jeden Sieg (spec.md §7)."
+    "team = Slugs aus pokemon.json. staerke = Faktor auf die Basiswerte im NPC-Kampf. tokens = Belohnung für den ersten Sieg (spec.md §7)."
   ],
   "npcs": [
     { "id": "eich", "name": "Eich", "schwelle": 15, "staerke": 1.0, "tokens": 1, "team": ["bisasam", "schiggy", "glumanda", "raupy", "hornliu", "pikachu"] },

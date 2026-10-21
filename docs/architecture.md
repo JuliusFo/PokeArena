@@ -40,9 +40,9 @@ later packages. Timestamps are stored as UTC ticks (SQLite cannot compare
 
 | Entity | Fields | Notes |
 |---|---|---|
-| `Trainer` | TwitchUserId (PK), DisplayName, Login, RegisteredAt, Tokens | Display name and login refreshed when seen; `@name` mentions resolve by login, then display name. Tokens: plain balance, every NPC win adds the NPC's tokens |
+| `Trainer` | TwitchUserId (PK), DisplayName, Login, RegisteredAt, Tokens | Display name and login refreshed when seen; `@name` mentions resolve by login, then display name. Tokens: plain balance, the first win against an NPC adds its tokens |
 | `Specimen` | Id, TrainerId, SpeciesId, CaughtAt, Origin (Starter, Boss, Npc), IsStarter | PvP loot changes `TrainerId`; unique filtered index: one starter per trainer |
-| `Battle` | Id, Kind, FoughtAt, Seed, BossSpeciesId?, NpcId?, LootSpecimenId?, LootSpeciesId?, Tokens?, Outcome, Rounds, LogJson | Log stored verbatim (ADR-0004); fighters, owners and HP are in the log. PvP: outcome `ChallengerWon` / `OpponentWon`, loot without foreign key. NPC: the trainer is the challenger, loot = reward specimen of a first win, `Tokens` = tokens of a win |
+| `Battle` | Id, Kind, FoughtAt, Seed, BossSpeciesId?, NpcId?, LootSpecimenId?, LootSpeciesId?, Tokens?, Outcome, Rounds, LogJson | Log stored verbatim (ADR-0004); fighters, owners and HP are in the log. PvP: outcome `ChallengerWon` / `OpponentWon`, loot without foreign key. NPC: the trainer is the challenger, loot = reward specimen of a first win, `Tokens` = tokens of a first win |
 | `BattleParticipant` | Id, BattleId, TrainerId, Won | Boss: `Won` = caught the boss; PvP and NPC: `Won` = winner. Bosses and NPCs need no row, they are in the log |
 | `AchievementUnlock` | TrainerId + Threshold (PK), UnlockedAt | Never deleted except with the trainer |
 | `NpcBadge` | TrainerId + NpcId (PK), WonAt, BattleId | First win against an NPC; never deleted except with the trainer |

@@ -16,7 +16,7 @@ public sealed class Trainer
 
     public DateTimeOffset RegisteredAt { get; init; }
 
-    /// <summary>Token balance: every NPC win adds the NPC's tokens (spec §7); spending them comes later.</summary>
+    /// <summary>Token balance: the first win against an NPC adds its tokens (spec §7); spending them comes later.</summary>
     public int Tokens { get; set; }
 
     public List<Specimen> Specimens { get; init; } = [];
@@ -103,7 +103,7 @@ public sealed class Battle
     /// <summary>Species of the loot, so the battle stays readable after the specimen is gone.</summary>
     public int? LootSpeciesId { get; init; }
 
-    /// <summary>NPC wins: tokens credited to the trainer.</summary>
+    /// <summary>NPC first wins: tokens credited to the trainer.</summary>
     public int? Tokens { get; init; }
 
     public BattleOutcome Outcome { get; init; }

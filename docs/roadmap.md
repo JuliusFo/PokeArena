@@ -125,10 +125,11 @@ Demo: `!fight` playable.
 NPC fights, reward, unlock announcements.
 Demo: `!challenge Eich` playable.
 
-- User decision (2026-10-21, E22): every win brings the NPC's tokens (per NPC
-  in `npcs.json`, Eich 1 … Ash 17); the first win also brings a badge and one
-  specimen of the NPC's team, preferring species the trainer lacks. The win
-  cooldown stays (limits token farming). Redeeming tokens is not part of
+- User decisions (2026-10-21, E22): only the first win against an NPC brings
+  a reward — a badge, the NPC's tokens (staggered per NPC in `npcs.json`,
+  Eich 1 … Ash 17) and one specimen of the NPC's team, preferring species the
+  trainer lacks. (Briefly decided as tokens for every win, corrected the same
+  day.) Both cooldowns stay as specified. Redeeming tokens is not part of
   WP-05 (backlog).
 - Plan (agreed 2026-10-21, ≈ 3 days): cooldowns in the `Cooldown` table
   (key `npc:<trainer>:<npc>`); `BattleKind.Npc` with `Battle.NpcId`; new

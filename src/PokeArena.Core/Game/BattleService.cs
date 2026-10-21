@@ -11,7 +11,7 @@ namespace PokeArena.Core.Game;
 /// <param name="Loser">PvP and NPC: display name of the losing trainer; null if gone or the trainer won.</param>
 /// <param name="Loot">PvP: species the winner took. NPC: reward species of a first win.</param>
 /// <param name="Npc">NPC fights: the NPC.</param>
-/// <param name="Tokens">NPC wins: tokens credited.</param>
+/// <param name="Tokens">NPC first wins: tokens credited.</param>
 public sealed record BattleSummary(
     long Id,
     BattleKind Kind,
