@@ -246,6 +246,10 @@ Used by boss, PvP and NPC fights.
     the NPC's team: a random species the trainer does not own yet, or a random
     team species if they own all six. It counts for achievements like a catch.
   - A loss brings nothing. The win cooldown limits token farming.
+- Replies (drafts): „Ash besiegt Eich und bekommt den Orden von Eich,
+  Glumanda und 1 Token!“ (first win) / „Ash besiegt Eich erneut und bekommt
+  1 Token!“ / „Eich besiegt Ash! Nächster Versuch in 48 Stunden.“; without or
+  with an unknown name the bot lists the unlocked NPCs.
 - In the dry run the cooldowns are skipped, as for the boss.
 
 ## 8. Commands
@@ -319,7 +323,8 @@ Data files (all derived — fully regenerable from the DB; the UI has a
 ## 10. Storage
 
 - **SQLite (EF Core) is the single source of truth**: trainers, specimens,
-  fights (including full logs and seeds), achievements, cooldowns, publish
+  fights (including full logs and seeds), achievements, NPC badges, token
+  balances, cooldowns, publish
   queue, balancing config. Loot transfers run in one transaction. Open PvP
   challenges and the boss lobby are short-lived and stay in memory.
 - A **publish queue** (outbox) decouples game logic from uploads; network

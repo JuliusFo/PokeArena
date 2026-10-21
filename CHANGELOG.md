@@ -7,6 +7,19 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+### Added
+- NPC fights: `!challenge Eich` fights an NPC the player has unlocked through
+  an achievement — six random Pokémon of the player against the NPC's fixed
+  team. Every win brings tokens (Eich 1 up to Ash 17, adjustable in
+  `npcs.json`), to be redeemed with the streamer later. The first win against
+  an NPC also brings its badge and one Pokémon of its team, preferably one
+  the player does not own yet. After a loss the same NPC can be challenged
+  again after 48 hours, after a win after 60 minutes.
+- Desktop app: "Kämpfe" also lists NPC fights; the trainer list shows badges
+  and tokens.
+- Dry run: pick an NPC and press „Freischalten“ to give the test viewer
+  enough different Pokémon to challenge it.
+
 ## [0.4.0] - 2026-10-20
 
 ### Added

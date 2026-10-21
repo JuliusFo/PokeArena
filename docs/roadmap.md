@@ -138,6 +138,8 @@ Demo: `!challenge Eich` playable.
   "Kämpfe", tokens and badges in the trainer list; the dry run can top a test
   viewer up to an NPC's threshold. Not included: redeeming tokens, a token
   command in chat, badges on the website (WP-06).
+- Built 2026-10-21; live test (dry run) pending. See the log in
+  work-packages.md.
 
 ## WP-06 — Website (4–5 days) → v0.6.0
 
