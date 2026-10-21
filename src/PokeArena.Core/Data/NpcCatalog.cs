@@ -6,7 +6,8 @@ namespace PokeArena.Core.Data;
 /// <summary>An NPC from <c>data/npcs.json</c> (spec §7), unlocked by the achievement at <see cref="Threshold"/>.</summary>
 /// <param name="Threshold">Distinct species a trainer must own; also the achievement's number („AV 15“).</param>
 /// <param name="Strength">Factor on the team's base values in an NPC fight.</param>
-public sealed record Npc(string Id, string Name, int Threshold, double Strength, IReadOnlyList<Species> Team);
+/// <param name="Tokens">Credited to the trainer for every win against this NPC (spec §7).</param>
+public sealed record Npc(string Id, string Name, int Threshold, double Strength, int Tokens, IReadOnlyList<Species> Team);
 
 /// <summary>
 /// The 17 NPCs and with them the achievement thresholds (spec §1): every threshold unlocks exactly one NPC.
@@ -90,6 +91,11 @@ public sealed class NpcCatalog
                 problems.Add($"{entry.Name}: strength must be positive");
             }
 
+            if (entry.Tokens < 0)
+            {
+                problems.Add($"{entry.Name}: tokens must not be negative");
+            }
+
             if (entry.Team.Count != TeamSize)
             {
                 problems.Add($"{entry.Name}: team must have {TeamSize} species");
@@ -108,7 +114,7 @@ public sealed class NpcCatalog
                 }
             }
 
-            npcs.Add(new Npc(entry.Id, entry.Name, entry.Threshold, entry.Strength, team));
+            npcs.Add(new Npc(entry.Id, entry.Name, entry.Threshold, entry.Strength, entry.Tokens, team));
         }
 
         if (problems.Count > 0)
@@ -126,5 +132,6 @@ public sealed class NpcCatalog
         [property: JsonPropertyName("name")] string Name,
         [property: JsonPropertyName("schwelle")] int Threshold,
         [property: JsonPropertyName("staerke")] double Strength,
+        [property: JsonPropertyName("tokens")] int Tokens,
         [property: JsonPropertyName("team")] IReadOnlyList<string> Team);
 }

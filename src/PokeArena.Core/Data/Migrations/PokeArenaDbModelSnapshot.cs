@@ -60,6 +60,10 @@ namespace PokeArena.Core.Data.Migrations
                     b.Property<long?>("LootSpecimenId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("NpcId")
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Outcome")
                         .IsRequired()
                         .HasMaxLength(32)
@@ -69,6 +73,9 @@ namespace PokeArena.Core.Data.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("Seed")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("Tokens")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
@@ -116,6 +123,27 @@ namespace PokeArena.Core.Data.Migrations
                     b.HasKey("Key");
 
                     b.ToTable("Cooldowns");
+                });
+
+            modelBuilder.Entity("PokeArena.Core.Data.NpcBadge", b =>
+                {
+                    b.Property<string>("TrainerId")
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("NpcId")
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("BattleId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("WonAt")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("TrainerId", "NpcId");
+
+                    b.ToTable("NpcBadges");
                 });
 
             modelBuilder.Entity("PokeArena.Core.Data.Specimen", b =>
@@ -172,6 +200,9 @@ namespace PokeArena.Core.Data.Migrations
                     b.Property<long>("RegisteredAt")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("Tokens")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("TwitchUserId");
 
                     b.HasIndex("Login");
@@ -198,6 +229,17 @@ namespace PokeArena.Core.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("PokeArena.Core.Data.Trainer", "Trainer")
+                        .WithMany()
+                        .HasForeignKey("TrainerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Trainer");
+                });
+
+            modelBuilder.Entity("PokeArena.Core.Data.NpcBadge", b =>
+                {
                     b.HasOne("PokeArena.Core.Data.Trainer", "Trainer")
                         .WithMany()
                         .HasForeignKey("TrainerId")

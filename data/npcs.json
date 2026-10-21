@@ -1,25 +1,25 @@
 {
   "hinweis": [
     "NPCs aus spec.md §7. schwelle = AV (Anzahl verschiedener Arten), die den NPC freischaltet.",
-    "team = Slugs aus pokemon.json. staerke = Faktor auf die Basiswerte im NPC-Kampf."
+    "team = Slugs aus pokemon.json. staerke = Faktor auf die Basiswerte im NPC-Kampf. tokens = Belohnung für jeden Sieg (spec.md §7)."
   ],
   "npcs": [
-    { "id": "eich", "name": "Eich", "schwelle": 15, "staerke": 1.0, "team": ["bisasam", "schiggy", "glumanda", "raupy", "hornliu", "pikachu"] },
-    { "id": "rocko", "name": "Rocko", "schwelle": 25, "staerke": 1.0, "team": ["kleinstein", "georok", "geowaz", "onix", "rihorn", "rizeros"] },
-    { "id": "misty", "name": "Misty", "schwelle": 40, "staerke": 1.0, "team": ["sterndu", "starmie", "goldini", "golking", "enton", "entoron"] },
-    { "id": "jessie", "name": "Jessie", "schwelle": 60, "staerke": 1.0, "team": ["mauzi", "rettan", "arbok", "schlurp", "muschas", "ditto"] },
-    { "id": "james", "name": "James", "schwelle": 70, "staerke": 1.0, "team": ["mauzi", "ultrigaria", "sarzenia", "smogon", "smogmog", "karpador"] },
-    { "id": "bob", "name": "Bob", "schwelle": 80, "staerke": 1.0, "team": ["pikachu", "raichu", "magnetilo", "magneton", "elektek", "zapdos"] },
-    { "id": "erika", "name": "Erika", "schwelle": 90, "staerke": 1.0, "team": ["knofensa", "ultrigaria", "tangela", "myrapla", "duflor", "giflor"] },
-    { "id": "koga", "name": "Koga", "schwelle": 100, "staerke": 1.0, "team": ["bluzuk", "omot", "bibor", "smettbo", "tentoxa", "pinsir"] },
-    { "id": "sabrina", "name": "Sabrina", "schwelle": 105, "staerke": 1.0, "team": ["abra", "kadabra", "simsala", "traumato", "hypno", "rossana"] },
-    { "id": "pyro", "name": "Pyro", "schwelle": 110, "staerke": 1.0, "team": ["vulnona", "gallopa", "arkani", "glurak", "magmar", "lavados"] },
-    { "id": "giovanni", "name": "Giovanni", "schwelle": 115, "staerke": 1.0, "team": ["digdri", "snobilikat", "nidoqueen", "nidoking", "rizeros", "geowaz"] },
-    { "id": "lorelei", "name": "Lorelei", "schwelle": 130, "staerke": 1.0, "team": ["jugong", "austos", "lahmus", "rossana", "lapras", "arktos"] },
-    { "id": "bruno", "name": "Bruno", "schwelle": 135, "staerke": 1.0, "team": ["onix", "nockchan", "kicklee", "aerodactyl", "relaxo", "machomei"] },
-    { "id": "agathe", "name": "Agathe", "schwelle": 140, "staerke": 1.0, "team": ["gengar", "golbat", "alpollo", "arbok", "smogmog", "porygon"] },
-    { "id": "siegfried", "name": "Siegfried", "schwelle": 145, "staerke": 1.0, "team": ["garados", "dratini", "dragonir", "amonitas", "aerodactyl", "dragoran"] },
-    { "id": "garry", "name": "Garry", "schwelle": 150, "staerke": 1.0, "team": ["simsala", "kokowei", "aquana", "blitza", "flamara", "mewtu"] },
-    { "id": "ash", "name": "Ash", "schwelle": 151, "staerke": 1.0, "team": ["arktos", "lavados", "zapdos", "turtok", "glurak", "bisaflor"] }
+    { "id": "eich", "name": "Eich", "schwelle": 15, "staerke": 1.0, "tokens": 1, "team": ["bisasam", "schiggy", "glumanda", "raupy", "hornliu", "pikachu"] },
+    { "id": "rocko", "name": "Rocko", "schwelle": 25, "staerke": 1.0, "tokens": 2, "team": ["kleinstein", "georok", "geowaz", "onix", "rihorn", "rizeros"] },
+    { "id": "misty", "name": "Misty", "schwelle": 40, "staerke": 1.0, "tokens": 3, "team": ["sterndu", "starmie", "goldini", "golking", "enton", "entoron"] },
+    { "id": "jessie", "name": "Jessie", "schwelle": 60, "staerke": 1.0, "tokens": 4, "team": ["mauzi", "rettan", "arbok", "schlurp", "muschas", "ditto"] },
+    { "id": "james", "name": "James", "schwelle": 70, "staerke": 1.0, "tokens": 5, "team": ["mauzi", "ultrigaria", "sarzenia", "smogon", "smogmog", "karpador"] },
+    { "id": "bob", "name": "Bob", "schwelle": 80, "staerke": 1.0, "tokens": 6, "team": ["pikachu", "raichu", "magnetilo", "magneton", "elektek", "zapdos"] },
+    { "id": "erika", "name": "Erika", "schwelle": 90, "staerke": 1.0, "tokens": 7, "team": ["knofensa", "ultrigaria", "tangela", "myrapla", "duflor", "giflor"] },
+    { "id": "koga", "name": "Koga", "schwelle": 100, "staerke": 1.0, "tokens": 8, "team": ["bluzuk", "omot", "bibor", "smettbo", "tentoxa", "pinsir"] },
+    { "id": "sabrina", "name": "Sabrina", "schwelle": 105, "staerke": 1.0, "tokens": 9, "team": ["abra", "kadabra", "simsala", "traumato", "hypno", "rossana"] },
+    { "id": "pyro", "name": "Pyro", "schwelle": 110, "staerke": 1.0, "tokens": 10, "team": ["vulnona", "gallopa", "arkani", "glurak", "magmar", "lavados"] },
+    { "id": "giovanni", "name": "Giovanni", "schwelle": 115, "staerke": 1.0, "tokens": 11, "team": ["digdri", "snobilikat", "nidoqueen", "nidoking", "rizeros", "geowaz"] },
+    { "id": "lorelei", "name": "Lorelei", "schwelle": 130, "staerke": 1.0, "tokens": 12, "team": ["jugong", "austos", "lahmus", "rossana", "lapras", "arktos"] },
+    { "id": "bruno", "name": "Bruno", "schwelle": 135, "staerke": 1.0, "tokens": 13, "team": ["onix", "nockchan", "kicklee", "aerodactyl", "relaxo", "machomei"] },
+    { "id": "agathe", "name": "Agathe", "schwelle": 140, "staerke": 1.0, "tokens": 14, "team": ["gengar", "golbat", "alpollo", "arbok", "smogmog", "porygon"] },
+    { "id": "siegfried", "name": "Siegfried", "schwelle": 145, "staerke": 1.0, "tokens": 15, "team": ["garados", "dratini", "dragonir", "amonitas", "aerodactyl", "dragoran"] },
+    { "id": "garry", "name": "Garry", "schwelle": 150, "staerke": 1.0, "tokens": 16, "team": ["simsala", "kokowei", "aquana", "blitza", "flamara", "mewtu"] },
+    { "id": "ash", "name": "Ash", "schwelle": 151, "staerke": 1.0, "tokens": 17, "team": ["arktos", "lavados", "zapdos", "turtok", "glurak", "bisaflor"] }
   ]
 }
