@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-10-21 · v0.4.0 (WP-00 – WP-04 done) · WP-05 built, live test pending
+Status: 2026-10-27 · v0.5.0 (WP-00 – WP-05 done) · WP-06 next
 
 ## 1. Where to find what
 
@@ -153,7 +153,8 @@ PokeArena.slnx
 
 ## 9. Next
 
-Live test of WP-05 (NPC fights, `!challenge`, tokens and badges) in the dry
-run, then release 0.5.0. Still open: operations on the streamer's PC;
-from WP-03 the `N = 4` boss dip, the runtime balancing editor and progression
-length. Details: docs/roadmap.md.
+Start WP-06 (website, OBS overlay); open before it starts: how Web shares the
+JSON DTOs, whose Cloudflare account hosts the bucket. Still open: operations
+on the streamer's PC; from WP-03 the `N = 4` boss dip, the runtime balancing
+editor and progression length; from WP-05 the NPC difficulty. Details:
+docs/roadmap.md.

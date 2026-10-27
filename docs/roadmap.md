@@ -139,8 +139,13 @@ Demo: `!challenge Eich` playable.
   "Kämpfe", tokens and badges in the trainer list; the dry run can top a test
   viewer up to an NPC's threshold. Not included: redeeming tokens, a token
   command in chat, badges on the website (WP-06).
-- Built 2026-10-21; live test (dry run) pending. See the log in
+- **Done 2026-10-27**: built 2026-10-21; dry run passed. See the log in
   work-packages.md.
+- Open: NPC difficulty. In the dry run a test viewer with 15 random distinct
+  species beat Eich (strength 1.0, basic forms only) 10 times out of 10. User
+  decision (2026-10-27): leave it for now; if NPCs feel too easy on stream,
+  raise `staerke` per NPC in `npcs.json` or measure win rates with the
+  simulator.
 
 ## WP-06 — Website (4–5 days) → v0.6.0
 

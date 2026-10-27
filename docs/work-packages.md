@@ -10,7 +10,7 @@ in [roadmap.md](roadmap.md).
 | WP-02 | Domain foundation | 0.2.0 | done 2026-10-13 |
 | WP-03 | Battle engine + boss | 0.3.0 | done 2026-10-19 |
 | WP-04 | PvP | 0.4.0 | done 2026-10-20 |
-| WP-05 | NPC fights | 0.5.0 | built 2026-10-21, live test pending |
+| WP-05 | NPC fights | 0.5.0 | done 2026-10-27 |
 | WP-06 | Website | 0.6.0 | planned |
 | WP-07 | Operations | 1.0.0 | planned |
 
@@ -183,7 +183,11 @@ in [roadmap.md](roadmap.md).
   §14 (E22 closed); architecture (data model, NPC flow); backlog (token
   redemption, ledger, balance command).
 - Pitfalls: none new.
-- Live test: pending (dry run with a test viewer unlocked via the NPC picker).
+- Live test 2026-10-27: dry run — test viewer unlocked for Eich via the NPC
+  picker, ten fights against Eich, all won: the first with badge, Hornliu and
+  1 token, the other nine without reward. A loss did not come up in the dry
+  run (covered by unit tests). Eich looks easy; user decision: leave it for
+  now (roadmap question).
 - Deliberately not done: redeeming tokens, a token or badge command in chat,
   badges on the website (WP-06).
 

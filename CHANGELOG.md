@@ -7,6 +7,8 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-27
+
 ### Added
 - NPC fights: `!challenge Eich` fights an NPC the player has unlocked through
   an achievement — six random Pokémon of the player against the NPC's fixed
