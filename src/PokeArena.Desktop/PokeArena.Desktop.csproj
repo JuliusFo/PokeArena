@@ -15,9 +15,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Kestrel for the local OBS overlay (spec §9). -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Overlay\overlay.html" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Meziantou.Framework.Win32.CredentialManager" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Serilog.Extensions.Hosting" />
     <PackageReference Include="Serilog.Sinks.File" />
   </ItemGroup>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="de">
+<!-- OBS browser source (spec §9): latest fight and top 5, transparent background, no images (ADR-0008).
+     Served by OverlayServer; polls /overlay/state on this PC. -->
+<head>
+  <meta charset="utf-8" />
+  <title>PokeArena Overlay</title>
+  <style>
+    html, body {
+      margin: 0;
+      background: transparent;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      color: #fff;
+    }
+
+    .overlay {
+      display: inline-flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 380px;
+      padding: 12px;
+    }
+
+    .card {
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: rgba(20, 20, 26, 0.82);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+    }
+
+    .title {
+      margin: 0 0 6px;
+      color: #ff6a45;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .headline {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .result {
+      font-size: 15px;
+      opacity: 0.9;
+    }
+
+    ol {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    li {
+      display: flex;
+      gap: 10px;
+      padding: 3px 0;
+      font-size: 16px;
+    }
+
+    .rank {
+      width: 1.6em;
+      color: #ff6a45;
+      font-weight: 800;
+      text-align: right;
+    }
+
+    .name {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .count {
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="overlay">
+    <section class="card hidden" id="battle">
+      <p class="title">Letzter Kampf</p>
+      <div class="headline" id="headline"></div>
+      <div class="result" id="result"></div>
+    </section>
+    <section class="card hidden" id="top">
+      <p class="title">Rangliste</p>
+      <ol id="entries"></ol>
+    </section>
+  </div>
+
+  <script>
+    const show = (id, visible) => document.getElementById(id).classList.toggle("hidden", !visible);
+
+    function render(state) {
+      const battle = state.latestBattle;
+      show("battle", !!battle);
+      if (battle) {
+        document.getElementById("headline").textContent = battle.headline;
+        document.getElementById("result").textContent = battle.result;
+      }
+
+      show("top", state.top.length > 0);
+      const list = document.getElementById("entries");
+      list.replaceChildren(...state.top.map(entry => {
+        const item = document.createElement("li");
+        for (const [css, text] of [["rank", entry.rank], ["name", entry.displayName], ["count", entry.distinct + " Arten"]]) {
+          const span = document.createElement("span");
+          span.className = css;
+          span.textContent = text;
+          item.append(span);
+        }
+        return item;
+      }));
+    }
+
+    async function refresh() {
+      try {
+        const response = await fetch("/overlay/state", { cache: "no-store" });
+        if (response.ok) {
+          render(await response.json());
+        }
+      } catch {
+        // App closed or restarting: keep the last state and try again.
+      }
+    }
+
+    refresh();
+    setInterval(refresh, 2000);
+  </script>
+</body>
+
+</html>

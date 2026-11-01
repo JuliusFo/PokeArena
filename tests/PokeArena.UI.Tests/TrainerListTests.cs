@@ -48,6 +48,7 @@ public class TrainerListTests : BunitContext
         Services.AddSingleton<ITwitchConnection>(new FakeTwitchConnection());
         var r2 = new R2Access(new WebsiteOptions(), new MemorySecretStore());
         Services.AddSingleton(r2);
+        Services.AddSingleton(new OverlayOptions());
         Services.AddSingleton(new SitePublishWorker(_database, new SiteGenerator(_species, _npcs), r2, _time, NullLogger<SitePublishWorker>.Instance));
     }
 

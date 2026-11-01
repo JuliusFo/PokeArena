@@ -1,0 +1,17 @@
+@* Where the streamer points the OBS browser source (spec §9). *@
+@using PokeArena.Core.Publishing
+@inject OverlayOptions Overlay
+
+<section class="card">
+    <h2>OBS-Overlay</h2>
+    @if (Overlay.Enabled)
+    {
+        <p class="hint">Füge in OBS eine Browserquelle mit dieser Adresse hinzu. Sie zeigt den letzten Kampf und die besten fünf Trainer.</p>
+        <p class="overlay-url" data-testid="overlay-url">@Overlay.Url</p>
+        <p class="hint">Größe zum Beispiel 400 × 400. Das Overlay funktioniert nur auf diesem PC und nur, solange PokeArena läuft.</p>
+    }
+    else
+    {
+        <p class="hint">Das Overlay ist ausgeschaltet.</p>
+    }
+</section>

@@ -70,10 +70,13 @@ public partial class App : Application
         var options = builder.Configuration.GetSection(PokeArenaOptions.SectionName).Get<PokeArenaOptions>() ?? new();
         var twitchOptions = builder.Configuration.GetSection(TwitchOptions.SectionName).Get<TwitchOptions>() ?? new();
         var websiteOptions = builder.Configuration.GetSection(WebsiteOptions.SectionName).Get<WebsiteOptions>() ?? new();
+        var overlayOptions = builder.Configuration.GetSection(OverlayOptions.SectionName).Get<OverlayOptions>() ?? new();
         var paths = AppPaths.Resolve(options);
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
             .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+            // The OBS overlay polls every 2 s; request logs would flood the file.
+            .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
             .WriteTo.File(
                 Path.Combine(paths.LogsDirectory, "pokearena-.log"),
                 rollingInterval: RollingInterval.Day,
@@ -95,6 +98,8 @@ public partial class App : Application
         builder.Services.AddPokeArenaGame(Path.Combine(AppContext.BaseDirectory, "data"));
         builder.Services.AddPokeArenaChat(twitchOptions);
         builder.Services.AddPokeArenaWebsite(websiteOptions);
+        builder.Services.AddSingleton(overlayOptions);
+        builder.Services.AddHostedService<OverlayServer>();
         builder.Services.AddSingleton<MainWindow>();
 
         _host = builder.Build();
