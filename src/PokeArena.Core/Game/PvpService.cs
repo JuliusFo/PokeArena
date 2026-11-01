@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using PokeArena.Core.Chat;
 using PokeArena.Core.Data;
 using PokeArena.Core.Game.Battles;
+using PokeArena.Core.Publishing;
 
 namespace PokeArena.Core.Game;
 
@@ -24,6 +25,7 @@ public sealed class PvpService
     private readonly IChatSender _chat;
     private readonly TrainerService _trainers;
     private readonly BattleService _battles;
+    private readonly SiteLinks _links;
     private readonly TimeProvider _time;
     private readonly ILogger<PvpService> _log;
 
@@ -43,6 +45,7 @@ public sealed class PvpService
         IChatSender chat,
         TrainerService trainers,
         BattleService battles,
+        SiteLinks links,
         TimeProvider time,
         ILogger<PvpService> log)
     {
@@ -56,6 +59,7 @@ public sealed class PvpService
         _chat = chat;
         _trainers = trainers;
         _battles = battles;
+        _links = links;
         _time = time;
         _log = log;
         _database.Switched += () => Interlocked.Increment(ref _generation);
@@ -157,7 +161,7 @@ public sealed class PvpService
         var loot = random.Pick(loserTeam.Where(s => !s.IsStarter).ToList());
 
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
-        db.Battles.Add(new Battle
+        var battle = new Battle
         {
             Kind = BattleKind.Pvp,
             FoughtAt = now,
@@ -172,19 +176,22 @@ public sealed class PvpService
                 new BattleParticipant { TrainerId = challenge.ChallengerId, Won = result.ChallengerWon },
                 new BattleParticipant { TrainerId = challenge.TargetId, Won = !result.ChallengerWon },
             ],
-        });
+        };
+        db.Battles.Add(battle);
         var transferred = await db.Specimens.SingleAsync(s => s.Id == loot.Id, ct);
         transferred.TrainerId = winnerId;
+        transferred.AcquiredAt = now;
         await db.SaveChangesAsync(ct);
 
         var achievements = await Achievements.UnlockNewAsync(db, [winnerId], _npcs, now, ct);
+        await SiteOutbox.EnqueueAsync(db, SiteOutbox.ForBattle(battle.Id, ids), now, ct);
         await db.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
         _log.LogInformation(
             "PvP fight: {Challenger} vs {Target}, winner {Winner}, loot specimen {Loot}, seed {Seed}",
             challenge.ChallengerId, challenge.TargetId, winnerId, loot.Id, seed);
 
-        _chat.Send($"{winnerName} besiegt {loserName} und bekommt {_species.Get(loot.SpeciesId).Name} von {loserName}!");
+        _chat.Send(_links.WithBattle($"{winnerName} besiegt {loserName} und bekommt {_species.Get(loot.SpeciesId).Name} von {loserName}!", battle.Id, _database.IsSandbox));
         foreach (var a in achievements)
         {
             _chat.Send($"{a.DisplayName} hat AV {a.Npc.Threshold} freigeschalten und kann NPC {a.Npc.Name} herausfordern.");

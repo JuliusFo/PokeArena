@@ -112,5 +112,5 @@ public sealed class DryRunTrainers(
     }
 
     private static Specimen NewSpecimen(string userId, Species s, DateTimeOffset now) =>
-        new() { TrainerId = userId, SpeciesId = s.Id, CaughtAt = now, Origin = SpecimenOrigin.Boss };
+        new() { TrainerId = userId, SpeciesId = s.Id, CaughtAt = now, AcquiredAt = now, Origin = SpecimenOrigin.Boss };
 }

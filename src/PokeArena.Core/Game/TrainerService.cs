@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using PokeArena.Core.Chat;
 using PokeArena.Core.Data;
+using PokeArena.Core.Publishing;
 
 namespace PokeArena.Core.Game;
 
@@ -86,11 +87,13 @@ public sealed class TrainerService
                     TrainerId = twitchUserId,
                     SpeciesId = starter.Id,
                     CaughtAt = now,
+                    AcquiredAt = now,
                     Origin = SpecimenOrigin.Starter,
                     IsStarter = true,
                 },
             ],
         });
+        await SiteOutbox.EnqueueAsync(db, SiteOutbox.ForTrainers([twitchUserId]), now, ct);
         await db.SaveChangesAsync(ct);
 
         _known[twitchUserId] = new KnownNames(displayName, login);
@@ -133,6 +136,7 @@ public sealed class TrainerService
             _log.LogInformation("Trainer {UserId} renamed to {DisplayName} ({Login})", trainer.TwitchUserId, message.DisplayName, message.Login);
             trainer.DisplayName = message.DisplayName;
             trainer.Login = message.Login;
+            await SiteOutbox.EnqueueAsync(db, SiteOutbox.ForTrainers([trainer.TwitchUserId]), _time.GetUtcNow(), ct);
             await db.SaveChangesAsync(ct);
             Changed?.Invoke();
         }

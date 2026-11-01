@@ -60,6 +60,12 @@ public sealed class GameDatabase : IDisposable
         return new PokeArenaDb(PokeArenaDb.Options(connectionString));
     }
 
+    /// <summary>
+    /// A new context on the live database even during the dry run. Only for the website: its outbox must keep
+    /// draining and must never publish the sandbox. Game logic uses <see cref="Open"/>.
+    /// </summary>
+    public PokeArenaDb OpenLive() => new(PokeArenaDb.Options(_liveConnectionString));
+
     /// <summary>Creates or upgrades the live database. Runs once at startup, before any command.</summary>
     public async Task MigrateLiveAsync(CancellationToken ct)
     {

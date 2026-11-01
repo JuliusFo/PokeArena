@@ -1,10 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
+using PokeArena.Contracts;
 using PokeArena.Core.Chat;
 using PokeArena.Core.Data;
 using PokeArena.Core.Game;
 using PokeArena.Core.Game.Battles;
+using PokeArena.Core.Publishing;
 using PokeArena.Core.Tests.Fakes;
+using BattleKind = PokeArena.Core.Data.BattleKind;
 
 namespace PokeArena.Core.Tests.Game;
 
@@ -21,6 +24,7 @@ public class BossEncounterTests : IDisposable
     private readonly GameFixture _game = new();
     private readonly ChatInbox _inbox = new();
     private readonly RecordingSender _chat = new();
+    private SiteLinks _links = SiteLinks.None;
     private readonly CancellationToken _ct = TestContext.Current.CancellationToken;
 
     private static SpeciesCatalog Species => GameFixture.Species;
@@ -159,6 +163,35 @@ public class BossEncounterTests : IDisposable
         Assert.Empty(db.Cooldowns);
     }
 
+    [Fact]
+    public async Task A_live_boss_result_links_the_battle_page_and_queues_its_files()
+    {
+        _links = new SiteLinks(new WebsiteOptions { SiteUrl = "https://arena.example.de/" });
+        var boss = Boss(EasyBoss);
+        await RegisterAsync("1", "Ash", "2", "Misty");
+
+        await RunEncounterAsync(boss, ("1", "Ash"), ("2", "Misty"));
+
+        Assert.EndsWith("wurde besiegt! Gefangen von: Ash, Misty. Zum Kampf: https://arena.example.de/kampf/1", _chat.Sent[2]);
+        await using var db = _game.OpenLive();
+        Assert.Equal(
+            [SitePaths.BattleIndex, SitePaths.Battle(1), SitePaths.Meta, SitePaths.Leaderboard, SitePaths.Trainer("1"), SitePaths.Trainer("2")],
+            await db.PublishQueue.Select(i => i.Path).OrderBy(p => p).ToListAsync(_ct));
+    }
+
+    [Fact]
+    public async Task A_dry_run_boss_result_has_no_link()
+    {
+        _links = new SiteLinks(new WebsiteOptions { SiteUrl = "https://arena.example.de" });
+        _game.DryRun.Enabled = true;
+        var boss = Boss(EasyBoss);
+        await RegisterAsync("probelauf:a", "A", "probelauf:b", "B");
+
+        await RunEncounterAsync(boss, ("probelauf:a", "A"), ("probelauf:b", "B"), simulated: true);
+
+        Assert.DoesNotContain(_chat.Sent, t => t.Contains("Zum Kampf"));
+    }
+
     private BossEncounter Boss(BossSettings settings) => new(
         _game.Database,
         Species,
@@ -171,6 +204,7 @@ public class BossEncounterTests : IDisposable
         _chat,
         _game.Trainers,
         new BattleService(_game.Database, Species, GameFixture.Npcs),
+        _links,
         _game.DryRun,
         _game.Time,
         NullLogger<BossEncounter>.Instance);

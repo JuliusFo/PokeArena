@@ -4,6 +4,7 @@ using PokeArena.Core.Chat;
 using PokeArena.Core.Data;
 using PokeArena.Core.Game;
 using PokeArena.Core.Game.Battles;
+using PokeArena.Core.Publishing;
 using PokeArena.Core.Tests.Fakes;
 
 namespace PokeArena.Core.Tests.Game;
@@ -22,6 +23,7 @@ public class NpcServiceTests : IDisposable
 
     private readonly GameFixture _game = new();
     private readonly RecordingSender _chat = new();
+    private SiteLinks _links = SiteLinks.None;
     private readonly CancellationToken _ct = TestContext.Current.CancellationToken;
 
     private static SpeciesCatalog Species => GameFixture.Species;
@@ -218,6 +220,7 @@ public class NpcServiceTests : IDisposable
         _chat,
         _game.Trainers,
         new BattleService(database ?? _game.Database, Species, GameFixture.Npcs),
+        _links,
         _game.Time,
         NullLogger<NpcService>.Instance);
 

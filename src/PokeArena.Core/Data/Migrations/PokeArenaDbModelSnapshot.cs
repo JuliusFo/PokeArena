@@ -146,10 +146,42 @@ namespace PokeArena.Core.Data.Migrations
                     b.ToTable("NpcBadges");
                 });
 
+            modelBuilder.Entity("PokeArena.Core.Data.PublishQueueItem", b =>
+                {
+                    b.Property<string>("Path")
+                        .HasMaxLength(128)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Attempts")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("LastError")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("NextAttemptAt")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("QueuedAt")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Revision")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Path");
+
+                    b.HasIndex("NextAttemptAt");
+
+                    b.ToTable("PublishQueue");
+                });
+
             modelBuilder.Entity("PokeArena.Core.Data.Specimen", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("AcquiredAt")
                         .HasColumnType("INTEGER");
 
                     b.Property<long>("CaughtAt")

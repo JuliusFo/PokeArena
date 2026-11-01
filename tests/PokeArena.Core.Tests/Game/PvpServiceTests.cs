@@ -1,10 +1,14 @@
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
+using PokeArena.Contracts;
 using PokeArena.Core.Chat;
 using PokeArena.Core.Data;
 using PokeArena.Core.Game;
 using PokeArena.Core.Game.Battles;
+using PokeArena.Core.Publishing;
 using PokeArena.Core.Tests.Fakes;
+using BattleKind = PokeArena.Core.Data.BattleKind;
 
 namespace PokeArena.Core.Tests.Game;
 
@@ -20,6 +24,7 @@ public class PvpServiceTests : IDisposable
 
     private readonly GameFixture _game = new();
     private readonly RecordingSender _chat = new();
+    private SiteLinks _links = SiteLinks.None;
     private readonly CancellationToken _ct = TestContext.Current.CancellationToken;
 
     private static SpeciesCatalog Species => GameFixture.Species;
@@ -209,6 +214,30 @@ public class PvpServiceTests : IDisposable
         Assert.Empty(db.Battles);
     }
 
+    [Fact]
+    public async Task A_fight_links_its_page_which_shows_both_teams_and_the_log()
+    {
+        _links = new SiteLinks(new WebsiteOptions { SiteUrl = "https://arena.example.de" });
+        var pvp = Pvp(OneHitKnockouts);
+        await RegisterAsync("1", "Ash", "Mewtu", 5);
+        await RegisterAsync("2", "Misty", "Karpador", 5);
+
+        await pvp.FightAsync(Fight("1", "Ash"), "@misty", _ct);
+        await pvp.FightAsync(Fight("2", "Misty"), "@Ash", _ct);
+
+        Assert.Equal("Ash besiegt Misty und bekommt Karpador von Misty! Zum Kampf: https://arena.example.de/kampf/1", _chat.Sent[^1]);
+        await using var db = _game.OpenLive();
+        var file = await new SiteGenerator(Species, GameFixture.Npcs).RenderAsync(db, SitePaths.Battle(1), _game.Time.GetUtcNow(), _ct);
+        Assert.Equal(SiteGenerator.ImmutableCache, file!.CacheControl);
+        var page = JsonSerializer.Deserialize(file.Content, SiteJson.Default.BattlePage)!;
+        Assert.Equal(("Ash gegen Misty", "Ash besiegt Misty und bekommt Karpador von Misty!"), (page.Headline, page.Result));
+        Assert.Equal([("Ash", true, 6), ("Misty", false, 6)], page.Sides.Select(s => (s.Name, s.Won, s.Fighters.Count)));
+        Assert.Equal("Runde 1", page.Lines[0]);
+
+        var loot = await db.Specimens.SingleAsync(s => s.Id == db.Battles.Single().LootSpecimenId, _ct);
+        Assert.Equal(_game.Time.GetUtcNow(), loot.AcquiredAt);
+    }
+
     private PvpService Pvp(BattleSettings battleSettings, int seed = Seed) => new(
         _game.Database,
         Species,
@@ -220,6 +249,7 @@ public class PvpServiceTests : IDisposable
         _chat,
         _game.Trainers,
         new BattleService(_game.Database, Species, GameFixture.Npcs),
+        _links,
         _game.Time,
         NullLogger<PvpService>.Instance);
 

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using PokeArena.Core.Chat;
 using PokeArena.Core.Data;
 using PokeArena.Core.Game.Battles;
+using PokeArena.Core.Publishing;
 
 namespace PokeArena.Core.Game;
 
@@ -24,6 +25,7 @@ public sealed class NpcService(
     IChatSender chat,
     TrainerService trainers,
     BattleService battles,
+    SiteLinks links,
     TimeProvider time,
     ILogger<NpcService> log)
 {
@@ -105,7 +107,7 @@ public sealed class NpcService(
         Specimen? rewardSpecimen = null;
         if (reward is not null)
         {
-            rewardSpecimen = new Specimen { TrainerId = message.UserId, SpeciesId = reward.Id, CaughtAt = now, Origin = SpecimenOrigin.Npc };
+            rewardSpecimen = new Specimen { TrainerId = message.UserId, SpeciesId = reward.Id, CaughtAt = now, AcquiredAt = now, Origin = SpecimenOrigin.Npc };
             db.Specimens.Add(rewardSpecimen);
             await db.SaveChangesAsync(ct);
         }
@@ -135,6 +137,7 @@ public sealed class NpcService(
         }
 
         IReadOnlyList<NewAchievement> achievements = reward is null ? [] : await Achievements.UnlockNewAsync(db, [message.UserId], npcs, now, ct);
+        await SiteOutbox.EnqueueAsync(db, SiteOutbox.ForBattle(battle.Id, [message.UserId]), now, ct);
         TimeSpan? cooldown = message.IsSimulated ? null : won ? settings.WinCooldown : settings.LossCooldown;
         if (cooldown is { } span)
         {
@@ -147,9 +150,12 @@ public sealed class NpcService(
             "NPC fight: {Trainer} vs {Npc}, {Outcome}, reward {Reward}, {Tokens} tokens, seed {Seed}",
             message.UserId, npc.Id, won ? "won" : "lost", reward?.Slug, firstWin ? npc.Tokens : 0, seed);
 
-        chat.Send(won
-            ? WinText(message.DisplayName, npc, reward)
-            : $"{npc.Name} besiegt {message.DisplayName}!" + (cooldown is { } wait ? $" Nächster Versuch in {Duration(wait)}." : ""));
+        chat.Send(links.WithBattle(
+            won
+                ? WinText(message.DisplayName, npc, reward)
+                : $"{npc.Name} besiegt {message.DisplayName}!" + (cooldown is { } wait ? $" Nächster Versuch in {Duration(wait)}." : ""),
+            battle.Id,
+            message.IsSimulated));
         foreach (var a in achievements)
         {
             chat.Send($"{a.DisplayName} hat AV {a.Npc.Threshold} freigeschalten und kann NPC {a.Npc.Name} herausfordern.");

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using PokeArena.Core.Chat;
 using PokeArena.Core.Data;
 using PokeArena.Core.Game.Battles;
+using PokeArena.Core.Publishing;
 
 namespace PokeArena.Core.Game;
 
@@ -24,6 +25,7 @@ public sealed class BossEncounter(
     IChatSender chat,
     TrainerService trainers,
     BattleService battles,
+    SiteLinks links,
     DryRunMode dryRun,
     TimeProvider time,
     ILogger<BossEncounter> log)
@@ -147,7 +149,7 @@ public sealed class BossEncounter(
         var catchers = participants.Where((_, i) => result.BossDefeated && result.Survived[i]).Select(p => p.Member).ToList();
 
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
-        db.Battles.Add(new Battle
+        var battle = new Battle
         {
             Kind = BattleKind.Boss,
             FoughtAt = now,
@@ -164,17 +166,20 @@ public sealed class BossEncounter(
                     Won = result.BossDefeated && result.Survived[i],
                 }),
             ],
-        });
+        };
+        db.Battles.Add(battle);
         db.Specimens.AddRange(catchers.Select(c => new Specimen
         {
             TrainerId = c.UserId,
             SpeciesId = boss.Id,
             CaughtAt = now,
+            AcquiredAt = now,
             Origin = SpecimenOrigin.Boss,
         }));
         await db.SaveChangesAsync(ct);
 
         var achievements = await Achievements.UnlockNewAsync(db, [.. catchers.Select(c => c.UserId)], npcs, now, ct);
+        await SiteOutbox.EnqueueAsync(db, SiteOutbox.ForBattle(battle.Id, participants.Select(p => p.Member.UserId)), now, ct);
         if (!lobby.IsSimulated)
         {
             await SetCooldownAsync(db, now + settings.Cooldown, ct);
@@ -187,11 +192,12 @@ public sealed class BossEncounter(
             boss.Slug, n, result.BossDefeated ? "defeated" : "escaped", catchers.Count, seed);
 
         chat.Send($"Ein wildes {boss.Name}{TierSuffix(boss)} erscheint! {n} Trainer kämpfen mit.");
-        chat.Send(result.BossDefeated
+        var outcome = result.BossDefeated
             ? $"{boss.Name} wurde besiegt! Gefangen von: {string.Join(", ", catchers.Select(c => c.DisplayName))}."
             : result.Survived.Any(s => s)
                 ? $"{boss.Name} ist entkommen."
-                : $"{boss.Name} ist entkommen – alle Pokémon wurden besiegt.");
+                : $"{boss.Name} ist entkommen – alle Pokémon wurden besiegt.";
+        chat.Send(links.WithBattle(outcome, battle.Id, lobby.IsSimulated));
         foreach (var a in achievements)
         {
             chat.Send($"{a.DisplayName} hat AV {a.Npc.Threshold} freigeschalten und kann NPC {a.Npc.Name} herausfordern.");
@@ -204,7 +210,8 @@ public sealed class BossEncounter(
         }
     }
 
-    private static string TierSuffix(Species boss) => boss.Rarity switch
+    /// <summary>„ (legendär)“ or „ (selten)“ after the boss name; nothing for common species.</summary>
+    internal static string TierSuffix(Species boss) => boss.Rarity switch
     {
         3 => " (legendär)",
         2 => " (selten)",

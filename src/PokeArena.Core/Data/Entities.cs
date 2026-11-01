@@ -47,6 +47,12 @@ public sealed class Specimen
 
     public DateTimeOffset CaughtAt { get; init; }
 
+    /// <summary>
+    /// When the current owner got it: <see cref="CaughtAt"/>, or the fight in which PvP moved it to them. Breaks
+    /// leaderboard ties (spec §9).
+    /// </summary>
+    public DateTimeOffset AcquiredAt { get; set; }
+
     /// <summary>How the specimen was first obtained; like <see cref="CaughtAt"/> it stays when PvP moves it to another trainer.</summary>
     public SpecimenOrigin Origin { get; init; }
 
@@ -158,6 +164,29 @@ public sealed class NpcBadge
 
     /// <summary>The winning battle. No foreign key, like the loot columns of <see cref="Battle"/>.</summary>
     public long BattleId { get; init; }
+}
+
+/// <summary>
+/// Outbox of the website (spec §10): a site file that has to be rendered from the database and uploaded. Game
+/// logic adds rows in its own transaction; the publish worker renders the file when it uploads, so a row only
+/// names the path, and queuing the same path twice is one upload.
+/// </summary>
+public sealed class PublishQueueItem
+{
+    /// <summary>Object key, see <c>PokeArena.Contracts.SitePaths</c>.</summary>
+    public required string Path { get; init; }
+
+    /// <summary>Raised on every enqueue; the worker removes the row only if nobody queued it again meanwhile.</summary>
+    public int Revision { get; set; }
+
+    public DateTimeOffset QueuedAt { get; set; }
+
+    public DateTimeOffset NextAttemptAt { get; set; }
+
+    /// <summary>Failed uploads since the last enqueue; drives the backoff.</summary>
+    public int Attempts { get; set; }
+
+    public string? LastError { get; set; }
 }
 
 /// <summary>A cooldown that must survive a restart: the global boss cooldown, one per trainer and NPC.</summary>
