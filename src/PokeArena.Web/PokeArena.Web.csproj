@@ -23,6 +23,7 @@
   <ItemGroup>
     <!-- Invented example data for running the site locally (appsettings.Development.json); never published. -->
     <Content Update="wwwroot\beispieldaten\**" CopyToPublishDirectory="Never" />
+    <Content Update="wwwroot\appsettings.Development.json" CopyToPublishDirectory="Never" />
   </ItemGroup>
 
   <ItemGroup>

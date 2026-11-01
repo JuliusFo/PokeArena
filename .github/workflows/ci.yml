@@ -40,5 +40,8 @@ jobs:
       - name: Component tests
         run: dotnet test tests/PokeArena.UI.Tests -c Release --no-build
 
+      - name: Website tests
+        run: dotnet test tests/PokeArena.Web.Tests -c Release --no-build
+
       - name: Integration tests
         run: dotnet test tests/PokeArena.Integration.Tests -c Release --no-build

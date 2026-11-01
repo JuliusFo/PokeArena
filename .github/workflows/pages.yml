@@ -1,0 +1,85 @@
+# Builds the public website (src/PokeArena.Web) and deploys it to GitHub Pages. Only the app is deployed — the data
+# lives in R2 and is uploaded by the desktop app (ADR-0003). Runs on code changes to main, or by hand.
+#
+# Setup (once, repository settings):
+#   - Pages → Source: "GitHub Actions"; custom domain e.g. arena.<domain> (DNS: CNAME to juliusfo.github.io, DNS only).
+#   - Variables → Actions → DATA_URL: the data host, e.g. https://arena-daten.<domain>/
+name: Website
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - src/PokeArena.Web/**
+      - src/PokeArena.Contracts/**
+      - .github/workflows/pages.yml
+      - Directory.Build.props
+      - Directory.Packages.props
+      - global.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build:
+    name: Build website
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Check the data URL
+        env:
+          DATA_URL: ${{ vars.DATA_URL }}
+        run: |
+          if [ -z "$DATA_URL" ]; then
+            echo "::error::Repository variable DATA_URL is not set (Settings → Variables → Actions)."
+            exit 1
+          fi
+
+      - name: Publish
+        run: dotnet publish src/PokeArena.Web -c Release -o publish
+
+      - name: Configure and prepare for Pages
+        env:
+          DATA_URL: ${{ vars.DATA_URL }}
+        working-directory: publish/wwwroot
+        run: |
+          printf '{\n  "DataUrl": "%s"\n}\n' "$DATA_URL" > appsettings.json
+          rm -f appsettings.json.br appsettings.json.gz
+          # Pages knows no SPA routing: deep links (/kampf/12) get 404.html, which boots the app on that URL.
+          cp index.html 404.html
+          # Serve folders starting with an underscore (_framework).
+          touch .nojekyll
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: publish/wwwroot
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
