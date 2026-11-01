@@ -43,12 +43,6 @@ roadmap.md first. Format: idea — date, origin.
   2026-09-03, spec §14.
 - Battle log retention/cleanup policy — 2026-09-03, spec §14.
 
-## Continuation of WP-06 (website)
-
-- Custom domain for the R2 bucket (needs a domain managed by Cloudflare,
-  ~10 €/year) if `r2.dev` limits bite or CDN caching is wanted — 2026-10-11,
-  user decision (deferred).
-
 ## Abuse protection
 
 - Alt-account protection, e.g. minimum Twitch account age via Helix `Get

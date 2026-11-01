@@ -154,13 +154,25 @@ the app, R2 bucket + CORS + cache headers, R2 publisher + outbox, local
 overlay endpoint.
 Demo: a battle link in chat opens a live page.
 
-- Open: how Web shares the JSON DTOs without referencing Core (shared
-  contracts project vs. duplicated records).
-- Open: whose Cloudflare account hosts the bucket (user or streamer)?
-- Constraint (ADR-0008): no official sprites, artwork or sounds — species are
-  shown as text and CSS; decide whether the site shows the fan disclaimer.
-- Open: define "earliest attainment" for leaderboard ties when a trainer
-  loses and regains a species.
+- User decisions (2026-10-30/11-01, ADR-0003 addendum): the bucket lives in
+  the user's Cloudflare account, behind a subdomain of the user's existing
+  zone with cache and one rate-limiting rule; `r2.dev` stays off (a flood of
+  uncached reads is billed per request with no spending cap). The site gets a
+  subdomain of the same zone. Both are first-level subdomains (Universal SSL).
+- User decision (2026-11-01, ADR-0009): the site JSON DTOs live in a
+  dependency-free `PokeArena.Contracts` project referenced by Core and Web.
+- Plan (agreed 2026-11-01, ≈ 5 days): outbox entries written in the same
+  transaction as the fight; dry run never publishes; R2 credentials entered in
+  the desktop app (Credential Manager) with a publish status; battle links in
+  chat and `!arena`; pages leaderboard, battle, trainer, battle index, privacy
+  note; Pages deploy workflow; local overlay endpoint. Proposals taken over
+  with the plan: "republish everything" already in WP-06 (otherwise data from
+  0.5 never appears); the overlay shows the latest fight and the top 5 (the
+  spec leaves it open); the footer carries the fan disclaimer (ADR-0008);
+  leaderboard ties go by `Specimen.AcquiredAt` — the moment the trainer last
+  completed the set of species they own now (losing and regaining one moves
+  that moment).
+- Open: the overlay's content beyond the simplest variant.
 
 ## WP-07 — Operations (2–3 days) → v1.0.0
 

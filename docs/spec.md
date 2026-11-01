@@ -279,14 +279,12 @@ case-insensitively against `name` and `slug`.
 The site is split into an app and its data:
 
 - **App:** static **Blazor WebAssembly**, hosted on **GitHub Pages** in this
-  repository, deployed by a GitHub Actions workflow. It is rebuilt only on
-  code changes and contains **no player data**.
-- **Data:** JSON files in a **Cloudflare R2** bucket, publicly readable via
-  its **`r2.dev` subdomain** (v1). Cloudflare rate-limits `r2.dev` and does
-  not cache it, which is irrelevant at this channel's size (e.g. 30 viewers
-  polling every 15 s ≈ 2 req/s). The data base URL is a config value of the
-  web app, so moving to a custom domain later is a config change, not a code
-  change. CORS allows `GET` from the Pages origin. The bot uploads
+  repository under its own subdomain, deployed by a GitHub Actions workflow.
+  It is rebuilt only on code changes and contains **no player data**.
+- **Data:** JSON files in a **Cloudflare R2** bucket, publicly readable via a
+  **custom domain** with Cloudflare's cache and a rate-limiting rule in front;
+  `r2.dev` stays off (ADR-0003 addendum). The data base URL is a config value
+  of the web app. CORS allows `GET` from the site's origin. The bot uploads
   through the S3-compatible API with an R2 API token scoped to this bucket
   (`Object Read & Write`), stored in the Windows credential store.
 
@@ -302,11 +300,16 @@ Data files (all derived — fully regenerable from the DB; the UI has a
 
 | File                       | Content                                              |
 |----------------------------|------------------------------------------------------|
-| `rangliste.json`           | rank, display name, distinct count, total count, player count, timestamp. Sort: distinct desc, then total desc, then earliest attainment |
+| `rangliste.json`           | rank, display name, distinct count, total count, player count, timestamp. Sort: distinct desc, then total desc, then earliest attainment¹ |
 | `trainer/<twitch-id>.json` | pokedex (species + count), achievements, recent fights, stats |
 | `kampf/<id>.json`          | participants, teams, log lines, result, loot, seed   |
 | `kaempfe.json`             | last N fights for an index page                      |
 | `meta.json`                | data format version, timestamp                       |
+
+¹ Attainment = the moment the trainer last completed the set of species they
+own now: for each owned species the earliest time they got a specimen of it
+that they still hold (caught or won), and of those the latest. Losing a
+species and regaining it moves the moment to the regain (WP-06 decision).
 
 - Files are uploaded **directly per change** via the publish queue.
 - Uploads normally land within seconds, but the queue may lag (network

@@ -39,3 +39,32 @@ Deliberately **not**: player data in any git branch; a custom domain in v1
 - A second provider (Cloudflare account, token, CORS) needs a one-time setup.
 - `r2.dev` is rate-limited and uncached — acceptable at ~30 viewers (≈ 2 req/s
   of polling). Moving to a custom domain is a config change.
+
+## Addendum 2026-11-01 (WP-06): custom domains instead of `r2.dev`
+
+Every read through `r2.dev` is a billed Class B operation once the free
+10 million per month are used up, R2 has no spending cap, and `r2.dev` cannot
+be cached. Anyone who scripts requests against the public URL turns that into
+a bill — the free storage (10 GB) is irrelevant by comparison, since only the
+bot can write. The user already has a domain whose DNS is on Cloudflare
+(HorizonNET). User decisions:
+
+- The bucket lives in the **user's Cloudflare account** (the account that
+  holds the zone — a custom domain requires that). Moving it to the streamer
+  later means a new bucket, token and base URL plus "republish everything".
+- **Data** is served from a subdomain of that zone connected to the bucket as
+  an R2 custom domain (placeholder `arena-daten.<domain>`). `r2.dev` stays
+  disabled, so no uncached path exists.
+- A **cache rule** makes the data host eligible for caching and respects the
+  origin's `Cache-Control` (Cloudflare does not cache `.json` by default).
+  Cache hits do not reach R2 and cost nothing.
+- One **rate-limiting rule** (the free plan allows one per zone) on the data
+  host blocks single clients that poll far above the site's own rate.
+- The **site** keeps GitHub Pages, now under a subdomain of the same zone
+  (placeholder `arena.<domain>`, CNAME to `juliusfo.github.io`, DNS only — no
+  proxy, GitHub issues the certificate). It is served from `/`, and the chat
+  links become short. CORS on the bucket allows that origin.
+- Both hostnames are **first-level** subdomains: the free Universal SSL
+  certificate covers `*.<domain>` only, not `*.arena.<domain>`.
+
+This supersedes "a custom domain in v1 (backlog)" above; the rest stands.
