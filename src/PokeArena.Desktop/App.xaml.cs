@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PokeArena.Core;
 using PokeArena.Core.Game;
+using PokeArena.Core.Publishing;
 using PokeArena.Core.Secrets;
 using PokeArena.Core.Twitch;
 using PokeArena.Desktop.Services;
@@ -68,6 +69,7 @@ public partial class App : Application
 
         var options = builder.Configuration.GetSection(PokeArenaOptions.SectionName).Get<PokeArenaOptions>() ?? new();
         var twitchOptions = builder.Configuration.GetSection(TwitchOptions.SectionName).Get<TwitchOptions>() ?? new();
+        var websiteOptions = builder.Configuration.GetSection(WebsiteOptions.SectionName).Get<WebsiteOptions>() ?? new();
         var paths = AppPaths.Resolve(options);
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
@@ -92,6 +94,7 @@ public partial class App : Application
         builder.Services.AddSingleton(new AppInfo(version));
         builder.Services.AddPokeArenaGame(Path.Combine(AppContext.BaseDirectory, "data"));
         builder.Services.AddPokeArenaChat(twitchOptions);
+        builder.Services.AddPokeArenaWebsite(websiteOptions);
         builder.Services.AddSingleton<MainWindow>();
 
         _host = builder.Build();

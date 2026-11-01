@@ -1,0 +1,116 @@
+@* Website upload: R2 key, upload status and „Alles neu veröffentlichen“ (spec §9). *@
+@using PokeArena.Core.Publishing
+@implements IDisposable
+@inject R2Access R2
+@inject SitePublishWorker Publisher
+
+<section class="card">
+    <h2>Website</h2>
+
+    @if (!R2.Options.HasBucket)
+    {
+        <p class="status"><span class="dot"></span>Nicht eingerichtet</p>
+        <p class="hint">Es ist noch kein Speicherort für die Website eingestellt. Bitte wende dich an die Person, die PokeArena für dich eingerichtet hat.</p>
+    }
+    else if (!R2.HasCredentials)
+    {
+        <p class="status"><span class="dot"></span>Schlüssel fehlt</p>
+        <p class="hint">
+            Damit Rangliste und Kämpfe auf der Website erscheinen, braucht PokeArena einmal den Schlüssel für den Speicher bei
+            Cloudflare. Er wird sicher in Windows gespeichert.
+        </p>
+        <form class="key-form" @onsubmit="Save">
+            <label>
+                Zugangsschlüssel-ID
+                <input @bind="_keyId" @bind:event="oninput" autocomplete="off" spellcheck="false" />
+            </label>
+            <label>
+                Geheimer Schlüssel
+                <input type="password" @bind="_secret" @bind:event="oninput" autocomplete="off" />
+            </label>
+            <div class="actions">
+                <button class="btn btn-primary" type="submit" disabled="@(string.IsNullOrWhiteSpace(_keyId) || string.IsNullOrWhiteSpace(_secret))">Speichern</button>
+            </div>
+        </form>
+    }
+    else
+    {
+        var state = Publisher.State;
+        @if (state.LastError is { } error)
+        {
+            <p class="status"><span class="dot dot-error"></span>Hochladen klappt gerade nicht</p>
+            <p class="problem">@error</p>
+            <p class="hint">PokeArena versucht es von selbst weiter. Es geht nichts verloren.</p>
+        }
+        else if (state.Pending > 0)
+        {
+            <p class="status"><span class="dot dot-busy"></span>Wird aktualisiert …</p>
+        }
+        else
+        {
+            <p class="status"><span class="dot dot-on"></span>Website ist aktuell</p>
+        }
+
+        <dl class="facts">
+            @if (R2.Options.HasSite)
+            {
+                <dt>Adresse</dt>
+                <dd><a href="@R2.Options.SiteUrl" target="_blank">@R2.Options.SiteUrl</a></dd>
+            }
+            <dt>Wartet</dt>
+            <dd data-testid="pending">@(state.Pending == 1 ? "1 Datei" : $"{state.Pending} Dateien")</dd>
+            <dt>Zuletzt hochgeladen</dt>
+            <dd>@(state.LastUploadAt is { } at ? at.ToLocalTime().ToString("dd.MM. HH:mm:ss") + " Uhr" : "noch nicht")</dd>
+        </dl>
+        <div class="actions">
+            <button class="btn" @onclick="RepublishAsync" disabled="@_republishing">Alles neu veröffentlichen</button>
+            <button class="btn btn-quiet" @onclick="R2.DeleteCredentials">Schlüssel entfernen</button>
+        </div>
+        <p class="hint">„Alles neu veröffentlichen“ lädt alle Trainer und Kämpfe noch einmal hoch – zum Beispiel nach dem ersten Einrichten.</p>
+    }
+</section>
+
+@code {
+    private string _keyId = "";
+    private string _secret = "";
+    private bool _republishing;
+
+    protected override void OnInitialized()
+    {
+        R2.Changed += OnChanged;
+        Publisher.Changed += OnChanged;
+    }
+
+    private void Save()
+    {
+        if (string.IsNullOrWhiteSpace(_keyId) || string.IsNullOrWhiteSpace(_secret))
+        {
+            return;
+        }
+
+        R2.SaveCredentials(_keyId, _secret);
+        _keyId = "";
+        _secret = "";
+    }
+
+    private async Task RepublishAsync()
+    {
+        _republishing = true;
+        try
+        {
+            await Publisher.RepublishEverythingAsync(CancellationToken.None);
+        }
+        finally
+        {
+            _republishing = false;
+        }
+    }
+
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        R2.Changed -= OnChanged;
+        Publisher.Changed -= OnChanged;
+    }
+}

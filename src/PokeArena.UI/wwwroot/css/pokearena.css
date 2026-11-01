@@ -482,3 +482,22 @@ select {
   color: #ffffff;
   cursor: pointer;
 }
+
+/* Website key form */
+
+.key-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.key-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--muted);
+}
+
+.facts a {
+  color: var(--accent);
+}
