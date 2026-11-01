@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-11-01 · v0.5.0 (WP-00 – WP-05 done) · WP-06 built, live test open
+Status: 2026-11-01 · v0.6.0 (WP-00 – WP-06 done) · WP-07 next
 
 ## 1. Where to find what
 
@@ -69,7 +69,7 @@ Changes only via ADR.
 | Storage | EF Core + SQLite | Migrations in Core |
 | Twitch | EventSub WebSocket (read), Helix Send Chat Message (write), Device Code Flow | Own lean client (`HttpClient`, `ClientWebSocket`) behind own interfaces (ADR-0002) |
 | Website | Blazor WebAssembly on GitHub Pages | App only, no data (ADR-0003) |
-| Site data | Cloudflare R2 via `r2.dev`, `AWSSDK.S3` | Base URL is config (ADR-0003) |
+| Site data | Cloudflare R2 behind a custom domain with cache (no `r2.dev`), `AWSSDK.S3` | Base URL is config (ADR-0003 + addendum) |
 | Secrets | Windows Credential Manager via `Meziantou.Framework.Win32.CredentialManager` | Behind `ISecretStore` (ADR-0002) |
 | Tests | xUnit v3 on Microsoft Testing Platform; bUnit for components | ADR-0001 addendum |
 
@@ -157,9 +157,8 @@ PokeArena.slnx
 
 ## 9. Next
 
-Finish WP-06: set up Cloudflare and GitHub Pages (docs/website-setup.md), live
-test, then release 0.6.0. Open: the overlay content beyond the simplest
-variant. Still open: operations
-on the streamer's PC; from WP-03 the `N = 4` boss dip, the runtime balancing
+Start WP-07 (operations: mod commands, deletion, backup, installation on the
+streamer's PC). Open from WP-06: the overlay content beyond the simplest
+variant, purging cached fight files after a deletion. Still open: from WP-03 the `N = 4` boss dip, the runtime balancing
 editor and progression length; from WP-05 the NPC difficulty. Details:
 docs/roadmap.md.

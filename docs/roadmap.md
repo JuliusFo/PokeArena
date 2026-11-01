@@ -172,6 +172,9 @@ Demo: a battle link in chat opens a live page.
   leaderboard ties go by `Specimen.AcquiredAt` — the moment the trainer last
   completed the set of species they own now (losing and regaining one moves
   that moment).
+- **Done 2026-11-01**: built and live-tested the same day (Cloudflare and Pages
+  set up by the user, real boss fight in the test channel). See the log in
+  work-packages.md.
 - Open: the overlay's content beyond the simplest variant.
 
 ## WP-07 — Operations (2–3 days) → v1.0.0

@@ -11,7 +11,7 @@ in [roadmap.md](roadmap.md).
 | WP-03 | Battle engine + boss | 0.3.0 | done 2026-10-19 |
 | WP-04 | PvP | 0.4.0 | done 2026-10-20 |
 | WP-05 | NPC fights | 0.5.0 | done 2026-10-27 |
-| WP-06 | Website | 0.6.0 | built 2026-11-01, live test open |
+| WP-06 | Website | 0.6.0 | done 2026-11-01 |
 | WP-07 | Operations | 1.0.0 | planned |
 
 ## Log
@@ -224,7 +224,16 @@ in [roadmap.md](roadmap.md).
 - Deviation from the architecture sketch: the outbox stores only paths, no
   payload — files are rendered at upload time, so they are always current
   and duplicates collapse.
-- Live test: open (needs the Cloudflare and Pages setup).
+- Live test 2026-11-01: Cloudflare (bucket behind `arena-data.cloudfox.xyz`,
+  cache rule, rate-limiting rule by path — the free plan has no hostname
+  field, CORS, account API token) and Pages (`arena.cloudfox.xyz`, verified
+  domain, `DATA_URL`) set up by the user. Key entered in the app, „Alles neu
+  veröffentlichen“ uploaded the existing data; second request a cache HIT,
+  404s not cached (BYPASS), CORS header and `Vary: Origin` present; R2
+  integration test green. A real `!boss` in the test channel (two trainers,
+  boss escaped) posted the battle link, and `kampf/1.json`, `kaempfe.json`
+  and `rangliste.json` were on the data host about a second later. Website
+  run locally against the real data host; the Pages deploy follows the merge.
 - Deliberately not done: deleting trainers and „[gelöscht]“ in old fights
   (WP-07; the privacy page already describes it), purging cached fight files
   after a deletion (WP-07), overlay content beyond the simplest variant.

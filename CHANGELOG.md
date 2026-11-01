@@ -7,6 +7,8 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-01
+
 ### Added
 - Public website: leaderboard, list of the latest fights, a page per fight
   with both teams and the full course, and a page per trainer with Pokédex,
