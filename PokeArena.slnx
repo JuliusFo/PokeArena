@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/PokeArena.Contracts/PokeArena.Contracts.csproj" />
     <Project Path="src/PokeArena.Core/PokeArena.Core.csproj" />
     <Project Path="src/PokeArena.Desktop/PokeArena.Desktop.csproj" />
     <Project Path="src/PokeArena.UI/PokeArena.UI.csproj" />

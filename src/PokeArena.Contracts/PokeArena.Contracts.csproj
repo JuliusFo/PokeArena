@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The website's JSON files as records, shared by Core (writes them) and Web (reads them). No package
+       references and no logic beyond paths, so the WASM download stays small (ADR-0009). -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>PokeArena.Contracts</RootNamespace>
+    <IsTrimmable>true</IsTrimmable>
+  </PropertyGroup>
+
+</Project>
