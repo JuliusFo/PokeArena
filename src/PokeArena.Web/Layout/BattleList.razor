@@ -1,0 +1,28 @@
+@* Fights as rows: time, headline, result; each links to its battle page. *@
+
+<ul class="battles">
+    @foreach (var battle in Battles)
+    {
+        <li>
+            <a href="kampf/@battle.Id.ToString(CultureInfo.InvariantCulture)">
+                <span class="battle-kind kind-@battle.Kind.ToString().ToLowerInvariant()">@KindName(battle.Kind)</span>
+                <span class="battle-headline">@battle.Headline</span>
+                <span class="battle-result">@battle.Result</span>
+                <time class="muted">@Format.DateTime(battle.FoughtAt)</time>
+            </a>
+        </li>
+    }
+</ul>
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyList<BattleSummary> Battles { get; set; } = [];
+
+    internal static string KindName(BattleKind kind) => kind switch
+    {
+        BattleKind.Boss => "Boss",
+        BattleKind.Pvp => "Duell",
+        BattleKind.Npc => "NPC",
+        _ => "",
+    };
+}

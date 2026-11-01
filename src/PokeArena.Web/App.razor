@@ -1,0 +1,13 @@
+<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <PageTitle>Nicht gefunden – PokeArena</PageTitle>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <h1>Seite nicht gefunden</h1>
+            <p>Diese Seite gibt es nicht. <a href="">Zur Rangliste</a></p>
+        </LayoutView>
+    </NotFound>
+</Router>

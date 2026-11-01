@@ -1,0 +1,120 @@
+@page "/trainer/{Key}"
+@implements IDisposable
+@inject SiteData Data
+
+<PageTitle>@(_trainer?.DisplayName ?? "Trainer") – PokeArena</PageTitle>
+
+@if (_trainer is { } trainer)
+{
+    <h1>@trainer.DisplayName</h1>
+    <p class="muted">
+        Dabei seit @Format.Date(trainer.RegisteredAt)
+        @if (_rank is { } rank)
+        {
+            <text> · Platz @rank in der </text><a href="">Rangliste</a>
+        }
+    </p>
+
+    <dl class="stats">
+        <div><dt>Arten</dt><dd>@trainer.Distinct</dd></div>
+        <div><dt>Pokémon</dt><dd>@trainer.Total</dd></div>
+        <div><dt>Kämpfe</dt><dd>@trainer.Battles</dd></div>
+        <div><dt>Siege</dt><dd>@trainer.Wins</dd></div>
+        <div><dt>Tokens</dt><dd>@trainer.Tokens</dd></div>
+    </dl>
+
+    @if (trainer.Achievements.Count > 0 || trainer.Badges.Count > 0)
+    {
+        <h2>Erfolge</h2>
+        <ul class="chips">
+            @foreach (var achievement in trainer.Achievements)
+            {
+                <li class="chip" title="Freigeschaltet am @Format.Date(achievement.UnlockedAt)">AV @achievement.Threshold · @achievement.NpcName</li>
+            }
+            @foreach (var badge in trainer.Badges)
+            {
+                <li class="chip chip-badge"><a href="kampf/@badge.BattleId.ToString(CultureInfo.InvariantCulture)">Orden von @badge.NpcName</a></li>
+            }
+        </ul>
+    }
+
+    <h2>Pokédex</h2>
+    <ul class="pokedex">
+        @foreach (var entry in trainer.Pokedex)
+        {
+            <li>
+                <span class="dex-number">#@entry.Species.Id.ToString("000", CultureInfo.InvariantCulture)</span>
+                <SpeciesName Species="entry.Species" />
+                @if (entry.Count > 1)
+                {
+                    <span class="muted">× @entry.Count</span>
+                }
+                @if (entry.HasStarter)
+                {
+                    <span class="chip">Starter</span>
+                }
+            </li>
+        }
+    </ul>
+
+    @if (trainer.RecentBattles.Count > 0)
+    {
+        <h2>Letzte Kämpfe</h2>
+        <BattleList Battles="trainer.RecentBattles" />
+    }
+}
+else if (_missing)
+{
+    <h1>Trainer nicht gefunden</h1>
+    <p>Diesen Trainer gibt es nicht (mehr). <a href="">Zur Rangliste</a></p>
+}
+else if (_failed)
+{
+    <p class="notice">Die Daten konnten gerade nicht geladen werden. Bitte versuch es gleich noch einmal.</p>
+}
+else
+{
+    <p class="muted">Lädt …</p>
+}
+
+@code {
+    private readonly CancellationTokenSource _stop = new();
+    private TrainerPage? _trainer;
+    private int? _rank;
+    private bool _missing;
+    private bool _failed;
+
+    /// <summary>The Twitch user id, or a display name looked up in the leaderboard (spec §9).</summary>
+    [Parameter]
+    public string Key { get; set; } = "";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _trainer = null;
+        _missing = false;
+        _failed = false;
+        try
+        {
+            var leaderboard = await Data.LeaderboardAsync(_stop.Token);
+            var entry = leaderboard?.Entries.FirstOrDefault(e => e.TrainerId == Key)
+                ?? leaderboard?.Entries.FirstOrDefault(e => string.Equals(e.DisplayName, Key, StringComparison.OrdinalIgnoreCase));
+            _rank = entry?.Rank;
+            _trainer = await Data.TrainerAsync(entry?.TrainerId ?? Key, _stop.Token);
+            _missing = _trainer is null;
+        }
+        catch (HttpRequestException)
+        {
+            _failed = true;
+        }
+        catch (OperationCanceledException)
+        {
+            // Page left.
+        }
+    }
+
+    public void Dispose()
+    {
+        _stop.Cancel();
+        _stop.Dispose();
+    }
+}

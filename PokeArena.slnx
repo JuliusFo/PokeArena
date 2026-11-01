@@ -4,10 +4,12 @@
     <Project Path="src/PokeArena.Core/PokeArena.Core.csproj" />
     <Project Path="src/PokeArena.Desktop/PokeArena.Desktop.csproj" />
     <Project Path="src/PokeArena.UI/PokeArena.UI.csproj" />
+    <Project Path="src/PokeArena.Web/PokeArena.Web.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/PokeArena.Core.Tests/PokeArena.Core.Tests.csproj" />
     <Project Path="tests/PokeArena.Integration.Tests/PokeArena.Integration.Tests.csproj" />
     <Project Path="tests/PokeArena.UI.Tests/PokeArena.UI.Tests.csproj" />
+    <Project Path="tests/PokeArena.Web.Tests/PokeArena.Web.Tests.csproj" />
   </Folder>
 </Solution>

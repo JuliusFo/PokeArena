@@ -1,0 +1,30 @@
+@page "/kaempfe"
+@inherits PollingPage
+
+<PageTitle>Kämpfe – PokeArena</PageTitle>
+
+<h1>Letzte Kämpfe</h1>
+
+@if (Loading)
+{
+    <p class="muted">Lädt …</p>
+}
+else if (_index is null || _index.Battles.Count == 0)
+{
+    <p>Noch keine Kämpfe. Schreib im Chat <strong>!boss</strong>, um den ersten Boss zu rufen!</p>
+}
+else
+{
+    <BattleList Battles="_index.Battles" />
+}
+
+@if (Failed)
+{
+    <p class="notice">Die Daten konnten gerade nicht geladen werden. Die Seite versucht es gleich noch einmal.</p>
+}
+
+@code {
+    private BattleIndex? _index;
+
+    protected override async Task LoadAsync(CancellationToken ct) => _index = await Data.BattleIndexAsync(ct);
+}

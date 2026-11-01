@@ -1,0 +1,435 @@
+/* PokeArena website. Same palette as the desktop app (PokeArena.UI); species are text, no images (ADR-0008). */
+
+:root {
+  --bg: #f4f4f6;
+  --surface: #ffffff;
+  --text: #1d1d21;
+  --muted: #5f6068;
+  --border: #e2e2e6;
+  --accent: #e3350d;
+  --accent-soft: #fde9e4;
+  --ok: #1f8a4c;
+  --notice-bg: #fff4dc;
+  --notice-text: #6b4a00;
+  --chip-bg: #ecebf7;
+  --chip-text: #4b3fa8;
+  --radius: 12px;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #17171b;
+    --surface: #222228;
+    --text: #ececf0;
+    --muted: #a0a1ab;
+    --border: #34343c;
+    --accent: #ff6a45;
+    --accent-soft: #3a231e;
+    --ok: #4cc283;
+    --notice-bg: #3a3020;
+    --notice-text: #f3d9a0;
+    --chip-bg: #2e2b4a;
+    --chip-text: #c9c3ff;
+    color-scheme: dark;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+a {
+  color: var(--accent);
+}
+
+h1 {
+  margin: 8px 0 12px;
+  font-size: 28px;
+  line-height: 1.2;
+}
+
+h2 {
+  margin: 28px 0 10px;
+  font-size: 19px;
+}
+
+h1:focus {
+  outline: none;
+}
+
+.boot {
+  padding: 24px 16px;
+  color: var(--muted);
+}
+
+.page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 16px 32px;
+}
+
+.site-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 24px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+
+.brand {
+  color: var(--accent);
+  font-size: 22px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.site-header nav {
+  display: flex;
+  gap: 4px;
+}
+
+.site-header nav a {
+  padding: 6px 12px;
+  border-radius: 8px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.site-header nav a.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.site-footer {
+  margin-top: 48px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.strong {
+  font-weight: 700;
+}
+
+.notice {
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  background: var(--notice-bg);
+  color: var(--notice-text);
+}
+
+/* Leaderboard */
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.table th,
+.table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.table th {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.table tr.top td:first-child {
+  color: var(--accent);
+  font-weight: 800;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Battle lists */
+
+.battles {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.battles a {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 2px 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.battles a:hover {
+  outline: 2px solid var(--accent-soft);
+}
+
+.battles .battle-kind {
+  grid-row: span 3;
+  align-self: start;
+}
+
+.battle-headline {
+  font-weight: 700;
+}
+
+.battles time {
+  font-size: 13px;
+}
+
+.battle-kind {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--chip-bg);
+  color: var(--chip-text);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.kind-boss {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* Battle page */
+
+.result {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.sides {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.side {
+  padding: 4px 16px 12px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 2px solid transparent;
+}
+
+.side.won {
+  border-color: var(--ok);
+}
+
+.side h2 {
+  margin: 10px 0 6px;
+  font-size: 17px;
+}
+
+.fighters,
+.pokedex {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fighters li,
+.pokedex li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.fighters li:last-child,
+.pokedex li:last-child {
+  border-bottom: none;
+}
+
+.log {
+  margin: 0;
+  padding: 12px 16px 12px 36px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  font-size: 14px;
+}
+
+.log li.round {
+  list-style: none;
+  margin: 10px 0 2px -20px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.log li.round:first-child {
+  margin-top: 0;
+}
+
+/* Trainer page */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.stats div {
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.stats dt {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.stats dd {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--chip-bg);
+  color: var(--chip-text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.chip a {
+  color: inherit;
+}
+
+.chip-badge {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.pokedex {
+  padding: 4px 16px;
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.dex-number {
+  min-width: 3.2em;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Species as text with type colours */
+
+.species {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.species-name {
+  font-weight: 600;
+  margin-right: 2px;
+}
+
+.type {
+  padding: 1px 7px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+}
+
+.type-normal { background: #8f8f78; }
+.type-feuer { background: #e2671f; }
+.type-wasser { background: #4d7fe0; }
+.type-pflanze { background: #5aa63c; }
+.type-elektro { background: #c9a10a; }
+.type-eis { background: #4fb3b3; }
+.type-kampf { background: #b02c25; }
+.type-gift { background: #8f3e94; }
+.type-boden { background: #b8913c; }
+.type-flug { background: #8670d8; }
+.type-psycho { background: #e5487a; }
+.type-kaefer { background: #8a9a17; }
+.type-gestein { background: #9c8730; }
+.type-geist { background: #5e4b88; }
+.type-drache { background: #5b2ff0; }
+
+/* Framework error bar */
+
+#blazor-error-ui {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 10px 16px;
+  background: var(--notice-bg);
+  color: var(--notice-text);
+}
+
+#blazor-error-ui .reload {
+  margin-left: 8px;
+}
+
+@media (max-width: 560px) {
+  h1 {
+    font-size: 23px;
+  }
+
+  .table th,
+  .table td {
+    padding: 8px 6px;
+  }
+}

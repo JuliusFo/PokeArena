@@ -1,0 +1,53 @@
+@inherits LayoutComponentBase
+@implements IDisposable
+@inject SiteData Data
+
+<div class="page">
+    <header class="site-header">
+        <a class="brand" href="">PokeArena</a>
+        <nav>
+            <NavLink href="" Match="NavLinkMatch.All">Rangliste</NavLink>
+            <NavLink href="kaempfe">Kämpfe</NavLink>
+        </nav>
+    </header>
+
+    @if (_newerData)
+    {
+        <p class="notice" role="status">Es gibt eine neue Version der Seite. Bitte lade sie neu.</p>
+    }
+
+    <main>
+        @Body
+    </main>
+
+    <footer class="site-footer">
+        <p>
+            PokeArena ist ein nicht-kommerzielles Fan-Projekt für einen Twitch-Kanal und steht in keiner Verbindung zu
+            Nintendo, Game Freak, Creatures oder The Pokémon Company. Pokémon und alle Namen sind Marken ihrer Inhaber.
+        </p>
+        <p><a href="datenschutz">Datenschutz</a></p>
+    </footer>
+</div>
+
+@code {
+    private readonly CancellationTokenSource _stop = new();
+    private bool _newerData;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _newerData = await Data.MetaAsync(_stop.Token) is { } meta && meta.FormatVersion > SiteMeta.CurrentFormatVersion;
+        }
+        catch (HttpRequestException)
+        {
+            // The pages show their own hint when the data host is unreachable.
+        }
+    }
+
+    public void Dispose()
+    {
+        _stop.Cancel();
+        _stop.Dispose();
+    }
+}

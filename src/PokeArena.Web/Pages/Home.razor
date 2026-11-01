@@ -1,0 +1,54 @@
+@page "/"
+@inherits PollingPage
+
+<PageTitle>Rangliste – PokeArena</PageTitle>
+
+<h1>Rangliste</h1>
+
+@if (Loading)
+{
+    <p class="muted">Lädt …</p>
+}
+else if (_leaderboard is null || _leaderboard.Entries.Count == 0)
+{
+    <p>Noch niemand dabei. Schreib im Chat <strong>!registrieren</strong> und such dir dein erstes Pokémon aus!</p>
+}
+else
+{
+    <p class="muted">
+        @Format.Count(_leaderboard.PlayerCount, "Trainer", "Trainer") · Stand @Format.Time(_leaderboard.UpdatedAt) ·
+        Es zählen verschiedene Arten, bei Gleichstand alle Pokémon.
+    </p>
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="num">Platz</th>
+                <th>Trainer</th>
+                <th class="num">Arten</th>
+                <th class="num">Pokémon</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var entry in _leaderboard.Entries)
+            {
+                <tr class="@(entry.Rank <= 3 ? "top" : "")">
+                    <td class="num">@entry.Rank</td>
+                    <td><a href="trainer/@entry.TrainerId">@entry.DisplayName</a></td>
+                    <td class="num strong">@entry.Distinct</td>
+                    <td class="num">@entry.Total</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (Failed)
+{
+    <p class="notice">Die Daten konnten gerade nicht geladen werden. Die Seite versucht es gleich noch einmal.</p>
+}
+
+@code {
+    private Leaderboard? _leaderboard;
+
+    protected override async Task LoadAsync(CancellationToken ct) => _leaderboard = await Data.LeaderboardAsync(ct);
+}

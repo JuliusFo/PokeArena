@@ -1,0 +1,127 @@
+@page "/kampf/{Id:long}"
+@implements IDisposable
+@inject SiteData Data
+@inject TimeProvider Time
+
+<PageTitle>@(_battle?.Headline ?? "Kampf") – PokeArena</PageTitle>
+
+@if (_battle is { } battle)
+{
+    <p class="muted">
+        <span class="battle-kind kind-@battle.Kind.ToString().ToLowerInvariant()">@BattleList.KindName(battle.Kind)</span>
+        @Format.DateTime(battle.FoughtAt)
+    </p>
+    <h1>@battle.Headline</h1>
+    <p class="result">@battle.Result</p>
+
+    <div class="sides">
+        @foreach (var side in battle.Sides)
+        {
+            <section class="side @(side.Won ? "won" : "lost")">
+                <h2>@side.Name@(side.Won ? " – gewonnen" : "")</h2>
+                <ul class="fighters">
+                    @foreach (var fighter in side.Fighters)
+                    {
+                        <li>
+                            <SpeciesName Species="fighter.Species" />
+                            <span class="muted">
+                                @if (fighter.TrainerId is { } trainerId && fighter.Owner != side.Name)
+                                {
+                                    <a href="trainer/@trainerId">@fighter.Owner</a>
+                                    <text> · </text>
+                                }
+                                @fighter.MaxHp HP
+                            </span>
+                        </li>
+                    }
+                </ul>
+            </section>
+        }
+    </div>
+
+    <h2>Kampfverlauf</h2>
+    <ol class="log">
+        @foreach (var line in battle.Lines)
+        {
+            <li class="@(line.StartsWith("Runde ", StringComparison.Ordinal) ? "round" : "")">@line</li>
+        }
+    </ol>
+    <p class="muted">Seed @battle.Seed.ToString(CultureInfo.InvariantCulture)</p>
+}
+else if (_gaveUp)
+{
+    <h1>Kampf nicht gefunden</h1>
+    <p>Diesen Kampf gibt es nicht. <a href="kaempfe">Zu den letzten Kämpfen</a></p>
+}
+else if (_failed)
+{
+    <h1>Kampf</h1>
+    <p class="notice">Die Daten konnten gerade nicht geladen werden. Die Seite versucht es gleich noch einmal.</p>
+}
+else
+{
+    <h1>Kampf wird gerade veröffentlicht …</h1>
+    <p class="muted">Der Kampf ist gleich da – die Seite lädt ihn von selbst.</p>
+}
+
+@code {
+    /// <summary>A link from chat may arrive before the upload (spec §9): retry this often …</summary>
+    public static readonly TimeSpan RetryInterval = TimeSpan.FromSeconds(3);
+
+    /// <summary>… for this long, then the fight does not exist.</summary>
+    public static readonly TimeSpan GiveUpAfter = TimeSpan.FromMinutes(2);
+
+    private readonly CancellationTokenSource _stop = new();
+    private BattlePage? _battle;
+    private bool _failed;
+    private bool _gaveUp;
+
+    [Parameter]
+    public long Id { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _battle = null;
+        _gaveUp = false;
+        var until = Time.GetUtcNow() + GiveUpAfter;
+        try
+        {
+            while (true)
+            {
+                try
+                {
+                    _battle = await Data.BattleAsync(Id, _stop.Token);
+                    _failed = false;
+                }
+                catch (HttpRequestException)
+                {
+                    _failed = true;
+                }
+
+                if (_battle is not null)
+                {
+                    return;
+                }
+
+                if (Time.GetUtcNow() >= until)
+                {
+                    _gaveUp = true;
+                    return;
+                }
+
+                StateHasChanged();
+                await Task.Delay(RetryInterval, Time, _stop.Token);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Page left.
+        }
+    }
+
+    public void Dispose()
+    {
+        _stop.Cancel();
+        _stop.Dispose();
+    }
+}

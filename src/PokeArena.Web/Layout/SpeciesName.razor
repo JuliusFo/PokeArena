@@ -1,0 +1,14 @@
+@* A species as text with its types — no images (ADR-0008). *@
+
+<span class="species">
+    <span class="species-name">@Species.Name</span>
+    @foreach (var type in Species.Types)
+    {
+        <span class="type @Format.TypeClass(type)">@type</span>
+    }
+</span>
+
+@code {
+    [Parameter, EditorRequired]
+    public SpeciesInfo Species { get; set; } = null!;
+}

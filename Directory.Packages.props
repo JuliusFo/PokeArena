@@ -17,6 +17,11 @@
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="10.0.110" />
   </ItemGroup>
 
+  <ItemGroup Label="Web">
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.13" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.13" />
+  </ItemGroup>
+
   <ItemGroup Label="Windows">
     <PackageVersion Include="Meziantou.Framework.Win32.CredentialManager" Version="3.0.5" />
   </ItemGroup>

@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <!-- The public website (spec §9): static Blazor WebAssembly on GitHub Pages. It contains no player data; it reads
+       the JSON files from the R2 data host. References only Contracts — no EF Core, no Twitch (ADR-0001, ADR-0009). -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>PokeArena.Web</RootNamespace>
+    <!-- Fingerprinted framework script and preload links in index.html. -->
+    <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PokeArena.Contracts\PokeArena.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Invented example data for running the site locally (appsettings.Development.json); never published. -->
+    <Content Update="wwwroot\beispieldaten\**" CopyToPublishDirectory="Never" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="PokeArena.Web.Tests" />
+  </ItemGroup>
+
+</Project>
