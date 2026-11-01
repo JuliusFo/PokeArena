@@ -46,11 +46,12 @@ labels are from memory and may differ slightly.
      minutes.
    - Browser TTL: respect origin.
 2. **Rate-limiting rule** (Security → WAF → Rate limiting rules; the free plan
-   has one per zone, currently unused): when *Hostname equals*
-   `arena-daten.<domain>`, counted per IP, **more than 50 requests in 10
-   seconds** → block for 10 seconds. A viewer with the site open makes about
-   one request per 15 seconds plus two per page opened, so only scripts hit
-   the limit.
+   has one per zone, currently unused). The free plan cannot match the
+   hostname, only the path: when *URI Path contains* `.json`, counted per IP,
+   **more than 50 requests in 10 seconds** → block for 10 seconds. It applies
+   to the whole zone, but other sites on it (HorizonNET) fetch hardly any
+   `.json`. A viewer with the site open makes about one request per 15
+   seconds plus two per page opened, so only scripts hit the limit.
 3. Optional: Notifications → check whether a usage/billing alert for R2
    exists and enable it.
 
