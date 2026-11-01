@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-10-27 · v0.5.0 (WP-00 – WP-05 done) · WP-06 next
+Status: 2026-11-01 · v0.5.0 (WP-00 – WP-05 done) · WP-06 built, live test open
 
 ## 1. Where to find what
 
@@ -9,8 +9,9 @@ Status: 2026-10-27 · v0.5.0 (WP-00 – WP-05 done) · WP-06 next
 |---|---|---|
 | `docs/spec.md` | Game rules, commands, config defaults (source of truth for gameplay) | Before any game-logic or chat-text work |
 | `docs/architecture.md` | Data model, game flows, publishing outbox, desktop UI concept | Before touching Core or Desktop structure |
-| `docs/decisions/` | ADRs (stack, Twitch, site data, determinism, base data/types, balancing, desktop UI, no official assets) | Before changing stack or architecture |
+| `docs/decisions/` | ADRs (stack, Twitch, site data, determinism, base data/types, balancing, desktop UI, no official assets, site contracts) | Before changing stack or architecture |
 | `docs/roadmap.md` | Planned work packages WP-NN, user decisions, open questions | At the start of every package |
+| `docs/website-setup.md` | One-time setup of Cloudflare (R2, cache, rate limit, CORS), GitHub Pages and the desktop app | When bringing the website online or moving it |
 | `docs/backlog.md` | Unplanned ideas, grouped by topic | When an idea comes up — park it there |
 | `docs/work-packages.md` | Package overview + log per finished package | After finishing a package |
 | `CHANGELOG.md` | Release notes (Keep a Changelog, SemVer) | Before tagging a release |
@@ -82,14 +83,16 @@ data · package feeds other than nuget.org · WPF-UI, CommunityToolkit.Mvvm
 ```
 PokeArena.slnx
 ├─ src/
+│  ├─ PokeArena.Contracts/ # site JSON records shared by Core and Web (ADR-0009)
 │  ├─ PokeArena.Core/      # domain, engine, Twitch, data, publishing — no UI, no Windows
 │  ├─ PokeArena.UI/        # Razor components + CSS of the desktop app
-│  ├─ PokeArena.Desktop/   # WPF host: BlazorWebView, logging, Windows services; later overlay endpoint
-│  └─ PokeArena.Web/       # (WP-06) Blazor WASM, reads JSON from R2
+│  ├─ PokeArena.Desktop/   # WPF host: BlazorWebView, logging, Windows services, OBS overlay endpoint
+│  └─ PokeArena.Web/       # public site, Blazor WASM on GitHub Pages, reads JSON from R2
 ├─ tests/
 │  ├─ PokeArena.Core.Tests/        # unit tests, nothing outside the process
-│  ├─ PokeArena.UI.Tests/          # bUnit component tests
-│  └─ PokeArena.Integration.Tests/ # real infrastructure (Credential Manager, Twitch; later R2)
+│  ├─ PokeArena.UI.Tests/          # bUnit component tests (desktop UI)
+│  ├─ PokeArena.Web.Tests/         # bUnit component tests (website)
+│  └─ PokeArena.Integration.Tests/ # real infrastructure (Credential Manager, Twitch, R2, overlay port)
 ├─ tools/                  # dev scripts, e.g. GeneratePokemonData.cs (`dotnet run <file>`)
 └─ data/                   # pokemon.json, typen.json, npcs.json (versioned base data)
 ```
@@ -97,10 +100,11 @@ PokeArena.slnx
 - `data/pokemon.json` is generated — change `tools/GeneratePokemonData.cs`
   and rerun it instead of editing the JSON (ADR-0005).
 
-- Desktop → UI, Core. UI → Core. Core → no project. Core.Tests → Core;
-  UI.Tests → UI; Integration.Tests → Desktop.
-- Web references neither Core nor Desktop (no EF Core or Twitch in WASM).
-  How the site JSON DTOs are shared is **open** (WP-06).
+- Desktop → UI, Core. UI → Core. Core → Contracts. Web → Contracts.
+  Contracts → no project. Core.Tests → Core; UI.Tests → UI; Web.Tests → Web;
+  Integration.Tests → Desktop.
+- Web references neither Core nor Desktop (no EF Core or Twitch in WASM,
+  ADR-0009).
 
 ## 6. Core terms (details: docs/architecture.md)
 
@@ -153,8 +157,9 @@ PokeArena.slnx
 
 ## 9. Next
 
-Start WP-06 (website, OBS overlay); open before it starts: how Web shares the
-JSON DTOs, whose Cloudflare account hosts the bucket. Still open: operations
+Finish WP-06: set up Cloudflare and GitHub Pages (docs/website-setup.md), live
+test, then release 0.6.0. Open: the overlay content beyond the simplest
+variant. Still open: operations
 on the streamer's PC; from WP-03 the `N = 4` boss dip, the runtime balancing
 editor and progression length; from WP-05 the NPC difficulty. Details:
 docs/roadmap.md.

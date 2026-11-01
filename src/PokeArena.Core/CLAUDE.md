@@ -45,3 +45,9 @@
   stale entries on the command queue (see `PvpService`).
 - Chat mentions (`@name`) resolve by `Trainer.Login` first, then by display name (`TrainerService.FindByNameAsync`);
   the bot's own replies should mention the login when the viewer has to type it (`!fight @login`).
+- Website (WP-06): every change a viewer could see on the site queues its paths with `SiteOutbox.EnqueueAsync` in
+  the **same** context/transaction as the change (`SiteOutbox.ForBattle` / `ForTrainers`). Forgetting it leaves
+  the site stale until "republish everything". The battle id exists only after the first `SaveChangesAsync`.
+- The publish worker reads `GameDatabase.OpenLive()` — the one exception to `Open()`; the sandbox is never published.
+- `PokeArena.Contracts` and `PokeArena.Core.Data` both have a `BattleKind`: alias one (`using DataBattleKind = …`).
+- Site files must stay derivable from the database: no state that exists only in a JSON file (ADR-0003).

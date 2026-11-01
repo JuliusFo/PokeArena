@@ -11,7 +11,7 @@ in [roadmap.md](roadmap.md).
 | WP-03 | Battle engine + boss | 0.3.0 | done 2026-10-19 |
 | WP-04 | PvP | 0.4.0 | done 2026-10-20 |
 | WP-05 | NPC fights | 0.5.0 | done 2026-10-27 |
-| WP-06 | Website | 0.6.0 | planned |
+| WP-06 | Website | 0.6.0 | built 2026-11-01, live test open |
 | WP-07 | Operations | 1.0.0 | planned |
 
 ## Log
@@ -190,6 +190,44 @@ in [roadmap.md](roadmap.md).
   now (roadmap question).
 - Deliberately not done: redeeming tokens, a token or badge command in chat,
   badges on the website (WP-06).
+
+### WP-06 — Website (2026-11-01, branch wp/06-website)
+- Built: `PokeArena.Contracts` (site records, source-generated JSON,
+  ADR-0009). Core `Publishing/`: `SiteOutbox` queues paths in the game
+  transaction (registration, rename, boss, PvP, NPC), `SiteGenerator` renders
+  `meta`, `rangliste`, `kaempfe`, `trainer/<id>`, `kampf/<id>` from the DB,
+  `SitePublishWorker` uploads from the live outbox (2 s poll, backoff 5 s …
+  15 min, never gives up, sandbox never published, deletes files whose source
+  is gone), `R2SitePublisher` / `R2Access` (AWSSDK.S3, key in the Credential
+  Manager), `SiteLinks` + `!arena`; migration `Website` (`PublishQueue`,
+  `Specimen.AcquiredAt` with backfill from PvP loot). Desktop: „Website“ and
+  „OBS-Overlay“ cards, `OverlayServer` (Kestrel on loopback, port 5299).
+  `PokeArena.Web` (Blazor WASM): leaderboard, battle index, battle page with
+  404 retry, trainer page by id or name, privacy note, fan disclaimer;
+  invented sample data for local runs. Workflow `pages.yml` (Pages deploy,
+  `DATA_URL` variable, 404.html fallback); CI runs the website tests. Tests:
+  171 unit, 26 bUnit (desktop), 9 bUnit (website), integration: overlay
+  server, R2 round trip (skipped until set up).
+- User decisions: 2026-10-30 — no `r2.dev` (unbounded per-request cost);
+  bucket in the user's Cloudflare account behind a subdomain of the existing
+  zone (HorizonNET) with cache and a rate-limiting rule; the site gets a
+  subdomain too (ADR-0003 addendum). 2026-11-01 — plan agreed with the
+  proposals: shared contracts project, republish-all already in WP-06,
+  overlay = latest fight + top 5, fan disclaimer in the footer, tie-break by
+  `AcquiredAt`.
+- Addenda: ADR-0003 addendum, ADR-0009, spec §9 (custom domain, tie-break
+  rule), architecture (publishing, overlay, website), new
+  docs/website-setup.md, backlog (custom-domain item closed).
+- Pitfalls: Core (queue paths in the same transaction, `OpenLive`,
+  `BattleKind` clash), Desktop (System.IO, overlay port and log level), new
+  Web/CLAUDE.md.
+- Deviation from the architecture sketch: the outbox stores only paths, no
+  payload — files are rendered at upload time, so they are always current
+  and duplicates collapse.
+- Live test: open (needs the Cloudflare and Pages setup).
+- Deliberately not done: deleting trainers and „[gelöscht]“ in old fights
+  (WP-07; the privacy page already describes it), purging cached fight files
+  after a deletion (WP-07), overlay content beyond the simplest variant.
 
 Template per entry:
 

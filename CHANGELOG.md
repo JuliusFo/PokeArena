@@ -7,6 +7,23 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+### Added
+- Public website: leaderboard, list of the latest fights, a page per fight
+  with both teams and the full course, and a page per trainer with Pokédex,
+  achievements, badges and recent fights. Pokémon appear as names with their
+  types, without pictures. The site updates itself every 15 seconds.
+- Fight results in chat end with a link to the fight page („Zum Kampf: …“);
+  `!arena` posts the website address. Dry-run fights get no link.
+- Desktop app: the „Website“ card takes the Cloudflare key once, shows
+  whether the upload works and offers „Alles neu veröffentlichen“. Uploads
+  wait while the PC is offline and catch up on their own.
+- OBS overlay: a browser source on the streamer's PC
+  (`http://localhost:5299/overlay`) with the latest fight and the top five.
+
+### Changed
+- Leaderboard ties go to whoever completed their current set of species
+  first; losing a species and winning it back counts from the comeback.
+
 ## [0.5.0] - 2026-10-27
 
 ### Added

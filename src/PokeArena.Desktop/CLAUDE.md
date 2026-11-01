@@ -23,3 +23,9 @@ Thin WPF host around a `BlazorWebView` (ADR-0007). UI belongs in PokeArena.UI, l
   invalid. Startup order matters: `AddPokeArenaGame` (base data check, migration) before `AddPokeArenaChat`.
 - Smoke tests without touching the real chat: `--PokeArena:DataDirectory=<scratch> --PokeArena:Twitch:Channel=`
   (empty channel = not configured, the bot stays offline).
+- WPF projects have no implicit `System.IO` using — add `using System.IO;` where needed.
+- The OBS overlay (`OverlayServer`) is a second, slim Kestrel host on the loopback interface (`PokeArena:Overlay:Port`,
+  default 5299; 0 = off). A busy port only disables the overlay. `Microsoft.AspNetCore` logs at Warning, else the
+  2-second polling floods the log file.
+- Website settings live under `PokeArena:Website` (site URL, R2 endpoint, bucket — not secret); the R2 key is in the
+  Credential Manager as `PokeArena:r2-access-key-id` / `PokeArena:r2-secret-access-key` (docs/website-setup.md).

@@ -1,0 +1,18 @@
+# PokeArena.Web — pitfalls
+
+Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casual viewers: simple German.
+
+- References only `PokeArena.Contracts` (ADR-0009) — never Core: EF Core and the Twitch client must not end up in
+  the browser download. Read the JSON with `SiteJson.Default.*` (source-generated, trim-safe), never reflection.
+- Page components must not share a name with a Contracts record (`Leaderboard.razor` clashed with
+  `Contracts.Leaderboard`; the leaderboard page is `Home.razor`).
+- No official Pokémon assets, not even hot-linked (ADR-0008): species are text plus type chips (`Format.TypeClass`).
+- Times: `Format.*` shows German time (Europe/Berlin), whatever the visitor's browser says.
+- Polling pages inherit `PollingPage` (15 s, spec §13) and use the injected `TimeProvider`, so bUnit tests drive
+  them with `FakeTimeProvider.Advance`. A battle page retries 404s: chat links can be faster than the upload.
+- The data host comes from `wwwroot/appsettings.json` (`DataUrl`); the Pages workflow overwrites it from the
+  repository variable `DATA_URL`. Locally (`--environment Development`, see `.claude/launch.json`) it reads the
+  invented files in `wwwroot/beispieldaten/` — never put real player data there (ADR-0003).
+- GitHub Pages has no SPA routing: the workflow copies `index.html` to `404.html` and adds `.nojekyll`
+  (`_framework`). Links in markup are relative (`kampf/12`, not `/kampf/12`) so they follow `<base href>`.
+- `index.html` uses the .NET 10 asset placeholders (`#[.{fingerprint}]`, `OverrideHtmlAssetPlaceholders`).
