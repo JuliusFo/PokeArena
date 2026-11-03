@@ -20,7 +20,7 @@
   (`source_broadcaster_user_id`). Some clients append U+E0000 to repeated messages; `ParsedCommand` strips it.
 - Timers in async loops: `Task.Delay(delay, timeProvider, ct)` and `new CancellationTokenSource(timeout,
   timeProvider)`, so tests drive them with `FakeTimeProvider.Advance`.
-- SQLite (WP-02/07): copying the database file while it is open loses the WAL content — back up with
+- SQLite (WP-02/08): copying the database file while it is open loses the WAL content — back up with
   `VACUUM INTO` or the SQLite backup API.
 - Database access only through `GameDatabase.Open()` (one short-lived context per unit of work, `await using`):
   it picks the live database or the dry-run sandbox. Never cache a `PokeArenaDb` or a connection string.

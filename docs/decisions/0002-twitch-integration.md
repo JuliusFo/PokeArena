@@ -82,4 +82,4 @@ a hosted auth backend.
   messages are ignored too.
 - **Channel setting**: `PokeArena:Twitch:Channel`; during development it comes
   from a git-ignored `appsettings.local.json`. How the streamer sets it is the
-  open setup question of WP-07.
+  open setup question of WP-08.

@@ -30,7 +30,7 @@ tests.
 
 - Balancing changes to base data are a git diff, not a migration.
 - Core is fully unit-testable; ViewModels are tested directly.
-- Backups are a single DB file (see roadmap WP-07 for the WAL caveat).
+- Backups are a single DB file (see roadmap WP-08 for the WAL caveat).
 
 ## Addendum 2026-10-11 (WP-00)
 

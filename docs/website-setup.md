@@ -70,7 +70,7 @@ labels are from memory and may differ slightly.
 ## 4. Desktop app
 
 1. Settings (`appsettings.local.json` on the dev machine; on the streamer's PC
-   next to the program until WP-07 decides installation):
+   next to the program until WP-08 decides installation):
 
    ```json
    {

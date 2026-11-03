@@ -124,8 +124,9 @@ don't edit it by hand.
 | 0.2.0 | Registration, persistent data | done |
 | 0.3.0 | Battle engine, `!boss` playable | done |
 | 0.4.0 | PvP `!fight` | done |
-| 0.5.0 | NPC fights `!challenge` | planned |
-| 0.6.0 | Public website and OBS overlay | planned |
+| 0.5.0 | NPC fights `!challenge` | done |
+| 0.6.0 | Public website and OBS overlay | done |
+| 0.7.0 | Commands only while the stream is live | planned |
 | 1.0.0 | Stream-ready: mod commands, deletion, backup | planned |
 
 Details per work package: [docs/roadmap.md](docs/roadmap.md) ·

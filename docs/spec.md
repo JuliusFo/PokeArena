@@ -70,7 +70,7 @@ the type that has the **higher** factor against the defender.
 - Any game command from an unregistered user gets a hint pointing to
   `!registrieren` (no auto-registration).
 - Only the first word after the command counts; name or slug, any case.
-- Replies (drafts, wording pass in WP-07):
+- Replies (drafts, wording pass in WP-08):
   - success: „@Name, willkommen bei PokeArena! Dein Starter ist Pikachu."
   - already registered: „@Name, du bist schon dabei – dein Starter ist
     Pikachu."
@@ -126,7 +126,7 @@ possible, so no artificial pacing):
 - Joining is not confirmed per player (30 viewers would flood the chat).
   `!boss` during a cooldown answers „@Name, der nächste Boss kann in X Minuten
   gerufen werden." — at most every 30 s for the whole chat (WP-03 decision).
-- Replies (drafts, wording pass in WP-07): lobby „Ein wilder Boss nähert sich!
+- Replies (drafts, wording pass in WP-08): lobby „Ein wilder Boss nähert sich!
   Schreibt !boss, um mitzukämpfen – noch 30 Sekunden.“; start „Ein wildes
   Arkani (selten) erscheint! 5 Trainer kämpfen mit.“; result „Arkani wurde
   besiegt! Gefangen von: A, B.“ or „Arkani ist entkommen – alle Pokémon wurden
@@ -192,7 +192,7 @@ Used by boss, PvP and NPC fights.
 - Open challenges live in memory: a restart or switching the dry run drops
   them. Requirements are checked again when the challenge is accepted.
 - Achievements reached through loot are announced like boss catches.
-- Reply drafts (WP-04, reviewed in WP-07): challenge „@Misty, Ash fordert dich
+- Reply drafts (WP-04, reviewed in WP-08): challenge „@Misty, Ash fordert dich
   zum Kampf heraus! Nimm an mit !fight @ash – du hast 2 Minuten.“; result
   „Ash besiegt Misty und bekommt Karpador von Misty!“; on accept with too few
   specimens „Der Kampf fällt aus: Ash hat erst 5 Pokémon – …“; rejections:
@@ -273,6 +273,15 @@ Used by boss, PvP and NPC fights.
 All other management (config values, token setup, manual corrections, backup)
 lives in the WPF UI, not in chat. Pokemon names in commands are matched
 case-insensitively against `name` and `slug`.
+
+Commands count only while the channel is **live** (§12). Offline, a known
+command gets „PokeArena läuft nur, solange der Stream live ist. Bis zum
+nächsten Stream!“ — at most once every 5 minutes for the whole chat; unknown
+commands stay silent as always. Fights already under way (a running boss
+countdown, an open challenge) finish normally. The streamer can switch on
+„Befehle auch ohne Stream annehmen“ in the desktop app to test offline; the
+switch is not stored and is off after every app start. The dry run is never
+gated.
 
 ## 9. Website
 
@@ -367,6 +376,10 @@ Display names appear permanently on a public website. Therefore:
 - Outgoing messages run through a rate limiter with a queue; results of mass
   events (boss) are aggregated into few messages and respect the 500-char
   message limit.
+- Live status (WP-07): EventSub `stream.online` / `stream.offline` on the
+  same session (no extra scope). Events only report changes, so the bot asks
+  Helix `GET /streams` for the current state on every new session and once an
+  hour; unknown counts as offline.
 
 ## 13. Configuration defaults
 

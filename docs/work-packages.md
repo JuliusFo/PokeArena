@@ -12,7 +12,8 @@ in [roadmap.md](roadmap.md).
 | WP-04 | PvP | 0.4.0 | done 2026-10-20 |
 | WP-05 | NPC fights | 0.5.0 | done 2026-10-27 |
 | WP-06 | Website | 0.6.0 | done 2026-11-01 |
-| WP-07 | Operations | 1.0.0 | planned |
+| WP-07 | Live status | 0.7.0 | in progress |
+| WP-08 | Operations | 1.0.0 | planned |
 
 ## Log
 
@@ -37,7 +38,7 @@ in [roadmap.md](roadmap.md).
   `core.autocrlf=true` on the dev machine still prints "LF will be replaced by
   CRLF" on `git add` — harmless, the repository stores LF.
 - Deliberately not done: Web project (WP-06), bUnit/UI test project (with the
-  first components that have logic, WP-01), release workflow (WP-07), app icon.
+  first components that have logic, WP-01), release workflow (WP-08), app icon.
 
 ### WP-01 — Twitch connection (2026-10-13, branch wp/01-twitch-connection)
 - Built: own lean Twitch client in Core — device-code login for a public
@@ -67,7 +68,7 @@ in [roadmap.md](roadmap.md).
   API.
 - Deliberately not done: detecting moderator status for a higher send rate,
   persisting the dry-run toggle (no DB before WP-02), channel setting in the
-  UI (WP-07 setup question).
+  UI (WP-08 setup question).
 
 ### WP-02 — Domain foundation (2026-10-13, branch wp/02-domain-foundation)
 - Built: EF Core + SQLite model `Trainer` / `Specimen` (UTC-tick timestamps,
@@ -93,8 +94,8 @@ in [roadmap.md](roadmap.md).
   `GameDatabase.Open()`, UTC ticks, migration command, caches reset on
   `Switched`). `dotnet new tool-manifest` on SDK 10 writes `dotnet-tools.json`
   to the repo root, not `.config/`.
-- Deliberately not done: backup before migrations (WP-07), editing or
-  deleting trainers (WP-07), balancing values in the database (WP-03),
+- Deliberately not done: backup before migrations (WP-08), editing or
+  deleting trainers (WP-08), balancing values in the database (WP-03),
   throttling repeated hints (backlog).
 
 ### WP-03 — Battle engine + boss (2026-10-15, branch wp/03-battle-engine-boss)
@@ -124,7 +125,7 @@ in [roadmap.md](roadmap.md).
   too-few lobby, boss fights won and lost, catches, "Kämpfe" view, switching
   back to the live database. User decision: no separate channel test.
 - Deliberately not done: runtime balancing editor (roadmap question),
-  battle link in chat (WP-06), publishing (WP-06), `!bossreset` (WP-07),
+  battle link in chat (WP-06), publishing (WP-06), `!bossreset` (WP-08),
   distinct-species column in the trainer list (not planned).
 
 ### WP-04 — PvP (2026-10-19, branch wp/04-pvp)
@@ -235,8 +236,8 @@ in [roadmap.md](roadmap.md).
   and `rangliste.json` were on the data host about a second later. Website
   run locally against the real data host; the Pages deploy follows the merge.
 - Deliberately not done: deleting trainers and „[gelöscht]“ in old fights
-  (WP-07; the privacy page already describes it), purging cached fight files
-  after a deletion (WP-07), overlay content beyond the simplest variant.
+  (WP-08; the privacy page already describes it), purging cached fight files
+  after a deletion (WP-08), overlay content beyond the simplest variant.
 
 Template per entry:
 

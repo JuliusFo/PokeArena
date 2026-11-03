@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-11-01 · v0.6.0 (WP-00 – WP-06 done) · WP-07 next
+Status: 2026-11-03 · v0.6.0 (WP-00 – WP-06 done) · WP-07 in progress
 
 ## 1. Where to find what
 
@@ -38,7 +38,8 @@ shows leaderboard, trainer pages and battle logs.
 | 0.4.0 | PvP `!fight` | WP-04 |
 | 0.5.0 | NPC fights `!challenge` | WP-05 |
 | 0.6.0 | Public website + OBS overlay | WP-06 |
-| 1.0.0 | Stream-ready: mod commands, deletion, backup | WP-07 |
+| 0.7.0 | Commands only while the stream is live | WP-07 |
+| 1.0.0 | Stream-ready: mod commands, deletion, backup | WP-08 |
 
 **Invariants — never weaken:**
 
@@ -157,7 +158,7 @@ PokeArena.slnx
 
 ## 9. Next
 
-Start WP-07 (operations: mod commands, deletion, backup, installation on the
+After WP-07 (live status) start WP-08 (operations: mod commands, deletion, backup, installation on the
 streamer's PC). Open from WP-06: the overlay content beyond the simplest
 variant, purging cached fight files after a deletion. Still open: from WP-03 the `N = 4` boss dip, the runtime balancing
 editor and progression length; from WP-05 the NPC difficulty. Details:

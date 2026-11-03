@@ -88,7 +88,7 @@ Demo: `!boss` playable end-to-end.
 - Open: the `N = 4` dip (≈ 64 % group wins vs. ≈ 75 % target) — watch on
   stream whether players notice it.
 - Open: when does the runtime balancing editor come (spec §13 says "editable
-  in the UI")? Proposal: WP-07 together with the other operations screens.
+  in the UI")? Proposal: WP-08 together with the other operations screens.
 - Open: progression length. Expected catches for k distinct species (uniform
   lower bound) — 15: ~16, 60: ~76, 100: ~163, 151: ~845; with ≈ 60 % catch
   chance per boss that is ≈ 1.7× as many boss fights. Intended, or add a
@@ -177,7 +177,26 @@ Demo: a battle link in chat opens a live page.
   work-packages.md.
 - Open: the overlay's content beyond the simplest variant.
 
-## WP-07 — Operations (2–3 days) → v1.0.0
+## WP-07 — Live status (≈ 1 day) → v0.7.0
+
+The bot takes chat commands only while the channel is live.
+Demo: commands are answered only after going live.
+
+- User decision (2026-11-03): its own package before operations (which moves
+  to WP-08). Offline, a known command gets a short hint with a global
+  cooldown; unknown commands stay silent (they may belong to another bot). An
+  "always active" switch in the desktop app lets the streamer test offline;
+  it is not stored and starts as "only while live" on every app start.
+- Plan (agreed 2026-11-03): EventSub `stream.online` / `stream.offline` on the
+  existing WebSocket session (no scope needed); the starting state comes from
+  Helix `GET /streams`, queried on every new session and again in the hourly
+  token check, because events only report changes. The gate sits in
+  `CommandProcessor` after the dry-run check, so the dry run is never gated.
+  Work already running (boss countdown, open challenge) finishes normally.
+  The Twitch card shows "live / offline" and the switch; changes go to the
+  chat log.
+
+## WP-08 — Operations (2–3 days) → v1.0.0
 
 Mod commands, deletion flow, backup, republish-all, README, message wording
 pass.
@@ -192,6 +211,6 @@ Demo: stream-ready.
 ## Open UX questions
 
 - Exact German wording of all chat messages (spec §14) — drafted during
-  implementation, reviewed in WP-07.
+  implementation, reviewed in WP-08.
 - First start for the streamer: is a guided setup (Twitch login, R2 token)
   needed, or does the user configure the PC once?
