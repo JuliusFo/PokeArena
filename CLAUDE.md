@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-11-03 · v0.6.0 (WP-00 – WP-06 done) · WP-07 in progress
+Status: 2026-11-03 · v0.7.0 (WP-00 – WP-07 done) · WP-08 next
 
 ## 1. Where to find what
 
@@ -158,7 +158,7 @@ PokeArena.slnx
 
 ## 9. Next
 
-Finish WP-07 (live status: built, live test in the channel pending), then start WP-08 (operations: mod commands, deletion, backup, installation on the
+Start WP-08 (operations: mod commands, deletion, backup, installation on the
 streamer's PC). Open from WP-06: the overlay content beyond the simplest
 variant, purging cached fight files after a deletion. Still open: from WP-03 the `N = 4` boss dip, the runtime balancing
 editor and progression length; from WP-05 the NPC difficulty. Details:

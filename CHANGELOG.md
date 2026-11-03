@@ -7,6 +7,8 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-03
+
 ### Added
 - The bot plays only while the stream is live. Offline, game commands get
   „PokeArena läuft nur, solange der Stream live ist. Bis zum nächsten

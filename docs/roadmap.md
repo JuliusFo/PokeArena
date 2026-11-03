@@ -195,6 +195,8 @@ Demo: commands are answered only after going live.
   Work already running (boss countdown, open challenge) finishes normally.
   The Twitch card shows "live / offline" and the switch; changes go to the
   chat log.
+- **Done 2026-11-03**: built and live-tested the same day in the test
+  channel. See the log in work-packages.md.
 
 ## WP-08 — Operations (2–3 days) → v1.0.0
 

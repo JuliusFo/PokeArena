@@ -12,7 +12,7 @@ in [roadmap.md](roadmap.md).
 | WP-04 | PvP | 0.4.0 | done 2026-10-20 |
 | WP-05 | NPC fights | 0.5.0 | done 2026-10-27 |
 | WP-06 | Website | 0.6.0 | done 2026-11-01 |
-| WP-07 | Live status | 0.7.0 | in progress |
+| WP-07 | Live status | 0.7.0 | done 2026-11-03 |
 | WP-08 | Operations | 1.0.0 | planned |
 
 ## Log
@@ -252,8 +252,8 @@ in [roadmap.md](roadmap.md).
   the switch is not stored.
 - Pitfalls: Core (gate in `CommandProcessor` tests, ask the live state only
   after subscribing).
-- Open: live test in the test channel (go live / end stream, hint offline,
-  switch); not yet released.
+- Live test 2026-11-03 passed (user, test channel): go live / end stream,
+  offline hint with cooldown, „Auch ohne Stream“ switch. Released as 0.7.0.
 
 Template per entry:
 
