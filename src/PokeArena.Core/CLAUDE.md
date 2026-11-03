@@ -51,3 +51,6 @@
 - The publish worker reads `GameDatabase.OpenLive()` — the one exception to `Open()`; the sandbox is never published.
 - `PokeArena.Contracts` and `PokeArena.Core.Data` both have a `BattleKind`: alias one (`using DataBattleKind = …`).
 - Site files must stay derivable from the database: no state that exists only in a JSON file (ADR-0003).
+- Live gate (WP-07): `CommandProcessor` drops real messages while `StreamStatus.AcceptsCommands` is false — new
+  `CommandProcessor` tests must report the stream live first. Stream events only report changes: whenever a new
+  EventSub session starts, ask `HelixClient.IsLiveAsync` **after** subscribing, or a change in between is lost.

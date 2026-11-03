@@ -7,6 +7,15 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+### Added
+- The bot plays only while the stream is live. Offline, game commands get
+  „PokeArena läuft nur, solange der Stream live ist. Bis zum nächsten
+  Stream!“ — at most once every five minutes. Fights already running finish
+  normally.
+- Desktop app: the Twitch card shows whether the stream is live, and the
+  switch „Auch ohne Stream“ lets the streamer test offline (off again after
+  every start). The dry run works as before, live or not.
+
 ## [0.6.0] - 2026-11-01
 
 ### Added

@@ -202,6 +202,8 @@ Mod commands, deletion flow, backup, republish-all, README, message wording
 pass.
 Demo: stream-ready.
 
+- Open: should mod commands (`!bossreset`, `!entfernen`) work while the
+  stream is offline? The WP-07 gate blocks every known command for now.
 - Open: installation and updates on the streamer's PC (self-contained
   publish, installer?).
 - Pitfall: SQLite backup with WAL, see `src/PokeArena.Core/CLAUDE.md`. A

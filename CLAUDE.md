@@ -158,7 +158,7 @@ PokeArena.slnx
 
 ## 9. Next
 
-After WP-07 (live status) start WP-08 (operations: mod commands, deletion, backup, installation on the
+Finish WP-07 (live status: built, live test in the channel pending), then start WP-08 (operations: mod commands, deletion, backup, installation on the
 streamer's PC). Open from WP-06: the overlay content beyond the simplest
 variant, purging cached fight files after a deletion. Still open: from WP-03 the `N = 4` boss dip, the runtime balancing
 editor and progression length; from WP-05 the NPC difficulty. Details:

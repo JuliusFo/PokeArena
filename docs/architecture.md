@@ -27,7 +27,11 @@ concurrently. Timed game steps (the end of a boss countdown) post a
 `QueuedWork` into the same queue instead of running on a timer thread. In the
 dry run ("Probelauf") replies only go to the chat log, game data goes to a
 fresh in-memory sandbox database, and real chat messages are logged but not
-processed (WP-02 decision).
+processed (WP-02 decision). Outside the dry run `CommandProcessor` also asks
+`StreamStatus` whether the channel is live (WP-07): `TwitchConnection` keeps it
+current from `stream.online` / `stream.offline` on the same EventSub session
+plus Helix `GET /streams` on every new session and with the hourly token
+check; the streamer's „Auch ohne Stream“ switch overrides it in memory.
 
 ## Data model
 
