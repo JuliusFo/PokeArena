@@ -10,7 +10,9 @@ namespace PokeArena.Core.Twitch;
 /// <summary>
 /// Ties login, chat subscription and reconnects together. While running it validates the token hourly (Twitch
 /// requires it), feeds chat messages into the <see cref="ChatInbox"/> and provides the <see cref="ChatTarget"/>
-/// for sending. Lost connections are retried with growing pauses; only problems a retry cannot fix stop it.
+/// for sending. It also keeps <see cref="StreamStatus"/> current: live/offline events plus a Helix check on every new
+/// session and with the hourly validation. Lost connections are retried with growing pauses; only problems a retry
+/// cannot fix stop it.
 /// </summary>
 public sealed class TwitchConnection(
     TwitchOptions options,
@@ -20,6 +22,7 @@ public sealed class TwitchConnection(
     EventSubSession eventSub,
     ChatInbox inbox,
     ChatLog chatLog,
+    StreamStatus stream,
     TimeProvider time,
     ILogger<TwitchConnection> log) : ITwitchConnection, IChatTargetSource
 {
@@ -282,13 +285,19 @@ public sealed class TwitchConnection(
         try
         {
             using var stop = CancellationTokenSource.CreateLinkedTokenSource(ct);
-            var handler = new Handler(helix, inbox, target, () =>
-            {
-                onSessionStarted();
-                OnConnected(target);
-            });
+            var handler = new Handler(
+                helix,
+                inbox,
+                target,
+                isLive =>
+                {
+                    onSessionStarted();
+                    OnConnected(target);
+                    ReportLive(isLive, announce: true);
+                },
+                isLive => ReportLive(isLive, announce: false));
             var session = eventSub.RunAsync(handler, stop.Token);
-            var validation = ValidatePeriodicallyAsync(stop.Token);
+            var validation = ValidatePeriodicallyAsync(target, stop.Token);
             var first = await Task.WhenAny(session, validation);
             try
             {
@@ -306,8 +315,11 @@ public sealed class TwitchConnection(
         }
     }
 
-    /// <summary>Hourly token check. Network hiccups are skipped; a rejected login ends the session.</summary>
-    private async Task ValidatePeriodicallyAsync(CancellationToken ct)
+    /// <summary>
+    /// Hourly token check, plus the live state in case a stream event got lost. Network hiccups are skipped; a
+    /// rejected login ends the session.
+    /// </summary>
+    private async Task ValidatePeriodicallyAsync(ChatTarget target, CancellationToken ct)
     {
         while (true)
         {
@@ -315,10 +327,11 @@ public sealed class TwitchConnection(
             try
             {
                 await tokens.ValidateAsync(ct);
+                ReportLive(await helix.IsLiveAsync(target.BroadcasterId, ct), announce: false);
             }
             catch (Exception ex) when (ex is HttpRequestException or TwitchApiException { IsTransient: true })
             {
-                log.LogWarning(ex, "Hourly Twitch token validation failed, trying again later");
+                log.LogWarning(ex, "Hourly Twitch check failed, trying again later");
             }
         }
     }
@@ -346,26 +359,58 @@ public sealed class TwitchConnection(
         chatLog.Add(ChatLogKind.Info, null, $"Verbunden mit dem Chat von {target.BroadcasterLogin} als {target.BotLogin}.");
     }
 
+    /// <param name="announce">Log the state even if it did not change (on connect, so the streamer sees it).</param>
+    private void ReportLive(bool isLive, bool announce)
+    {
+        if (!stream.Report(isLive) && !announce)
+        {
+            return;
+        }
+
+        log.LogInformation("Channel is {State}", isLive ? "live" : "offline");
+        chatLog.Add(ChatLogKind.Info, null, isLive
+            ? "Der Stream ist live – PokeArena nimmt Befehle an."
+            : stream.AlwaysActive
+                ? "Der Stream ist offline – Befehle werden trotzdem angenommen (Schalter „Auch ohne Stream“)."
+                : "Der Stream ist offline – PokeArena nimmt erst wieder Befehle an, wenn er live ist.");
+    }
+
     /// <summary>A problem that retrying cannot fix.</summary>
     private sealed class StopException(TwitchProblem problem, string message) : Exception(message)
     {
         public TwitchProblem Problem { get; } = problem;
     }
 
-    private sealed class Handler(HelixClient helix, ChatInbox inbox, ChatTarget target, Action onSubscribed) : IEventSubHandler
+    /// <param name="onSubscribed">All subscriptions exist; gets the live state asked right after subscribing.</param>
+    /// <param name="onLiveChanged">A stream event arrived.</param>
+    private sealed class Handler(
+        HelixClient helix,
+        ChatInbox inbox,
+        ChatTarget target,
+        Action<bool> onSubscribed,
+        Action<bool> onLiveChanged) : IEventSubHandler
     {
         public async Task OnSessionStartedAsync(string sessionId, CancellationToken ct)
         {
             await helix.SubscribeToChatMessagesAsync(sessionId, target.BroadcasterId, target.BotUserId, ct);
-            onSubscribed();
+            await helix.SubscribeToStreamStatusAsync(sessionId, target.BroadcasterId, ct);
+            // Asked only after subscribing: a change in between then arrives as an event instead of getting lost.
+            onSubscribed(await helix.IsLiveAsync(target.BroadcasterId, ct));
         }
 
         public Task OnNotificationAsync(EventSubMessage.Notification notification, CancellationToken ct)
         {
-            if (notification.SubscriptionType == ChatMessageEvent.SubscriptionType
-                && ChatMessageEvent.Read(notification.Event, target) is { } message)
+            switch (notification.SubscriptionType)
             {
-                inbox.Post(message);
+                case ChatMessageEvent.SubscriptionType when ChatMessageEvent.Read(notification.Event, target) is { } message:
+                    inbox.Post(message);
+                    break;
+                case StreamEvents.Online:
+                    onLiveChanged(true);
+                    break;
+                case StreamEvents.Offline:
+                    onLiveChanged(false);
+                    break;
             }
 
             return Task.CompletedTask;

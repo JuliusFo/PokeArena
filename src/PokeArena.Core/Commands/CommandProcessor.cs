@@ -2,13 +2,15 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using PokeArena.Core.Chat;
 using PokeArena.Core.Game;
+using PokeArena.Core.Twitch;
 
 namespace PokeArena.Core.Commands;
 
 /// <summary>
 /// The single consumer of <see cref="ChatInbox"/>: logs every message and runs the matching command, one item
 /// at a time, interleaved with <see cref="QueuedWork"/> such as a closing boss lobby. Unknown commands are ignored silently — they may belong to another bot in the channel. During the
-/// dry run only simulated messages are processed; outside it only real ones.
+/// dry run only simulated messages are processed; outside it only real ones, and only while the channel is live
+/// (<see cref="StreamStatus"/>, spec §8).
 /// </summary>
 public sealed class CommandProcessor(
     ChatInbox inbox,
@@ -16,10 +18,18 @@ public sealed class CommandProcessor(
     IChatSender chat,
     TrainerService trainers,
     DryRunMode dryRun,
+    StreamStatus stream,
     ChatLog chatLog,
+    TimeProvider time,
     ILogger<CommandProcessor> log) : BackgroundService
 {
+    /// <summary>One offline hint for the whole chat at most this often.</summary>
+    public static readonly TimeSpan OfflineHintCooldown = TimeSpan.FromMinutes(5);
+
+    internal const string OfflineHint = "PokeArena läuft nur, solange der Stream live ist. Bis zum nächsten Stream!";
+
     private readonly Dictionary<string, IChatCommand> _commands = commands.ToDictionary(c => c.Name);
+    private DateTimeOffset? _lastOfflineHint;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -62,6 +72,16 @@ public sealed class CommandProcessor(
         }
 
         var parsed = ParsedCommand.TryParse(message.Text);
+        if (!message.IsSimulated && !stream.AcceptsCommands)
+        {
+            if (parsed is not null && _commands.ContainsKey(parsed.Name))
+            {
+                SendOfflineHint();
+            }
+
+            return;
+        }
+
         try
         {
             var registered = await trainers.ObserveAsync(message, ct);
@@ -87,5 +107,17 @@ public sealed class CommandProcessor(
             var what = parsed is null ? "einer Chatnachricht" : $"!{parsed.Name}";
             chatLog.Add(ChatLogKind.Warning, null, $"Fehler bei {what} – Details stehen in der Logdatei.");
         }
+    }
+
+    private void SendOfflineHint()
+    {
+        var now = time.GetUtcNow();
+        if (_lastOfflineHint is { } last && now - last < OfflineHintCooldown)
+        {
+            return;
+        }
+
+        _lastOfflineHint = now;
+        chat.Send(OfflineHint);
     }
 }

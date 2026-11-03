@@ -31,6 +31,7 @@ public static class TwitchServiceCollectionExtensions
         services.AddSingleton<HelixClient>();
         services.AddSingleton<IEventSubSocketFactory, ClientWebSocketFactory>();
         services.AddSingleton<EventSubSession>();
+        services.AddSingleton<StreamStatus>();
         services.AddSingleton<TwitchConnection>();
         services.AddSingleton<ITwitchConnection>(sp => sp.GetRequiredService<TwitchConnection>());
         services.AddSingleton<IChatTargetSource>(sp => sp.GetRequiredService<TwitchConnection>());

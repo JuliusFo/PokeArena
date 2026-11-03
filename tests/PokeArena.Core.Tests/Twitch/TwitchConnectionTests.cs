@@ -23,6 +23,7 @@ public class TwitchConnectionTests
     private readonly TwitchOptions _options = new() { ClientId = "client-1", Channel = "#ShiyoFurball" };
     private readonly ChatInbox _inbox = new();
     private readonly ChatLog _chatLog;
+    private readonly StreamStatus _stream = new();
     private readonly TwitchTokenProvider _tokens;
     private readonly HelixClient _helix;
     private readonly TwitchConnection _connection;
@@ -42,6 +43,7 @@ public class TwitchConnectionTests
             new EventSubSession(_sockets, _time, NullLogger<EventSubSession>.Instance),
             _inbox,
             _chatLog,
+            _stream,
             _time,
             NullLogger<TwitchConnection>.Instance);
     }
@@ -85,7 +87,8 @@ public class TwitchConnectionTests
         await Eventually.TrueAsync(() => _connection.State.Status == TwitchStatus.Connected);
         Assert.Equal("pokearenabot", _connection.State.BotLogin);
         Assert.Equal(new ChatTarget("42", "shiyofurball", "2001", "pokearenabot"), _connection.Target);
-        var subscribe = _http.RequestsTo(Helix + "eventsub/subscriptions").Single();
+        var subscribe = _http.RequestsTo(Helix + "eventsub/subscriptions").First();
+        Assert.Contains("\"type\":\"channel.chat.message\"", subscribe.Body);
         Assert.Contains("\"session_id\":\"session-7\"", subscribe.Body);
         Assert.Contains("\"broadcaster_user_id\":\"42\"", subscribe.Body);
         Assert.Equal("Bearer at-1", subscribe.Authorization);
@@ -123,7 +126,7 @@ public class TwitchConnectionTests
         second.Push(EventSubFrames.Welcome("session-2"));
 
         await Eventually.TrueAsync(() => _connection.State.Status == TwitchStatus.Connected);
-        Assert.Equal(2, _http.RequestsTo(Helix + "eventsub/subscriptions").Count());
+        Assert.Equal(6, _http.RequestsTo(Helix + "eventsub/subscriptions").Count());
         await _connection.DisconnectAsync();
     }
 
@@ -183,6 +186,51 @@ public class TwitchConnectionTests
         await _connection.DisconnectAsync();
     }
 
+    [Fact]
+    public async Task Connect_reads_the_live_state_and_follows_stream_events()
+    {
+        StoreLogin();
+        _http.On(HttpMethod.Get, Helix + "streams", HttpStatusCode.OK, """{"data":[{"id":"s-1","user_id":"42","type":"live"}]}""");
+        ArrangeConnect();
+
+        _connection.Start();
+        var socket = await _sockets.NextAsync();
+        socket.Push(EventSubFrames.Welcome());
+
+        await Eventually.TrueAsync(() => _stream.IsLive);
+        var subscriptions = _http.RequestsTo(Helix + "eventsub/subscriptions").Select(r => r.Body).ToList();
+        Assert.Contains(subscriptions, b => b.Contains("\"type\":\"stream.online\"") && b.Contains("\"broadcaster_user_id\":\"42\""));
+        Assert.Contains(subscriptions, b => b.Contains("\"type\":\"stream.offline\"") && b.Contains("\"broadcaster_user_id\":\"42\""));
+        Assert.Contains("user_id=42", _http.RequestsTo(Helix + "streams").Single().Url);
+        Assert.Contains(_chatLog.Snapshot(), e => e.Text == "Der Stream ist live – PokeArena nimmt Befehle an.");
+
+        socket.Push(EventSubFrames.Stream("stream.offline"));
+        await Eventually.TrueAsync(() => !_stream.IsLive);
+        socket.Push(EventSubFrames.Stream("stream.online"));
+        await Eventually.TrueAsync(() => _stream.IsLive);
+
+        await _connection.DisconnectAsync();
+    }
+
+    [Fact]
+    public async Task Hourly_check_catches_a_missed_stream_event()
+    {
+        StoreLogin();
+        ArrangeConnect();
+        _http.On(HttpMethod.Get, Helix + "streams", HttpStatusCode.OK, """{"data":[{"id":"s-1","user_id":"42","type":"live"}]}""");
+
+        _connection.Start();
+        (await _sockets.NextAsync()).Push(EventSubFrames.Welcome(keepaliveSeconds: 7200));
+        await Eventually.TrueAsync(() => _connection.State.Status == TwitchStatus.Connected);
+        await Eventually.TrueAsync(() => _chatLog.Snapshot().Any(e => e.Text.StartsWith("Der Stream ist offline", StringComparison.Ordinal)));
+        Assert.False(_stream.IsLive);
+
+        _time.Advance(TwitchConnection.ValidationInterval);
+
+        await Eventually.TrueAsync(() => _stream.IsLive);
+        await _connection.DisconnectAsync();
+    }
+
     private const string ValidJson =
         """{"client_id":"client-1","login":"pokearenabot","scopes":["user:read:chat","user:write:chat","user:bot"],"user_id":"2001","expires_in":14000}""";
 
@@ -191,7 +239,8 @@ public class TwitchConnectionTests
     private void ArrangeConnect() =>
         _http.On(HttpMethod.Get, Id + "validate", HttpStatusCode.OK, ValidJson)
             .On(HttpMethod.Get, Helix + "users", HttpStatusCode.OK, """{"data":[{"id":"42","login":"shiyofurball","display_name":"ShiyoFurball"}]}""")
-            .On(HttpMethod.Post, Helix + "eventsub/subscriptions", HttpStatusCode.Accepted, """{"data":[{"id":"sub-1","status":"enabled"}]}""");
+            .On(HttpMethod.Post, Helix + "eventsub/subscriptions", HttpStatusCode.Accepted, """{"data":[{"id":"sub-1","status":"enabled"}]}""")
+            .On(HttpMethod.Get, Helix + "streams", HttpStatusCode.OK, """{"data":[]}""");
 
     private async Task<ChatMessage> ReadInboxAsync()
     {

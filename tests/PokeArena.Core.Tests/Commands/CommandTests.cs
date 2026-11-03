@@ -3,6 +3,7 @@ using Microsoft.Extensions.Time.Testing;
 using PokeArena.Core.Chat;
 using PokeArena.Core.Commands;
 using PokeArena.Core.Tests.Fakes;
+using PokeArena.Core.Twitch;
 
 namespace PokeArena.Core.Tests.Commands;
 
@@ -13,6 +14,9 @@ public class CommandTests : IDisposable
     private readonly ChatLog _chatLog = new(new FakeTimeProvider());
     private readonly RecordingSender _chat = new();
     private readonly CancellationToken _ct = TestContext.Current.CancellationToken;
+
+    /// <summary>Live by default, so the other tests are not gated.</summary>
+    private readonly StreamStatus _stream = Live();
 
     [Theory]
     [InlineData("!pokearena", "pokearena", "")]
@@ -112,6 +116,41 @@ public class CommandTests : IDisposable
     }
 
     [Fact]
+    public async Task Offline_known_commands_get_one_hint_per_cooldown_and_do_not_run()
+    {
+        var open = new RecordingCommand("offen", CommandAccess.Everyone);
+        var processor = Processor(open);
+        _stream.Report(false);
+
+        await processor.ProcessAsync(Message("!offen eins"), _ct);
+        await processor.ProcessAsync(Message("!offen zwei"), _ct);
+        await processor.ProcessAsync(Message("!unbekannt"), _ct);
+        _time.Advance(CommandProcessor.OfflineHintCooldown);
+        await processor.ProcessAsync(Message("!offen drei"), _ct);
+
+        Assert.Equal(0, open.Calls);
+        Assert.Equal([CommandProcessor.OfflineHint, CommandProcessor.OfflineHint], _chat.Sent);
+        Assert.Equal(4, _chatLog.Snapshot().Count(e => e.Kind == ChatLogKind.Incoming));
+    }
+
+    [Fact]
+    public async Task Offline_the_always_active_switch_and_the_dry_run_still_run_commands()
+    {
+        var open = new RecordingCommand("offen", CommandAccess.Everyone);
+        var processor = Processor(open);
+        _stream.Report(false);
+
+        _stream.AlwaysActive = true;
+        await processor.ProcessAsync(Message("!offen schalter"), _ct);
+        _stream.AlwaysActive = false;
+        _game.DryRun.Enabled = true;
+        await processor.ProcessAsync(Message("!offen probe") with { IsSimulated = true }, _ct);
+
+        Assert.Equal(["schalter", "probe"], open.Arguments);
+        Assert.Empty(_chat.Sent);
+    }
+
+    [Fact]
     public async Task Registered_only_commands_point_unregistered_users_to_the_registration()
     {
         var game = new RecordingCommand("spiel", CommandAccess.Registered);
@@ -156,9 +195,16 @@ public class CommandTests : IDisposable
     }
 
     private CommandProcessor Processor(params IChatCommand[] commands) =>
-        new(new ChatInbox(), commands, _chat, _game.Trainers, _game.DryRun, _chatLog, NullLogger<CommandProcessor>.Instance);
+        new(new ChatInbox(), commands, _chat, _game.Trainers, _game.DryRun, _stream, _chatLog, _time, NullLogger<CommandProcessor>.Instance);
 
     public void Dispose() => _game.Dispose();
+
+    private static StreamStatus Live()
+    {
+        var stream = new StreamStatus();
+        stream.Report(true);
+        return stream;
+    }
 
     private CommandContext Context(string text, bool simulated = false) =>
         new(Message(text) with { IsSimulated = simulated }, "", _chat);

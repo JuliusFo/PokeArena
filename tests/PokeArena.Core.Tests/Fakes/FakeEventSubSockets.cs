@@ -117,5 +117,12 @@ public static class EventSubFrames
             """;
     }
 
+    /// <param name="type"><c>stream.online</c> or <c>stream.offline</c>.</param>
+    public static string Stream(string type) => $$$"""
+        {"metadata":{"message_id":"{{{Id()}}}","message_type":"notification","message_timestamp":"2026-10-12T10:00:00Z","subscription_type":"{{{type}}}","subscription_version":"1"},
+         "payload":{"subscription":{"id":"sub-2","type":"{{{type}}}","version":"1"},
+          "event":{"broadcaster_user_id":"42","broadcaster_user_login":"shiyofurball","broadcaster_user_name":"ShiyoFurball"} } }
+        """;
+
     private static string Id() => $"m{Interlocked.Increment(ref _next)}";
 }

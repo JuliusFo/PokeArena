@@ -22,13 +22,34 @@ public sealed class HelixClient(HttpClient http, TwitchOptions options, TwitchTo
     }
 
     /// <summary>Subscribes the WebSocket session to the channel's chat messages as seen by the bot account.</summary>
-    public async Task SubscribeToChatMessagesAsync(string sessionId, string broadcasterId, string botUserId, CancellationToken ct)
+    public Task SubscribeToChatMessagesAsync(string sessionId, string broadcasterId, string botUserId, CancellationToken ct) =>
+        SubscribeAsync(sessionId, "channel.chat.message", new { broadcaster_user_id = broadcasterId, user_id = botUserId }, ct);
+
+    /// <summary>Subscribes the WebSocket session to the channel going live and ending (public events, no scope).</summary>
+    public async Task SubscribeToStreamStatusAsync(string sessionId, string broadcasterId, CancellationToken ct)
+    {
+        var condition = new { broadcaster_user_id = broadcasterId };
+        await SubscribeAsync(sessionId, "stream.online", condition, ct);
+        await SubscribeAsync(sessionId, "stream.offline", condition, ct);
+    }
+
+    /// <returns>True if the channel is broadcasting live right now.</returns>
+    public async Task<bool> IsLiveAsync(string broadcasterId, CancellationToken ct)
+    {
+        using var response = await SendAsync(
+            () => new HttpRequestMessage(HttpMethod.Get, BaseUrl + "streams?user_id=" + Uri.EscapeDataString(broadcasterId)),
+            ct);
+        var body = await ReadAsync<DataResponse<StreamData>>(response, ct);
+        return body.Data.Any(s => s.Type == "live");
+    }
+
+    private async Task SubscribeAsync(string sessionId, string type, object condition, CancellationToken ct)
     {
         var subscription = new
         {
-            type = "channel.chat.message",
+            type,
             version = "1",
-            condition = new { broadcaster_user_id = broadcasterId, user_id = botUserId },
+            condition,
             transport = new { method = "websocket", session_id = sessionId },
         };
         using var response = await SendAsync(
@@ -100,6 +121,8 @@ public sealed class HelixClient(HttpClient http, TwitchOptions options, TwitchTo
     private sealed record DataResponse<T>(IReadOnlyList<T> Data);
 
     private sealed record UserData(string Id, string Login, string DisplayName);
+
+    private sealed record StreamData(string Type);
 
     private sealed record SendData(bool IsSent, DropReasonData? DropReason);
 
