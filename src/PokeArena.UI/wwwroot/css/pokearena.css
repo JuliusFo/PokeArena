@@ -292,6 +292,12 @@ select {
   margin: 0;
 }
 
+.stream-switch {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
 .simulate {
   display: flex;
   flex-direction: column;

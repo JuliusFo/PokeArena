@@ -2,6 +2,7 @@
 @using PokeArena.Core.Twitch
 @implements IDisposable
 @inject ITwitchConnection Twitch
+@inject StreamStatus Stream
 
 <section class="card">
     <h2>Twitch-Verbindung</h2>
@@ -47,6 +48,8 @@
                 <dd>@State.BotLogin</dd>
                 <dt>Kanal</dt>
                 <dd>@Twitch.Channel</dd>
+                <dt>Stream</dt>
+                <dd data-testid="stream-status">@(Stream.IsLive ? "live – Befehle werden angenommen" : Stream.AlwaysActive ? "offline – Befehle werden trotzdem angenommen" : "offline – Befehle werden erst angenommen, wenn du live bist")</dd>
             </dl>
             <div class="actions">
                 <button class="btn" @onclick="Twitch.DisconnectAsync">Trennen</button>
@@ -83,14 +86,36 @@
             </div>
             break;
     }
+
+    @if (State.Status != TwitchStatus.NotConfigured)
+    {
+        <label class="switch stream-switch">
+            <input type="checkbox" checked="@Stream.AlwaysActive" @onchange="ToggleAlwaysActive" />
+            <span>Auch ohne Stream</span>
+        </label>
+        <p class="hint">
+            Normalerweise spielt der Bot nur mit, solange du live bist. Schalte das ein, um ohne Stream zu testen – nach
+            einem Neustart von PokeArena ist es wieder aus.
+        </p>
+    }
 </section>
 
 @code {
     private TwitchConnectionState State => Twitch.State;
 
-    protected override void OnInitialized() => Twitch.StateChanged += OnStateChanged;
+    protected override void OnInitialized()
+    {
+        Twitch.StateChanged += OnStateChanged;
+        Stream.Changed += OnStateChanged;
+    }
+
+    private void ToggleAlwaysActive(ChangeEventArgs e) => Stream.AlwaysActive = e.Value is true;
 
     private void OnStateChanged() => _ = InvokeAsync(StateHasChanged);
 
-    public void Dispose() => Twitch.StateChanged -= OnStateChanged;
+    public void Dispose()
+    {
+        Twitch.StateChanged -= OnStateChanged;
+        Stream.Changed -= OnStateChanged;
+    }
 }

@@ -17,6 +17,7 @@ public class ComponentTests : BunitContext
     private readonly ChatLog _chatLog = new(new FakeTimeProvider());
     private readonly ChatInbox _inbox = new();
     private readonly DryRunMode _dryRun = new();
+    private readonly StreamStatus _stream = new();
     private readonly GameDatabase _database;
 
     public ComponentTests()
@@ -25,6 +26,7 @@ public class ComponentTests : BunitContext
         Services.AddSingleton(_chatLog);
         Services.AddSingleton(_inbox);
         Services.AddSingleton(_dryRun);
+        Services.AddSingleton(_stream);
 
         // The dry-run panel only queues work for the test-viewer button; the database is never opened here.
         var time = new FakeTimeProvider();
@@ -152,6 +154,24 @@ public class ComponentTests : BunitContext
         Assert.Contains("PokeArena-Bot ist online", entries[0].TextContent);
         Assert.Contains("log-outgoing", entries[0].ClassName);
         Assert.Equal(2, cut.FindAll(".tag").Count);
+    }
+
+    [Fact]
+    public void Connected_shows_the_live_state_and_the_switch_takes_commands_offline()
+    {
+        _twitch.State = new TwitchConnectionState(TwitchStatus.Connected, BotLogin: "pokearenabot");
+        var cut = Render<ConnectionPanel>();
+        Assert.StartsWith("offline – Befehle werden erst angenommen", cut.Find("[data-testid=stream-status]").TextContent);
+
+        cut.Find(".stream-switch input").Change(true);
+
+        Assert.True(_stream.AlwaysActive);
+        Assert.Equal("offline – Befehle werden trotzdem angenommen", cut.Find("[data-testid=stream-status]").TextContent);
+
+        _stream.Report(true);
+
+        cut.WaitForAssertion(() =>
+            Assert.Equal("live – Befehle werden angenommen", cut.Find("[data-testid=stream-status]").TextContent));
     }
 
     protected override void Dispose(bool disposing)

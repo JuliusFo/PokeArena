@@ -46,6 +46,7 @@ public class TrainerListTests : BunitContext
         Services.AddSingleton(inbox);
         Services.AddSingleton(new DryRunTrainers(_database, _species, _npcs, _trainers, PvpSettings.Default, new SystemSeedSource(), inbox, chatLog, _time));
         Services.AddSingleton<ITwitchConnection>(new FakeTwitchConnection());
+        Services.AddSingleton(new StreamStatus());
         var r2 = new R2Access(new WebsiteOptions(), new MemorySecretStore());
         Services.AddSingleton(r2);
         Services.AddSingleton(new OverlayOptions());
