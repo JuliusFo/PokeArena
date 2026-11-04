@@ -40,7 +40,8 @@ labels are from memory and may differ slightly.
    - Cache eligibility: **Eligible for cache** (`.json` is not cached by
      default).
    - Edge TTL: **Use cache-control header if present**; the bot sends
-     `max-age=10` for lists and a year for fights.
+     `max-age=10` for lists and a day for fights (a deleted trainer's
+     name must drop out of the cache, spec §11).
    - Status code TTL: **404 → no store**. A battle link posted in chat can be
      opened a second before its upload; a cached 404 would hide the fight for
      minutes.

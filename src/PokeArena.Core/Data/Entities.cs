@@ -116,8 +116,11 @@ public sealed class Battle
 
     public int Rounds { get; init; }
 
-    /// <summary>The <c>BattleLog</c> as JSON, stored verbatim.</summary>
-    public required string LogJson { get; init; }
+    /// <summary>
+    /// The <c>BattleLog</c> as JSON, stored verbatim — except that deleting a trainer overwrites their name and id
+    /// in it (spec §11, ADR-0004 addendum).
+    /// </summary>
+    public required string LogJson { get; set; }
 
     public List<BattleParticipant> Participants { get; init; } = [];
 }

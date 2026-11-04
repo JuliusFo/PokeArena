@@ -47,7 +47,23 @@ public sealed record BattleLog(IReadOnlyList<LogFighter> Fighters, IReadOnlyList
         Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
     };
 
+    /// <summary>Owner shown for the fighters of a deleted trainer (spec §11).</summary>
+    public const string DeletedOwner = "[gelöscht]";
+
     public string ToJson() => JsonSerializer.Serialize(this, Json);
+
+    /// <summary>The same fight with the trainer's name and id removed; everything else stays as it happened.</summary>
+    public BattleLog WithoutTrainer(string trainerId) => this with
+    {
+        Fighters = [.. Fighters.Select(f => f.TrainerId == trainerId ? f with { TrainerId = null, Owner = DeletedOwner } : f)],
+    };
+
+    /// <summary>Indices of the fighters that never fainted.</summary>
+    public IEnumerable<int> Survivors()
+    {
+        var fainted = Events.Where(e => e.Kind == BattleEventKind.Fainted).Select(e => e.Fighter).ToHashSet();
+        return Enumerable.Range(0, Fighters.Count).Where(i => !fainted.Contains(i));
+    }
 
     /// <exception cref="JsonException">Not a battle log.</exception>
     public static BattleLog FromJson(string json) =>

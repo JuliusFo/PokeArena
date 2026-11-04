@@ -23,6 +23,7 @@ public class TrainerListTests : BunitContext
     private readonly FakeTimeProvider _time = new(new DateTimeOffset(2026, 10, 13, 18, 30, 0, TimeSpan.Zero));
     private readonly GameDatabase _database;
     private readonly TrainerService _trainers;
+    private readonly ChatInbox _inbox = new();
     private readonly CancellationToken _ct = Xunit.TestContext.Current.CancellationToken;
 
     public TrainerListTests()
@@ -38,14 +39,16 @@ public class TrainerListTests : BunitContext
         Services.AddSingleton(_dryRun);
         Services.AddSingleton(_database);
         Services.AddSingleton(_trainers);
-        Services.AddSingleton(new BattleService(_database, _species, _npcs));
+        var battles = new BattleService(_database, _species, _npcs);
+        Services.AddSingleton(battles);
         Services.AddSingleton(new AppInfo("0.2.0"));
         var chatLog = new ChatLog(_time);
-        var inbox = new ChatInbox();
+        var inbox = _inbox;
         Services.AddSingleton(chatLog);
         Services.AddSingleton(inbox);
         Services.AddSingleton(new DryRunTrainers(_database, _species, _npcs, _trainers, PvpSettings.Default, new SystemSeedSource(), inbox, chatLog, _time));
         Services.AddSingleton<ITwitchConnection>(new FakeTwitchConnection());
+        Services.AddSingleton(new TrainerRemoval(_trainers, battles, new NullChatSender(), _time, NullLogger<TrainerRemoval>.Instance));
         Services.AddSingleton(new StreamStatus());
         var r2 = new R2Access(new WebsiteOptions(), new MemorySecretStore());
         Services.AddSingleton(r2);
@@ -116,6 +119,28 @@ public class TrainerListTests : BunitContext
     }
 
     [Fact]
+    public async Task Delete_asks_first_then_deletes_on_the_command_queue()
+    {
+        await _trainers.RegisterAsync("1", "misty", "Misty", _species.Get(7), _ct);
+        _time.Advance(TimeSpan.FromMinutes(1));
+        await _trainers.RegisterAsync("2", "rocko", "Rocko", _species.Get(4), _ct);
+        var cut = Render<TrainerListPanel>();
+        cut.WaitForAssertion(() => Assert.Equal(2, cut.FindAll("tbody tr").Count));
+
+        cut.FindAll("button.delete")[1].Click();
+        Assert.Contains("Misty wirklich löschen?", cut.Find(".confirm-delete").TextContent);
+        cut.Find(".confirm-delete .btn-quiet").Click();
+        Assert.Empty(cut.FindAll(".confirm-delete"));
+
+        cut.FindAll("button.delete")[1].Click();
+        cut.Find(".confirm-delete .btn-danger").Click();
+        var work = Assert.IsType<QueuedWork>(await _inbox.Reader.ReadAsync(_ct));
+        await work.RunAsync(_ct);
+
+        cut.WaitForAssertion(() => Assert.Equal("Rocko", Assert.Single(cut.FindAll("tbody tr td.strong")).TextContent));
+    }
+
+    [Fact]
     public async Task Dry_run_shows_only_test_trainers_and_says_so()
     {
         await _trainers.RegisterAsync("1", "misty", "Misty", _species.Get(7), _ct);
@@ -170,6 +195,13 @@ public class TrainerListTests : BunitContext
         }
 
         base.Dispose(disposing);
+    }
+
+    private sealed class NullChatSender : IChatSender
+    {
+        public void Send(string text)
+        {
+        }
     }
 
     private sealed class FakeTwitchConnection : ITwitchConnection

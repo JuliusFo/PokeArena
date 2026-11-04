@@ -1,8 +1,10 @@
 using System.Collections.Concurrent;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using PokeArena.Contracts;
 using PokeArena.Core.Chat;
 using PokeArena.Core.Data;
+using PokeArena.Core.Game.Battles;
 using PokeArena.Core.Publishing;
 
 namespace PokeArena.Core.Game;
@@ -163,6 +165,60 @@ public sealed class TrainerService
             .Select(t => new TrainerName(t.TwitchUserId, t.DisplayName, t.Login))
             .ToListAsync(ct);
         return matches.FirstOrDefault(t => t.Login == name) ?? matches.FirstOrDefault();
+    }
+
+    /// <summary>
+    /// Deletes a trainer for good (spec §11): specimens, achievements, badges, NPC cooldowns and fight
+    /// participations go in one transaction, and in the stored logs of their fights name and id become
+    /// „[gelöscht]“ (WP-08 decision). Queues every site file that showed the name: the trainer page (removed by the
+    /// publish worker), the lists, the fights and the pages of the other trainers in them. Runs on the command
+    /// queue.
+    /// </summary>
+    /// <returns>False if there is no such trainer.</returns>
+    public async Task<bool> DeleteAsync(string twitchUserId, CancellationToken ct)
+    {
+        await using var db = _database.Open();
+        await using var transaction = await db.Database.BeginTransactionAsync(ct);
+        var trainer = await db.Trainers.FindAsync([twitchUserId], ct);
+        if (trainer is null)
+        {
+            return false;
+        }
+
+        var battleIds = await db.BattleParticipants
+            .Where(p => p.TrainerId == twitchUserId)
+            .Select(p => p.BattleId)
+            .Distinct()
+            .ToListAsync(ct);
+        var others = await db.BattleParticipants
+            .Where(p => battleIds.Contains(p.BattleId) && p.TrainerId != twitchUserId)
+            .Select(p => p.TrainerId)
+            .Distinct()
+            .ToListAsync(ct);
+        foreach (var battle in await db.Battles.Where(b => battleIds.Contains(b.Id)).ToListAsync(ct))
+        {
+            battle.LogJson = BattleLog.FromJson(battle.LogJson).WithoutTrainer(twitchUserId).ToJson();
+        }
+
+        var npcCooldowns = NpcService.CooldownKey(twitchUserId, "");
+        await db.BattleParticipants.Where(p => p.TrainerId == twitchUserId).ExecuteDeleteAsync(ct);
+        await db.Specimens.Where(s => s.TrainerId == twitchUserId).ExecuteDeleteAsync(ct);
+        await db.AchievementUnlocks.Where(u => u.TrainerId == twitchUserId).ExecuteDeleteAsync(ct);
+        await db.NpcBadges.Where(b => b.TrainerId == twitchUserId).ExecuteDeleteAsync(ct);
+        await db.Cooldowns.Where(c => c.Key.StartsWith(npcCooldowns)).ExecuteDeleteAsync(ct);
+        db.Trainers.Remove(trainer);
+        await SiteOutbox.EnqueueAsync(
+            db,
+            [SitePaths.BattleIndex, .. SiteOutbox.ForTrainers([twitchUserId, .. others]), .. battleIds.Select(SitePaths.Battle)],
+            _time.GetUtcNow(),
+            ct);
+        await db.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
+
+        _known[twitchUserId] = null;
+        _log.LogInformation("Trainer {UserId} deleted ({Battles} fights anonymized)", twitchUserId, battleIds.Count);
+        Changed?.Invoke();
+        return true;
     }
 
     /// <summary>All trainers, newest first.</summary>

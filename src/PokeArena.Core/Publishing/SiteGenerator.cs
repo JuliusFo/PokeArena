@@ -26,8 +26,11 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
     /// <summary>Leaderboard rows the OBS overlay shows.</summary>
     public const int OverlayTopSize = 5;
 
-    /// <summary>Fights never change once stored (ADR-0004).</summary>
-    public const string ImmutableCache = "public, max-age=31536000, immutable";
+    /// <summary>
+    /// Fights change only when a trainer in them is deleted (spec §11); a day keeps the cache useful and lets the
+    /// deleted name drop out of Cloudflare and browsers without a purge (WP-08 decision).
+    /// </summary>
+    public const string BattleCache = "public, max-age=86400";
 
     /// <summary>Below the site's 15 s poll interval (spec §9, §13), so nobody sees a stale leaderboard for long.</summary>
     public const string MutableCache = "public, max-age=10";
@@ -57,7 +60,7 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
         if (SitePaths.BattleIdOf(path) is { } battleId)
         {
             return await BattleAsync(db, battleId, ct) is { } battle
-                ? new SiteFile(JsonSerializer.SerializeToUtf8Bytes(battle, SiteJson.Default.BattlePage), ImmutableCache)
+                ? new SiteFile(JsonSerializer.SerializeToUtf8Bytes(battle, SiteJson.Default.BattlePage), BattleCache)
                 : null;
         }
 
@@ -198,10 +201,12 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
             {
                 var boss = species.Get(battle.BossSpeciesId ?? opponentSide[0].SpeciesId);
                 var defeated = battle.Outcome == BattleOutcome.BossDefeated;
-                var catchers = battle.Participants
-                    .Where(p => p.Won)
-                    .Select(p => trainerSide.FirstOrDefault(f => f.TrainerId == p.TrainerId)?.Owner)
-                    .OfType<string>()
+                // From the log, not the participant rows: survivors are the catchers (spec §4), and a deleted
+                // trainer still counts as „[gelöscht]“.
+                var catchers = log.Survivors()
+                    .Select(i => log.Fighters[i])
+                    .Where(f => f.Side == 0)
+                    .Select(f => f.Owner)
                     .ToList();
                 var result = defeated
                     ? $"{boss.Name} wurde besiegt! Gefangen von: {string.Join(", ", catchers)}."

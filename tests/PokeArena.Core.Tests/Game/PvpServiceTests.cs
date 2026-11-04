@@ -228,7 +228,7 @@ public class PvpServiceTests : IDisposable
         Assert.Equal("Ash besiegt Misty und bekommt Karpador von Misty! Zum Kampf: https://arena.example.de/kampf/1", _chat.Sent[^1]);
         await using var db = _game.OpenLive();
         var file = await new SiteGenerator(Species, GameFixture.Npcs).RenderAsync(db, SitePaths.Battle(1), _game.Time.GetUtcNow(), _ct);
-        Assert.Equal(SiteGenerator.ImmutableCache, file!.CacheControl);
+        Assert.Equal(SiteGenerator.BattleCache, file!.CacheControl);
         var page = JsonSerializer.Deserialize(file.Content, SiteJson.Default.BattlePage)!;
         Assert.Equal(("Ash gegen Misty", "Ash besiegt Misty und bekommt Karpador von Misty!"), (page.Headline, page.Result));
         Assert.Equal([("Ash", true, 6), ("Misty", false, 6)], page.Sides.Select(s => (s.Name, s.Won, s.Fighters.Count)));

@@ -268,6 +268,16 @@ body {
   color: var(--muted);
 }
 
+.btn-danger {
+  border-color: var(--error);
+  background: var(--error);
+  color: var(--accent-text);
+}
+
+.btn-danger:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
 input:not([type="checkbox"]),
 select {
   padding: 7px 10px;
@@ -380,6 +390,15 @@ select {
 .table .num {
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+
+.confirm-delete td {
+  background: var(--error-bg);
+  line-height: 1.5;
+}
+
+.confirm-delete .actions {
+  margin-top: 8px;
 }
 
 .strong {

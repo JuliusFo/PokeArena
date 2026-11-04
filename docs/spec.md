@@ -325,7 +325,9 @@ species and regaining it moves the moment to the regain (WP-06 decision).
   failure, bot offline). The battle page therefore shows a friendly
   „Kampf wird gerade veröffentlicht …" state and retries while the JSON
   404s, so links posted to chat immediately are never broken.
-- Caching: `kampf/<id>.json` is immutable (long `Cache-Control` max-age);
+- Caching: `kampf/<id>.json` changes only when a trainer in it is deleted
+  (§11), so it gets `max-age=86400` — a deleted name drops out of every cache
+  within a day without a purge (WP-08 decision);
   all other files are mutable and uploaded with a short max-age (≤ the poll
   interval) so browsers (and a CDN, once a custom domain is used) never
   serve stale leaderboards.

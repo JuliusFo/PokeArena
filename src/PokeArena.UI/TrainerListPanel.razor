@@ -1,8 +1,11 @@
-@* All registered trainers, newest first. Read-only for now; corrections and deletion follow in WP-08. *@
+@* All registered trainers, newest first, with a confirmed delete (spec §11). *@
+@using PokeArena.Core.Chat
 @using PokeArena.Core.Data
 @using PokeArena.Core.Game
 @implements IDisposable
 @inject TrainerService Trainers
+@inject TrainerRemoval Removal
+@inject ChatInbox Inbox
 @inject GameDatabase Database
 
 <section class="card">
@@ -40,6 +43,7 @@
                     <th class="num">Orden</th>
                     <th class="num">Tokens</th>
                     <th>Dabei seit</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -52,7 +56,22 @@
                         <td class="num">@trainer.Badges</td>
                         <td class="num">@trainer.Tokens</td>
                         <td>@trainer.RegisteredAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+                        <td class="num"><button class="btn btn-quiet delete" @onclick="() => _confirming = trainer">Löschen</button></td>
                     </tr>
+                    @if (_confirming?.TwitchUserId == trainer.TwitchUserId)
+                    {
+                        <tr class="confirm-delete">
+                            <td colspan="7">
+                                <strong>@trainer.DisplayName wirklich löschen?</strong>
+                                Alle Pokémon, Erfolge und Orden sind danach weg, auf der Website wird der Name in alten
+                                Kämpfen zu „[gelöscht]“. Das lässt sich nicht rückgängig machen.
+                                <div class="actions">
+                                    <button class="btn btn-danger" @onclick="() => Delete(trainer)">Ja, löschen</button>
+                                    <button class="btn btn-quiet" @onclick="() => _confirming = null">Abbrechen</button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
                 }
             </tbody>
         </table>
@@ -63,6 +82,7 @@
     private IReadOnlyList<TrainerSummary>? _trainers;
     private string _search = "";
     private bool _sandbox;
+    private TrainerSummary? _confirming;
 
     private IReadOnlyList<TrainerSummary> Visible =>
         string.IsNullOrWhiteSpace(_search)
@@ -82,6 +102,13 @@
         await ReloadAsync();
         StateHasChanged();
     });
+
+    /// <summary>On the command queue like every game change; the list reloads via <see cref="TrainerService.Changed"/>.</summary>
+    private void Delete(TrainerSummary trainer)
+    {
+        _confirming = null;
+        Inbox.Post(new QueuedWork("Trainer löschen", ct => Removal.DeleteAsync(trainer.TwitchUserId, ct)));
+    }
 
     private async Task ReloadAsync()
     {

@@ -28,7 +28,7 @@ public static class GameServiceCollectionExtensions
         services.AddSingleton<TrainerService>();
         services.AddSingleton<BattleService>();
 
-        // Balancing values: spec defaults for now; runtime editing comes with the config editor.
+        // Balancing values: spec defaults in code; they change by release (spec §13, WP-09).
         services.AddSingleton(BattleSettings.Default);
         services.AddSingleton(BossSettings.Default);
         services.AddSingleton(PvpSettings.Default);
@@ -39,12 +39,14 @@ public static class GameServiceCollectionExtensions
         services.AddSingleton<PvpService>();
         services.AddSingleton<NpcService>();
         services.AddSingleton<DryRunTrainers>();
+        services.AddSingleton<TrainerRemoval>();
 
         services.AddSingleton<IChatCommand, RegisterCommand>();
         services.AddSingleton<IChatCommand, BossCommand>();
         services.AddSingleton<IChatCommand, BossResetCommand>();
         services.AddSingleton<IChatCommand, FightCommand>();
         services.AddSingleton<IChatCommand, ChallengeCommand>();
+        services.AddSingleton<IChatCommand, RemoveCommand>();
         services.AddHostedService<GameStartup>();
         return services;
     }

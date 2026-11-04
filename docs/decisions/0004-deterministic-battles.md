@@ -31,3 +31,14 @@ Enforced by `Microsoft.CodeAnalysis.BannedApiAnalyzers` in Core
 `DateTimeOffset.Now/UtcNow`, `new Random()` and `Random.Shared` fail the
 build. A seeded `new Random(seed)` stays allowed — it is deterministic and is
 what the injected random source will wrap. Time comes from `TimeProvider`.
+
+## Addendum 2026-11-04 (WP-08)
+
+Deleting a trainer (spec §11) is the one change to a stored log: the
+fighters of that trainer get owner „[gelöscht]“ and no trainer id
+(`BattleLog.WithoutTrainer`). Species, HP and every event stay as they
+happened, so the log still describes the fight; only the personal data goes
+(user decision 2026-11-04 — rendering „[gelöscht]“ only on display would keep
+the name in the database). Boss catchers are therefore read from the log
+(survivors), not from the participant rows, which are deleted with the
+trainer.
