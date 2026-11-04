@@ -50,7 +50,7 @@ public sealed record BossSettings
     public TimeSpan FailedLobbyCooldown { get; init; } = TimeSpan.FromMinutes(2);
 
     /// <summary>BossHPProSpieler: boss HP = base HP × HPFaktor × this × participants.</summary>
-    public double HpPerParticipant { get; init; } = 1.8;
+    public double HpPerParticipant { get; init; } = 1.5;
 
     /// <summary>BossZieleTeiler: the boss attacks ⌈N / this⌉ participants per round.</summary>
     public int TargetDivisor { get; init; } = 3;

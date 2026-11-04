@@ -33,7 +33,8 @@ multiple boss targets with linear HP; target difficulty ≈ 75 %.
 - Damage ratio `max((ATK_a + k)/(DEF_d + k), (SPEZ_a + k)/(SPEZ_d + k))`,
   `k = Daempfung` (default 50). Special is both special attack and special
   defense, as in Gen 1.
-- Boss HP = base HP × `HPFaktor` × `BossHPProSpieler` (1.8) × `N`.
+- Boss HP = base HP × `HPFaktor` × `BossHPProSpieler` (1.8; 1.5 since the
+  addendum 2026-11-04) × `N`.
 - The boss attacks `⌈N / BossZieleTeiler⌉` (3) distinct random living
   participants per round.
 - The per-species field `bossZiele` is dropped; it was never set in the data.
@@ -81,3 +82,31 @@ table of the 2026-10-15 addendum — one-hit KOs drop from 20 % to 13 %, the
 first-strike advantage from 59 % to 57.5 %; boss group win rates fall by only
 1–2 points, logs grow by about one line per participant. `k` stays 50. The
 `N = 4` dip (≈ 64 %) is still open (roadmap.md).
+
+## Addendum 2026-11-04 (after 1.0.0)
+
+User decision: `BossHPProSpieler` default **1.5** (was 1.8), to raise the
+catch chance. Simulator (`dotnet run tools/BalancingSimulator.cs -- --duels 1
+--bosses 3000`, fixed seeds), catch chance per participant / group wins:
+
+| Variant | N=2 | 3 | 4 | 5 | 6 | 8 | 10 | 15 | 20 | Group wins |
+|---|---|---|---|---|---|---|---|---|---|---|
+| HP 1.8, divisor 3 (old) | 51 % | 64 % | 50 % | 57 % | 63 % | 59 % | 57 % | 62 % | 59 % | 59–78 % |
+| **HP 1.5, divisor 3 (new)** | 57 % | 70 % | 57 % | 64 % | 70 % | 66 % | 65 % | 69 % | 66 % | 66–84 % |
+| HP 1.3, divisor 3 | 63 % | 75 % | 63 % | 70 % | 75 % | 72 % | 70 % | 74 % | 72 % | 71–88 % |
+| HP 1.8, divisor 4 | 51 % | 64 % | 72 % | 57 % | 63 % | 72 % | 67 % | 69 % | 70 % | 59–86 % |
+| HP 1.8, divisor 5 | 51 % | 64 % | 72 % | 78 % | 63 % | 72 % | 79 % | 78 % | 77 % | 59–92 % |
+| HP 1.5, divisor 4 | 57 % | 70 % | 78 % | 64 % | 70 % | 78 % | 73 % | 76 % | 77 % | 66–92 % |
+
+- Lower boss HP lifts every group size by about the same 6–7 points and
+  shortens fights by about half a round; the group win rate target moves from
+  ≈ 75 % to ≈ 80 %. About 13 % fewer bosses are needed for the same
+  collection.
+- A larger divisor was rejected: `⌈N / divisor⌉` makes the effect jump between
+  neighbouring group sizes (divisor 4: N=4 72 %, N=5 57 %), which looks random
+  to players.
+- Changing the catch rule (everyone catches on a win, or a catch roll for
+  fainted participants) was not chosen: survival as the catch condition
+  (spec §4) stays.
+- The `N = 4` dip remains (57 % vs. 70 / 64 % around it) and stays a WP-09
+  topic. If 1.5 is still too stingy after a few streams, 1.3 is the next step.

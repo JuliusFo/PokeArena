@@ -103,9 +103,11 @@ Boss draw (after the lobby closes, so participant count is known):
   `p(legendär) = min(Cap3, Basis3 + ProSpieler3 × N)` (defaults 1 % + 1 %/player, cap 20 %),
   `p(selten)   = min(Cap2, Basis2 + ProSpieler2 × N)` (defaults 10 % + 2 %/player, cap 40 %),
   remainder → common. Within a tier the species is drawn uniformly.
-- Boss HP = base HP × `HPFaktor` × `BossHPProSpieler` × `N` (default 1.8).
+- Boss HP = base HP × `HPFaktor` × `BossHPProSpieler` × `N` (default 1.5,
+  was 1.8 until 1.0.0).
   Other stats are the base values. Together with the target count below this
-  keeps the group's win rate near **75 %** for any `N` (ADR-0006).
+  keeps the group's win rate near **80 %** for any `N` (ADR-0006 addendum
+  2026-11-04).
 
 Fight (resolved **instantly** when the lobby closes — no interaction is
 possible, so no artificial pacing):
@@ -403,7 +405,7 @@ Display names appear permanently on a public website. Therefore:
 | BossMinTeilnehmer              | 2         |
 | BossCooldownMinutes            | 30        |
 | BossFehlschlagCooldownMinutes  | 2         |
-| BossHPProSpieler               | 1.8       |
+| BossHPProSpieler               | 1.5       |
 | BossZieleTeiler                | 3         |
 | Seltenheit Basis/ProSpieler/Cap| s. §4     |
 | HerausforderungTimeoutMinutes  | 2         |

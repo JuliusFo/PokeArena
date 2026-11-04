@@ -7,6 +7,11 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+### Changed
+- Bosses have less HP (1.5 instead of 1.8 per participant): groups win more
+  often, and each participant catches the boss in about 57–70 % of the
+  fights instead of 50–64 %.
+
 ## [1.0.0] - 2026-11-04
 
 ### Added

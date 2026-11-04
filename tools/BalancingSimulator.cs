@@ -4,7 +4,7 @@
 // Options (defaults = spec §13):
 //   --scaling 20      Skalierung
 //   --damping 50      Daempfung (k)
-//   --boss-hp 1.8     BossHPProSpieler
+//   --boss-hp 1.5     BossHPProSpieler
 //   --divisor 3       BossZieleTeiler
 //   --duels 10        repetitions per ordered 1-vs-1 pairing (151 × 150 pairings)
 //   --bosses 5000     boss encounters per participant count
@@ -118,7 +118,7 @@ static Dictionary<string, double> ParseOptions(string[] args)
     {
         ["scaling"] = 20,
         ["damping"] = 50,
-        ["boss-hp"] = 1.8,
+        ["boss-hp"] = 1.5,
         ["divisor"] = 3,
         ["duels"] = 10,
         ["bosses"] = 5000,

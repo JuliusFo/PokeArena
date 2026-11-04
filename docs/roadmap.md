@@ -257,9 +257,13 @@ Demo: measured win rates per NPC and boss group size, adjusted values.
 
 - User decision (2026-11-04): the balancing points move here from WP-03/05;
   numbers are only set after a simulator run.
+- Done ahead of WP-09 (user decision 2026-11-04): `BossHPProSpieler` 1.8 →
+  1.5 for a higher catch chance (≈ 57–70 % per participant instead of
+  50–64 %), ADR-0006 addendum. Next step if still too stingy: 1.3.
 - `N = 4` dip: likely caused by the jump of `⌈N/3⌉` targets from 1 to 2 at
-  N = 4. Watch on stream first; if noticeable, adjust the target formula or
-  the HP per player for that step in the simulator.
+  N = 4 (with HP 1.5: 57 % catch chance vs. 70 / 64 % at N = 3 / 5). Watch on
+  stream first; if noticeable, adjust the target formula or the HP per player
+  for that step in the simulator.
 - No runtime balancing editor (spec §13): `Skalierung`, `k` etc. are jargon
   for the streamer and every change should go through the simulator. At most
   the streamer-facing values (boss cooldown, countdown) may get a setting.
