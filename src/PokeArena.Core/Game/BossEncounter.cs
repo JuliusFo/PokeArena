@@ -218,6 +218,15 @@ public sealed class BossEncounter(
         _ => "",
     };
 
+    /// <summary><c>!bossreset</c> (mods): the next <c>!boss</c> may open a lobby at once. An open lobby stays as it is.</summary>
+    public async Task ResetCooldownAsync(CancellationToken ct)
+    {
+        await using var db = database.Open();
+        await db.Cooldowns.Where(c => c.Key == CooldownKey).ExecuteDeleteAsync(ct);
+        log.LogInformation("Boss cooldown reset");
+        chat.Send("Der Boss-Cooldown ist zurückgesetzt – mit !boss geht es sofort weiter.");
+    }
+
     private async Task<DateTimeOffset?> CooldownUntilAsync(CancellationToken ct)
     {
         await using var db = database.Open();

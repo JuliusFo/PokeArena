@@ -74,12 +74,17 @@ public sealed class CommandProcessor(
         var parsed = ParsedCommand.TryParse(message.Text);
         if (!message.IsSimulated && !stream.AcceptsCommands)
         {
-            if (parsed is not null && _commands.ContainsKey(parsed.Name))
+            var known = parsed is null ? null : _commands.GetValueOrDefault(parsed.Name);
+            // Mod commands are administration, not play (e.g. deleting a trainer after the stream): they pass.
+            if (known is not { Access: CommandAccess.Moderators })
             {
-                SendOfflineHint();
-            }
+                if (known is not null)
+                {
+                    SendOfflineHint();
+                }
 
-            return;
+                return;
+            }
         }
 
         try

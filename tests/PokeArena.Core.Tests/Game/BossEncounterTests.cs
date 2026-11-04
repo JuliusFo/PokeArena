@@ -83,6 +83,20 @@ public class BossEncounterTests : IDisposable
     }
 
     [Fact]
+    public async Task Boss_reset_clears_the_cooldown()
+    {
+        var boss = Boss(EasyBoss);
+        await RegisterAsync("1", "Ash", "2", "Misty");
+        await RunEncounterAsync(boss, ("1", "Ash"), ("2", "Misty"));
+
+        await boss.ResetCooldownAsync(_ct);
+        await boss.JoinAsync(Boss("1", "Ash"), _ct);
+
+        Assert.Equal("Der Boss-Cooldown ist zurückgesetzt – mit !boss geht es sofort weiter.", _chat.Sent[^2]);
+        Assert.StartsWith("Ein wilder Boss nähert sich!", _chat.Sent[^1]);
+    }
+
+    [Fact]
     public async Task Cooldown_starts_when_the_encounter_ends_and_replies_are_throttled()
     {
         var boss = Boss(EasyBoss);

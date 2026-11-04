@@ -42,6 +42,7 @@ public static class GameServiceCollectionExtensions
 
         services.AddSingleton<IChatCommand, RegisterCommand>();
         services.AddSingleton<IChatCommand, BossCommand>();
+        services.AddSingleton<IChatCommand, BossResetCommand>();
         services.AddSingleton<IChatCommand, FightCommand>();
         services.AddSingleton<IChatCommand, ChallengeCommand>();
         services.AddHostedService<GameStartup>();

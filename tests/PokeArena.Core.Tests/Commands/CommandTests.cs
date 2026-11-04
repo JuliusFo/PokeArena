@@ -134,6 +134,20 @@ public class CommandTests : IDisposable
     }
 
     [Fact]
+    public async Task Offline_mod_commands_still_run_for_moderators_without_a_hint()
+    {
+        var modOnly = new RecordingCommand("geheim", CommandAccess.Moderators);
+        var processor = Processor(modOnly);
+        _stream.Report(false);
+
+        await processor.ProcessAsync(Message("!geheim zuschauer"), _ct);
+        await processor.ProcessAsync(Message("!geheim mod", ChatRole.Moderator), _ct);
+
+        Assert.Equal(["mod"], modOnly.Arguments);
+        Assert.Empty(_chat.Sent);
+    }
+
+    [Fact]
     public async Task Offline_the_always_active_switch_and_the_dry_run_still_run_commands()
     {
         var open = new RecordingCommand("offen", CommandAccess.Everyone);
