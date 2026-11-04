@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-11-04 · v1.0.0 (WP-00 – WP-08 done) · WP-09 after a few streams
+Status: 2026-11-04 · v1.0.1 (WP-00 – WP-08 done, boss HP 1.5) · WP-09 after a few streams
 
 ## 1. Where to find what
 
@@ -159,7 +159,7 @@ PokeArena.slnx
 
 ## 9. Next
 
-1.0.0 is released (installation: README, „Running it on the streamer's PC“).
+1.0.1 is released (installation: README, „Running it on the streamer's PC“).
 Next: install it on the streamer's PC; after a few streams WP-09 balancing
 (`N = 4` dip, PvP loot preferring missing species, NPC difficulty; no runtime
 balancing editor). Ideas meanwhile go to docs/backlog.md. Details:
