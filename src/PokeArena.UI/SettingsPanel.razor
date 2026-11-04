@@ -1,0 +1,86 @@
+@* Channel and website addresses (WP-08), stored in the data directory so updates keep them. *@
+@using PokeArena.Core
+@using PokeArena.Core.Publishing
+@using PokeArena.Core.Twitch
+@inject SettingsFile Settings
+@inject TwitchOptions Twitch
+@inject WebsiteOptions Website
+
+<section class="card">
+    <h2>Einstellungen</h2>
+    <p class="hint">
+        Diese Angaben richtet normalerweise die Person ein, die PokeArena für dich eingerichtet hat. Ändere sie nur, wenn
+        du weißt, was du tust – zum Beispiel, wenn du deinen Twitch-Namen geändert hast.
+    </p>
+    <form class="key-form" @onsubmit="SaveAsync">
+        <label>
+            Twitch-Kanal
+            <input @bind="_channel" @bind:event="oninput" placeholder="dein Twitch-Name" spellcheck="false" />
+        </label>
+        <label>
+            Website-Adresse
+            <input @bind="_siteUrl" @bind:event="oninput" placeholder="https://arena.example.de" spellcheck="false" />
+        </label>
+        <label>
+            Cloudflare-Endpunkt
+            <input @bind="_r2Endpoint" @bind:event="oninput" placeholder="https://….r2.cloudflarestorage.com" spellcheck="false" />
+        </label>
+        <label>
+            Bucket
+            <input @bind="_bucket" @bind:event="oninput" spellcheck="false" />
+        </label>
+        @if (_problem is { } problem)
+        {
+            <p class="problem">@problem</p>
+        }
+        else if (_saved)
+        {
+            <p class="hint" data-testid="settings-saved">Gespeichert. Schließe PokeArena und öffne es wieder, damit die Änderungen gelten.</p>
+        }
+        <div class="actions">
+            <button class="btn" type="submit">Speichern</button>
+        </div>
+    </form>
+</section>
+
+@code {
+    private string _channel = "";
+    private string _siteUrl = "";
+    private string _r2Endpoint = "";
+    private string _bucket = "";
+    private string? _problem;
+    private bool _saved;
+
+    protected override void OnInitialized()
+    {
+        _channel = Twitch.Channel;
+        _siteUrl = Website.SiteUrl;
+        _r2Endpoint = Website.R2Endpoint;
+        _bucket = Website.Bucket;
+    }
+
+    private async Task SaveAsync()
+    {
+        var settings = new UserSettings(_channel, _siteUrl, _r2Endpoint, _bucket);
+        _saved = false;
+        _problem = SettingsFile.Validate(settings);
+        if (_problem is not null)
+        {
+            return;
+        }
+
+        try
+        {
+            await Settings.SaveAsync(settings, CancellationToken.None);
+            _saved = true;
+        }
+        catch (IOException)
+        {
+            _problem = "Die Einstellungen konnten nicht gespeichert werden. Ist die Festplatte voll?";
+        }
+        catch (UnauthorizedAccessException)
+        {
+            _problem = "Die Einstellungen konnten nicht gespeichert werden: kein Zugriff auf den Datenordner.";
+        }
+    }
+}

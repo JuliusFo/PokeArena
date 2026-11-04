@@ -70,22 +70,14 @@ labels are from memory and may differ slightly.
 
 ## 4. Desktop app
 
-1. Settings (`appsettings.local.json` on the dev machine; on the streamer's PC
-   next to the program until WP-08 decides installation):
-
-   ```json
-   {
-     "PokeArena": {
-       "Website": {
-         "SiteUrl": "https://arena.<domain>",
-         "R2Endpoint": "https://<account-id>.r2.cloudflarestorage.com",
-         "Bucket": "pokearena"
-       }
-     }
-   }
-   ```
-
-2. Start the app → Bot → **Website**: enter Access Key ID and Secret Access
+1. Start the app → Bot → **Einstellungen**: Twitch channel, website address
+   (`https://arena.<domain>`), Cloudflare endpoint
+   (`https://<account-id>.r2.cloudflarestorage.com`) and bucket → „Speichern“,
+   then close and reopen the app. The values go to
+   `%LOCALAPPDATA%\PokeArena\settings.json`, so an update of the program
+   folder keeps them. On the dev machine `appsettings.local.json` next to the
+   csproj still wins over this file (same keys under `PokeArena:Website`).
+2. Bot → **Website**: enter Access Key ID and Secret Access
    Key → „Speichern“ (stored in the Windows Credential Manager as
    `PokeArena:r2-access-key-id` / `PokeArena:r2-secret-access-key`).
 3. „Alles neu veröffentlichen“ uploads everything already in the database.

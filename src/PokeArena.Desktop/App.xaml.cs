@@ -2,6 +2,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PokeArena.Core;
@@ -68,10 +69,11 @@ public partial class App : Application
         builder.Configuration.AddJsonFile("appsettings.local.json", optional: true).AddCommandLine(args);
 
         var options = builder.Configuration.GetSection(PokeArenaOptions.SectionName).Get<PokeArenaOptions>() ?? new();
+        var paths = AppPaths.Resolve(options);
+        AddStreamerSettings(builder.Configuration, new SettingsFile(paths));
         var twitchOptions = builder.Configuration.GetSection(TwitchOptions.SectionName).Get<TwitchOptions>() ?? new();
         var websiteOptions = builder.Configuration.GetSection(WebsiteOptions.SectionName).Get<WebsiteOptions>() ?? new();
         var overlayOptions = builder.Configuration.GetSection(OverlayOptions.SectionName).Get<OverlayOptions>() ?? new();
-        var paths = AppPaths.Resolve(options);
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
             .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
@@ -92,6 +94,7 @@ public partial class App : Application
         builder.Services.AddBlazorWebViewDeveloperTools();
 #endif
         builder.Services.AddSingleton(paths);
+        builder.Services.AddSingleton<SettingsFile>();
         builder.Services.AddSingleton(TimeProvider.System);
         builder.Services.AddSingleton<ISecretStore, CredentialManagerSecretStore>();
         builder.Services.AddSingleton(new AppInfo(version));
@@ -127,6 +130,20 @@ public partial class App : Application
         await Log.CloseAndFlushAsync();
         _singleInstance?.Dispose();
         base.OnExit(e);
+    }
+
+    /// <summary>
+    /// The streamer's <c>settings.json</c> from the data directory (WP-08): above the shipped <c>appsettings.json</c>,
+    /// below the developer's <c>appsettings.local.json</c> and the command line.
+    /// </summary>
+    private static void AddStreamerSettings(ConfigurationManager configuration, SettingsFile settings)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(settings.Path)!);
+        var source = new JsonConfigurationSource { Path = settings.Path, Optional = true };
+        source.ResolveFileProvider();
+        var sources = (IList<IConfigurationSource>)configuration.Sources;
+        var local = sources.TakeWhile(s => s is not JsonConfigurationSource { Path: "appsettings.local.json" }).Count();
+        sources.Insert(local, source);
     }
 
     private void RegisterGlobalExceptionHandlers()

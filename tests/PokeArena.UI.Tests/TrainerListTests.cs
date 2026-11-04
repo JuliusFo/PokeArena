@@ -24,6 +24,7 @@ public class TrainerListTests : BunitContext
     private readonly GameDatabase _database;
     private readonly TrainerService _trainers;
     private readonly ChatInbox _inbox = new();
+    private readonly AppPaths _paths = new(Path.Combine(Path.GetTempPath(), "pokearena-ui-" + Guid.NewGuid().ToString("N")));
     private readonly CancellationToken _ct = Xunit.TestContext.Current.CancellationToken;
 
     public TrainerListTests()
@@ -53,7 +54,10 @@ public class TrainerListTests : BunitContext
         var r2 = new R2Access(new WebsiteOptions(), new MemorySecretStore());
         Services.AddSingleton(r2);
         Services.AddSingleton(new OverlayOptions());
-        Services.AddSingleton(new DatabaseBackup(new AppPaths(Path.Combine(Path.GetTempPath(), "pokearena-ui-" + Guid.NewGuid().ToString("N"))), _database, _time, NullLogger<DatabaseBackup>.Instance));
+        Services.AddSingleton(new DatabaseBackup(_paths, _database, _time, NullLogger<DatabaseBackup>.Instance));
+        Services.AddSingleton(new SettingsFile(_paths));
+        Services.AddSingleton(new TwitchOptions { Channel = "shiyofurball" });
+        Services.AddSingleton(new WebsiteOptions());
         Services.AddSingleton(new SitePublishWorker(_database, new SiteGenerator(_species, _npcs), r2, _time, NullLogger<SitePublishWorker>.Instance));
     }
 
@@ -152,6 +156,26 @@ public class TrainerListTests : BunitContext
     }
 
     [Fact]
+    public void Settings_are_checked_then_written_to_the_data_directory()
+    {
+        var cut = Render<SettingsPanel>();
+        Assert.Equal("shiyofurball", cut.Find("input").GetAttribute("value"));
+
+        cut.FindAll("input")[1].Input("http://arena.example.de");
+        cut.Find("form").Submit();
+        Assert.Equal("Die Website-Adresse muss mit https:// beginnen.", cut.Find(".problem").TextContent);
+        Assert.False(File.Exists(new SettingsFile(_paths).Path));
+
+        cut.FindAll("input")[1].Input("https://arena.example.de/");
+        cut.Find("form").Submit();
+
+        cut.WaitForAssertion(() => Assert.NotNull(cut.Find("[data-testid=settings-saved]")));
+        var json = File.ReadAllText(new SettingsFile(_paths).Path);
+        Assert.Contains("\"Channel\": \"shiyofurball\"", json);
+        Assert.Contains("\"SiteUrl\": \"https://arena.example.de\"", json);
+    }
+
+    [Fact]
     public async Task Dry_run_shows_only_test_trainers_and_says_so()
     {
         await _trainers.RegisterAsync("1", "misty", "Misty", _species.Get(7), _ct);
@@ -203,6 +227,10 @@ public class TrainerListTests : BunitContext
         {
             _database.Dispose();
             _keeper.Dispose();
+            if (Directory.Exists(_paths.Root))
+            {
+                Directory.Delete(_paths.Root, recursive: true);
+            }
         }
 
         base.Dispose(disposing);

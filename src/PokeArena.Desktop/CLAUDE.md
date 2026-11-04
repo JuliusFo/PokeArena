@@ -29,3 +29,6 @@ Thin WPF host around a `BlazorWebView` (ADR-0007). UI belongs in PokeArena.UI, l
   2-second polling floods the log file.
 - Website settings live under `PokeArena:Website` (site URL, R2 endpoint, bucket — not secret); the R2 key is in the
   Credential Manager as `PokeArena:r2-access-key-id` / `PokeArena:r2-secret-access-key` (docs/website-setup.md).
+- Streamer settings (WP-08): `settings.json` in the data directory (written by the „Einstellungen“ card via
+  `SettingsFile`) is inserted as a configuration source between `appsettings.json` and `appsettings.local.json`
+  (`App.AddStreamerSettings`); it is read once at start, so changes apply after a restart.
