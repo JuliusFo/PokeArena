@@ -7,6 +7,24 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+### Added
+- Moderators can delete a trainer with `!entfernen @name` (confirmed with
+  `!entfernen @name ja` within 60 seconds) or in the app's trainer list. The
+  trainer's Pokémon, achievements and badges are gone, their page disappears
+  from the website, and old fights show „[gelöscht]“ instead of the name.
+- `!bossreset` (moderators) clears the boss cooldown.
+- Moderator commands work while the stream is offline.
+- The app backs up the game data on every start and with „Jetzt sichern“;
+  the last ten backups are kept.
+- „Einstellungen“ card for the Twitch channel and the website addresses;
+  they are kept across updates.
+- Releases come as a ZIP on GitHub; the app shows when a newer version is
+  available.
+
+### Changed
+- Fight pages on the website are cached for a day instead of a year, so a
+  deleted name disappears everywhere within a day.
+
 ## [0.7.0] - 2026-11-03
 
 ### Added

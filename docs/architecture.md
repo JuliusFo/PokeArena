@@ -85,6 +85,17 @@ defaults in code.
   deletes it when its source is gone; failures back off up to 15 min and never
   give up. The dry run writes to the sandbox outbox, which nobody reads.
   "Republish everything" queues every path.
+- **Deletion** (spec §11, built in WP-08): `!entfernen @x` (mods, confirmed
+  by the same mod within 60 s via `TrainerRemoval`) or the button in the
+  trainer list → `TrainerService.DeleteAsync` in one transaction: participant
+  rows, specimens, achievements, badges and NPC cooldowns go, the trainer's
+  fighters in the stored logs become „[gelöscht]“ without id (ADR-0004
+  addendum) → trainer page (removed), lists, the fights and the other
+  participants' pages queued. Fight files are cached for a day, so the name
+  leaves the CDN without a purge.
+- **Backup** (spec §10, built in WP-08): `DatabaseBackup` writes `VACUUM INTO`
+  copies to `backups\` on every start before the migrations and on demand,
+  keeping the newest 10.
 - **OBS overlay** (built): `OverlayServer` in Desktop, Kestrel on the loopback
   interface; `/overlay` is a static page that polls `/overlay/state`
   (`SiteGenerator.OverlayAsync` on the current database, so the dry run shows
@@ -117,8 +128,14 @@ knowledge. Areas:
 - Built (WP-06), area "Bot": "Website" card (R2 key entry, upload status with
   a plain-German reason, „Alles neu veröffentlichen“) and "OBS-Overlay" card
   with the browser source address.
-- Planned: manual corrections and deletion of trainers; balancing config
-  editor (all values from spec §13, live); operations (backup now).
+- Built (WP-07): live state and „Auch ohne Stream“ switch in the Twitch card.
+- Built (WP-08): „Löschen“ with an inline confirmation per trainer row
+  (queued work on the command queue); „Sicherung“ card (last backup, folder,
+  „Jetzt sichern“); „Einstellungen“ card (channel, website addresses →
+  `settings.json`, applied after a restart); „Version … verfügbar“ hint in the
+  top bar.
+- Not planned for v1: manual corrections of trainers (backlog), a balancing
+  editor (spec §13, WP-09).
 
 ## Keyboard shortcuts
 
