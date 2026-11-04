@@ -351,7 +351,9 @@ species and regaining it moves the moment to the regain (WP-06 decision).
 - **Secrets** (Twitch tokens for the dedicated bot account, R2 API token) go
   into the Windows credential store — never into the DB, config files or the
   repo. The UI shows the signed-in bot account (ADR-0002 addendum).
-- **Backup:** DB file copy on app exit plus a manual "backup now" button.
+- **Backup:** a `VACUUM INTO` copy on every app start, before the migrations,
+  plus a manual „Jetzt sichern“ button; the newest 10 are kept in
+  `%LOCALAPPDATA%PokeArenabackups` (WP-08 decision). Restoring is manual.
 - **Dry run:** game data goes to an in-memory sandbox database that starts
   empty each time the dry run is switched on; real chat messages are not
   processed meanwhile.

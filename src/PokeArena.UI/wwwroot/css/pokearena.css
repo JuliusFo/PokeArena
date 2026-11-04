@@ -527,6 +527,12 @@ select {
   color: var(--accent);
 }
 
+.facts .path {
+  font-weight: normal;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
 .overlay-url {
   margin: 4px 0 8px !important;
   font-family: "Cascadia Mono", Consolas, monospace;

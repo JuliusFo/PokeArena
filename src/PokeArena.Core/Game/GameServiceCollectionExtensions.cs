@@ -25,6 +25,7 @@ public static class GameServiceCollectionExtensions
             GameDatabase.FileConnectionString(sp.GetRequiredService<AppPaths>().DatabasePath),
             sp.GetRequiredService<DryRunMode>(),
             sp.GetRequiredService<ILogger<GameDatabase>>()));
+        services.AddSingleton<DatabaseBackup>();
         services.AddSingleton<TrainerService>();
         services.AddSingleton<BattleService>();
 
@@ -51,19 +52,36 @@ public static class GameServiceCollectionExtensions
         return services;
     }
 
-    /// <summary>Fails the app start on broken base data or a failed migration instead of failing mid-game.</summary>
+    /// <summary>
+    /// Fails the app start on broken base data or a failed migration instead of failing mid-game. Backs the database
+    /// up first, so a migration of a new version can always be undone.
+    /// </summary>
     private sealed class GameStartup(
         SpeciesCatalog species,
         TypeChart types,
         NpcCatalog npcs,
         GameDatabase database,
         AppPaths paths,
+        DatabaseBackup backup,
         ILogger<GameStartup> log) : IHostedService
     {
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             log.LogInformation("Base data: {Count} species, {Types} types, {Npcs} NPCs", species.All.Count, types.Types.Count, npcs.All.Count);
             Directory.CreateDirectory(paths.Root);
+            if (File.Exists(paths.DatabasePath))
+            {
+                try
+                {
+                    await backup.CreateAsync(cancellationToken);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or Microsoft.Data.Sqlite.SqliteException)
+                {
+                    // A full disk must not keep the streamer from playing; the backup card shows the last good copy.
+                    log.LogWarning(ex, "Startup backup failed");
+                }
+            }
+
             await database.MigrateLiveAsync(cancellationToken);
         }
 

@@ -1,0 +1,55 @@
+@* Database backups (spec §10): automatic on every start, plus a manual one. *@
+@using PokeArena.Core.Data
+@implements IDisposable
+@inject DatabaseBackup Backup
+
+<section class="card">
+    <h2>Sicherung</h2>
+    <dl class="facts">
+        <dt>Letzte Sicherung</dt>
+        <dd data-testid="latest-backup">@(Backup.Latest is { } latest ? $"{latest.CreatedAt.ToLocalTime():dd.MM.yyyy HH:mm} Uhr" : "noch keine")</dd>
+        <dt>Ordner</dt>
+        <dd class="path">@Backup.Directory</dd>
+    </dl>
+    <p class="hint">
+        PokeArena sichert die Spieldaten bei jedem Start von selbst und hebt die letzten @DatabaseBackup.Keep Sicherungen auf.
+        Vor einem Update oder einer größeren Änderung kannst du zusätzlich jetzt sichern.
+    </p>
+    @if (_problem)
+    {
+        <p class="problem">Die Sicherung hat nicht geklappt. Ist die Festplatte voll? Details stehen in der Logdatei.</p>
+    }
+    <div class="actions">
+        <button class="btn" disabled="@_busy" @onclick="BackUpAsync">@(_busy ? "Sichere …" : "Jetzt sichern")</button>
+    </div>
+</section>
+
+@code {
+    private bool _busy;
+    private bool _problem;
+
+    protected override void OnInitialized() => Backup.Changed += OnChanged;
+
+    private async Task BackUpAsync()
+    {
+        _busy = true;
+        _problem = false;
+        try
+        {
+            await Backup.CreateAsync(CancellationToken.None);
+        }
+        catch (Exception)
+        {
+            // DatabaseBackup has logged the details; the streamer only needs to know it failed.
+            _problem = true;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Backup.Changed -= OnChanged;
+}

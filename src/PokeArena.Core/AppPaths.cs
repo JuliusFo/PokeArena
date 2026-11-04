@@ -25,6 +25,9 @@ public sealed class AppPaths
     /// <summary>The live game database (SQLite). Never inside the repository (ADR-0003).</summary>
     public string DatabasePath => Path.Combine(Root, "pokearena.db");
 
+    /// <summary>Copies of the database (WP-08): one per app start plus manual ones.</summary>
+    public string BackupsDirectory => Path.Combine(Root, "backups");
+
     /// <summary>The configured data directory, or the default when none is set.</summary>
     public static AppPaths Resolve(PokeArenaOptions options) =>
         string.IsNullOrWhiteSpace(options.DataDirectory) ? Default : new AppPaths(options.DataDirectory);

@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- Tests against real infrastructure (Windows Credential Manager; later Twitch, R2). Kept apart from the unit
+  <!-- Tests against real infrastructure (Windows Credential Manager, Twitch, R2, files on disk). Kept apart from the unit
        tests, which must not need anything outside the process. -->
 
   <PropertyGroup>
@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="xunit.v3" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
   </ItemGroup>
 
   <ItemGroup>

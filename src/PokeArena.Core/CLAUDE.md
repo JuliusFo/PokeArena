@@ -54,3 +54,5 @@
 - Live gate (WP-07): `CommandProcessor` drops real messages while `StreamStatus.AcceptsCommands` is false — new
   `CommandProcessor` tests must report the stream live first. Stream events only report changes: whenever a new
   EventSub session starts, ask `HelixClient.IsLiveAsync` **after** subscribing, or a change in between is lost.
+- Backups (WP-08): `DatabaseBackup` uses `VACUUM INTO` on `OpenLive()`. From an in-memory database it writes the
+  copy into memory (memdb VFS), so its tests run on a real file in Integration.Tests.

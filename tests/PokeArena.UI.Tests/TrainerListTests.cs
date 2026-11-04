@@ -53,6 +53,7 @@ public class TrainerListTests : BunitContext
         var r2 = new R2Access(new WebsiteOptions(), new MemorySecretStore());
         Services.AddSingleton(r2);
         Services.AddSingleton(new OverlayOptions());
+        Services.AddSingleton(new DatabaseBackup(new AppPaths(Path.Combine(Path.GetTempPath(), "pokearena-ui-" + Guid.NewGuid().ToString("N"))), _database, _time, NullLogger<DatabaseBackup>.Instance));
         Services.AddSingleton(new SitePublishWorker(_database, new SiteGenerator(_species, _npcs), r2, _time, NullLogger<SitePublishWorker>.Instance));
     }
 
@@ -138,6 +139,16 @@ public class TrainerListTests : BunitContext
         await work.RunAsync(_ct);
 
         cut.WaitForAssertion(() => Assert.Equal("Rocko", Assert.Single(cut.FindAll("tbody tr td.strong")).TextContent));
+    }
+
+    [Fact]
+    public void Backup_card_shows_that_there_is_no_backup_yet_and_where_they_go()
+    {
+        var cut = Render<BackupPanel>();
+
+        Assert.Equal("noch keine", cut.Find("[data-testid=latest-backup]").TextContent);
+        Assert.EndsWith("backups", cut.Find(".facts .path").TextContent);
+        Assert.Equal("Jetzt sichern", cut.Find("button").TextContent);
     }
 
     [Fact]
