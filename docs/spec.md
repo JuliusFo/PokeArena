@@ -353,7 +353,7 @@ species and regaining it moves the moment to the regain (WP-06 decision).
   repo. The UI shows the signed-in bot account (ADR-0002 addendum).
 - **Backup:** a `VACUUM INTO` copy on every app start, before the migrations,
   plus a manual „Jetzt sichern“ button; the newest 10 are kept in
-  `%LOCALAPPDATA%PokeArenabackups` (WP-08 decision). Restoring is manual.
+  `%LOCALAPPDATA%\PokeArena\backups` (WP-08 decision). Restoring is manual.
 - **Dry run:** game data goes to an in-memory sandbox database that starts
   empty each time the dry run is switched on; real chat messages are not
   processed meanwhile.
