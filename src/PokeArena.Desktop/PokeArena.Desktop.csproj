@@ -41,10 +41,12 @@
     </None>
     <!-- Versioned base data (species, type chart, NPCs), shipped next to the program (ADR-0005). -->
     <None Include="..\..\data\*.json" Link="data\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
-    <!-- Optional, git-ignored developer overrides such as the test channel. -->
-    <None Update="appsettings.local.json" Condition="Exists('appsettings.local.json')">
+    <!-- Optional, git-ignored developer overrides such as the test channel. Never part of a release package. -->
+    <!-- The Razor SDK makes *.json Content items, so this is a Content update, not None. -->
+    <Content Update="appsettings.local.json" Condition="Exists('appsettings.local.json')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

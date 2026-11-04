@@ -103,6 +103,8 @@ public partial class App : Application
         builder.Services.AddPokeArenaWebsite(websiteOptions);
         builder.Services.AddSingleton(overlayOptions);
         builder.Services.AddHostedService<OverlayServer>();
+        builder.Services.AddSingleton<UpdateCheck>();
+        builder.Services.AddHostedService(sp => sp.GetRequiredService<UpdateCheck>());
         builder.Services.AddSingleton<MainWindow>();
 
         _host = builder.Build();

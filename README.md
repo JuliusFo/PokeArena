@@ -8,10 +8,8 @@ and work their way through 17 NPC trainers, all via chat commands. A desktop
 app on the streamer's PC runs the bot; a static website shows the leaderboard,
 trainer pages and battle logs.
 
-> **Status:** early development. Version 0.4.0: viewers register with
-> `!registrieren`, fight bosses together with `!boss` and challenge each other
-> with `!fight`. NPC fights with `!challenge` (WP-05) are next. See the
-> [roadmap](#roadmap).
+> **Status:** stream-ready (1.0.0, WP-08). Balancing with data from real
+> streams follows in 1.1.0. See the [roadmap](#roadmap).
 
 ## How it plays
 
@@ -59,16 +57,49 @@ Twitch chat ──EventSub──▶ Desktop app (bot, SQLite) ──Helix──�
 |---|---|
 | `src/PokeArena.Core` | Domain, battle engine, Twitch client, data, publishing. No UI, no Windows dependency |
 | `src/PokeArena.UI` | Razor components and CSS of the desktop app |
-| `src/PokeArena.Desktop` | WPF host: `BlazorWebView`, logging, Windows services |
-| `src/PokeArena.Web` | Public website (planned, WP-06) |
+| `src/PokeArena.Contracts` | Site JSON records shared by Core and Web |
+| `src/PokeArena.Desktop` | WPF host: `BlazorWebView`, logging, Windows services, OBS overlay endpoint |
+| `src/PokeArena.Web` | Public website, Blazor WebAssembly on GitHub Pages |
 | `tests/PokeArena.Core.Tests` | Unit tests, nothing outside the process |
-| `tests/PokeArena.Integration.Tests` | Tests against real infrastructure (Credential Manager) |
-| `data/` | Versioned base data: species, type chart |
+| `tests/PokeArena.UI.Tests`, `tests/PokeArena.Web.Tests` | bUnit component tests |
+| `tests/PokeArena.Integration.Tests` | Tests against real infrastructure (Credential Manager, Twitch, R2, files) |
+| `data/` | Versioned base data: species, type chart, NPCs |
 | `tools/` | Dev scripts, e.g. the base-data generator |
 
 **Tech stack:** .NET 10, Blazor Hybrid (WPF), EF Core + SQLite, Twitch
 EventSub WebSocket + Helix API, Blazor WebAssembly, Cloudflare R2,
 xUnit v3 on Microsoft Testing Platform.
+
+## Running it on the streamer's PC
+
+1. Download `PokeArena-vX.Y.Z-win-x64.zip` from the
+   [latest release](https://github.com/JuliusFo/PokeArena/releases/latest)
+   and unpack it, e.g. to `C:\PokeArena`. No installer and no .NET runtime are
+   needed (Windows 10/11 with WebView2, which ships with Windows 11).
+2. Start `PokeArena.exe` (a desktop shortcut helps). On the first start:
+   Bot → **Einstellungen** (Twitch channel, website addresses) → restart the
+   app → **Twitch-Verbindung** → sign in the bot account → **Website** →
+   enter the Cloudflare key. [docs/website-setup.md](docs/website-setup.md)
+   has the details.
+3. OBS: browser source `http://localhost:5299/overlay`.
+
+**Updating:** when the top bar shows „Version … verfügbar“, close PokeArena,
+download the new ZIP and replace the program folder with its contents. Game
+data, settings and backups live in `%LOCALAPPDATA%\PokeArena` and are not
+touched; the database is backed up before the new version upgrades it.
+
+**Restoring a backup:** close PokeArena, copy the wanted file from
+`%LOCALAPPDATA%\PokeArena\backups` (the „Sicherung“ card shows the folder)
+over `%LOCALAPPDATA%\PokeArena\pokearena.db`, delete `pokearena.db-wal` and
+`pokearena.db-shm` next to it if they exist, and start PokeArena again. Then
+„Alles neu veröffentlichen“ in the Website card brings the site in line. An
+older backup may still contain trainers deleted since then (spec §11) —
+delete them again.
+
+**Releasing (developer):** set `<Version>` and the CHANGELOG section on the
+package branch, merge, then tag `vX.Y.Z` on `main` and push the tag. The
+[release workflow](.github/workflows/release.yml) builds the ZIP and attaches
+it to the GitHub release, with the changelog section as notes.
 
 ## Building
 
@@ -112,7 +143,9 @@ dotnet tool restore
 
 ```bash
 dotnet ef migrations add <Name> --project src/PokeArena.Core --startup-project src/PokeArena.Core --output-dir Data/Migrations
-``` `data/pokemon.json` is generated from
+```
+
+`data/pokemon.json` is generated from
 [PokeAPI](https://pokeapi.co/) with `dotnet run tools/GeneratePokemonData.cs`;
 don't edit it by hand.
 
@@ -128,6 +161,7 @@ don't edit it by hand.
 | 0.6.0 | Public website and OBS overlay | done |
 | 0.7.0 | Commands only while the stream is live | done |
 | 1.0.0 | Stream-ready: mod commands, deletion, backup | planned |
+| 1.1.0 | Balancing with real stream data | planned |
 
 Details per work package: [docs/roadmap.md](docs/roadmap.md) ·
 log: [docs/work-packages.md](docs/work-packages.md) ·

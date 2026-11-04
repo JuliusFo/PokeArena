@@ -101,8 +101,13 @@ body {
   font-weight: 600;
 }
 
-.tag-dry-run {
+.tag-dry-run,
+.tag-update {
   align-self: center;
+}
+
+.tag-update {
+  text-decoration: none;
 }
 
 .content {

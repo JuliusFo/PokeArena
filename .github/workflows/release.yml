@@ -1,0 +1,139 @@
+name: Release
+
+# Builds the desktop app for the streamer's PC and attaches it to the GitHub release of the tag (WP-08). Run by
+# hand, it builds the package as a workflow artifact without touching any release.
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build:
+    name: Build release (Windows)
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      # Full history: the release notes link the previous version, which comes from the tags.
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      # Nothing gets published that does not pass the same checks as CI.
+      - name: Build
+        run: dotnet build PokeArena.slnx -c Release -warnaserror
+
+      - name: Tests
+        run: |
+          dotnet test tests/PokeArena.Core.Tests -c Release --no-build
+          dotnet test tests/PokeArena.UI.Tests -c Release --no-build
+          dotnet test tests/PokeArena.Web.Tests -c Release --no-build
+          dotnet test tests/PokeArena.Integration.Tests -c Release --no-build
+
+      - name: Determine version
+        id: version
+        shell: pwsh
+        run: |
+          $version = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME.TrimStart('v') } else { '0.0.0' }
+          $name = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME } else { 'dev' }
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "name=$name" >> $env:GITHUB_OUTPUT
+
+      # A folder, not a single file: the BlazorWebView serves its static assets from wwwroot next to the program.
+      # Self-contained, so the streamer's PC needs no .NET runtime (WebView2 ships with Windows 11).
+      - name: Publish
+        run: >
+          dotnet publish src/PokeArena.Desktop -c Release -r win-x64
+          --self-contained true
+          -p:Version=${{ steps.version.outputs.version }}
+          -p:DebugType=none
+          -o publish/PokeArena
+
+      - name: Package
+        shell: pwsh
+        run: |
+          if (Test-Path publish/PokeArena/appsettings.local.json) { throw 'Developer settings must not be shipped.' }
+          if (-not (Test-Path publish/PokeArena/data/pokemon.json)) { throw 'Base data missing from the package.' }
+          Compress-Archive -Path publish/PokeArena -DestinationPath "PokeArena-${{ steps.version.outputs.name }}-win-x64.zip"
+
+      - name: Upload artifact
+        if: github.ref_type != 'tag'
+        uses: actions/upload-artifact@v4
+        with:
+          name: package
+          path: '*.zip'
+
+      # Everything goes through local fast-forward merges, so generated notes would be a bare compare link; the
+      # changelog section says what changed.
+      - name: Release notes from the changelog
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        run: |
+          $version = '${{ steps.version.outputs.version }}'
+          $tag = '${{ steps.version.outputs.name }}'
+          # Explicit encoding: read as ANSI, dashes and umlauts would arrive broken.
+          $lines = Get-Content CHANGELOG.md -Encoding utf8
+
+          $start = -1
+          for ($i = 0; $i -lt $lines.Count; $i++) {
+            if ($lines[$i] -match "^##\s+\[$([regex]::Escape($version))\]") { $start = $i + 1; break }
+          }
+
+          if ($start -lt 0) {
+            Write-Host "No section for $version in CHANGELOG.md, the generated notes will have to do."
+            exit 0
+          }
+
+          $end = $lines.Count
+          for ($i = $start; $i -lt $lines.Count; $i++) {
+            if ($lines[$i] -match '^##\s') { $end = $i; break }
+          }
+
+          $body = if ($end -gt $start) { ($lines[$start..($end - 1)] -join "`n").Trim() } else { '' }
+          if (-not $body) {
+            Write-Host "Section for $version is empty, the generated notes will have to do."
+            exit 0
+          }
+
+          # The next tag below this one, so rebuilding an older release never links forwards.
+          $tags = @(git tag --list 'v*' --sort=-v:refname)
+          $index = [array]::IndexOf($tags, $tag)
+          $previous = if ($index -ge 0 -and $index + 1 -lt $tags.Count) { $tags[$index + 1] }
+                      elseif ($index -lt 0) { $tags | Select-Object -First 1 }
+                      else { $null }
+          if ($previous) {
+            $body += "`n`n**Full Changelog**: https://github.com/${{ github.repository }}/compare/$previous...$tag"
+          }
+
+          Set-Content release-notes.md -Value $body -Encoding utf8
+          Write-Host $body
+
+      # Attach to the release, creating it if it does not exist yet; a release written by hand keeps its text.
+      - name: Attach to release
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "${{ steps.version.outputs.name }}"
+          $files = Get-ChildItem *.zip | ForEach-Object { $_.Name }
+
+          gh release view $tag 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $tag $files --clobber
+          } elseif (Test-Path release-notes.md) {
+            gh release create $tag $files --title $tag --notes-file release-notes.md
+          } else {
+            gh release create $tag $files --title $tag --generate-notes
+          }
