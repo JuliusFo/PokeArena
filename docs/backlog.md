@@ -50,6 +50,13 @@ roadmap.md first. Format: idea — date, origin.
   2026-09-03, spec §14.
 - Battle log retention/cleanup policy — 2026-09-03, spec §14.
 
+## Operations
+
+- Manual corrections of a trainer in the desktop app (give or take a
+  specimen, tokens) — 2026-11-04, WP-08 plan (architecture sketch).
+- Backups to a second location (e.g. a cloud folder the streamer picks) —
+  2026-11-04, WP-08 plan.
+
 ## Abuse protection
 
 - Alt-account protection, e.g. minimum Twitch account age via Helix `Get

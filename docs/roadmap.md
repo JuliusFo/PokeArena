@@ -225,6 +225,24 @@ Demo: stream-ready.
     a day. Spec §9 and website-setup.md change with the implementation.
   - Chat wording pass: all bot texts in one table (command → text) for one
     review sitting.
+- User decisions (2026-11-04): `!entfernen @name` asks for confirmation
+  („!entfernen @name ja“ within 60 s by the same moderator); the deleted
+  trainer's name and id are overwritten in the stored battle logs (owner →
+  „[gelöscht]“, trainer id → null; ADR-0004 addendum). Backups keep the name
+  until they rotate out.
+- Plan (agreed 2026-11-04, ≈ 3–4 days): mod commands bypass the live gate,
+  `!bossreset` clears the boss cooldown; a deletion service removes trainer,
+  specimens, achievements, badges, NPC cooldowns and participant rows in one
+  transaction, rewrites the logs and queues trainer page (deleted), leaderboard
+  and affected fights — reachable via `!entfernen` and a confirmed button in
+  the trainer list; fight files `max-age=86400`; `VACUUM INTO` backup on every
+  app start before the migrations plus „Jetzt sichern“, last 10 kept, restore
+  by hand (README); `settings.json` in the data directory as a configuration
+  layer, an „Einstellungen“ card (channel, website addresses) applied after a
+  restart; `release.yml` (self-contained `win-x64` ZIP with `data/`, notes
+  from the CHANGELOG), an update hint from the GitHub releases API once per
+  start, README section for the streamer; `docs/chat-texts.md` for the wording
+  pass. Not included: manual corrections of trainers (backlog).
 - Pitfall: SQLite backup with WAL, see `src/PokeArena.Core/CLAUDE.md`.
 
 ## WP-09 — Balancing after the first streams (≈ 2 days) → v1.1.0
