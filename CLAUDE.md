@@ -40,6 +40,7 @@ shows leaderboard, trainer pages and battle logs.
 | 0.6.0 | Public website + OBS overlay | WP-06 |
 | 0.7.0 | Commands only while the stream is live | WP-07 |
 | 1.0.0 | Stream-ready: mod commands, deletion, backup | WP-08 |
+| 1.1.0 | Balancing with real stream data | WP-09 |
 
 **Invariants — never weaken:**
 
@@ -158,8 +159,8 @@ PokeArena.slnx
 
 ## 9. Next
 
-Start WP-08 (operations: mod commands, deletion, backup, installation on the
-streamer's PC). Open from WP-06: the overlay content beyond the simplest
-variant, purging cached fight files after a deletion. Still open: from WP-03 the `N = 4` boss dip, the runtime balancing
-editor and progression length; from WP-05 the NPC difficulty. Details:
-docs/roadmap.md.
+Start WP-08 (operations: mod commands that bypass the live gate, deletion with
+a shorter fight-file cache, backup, ZIP release, settings card, one wording
+pass). After 1.0 and a few streams: WP-09 balancing (`N = 4` dip, PvP loot
+preferring missing species, NPC difficulty; no runtime balancing editor).
+Decisions of 2026-11-04 and details: docs/roadmap.md.

@@ -14,6 +14,7 @@ in [roadmap.md](roadmap.md).
 | WP-06 | Website | 0.6.0 | done 2026-11-01 |
 | WP-07 | Live status | 0.7.0 | done 2026-11-03 |
 | WP-08 | Operations | 1.0.0 | planned |
+| WP-09 | Balancing after the first streams | 1.1.0 | planned |
 
 ## Log
 

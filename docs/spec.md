@@ -403,8 +403,9 @@ Display names appear permanently on a public website. Therefore:
 | NPCSiegCooldownMinutes         | 60        |
 | WebsitePollSeconds             | 15        |
 
-All balancing values are editable in the UI at runtime. (Until that editor
-exists they are code defaults, WP-03 decision; see roadmap.md.)
+Balancing values are code defaults in v1 and change by release, after a
+simulator run (user decision 2026-11-04, roadmap WP-09); there is no runtime
+balancing editor.
 
 ## 14. Open points and later versions
 

@@ -14,7 +14,8 @@ roadmap.md first. Format: idea — date, origin.
 ## Continuation of WP-03 (boss, progression)
 
 - Catch bonus for species the trainer does not own yet, to shorten the grind —
-  2026-10-11, design review.
+  2026-10-11, design review. (The PvP-loot variant is planned in WP-09; a boss
+  bonus does not fit, all survivors catch the same species.)
 
 ## Continuation of WP-04 (PvP)
 
@@ -35,6 +36,12 @@ roadmap.md first. Format: idea — date, origin.
   balance, once tokens can be spent or corrected — 2026-10-21, WP-05 plan.
 - Chat command for the own token balance and badges (or fold it into `!dex`)
   — 2026-10-21, WP-05 plan.
+
+## Continuation of WP-06 (overlay)
+
+- Live boss countdown in the OBS overlay (seconds left, participants) — the
+  on-screen call to join; only after the streamer's feedback on the overlay —
+  2026-11-04, open-points review.
 
 ## Battle system
 

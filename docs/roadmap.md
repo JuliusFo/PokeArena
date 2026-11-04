@@ -1,6 +1,7 @@
 # Roadmap
 
-Planned work packages up to v1.0.0. Read the package before starting it and
+Planned work packages up to v1.0.0, plus the balancing package after it
+(WP-09). Read the package before starting it and
 agree the plan with the user. Estimates: solo, "day" = one focused person-day;
 total ≈ 25–31 days. Every package ends in a state that could run on stream.
 
@@ -86,13 +87,13 @@ Demo: `!boss` playable end-to-end.
 - User decision (2026-10-19, ADR-0006 addendum): `Skalierung` 20 instead of
   25 (13 % one-hit KOs, first strike wins 57.5 %); `k` stays 50.
 - Open: the `N = 4` dip (≈ 64 % group wins vs. ≈ 75 % target) — watch on
-  stream whether players notice it.
-- Open: when does the runtime balancing editor come (spec §13 says "editable
-  in the UI")? Proposal: WP-08 together with the other operations screens.
+  stream whether players notice it. → WP-09 (user decision 2026-11-04).
+- Runtime balancing editor: user decision (2026-11-04) — not in v1; values
+  stay code defaults and change by release (spec §13 adjusted). See WP-09.
 - Open: progression length. Expected catches for k distinct species (uniform
   lower bound) — 15: ~16, 60: ~76, 100: ~163, 151: ~845; with ≈ 60 % catch
-  chance per boss that is ≈ 1.7× as many boss fights. Intended, or add a
-  bonus for missing species (backlog)?
+  chance per boss that is ≈ 1.7× as many boss fights. → WP-09 (user decision
+  2026-11-04).
 
 ## WP-04 — PvP (3–4 days) → v0.4.0
 
@@ -145,7 +146,7 @@ Demo: `!challenge Eich` playable.
   species beat Eich (strength 1.0, basic forms only) 10 times out of 10. User
   decision (2026-10-27): leave it for now; if NPCs feel too easy on stream,
   raise `staerke` per NPC in `npcs.json` or measure win rates with the
-  simulator.
+  simulator. → WP-09 (user decision 2026-11-04).
 
 ## WP-06 — Website (4–5 days) → v0.6.0
 
@@ -175,7 +176,9 @@ Demo: a battle link in chat opens a live page.
 - **Done 2026-11-01**: built and live-tested the same day (Cloudflare and Pages
   set up by the user, real boss fight in the test channel). See the log in
   work-packages.md.
-- Open: the overlay's content beyond the simplest variant.
+- Overlay content beyond the simplest variant: user decision (2026-11-04) —
+  wait for the streamer's feedback; the next candidate (live boss countdown)
+  is parked in backlog.md.
 
 ## WP-07 — Live status (≈ 1 day) → v0.7.0
 
@@ -204,17 +207,50 @@ Mod commands, deletion flow, backup, republish-all, README, message wording
 pass.
 Demo: stream-ready.
 
-- Open: should mod commands (`!bossreset`, `!entfernen`) work while the
-  stream is offline? The WP-07 gate blocks every known command for now.
-- Open: installation and updates on the streamer's PC (self-contained
-  publish, installer?).
-- Pitfall: SQLite backup with WAL, see `src/PokeArena.Core/CLAUDE.md`. A
-  release workflow like DigitalDeskCycle2's (`release.yml`, notes from the
-  CHANGELOG) fits here once installation is decided.
+- User decisions (2026-11-04, proposals accepted):
+  - Mod commands bypass the WP-07 live gate (`CommandAccess.Moderators`, no
+    offline hint for them): deleting a trainer after the stream must work.
+  - Installation: a self-contained `win-x64` ZIP, no installer. A
+    `release.yml` (like DigitalDeskCycle2's) builds it on the version tag,
+    with the CHANGELOG section as release notes. Updating = replacing the
+    program folder; data stays apart (`AppPaths`). Optional: an „Neue
+    Version verfügbar“ hint from the GitHub releases API, no auto-update.
+  - Settings: channel and website URLs move out of the `appsettings.json`
+    next to the program (an update would overwrite it) into an
+    „Einstellungen“ card, stored in the data directory, with a connection
+    test. No guided first-start wizard — the user sets the PC up once.
+  - Cached fight files after a deletion: no Cloudflare purge (it would need a
+    second token with zone rights). Fight files get a shorter max-age (about
+    one day) instead of a year; a deleted name is gone from the cache within
+    a day. Spec §9 and website-setup.md change with the implementation.
+  - Chat wording pass: all bot texts in one table (command → text) for one
+    review sitting.
+- Pitfall: SQLite backup with WAL, see `src/PokeArena.Core/CLAUDE.md`.
+
+## WP-09 — Balancing after the first streams (≈ 2 days) → v1.1.0
+
+Tuning with real stream data and the Monte Carlo simulator instead of
+guesses. Starts after 1.0 has run on a few streams.
+Demo: measured win rates per NPC and boss group size, adjusted values.
+
+- User decision (2026-11-04): the balancing points move here from WP-03/05;
+  numbers are only set after a simulator run.
+- `N = 4` dip: likely caused by the jump of `⌈N/3⌉` targets from 1 to 2 at
+  N = 4. Watch on stream first; if noticeable, adjust the target formula or
+  the HP per player for that step in the simulator.
+- No runtime balancing editor (spec §13): `Skalierung`, `k` etc. are jargon
+  for the streamer and every change should go through the simulator. At most
+  the streamer-facing values (boss cooldown, countdown) may get a setting.
+- Progression: PvP loot prefers species the winner lacks, like the NPC
+  reward (E22) — a per-trainer bonus on the boss does not fit, all survivors
+  catch the same species. Then watch the data again.
+- NPC difficulty: measure win rates per NPC with random teams at its unlock
+  threshold; set `staerke` so the first NPCs win ≈ 50–60 % and later ones
+  clearly less (Eich lost all 10 fights in the WP-05 dry run).
 
 ## Open UX questions
 
 - Exact German wording of all chat messages (spec §14) — drafted during
-  implementation, reviewed in WP-08.
-- First start for the streamer: is a guided setup (Twitch login, R2 token)
-  needed, or does the user configure the PC once?
+  implementation, reviewed in one sitting in WP-08.
+- First start for the streamer: decided 2026-11-04 — no guided setup, the
+  user configures the PC once (see WP-08).
