@@ -160,7 +160,7 @@ don't edit it by hand.
 | 0.5.0 | NPC fights `!challenge` | done |
 | 0.6.0 | Public website and OBS overlay | done |
 | 0.7.0 | Commands only while the stream is live | done |
-| 1.0.0 | Stream-ready: mod commands, deletion, backup | planned |
+| 1.0.0 | Stream-ready: mod commands, deletion, backup | done |
 | 1.1.0 | Balancing with real stream data | planned |
 
 Details per work package: [docs/roadmap.md](docs/roadmap.md) ·

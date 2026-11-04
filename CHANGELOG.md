@@ -7,6 +7,8 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-04
+
 ### Added
 - Moderators can delete a trainer with `!entfernen @name` (confirmed with
   `!entfernen @name ja` within 60 seconds) or in the app's trainer list. The

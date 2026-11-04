@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-11-03 · v0.7.0 (WP-00 – WP-07 done) · WP-08 next
+Status: 2026-11-04 · v1.0.0 (WP-00 – WP-08 done) · WP-09 after a few streams
 
 ## 1. Where to find what
 
@@ -159,8 +159,8 @@ PokeArena.slnx
 
 ## 9. Next
 
-Start WP-08 (operations: mod commands that bypass the live gate, deletion with
-a shorter fight-file cache, backup, ZIP release, settings card, one wording
-pass). After 1.0 and a few streams: WP-09 balancing (`N = 4` dip, PvP loot
-preferring missing species, NPC difficulty; no runtime balancing editor).
-Decisions of 2026-11-04 and details: docs/roadmap.md.
+1.0.0 is released (installation: README, „Running it on the streamer's PC“).
+Next: install it on the streamer's PC; after a few streams WP-09 balancing
+(`N = 4` dip, PvP loot preferring missing species, NPC difficulty; no runtime
+balancing editor). Ideas meanwhile go to docs/backlog.md. Details:
+docs/roadmap.md.

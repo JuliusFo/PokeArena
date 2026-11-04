@@ -245,6 +245,8 @@ Demo: stream-ready.
   pass. Not included: manual corrections of trainers (backlog).
 - User decision (2026-11-04): wording pass — all six proposals in
   `docs/chat-texts.md` accepted, the rest stays as drafted.
+- **Done 2026-11-04**: built and live-tested the same day in the test
+  channel. See the log in work-packages.md.
 - Pitfall: SQLite backup with WAL, see `src/PokeArena.Core/CLAUDE.md`.
 
 ## WP-09 — Balancing after the first streams (≈ 2 days) → v1.1.0
