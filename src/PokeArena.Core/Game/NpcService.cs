@@ -54,7 +54,7 @@ public sealed class NpcService(
         if (!unlocked.Contains(npc.Threshold))
         {
             var distinct = await db.Specimens.Where(s => s.TrainerId == message.UserId).Select(s => s.SpeciesId).Distinct().CountAsync(ct);
-            chat.Send($"{mention}, du kannst {npc.Name} noch nicht herausfordern (noch {Math.Max(1, npc.Threshold - distinct)} Pokémon benötigt).");
+            chat.Send($"{mention}, für {npc.Name} brauchst du noch {Math.Max(1, npc.Threshold - distinct)} verschiedene Pokémon.");
             return;
         }
 
@@ -64,7 +64,7 @@ public sealed class NpcService(
             && await db.Cooldowns.Where(c => c.Key == cooldownKey).Select(c => (DateTimeOffset?)c.Until).FirstOrDefaultAsync(ct) is { } until
             && until > now)
         {
-            chat.Send($"{mention}, du kannst {npc.Name} noch nicht herausfordern (Cooldown {HoursAndMinutes(until - now)}).");
+            chat.Send($"{mention}, gegen {npc.Name} kannst du in {HoursAndMinutes(until - now)} wieder antreten.");
             return;
         }
 
@@ -158,7 +158,7 @@ public sealed class NpcService(
             message.IsSimulated));
         foreach (var a in achievements)
         {
-            chat.Send($"{a.DisplayName} hat AV {a.Npc.Threshold} freigeschalten und kann NPC {a.Npc.Name} herausfordern.");
+            chat.Send(Achievements.Announcement(a));
         }
 
         battles.NotifyChanged();
@@ -196,10 +196,14 @@ public sealed class NpcService(
     }
 
     /// <summary>„47:59“: hours and minutes, rounded up to the next minute.</summary>
+    /// <summary>„46 Stunden 30 Minuten“, „1 Stunde“, „5 Minuten“ — rounded up to whole minutes.</summary>
     private static string HoursAndMinutes(TimeSpan remaining)
     {
-        var minutes = (int)Math.Ceiling(remaining.TotalMinutes);
-        return $"{minutes / 60}:{minutes % 60:00}";
+        var minutes = Math.Max(1, (int)Math.Ceiling(remaining.TotalMinutes));
+        var (h, m) = (minutes / 60, minutes % 60);
+        var hours = h switch { 0 => null, 1 => "1 Stunde", _ => $"{h} Stunden" };
+        var rest = m switch { 0 => null, 1 => "1 Minute", _ => $"{m} Minuten" };
+        return string.Join(' ', new[] { hours, rest }.OfType<string>());
     }
 
     private static string Duration(TimeSpan span) => span switch

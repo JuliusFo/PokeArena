@@ -243,6 +243,8 @@ Demo: stream-ready.
   from the CHANGELOG), an update hint from the GitHub releases API once per
   start, README section for the streamer; `docs/chat-texts.md` for the wording
   pass. Not included: manual corrections of trainers (backlog).
+- User decision (2026-11-04): wording pass — all six proposals in
+  `docs/chat-texts.md` accepted, the rest stays as drafted.
 - Pitfall: SQLite backup with WAL, see `src/PokeArena.Core/CLAUDE.md`.
 
 ## WP-09 — Balancing after the first streams (≈ 2 days) → v1.1.0
@@ -269,6 +271,6 @@ Demo: measured win rates per NPC and boss group size, adjusted values.
 ## Open UX questions
 
 - Exact German wording of all chat messages (spec §14) — drafted during
-  implementation, reviewed in one sitting in WP-08.
+  implementation, reviewed 2026-11-04 (docs/chat-texts.md).
 - First start for the streamer: decided 2026-11-04 — no guided setup, the
   user configures the PC once (see WP-08).

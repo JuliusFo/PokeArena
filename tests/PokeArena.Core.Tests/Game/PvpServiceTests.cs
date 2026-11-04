@@ -192,7 +192,7 @@ public class PvpServiceTests : IDisposable
         await pvp.FightAsync(Fight("1", "Ash"), "@misty", _ct);
         await pvp.FightAsync(Fight("2", "Misty"), "@ash", _ct);
 
-        Assert.Equal("Ash hat AV 15 freigeschalten und kann NPC Eich herausfordern.", _chat.Sent[^1]);
+        Assert.Equal("Ash hat 15 verschiedene Pokémon gesammelt und kann jetzt Eich mit !challenge Eich herausfordern!", _chat.Sent[^1]);
         await using var db = _game.OpenLive();
         Assert.Equal(("1", 15), await db.AchievementUnlocks.Select(u => ValueTuple.Create(u.TrainerId, u.Threshold)).SingleAsync(_ct));
     }

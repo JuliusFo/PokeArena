@@ -100,7 +100,7 @@ public sealed class CommandProcessor(
                 case CommandAccess.Moderators when !message.IsModerator:
                     return;
                 case CommandAccess.Registered when !registered:
-                    chat.Send($"@{message.DisplayName}, du bist noch nicht dabei. Melde dich mit !registrieren <Starter> an.");
+                    chat.Send($"@{message.DisplayName}, du bist noch nicht dabei. Melde dich an, zum Beispiel mit !registrieren Pikachu.");
                     return;
             }
 

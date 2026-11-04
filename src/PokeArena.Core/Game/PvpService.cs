@@ -194,7 +194,7 @@ public sealed class PvpService
         _chat.Send(_links.WithBattle($"{winnerName} besiegt {loserName} und bekommt {_species.Get(loot.SpeciesId).Name} von {loserName}!", battle.Id, _database.IsSandbox));
         foreach (var a in achievements)
         {
-            _chat.Send($"{a.DisplayName} hat AV {a.Npc.Threshold} freigeschalten und kann NPC {a.Npc.Name} herausfordern.");
+            _chat.Send(Achievements.Announcement(a));
         }
 
         _battles.NotifyChanged();

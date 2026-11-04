@@ -69,7 +69,7 @@ public class BossEncounterTests : IDisposable
 
         await boss.JoinAsync(Boss("1", "Ash"), _ct);
         await EndCountdownAsync();
-        Assert.Equal("Der Boss entkommt mangels Herausforderern.", _chat.Sent[^1]);
+        Assert.Equal("Der Boss entkommt – es haben sich zu wenige Trainer getraut. Mindestens 2 müssen mit !boss mitmachen.", _chat.Sent[^1]);
 
         await boss.JoinAsync(Boss("1", "Ash"), _ct);
         Assert.Equal("@Ash, der nächste Boss kann in 2 Minuten gerufen werden.", _chat.Sent[^1]);
@@ -139,7 +139,7 @@ public class BossEncounterTests : IDisposable
 
         await RunEncounterAsync(boss, ("1", "Ash"), ("2", "Misty"));
 
-        Assert.Equal("Ash hat AV 15 freigeschalten und kann NPC Eich herausfordern.", _chat.Sent[^1]);
+        Assert.Equal("Ash hat 15 verschiedene Pokémon gesammelt und kann jetzt Eich mit !challenge Eich herausfordern!", _chat.Sent[^1]);
         await using (var db = _game.OpenLive())
         {
             var unlock = await db.AchievementUnlocks.SingleAsync(_ct);

@@ -70,15 +70,16 @@ the type that has the **higher** factor against the defender.
 - Any game command from an unregistered user gets a hint pointing to
   `!registrieren` (no auto-registration).
 - Only the first word after the command counts; name or slug, any case.
-- Replies (drafts, wording pass in WP-08):
-  - success: „@Name, willkommen bei PokeArena! Dein Starter ist Pikachu."
+- Replies (final wording: [chat-texts.md](chat-texts.md)):
+  - success: „@Name, willkommen bei PokeArena! Dein Starter ist Pikachu. Mit
+    !boss kämpfst du mit, sobald ein Boss erscheint."
   - already registered: „@Name, du bist schon dabei – dein Starter ist
     Pikachu."
   - missing or invalid starter: „@Name, wähle deinen Starter: Bisasam,
     Schiggy, Glumanda, Pikachu oder Evoli – zum Beispiel: !registrieren
     Pikachu"
   - unregistered user, game command: „@Name, du bist noch nicht dabei. Melde
-    dich mit !registrieren <Starter> an."
+    dich an, zum Beispiel mit !registrieren Pikachu."
 - Everyone may play; no follower/sub gate. One configured channel only.
 
 ## 4. Boss encounter (`!boss`)
@@ -92,7 +93,8 @@ Trigger and lobby:
 2. During the countdown every registered user (including the initiator,
    automatically) joins via `!boss`. Joining twice is a no-op.
 3. If fewer than `BossMinTeilnehmer` (default 2) joined when the countdown
-   ends: message „Boss entkommt mangels Herausforderern", short retry
+   ends: message „Der Boss entkommt – es haben sich zu wenige Trainer
+   getraut. Mindestens 2 müssen mit !boss mitmachen.", short retry
    cooldown (`BossFehlschlagCooldownMinutes`, default 2), no full cooldown.
 
 Boss draw (after the lobby closes, so participant count is known):
@@ -122,16 +124,17 @@ possible, so no artificial pacing):
   the battle-log link. The global cooldown (`BossCooldownMinutes`, default 30)
   starts when the encounter **ends**.
 - Achievement unlocks caused by the catches are announced afterwards:
-  „X hat AV Y freigeschalten und kann NPC Z herausfordern."
+  „X hat 15 verschiedene Pokémon gesammelt und kann jetzt Eich mit
+  !challenge Eich herausfordern!"
 - Joining is not confirmed per player (30 viewers would flood the chat).
   `!boss` during a cooldown answers „@Name, der nächste Boss kann in X Minuten
   gerufen werden." — at most every 30 s for the whole chat (WP-03 decision).
-- Replies (drafts, wording pass in WP-08): lobby „Ein wilder Boss nähert sich!
+- Replies (final wording: [chat-texts.md](chat-texts.md)): lobby „Ein wilder Boss nähert sich!
   Schreibt !boss, um mitzukämpfen – noch 30 Sekunden.“; start „Ein wildes
   Arkani (selten) erscheint! 5 Trainer kämpfen mit.“; result „Arkani wurde
   besiegt! Gefangen von: A, B.“ or „Arkani ist entkommen – alle Pokémon wurden
-  besiegt.“; too few „Der Boss entkommt mangels Herausforderern.“ Until the
-  website exists (WP-06) the result carries no battle link.
+  besiegt.“; too few see above. The result ends with the battle link
+  (WP-06).
 - Dry run: cooldowns are skipped so a test can be repeated at once; an open
   lobby is dropped when the dry run is switched.
 
@@ -238,8 +241,9 @@ Used by boss, PvP and NPC fights.
   `NPCNiederlageCooldownHours` (default 48), after a **win**
   `NPCSiegCooldownMinutes` (default 60) — the win cooldown exists to limit
   farming.
-- Error replies per PDF: „Du kannst diesen NPC noch nicht herausfordern
-  (Cooldown XX:XX)" / „… (noch x Pokemon benötigt)".
+- Error replies (WP-08 wording): „@Name, gegen Eich kannst du in 46 Stunden
+  30 Minuten wieder antreten." / „@Name, für Eich brauchst du noch 13
+  verschiedene Pokémon."
 - Reward (E22, user decisions 2026-10-21): only the **first win** against an
   NPC brings a reward —
   - its badge,

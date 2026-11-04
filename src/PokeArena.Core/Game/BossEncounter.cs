@@ -102,7 +102,7 @@ public sealed class BossEncounter(
         var participants = await FieldParticipantsAsync(db, lobby, ct);
         if (participants.Count < settings.MinParticipants)
         {
-            chat.Send("Der Boss entkommt mangels Herausforderern.");
+            chat.Send($"Der Boss entkommt – es haben sich zu wenige Trainer getraut. Mindestens {settings.MinParticipants} müssen mit !boss mitmachen.");
             if (!lobby.IsSimulated)
             {
                 await SetCooldownAsync(db, now + settings.FailedLobbyCooldown, ct);
@@ -200,7 +200,7 @@ public sealed class BossEncounter(
         chat.Send(links.WithBattle(outcome, battle.Id, lobby.IsSimulated));
         foreach (var a in achievements)
         {
-            chat.Send($"{a.DisplayName} hat AV {a.Npc.Threshold} freigeschalten und kann NPC {a.Npc.Name} herausfordern.");
+            chat.Send(Achievements.Announcement(a));
         }
 
         battles.NotifyChanged();

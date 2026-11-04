@@ -12,6 +12,10 @@ public sealed record NewAchievement(string TrainerId, string DisplayName, Npc Np
 /// </summary>
 public static class Achievements
 {
+    /// <summary>The chat line for a new achievement, the same after boss, PvP and NPC fights.</summary>
+    public static string Announcement(NewAchievement a) =>
+        $"{a.DisplayName} hat {a.Npc.Threshold} verschiedene Pokémon gesammelt und kann jetzt {a.Npc.Name} mit !challenge {a.Npc.Name} herausfordern!";
+
     /// <summary>
     /// Adds unlocks for every threshold the given trainers have reached but not yet unlocked. Works on the caller's
     /// context and transaction; the specimens gained must already be saved.

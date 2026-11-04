@@ -24,6 +24,10 @@ tagged `vX.Y.Z` once its section is complete.
 ### Changed
 - Fight pages on the website are cached for a day instead of a year, so a
   deleted name disappears everywhere within a day.
+- Clearer chat texts: new achievements say how many species were collected
+  and how to challenge the NPC, NPC cooldowns read „in 46 Stunden 30
+  Minuten“ instead of „46:30“, and the welcome, registration hint and „too
+  few for the boss“ messages say what to do next.
 
 ## [0.7.0] - 2026-11-03
 

@@ -121,7 +121,7 @@ public class NpcServiceTests : IDisposable
         await afterRestart.ChallengeAsync(Challenge("1", "Ash"), "eich", _ct);
         await afterRestart.ChallengeAsync(Challenge("1", "Ash"), "rocko", _ct);
 
-        Assert.Equal("@Ash, du kannst Eich noch nicht herausfordern (Cooldown 46:30).", _chat.Sent[1]);
+        Assert.Equal("@Ash, gegen Eich kannst du in 46 Stunden 30 Minuten wieder antreten.", _chat.Sent[1]);
         Assert.Equal("Rocko besiegt Ash! Nächster Versuch in 48 Stunden.", _chat.Sent[2]);
     }
 
@@ -155,10 +155,10 @@ public class NpcServiceTests : IDisposable
         Assert.Equal(
         [
             "@Ash, fordere einen NPC heraus. Den ersten (Eich) schaltest du mit 15 verschiedenen Pokémon frei.",
-            "@Ash, du kannst Eich noch nicht herausfordern (noch 13 Pokémon benötigt).",
+            "@Ash, für Eich brauchst du noch 13 verschiedene Pokémon.",
             "@Misty, fordere einen NPC heraus – zum Beispiel: !challenge Eich. Freigeschaltet: Eich.",
             "@Misty, einen NPC namens Gary gibt es nicht – zum Beispiel: !challenge Eich. Freigeschaltet: Eich.",
-            "@Misty, du kannst Rocko noch nicht herausfordern (noch 23 Pokémon benötigt).",
+            "@Misty, für Rocko brauchst du noch 23 verschiedene Pokémon.",
         ], _chat.Sent);
         await using var db = _game.OpenLive();
         Assert.Empty(db.Battles);
@@ -203,7 +203,7 @@ public class NpcServiceTests : IDisposable
 
         await Npc().ChallengeAsync(Challenge("1", "Ash"), "eich", _ct);
 
-        Assert.Equal("Ash hat AV 25 freigeschalten und kann NPC Rocko herausfordern.", _chat.Sent[^1]);
+        Assert.Equal("Ash hat 25 verschiedene Pokémon gesammelt und kann jetzt Rocko mit !challenge Rocko herausfordern!", _chat.Sent[^1]);
         await using var db = _game.OpenLive();
         Assert.True(await db.AchievementUnlocks.AnyAsync(u => u.TrainerId == "1" && u.Threshold == 25, _ct));
     }

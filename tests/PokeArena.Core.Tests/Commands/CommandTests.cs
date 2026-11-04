@@ -176,7 +176,7 @@ public class CommandTests : IDisposable
 
         Assert.Equal(1, game.Calls);
         Assert.Equal(
-            ["@Ash, du bist noch nicht dabei. Melde dich mit !registrieren <Starter> an.", "@Ash, willkommen bei PokeArena! Dein Starter ist Pikachu."],
+            ["@Ash, du bist noch nicht dabei. Melde dich an, zum Beispiel mit !registrieren Pikachu.", "@Ash, willkommen bei PokeArena! Dein Starter ist Pikachu. Mit !boss kämpfst du mit, sobald ein Boss erscheint."],
             _chat.Sent);
     }
 
@@ -204,7 +204,7 @@ public class CommandTests : IDisposable
         await command.ExecuteAsync(new CommandContext(Message("!registrieren"), "Glumanda", _chat), _ct);
 
         Assert.Equal(
-            ["@Ash, willkommen bei PokeArena! Dein Starter ist Evoli.", "@Ash, du bist schon dabei – dein Starter ist Evoli."],
+            ["@Ash, willkommen bei PokeArena! Dein Starter ist Evoli. Mit !boss kämpfst du mit, sobald ein Boss erscheint.", "@Ash, du bist schon dabei – dein Starter ist Evoli."],
             _chat.Sent);
     }
 

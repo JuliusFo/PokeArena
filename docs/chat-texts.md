@@ -1,19 +1,22 @@
 # Chat texts (wording pass, WP-08)
 
-Every message the bot writes into the Twitch chat, for one review sitting
-(spec §14). Placeholders in `{braces}`. Fill in **Change** where a text
-should read differently (leave it empty to keep the text); **Proposal** is
-mine — accept it by writing „ok“ in Change. Links („Zum Kampf: …“) are
-appended to fight results when the website is set up.
+Every message the bot writes into the Twitch chat (spec §14). Placeholders in
+`{braces}`. Links („Zum Kampf: …“) are appended to fight results when the
+website is set up.
+
+Reviewed 2026-11-04: the user accepted all six proposals (rows 2, 4, 10, 16,
+28, 29); the texts below are the ones in the code. A later change of wording
+goes into this table and the code together. The **Proposal** and **Change**
+columns stay for the next review.
 
 ## Registration and status
 
 | # | Situation | Text | Proposal | Change |
 |---|---|---|---|---|
 | 1 | `!registrieren` without or with an unknown starter | @{Name}, wähle deinen Starter: Bisasam, Schiggy, Glumanda, Pikachu oder Evoli – zum Beispiel: !registrieren Pikachu | | |
-| 2 | Registered | @{Name}, willkommen bei PokeArena! Dein Starter ist {Starter}. | @{Name}, willkommen bei PokeArena! Dein Starter ist {Starter}. Mit !boss kämpfst du mit, sobald ein Boss erscheint. | |
+| 2 | Registered | @{Name}, willkommen bei PokeArena! Dein Starter ist {Starter}. Mit !boss kämpfst du mit, sobald ein Boss erscheint. | | |
 | 3 | Already registered | @{Name}, du bist schon dabei – dein Starter ist {Starter}. | | |
-| 4 | Game command while not registered | @{Name}, du bist noch nicht dabei. Melde dich mit !registrieren <Starter> an. | @{Name}, du bist noch nicht dabei. Melde dich an, zum Beispiel mit !registrieren Pikachu. | |
+| 4 | Game command while not registered | @{Name}, du bist noch nicht dabei. Melde dich an, zum Beispiel mit !registrieren Pikachu. | | |
 | 5 | `!pokearena` | PokeArena-Bot ist online (Version {Version}). | | |
 | 6 | `!arena` | Rangliste, Kämpfe und Trainer: {Website} | | |
 | 7 | `!arena`, website not set up | Die PokeArena-Website ist noch nicht eingerichtet. | | |
@@ -24,13 +27,13 @@ appended to fight results when the website is set up.
 | # | Situation | Text | Proposal | Change |
 |---|---|---|---|---|
 | 9 | Lobby opens | Ein wilder Boss nähert sich! Schreibt !boss, um mitzukämpfen – noch 30 Sekunden. | | |
-| 10 | Too few joined | Der Boss entkommt mangels Herausforderern. | Der Boss entkommt – es haben sich zu wenige Trainer getraut. Mindestens 2 müssen mit !boss mitmachen. | |
+| 10 | Too few joined | Der Boss entkommt – es haben sich zu wenige Trainer getraut. Mindestens 2 müssen mit !boss mitmachen. | | |
 | 11 | Fight starts | Ein wildes {Boss}{ (selten) / (legendär)} erscheint! {N} Trainer kämpfen mit. | | |
 | 12 | Boss defeated | {Boss} wurde besiegt! Gefangen von: {A, B}. | | |
 | 13 | Boss escaped, some survived | {Boss} ist entkommen. | | |
 | 14 | Boss escaped, all fainted | {Boss} ist entkommen – alle Pokémon wurden besiegt. | | |
 | 15 | `!boss` during the cooldown (at most every 30 s) | @{Name}, der nächste Boss kann in {X Minuten} gerufen werden. | | |
-| 16 | Achievement reached (boss, PvP, NPC) | {Name} hat AV {15} freigeschalten und kann NPC {Eich} herausfordern. | {Name} hat {15} verschiedene Pokémon gesammelt und kann jetzt {Eich} mit !challenge {Eich} herausfordern! („AV“ is jargon; „freigeschalten“ → „freigeschaltet“) | |
+| 16 | Achievement reached (boss, PvP, NPC) | {Name} hat {15} verschiedene Pokémon gesammelt und kann jetzt {Eich} mit !challenge {Eich} herausfordern! | | |
 
 ## PvP (`!fight`)
 
@@ -52,8 +55,8 @@ appended to fight results when the website is set up.
 |---|---|---|---|---|
 | 26 | Without/unknown NPC, nothing unlocked | @{Name}, fordere einen NPC heraus. Den ersten (Eich) schaltest du mit 15 verschiedenen Pokémon frei. | | |
 | 27 | Without/unknown NPC, some unlocked | @{Name}, fordere einen NPC heraus – zum Beispiel: !challenge {Eich}. Freigeschaltet: {Eich, Rocko}. (unknown name: „einen NPC namens {x} gibt es nicht“) | | |
-| 28 | Not unlocked yet | @{Name}, du kannst {NPC} noch nicht herausfordern (noch {n} Pokémon benötigt). | @{Name}, für {NPC} brauchst du noch {n} verschiedene Pokémon. | |
-| 29 | Cooldown | @{Name}, du kannst {NPC} noch nicht herausfordern (Cooldown {1:30}). | @{Name}, gegen {NPC} kannst du in {1 Stunde 30 Minuten} wieder antreten. („1:30“ reads like a time of day) | |
+| 28 | Not unlocked yet | @{Name}, für {NPC} brauchst du noch {n} verschiedene Pokémon. | | |
+| 29 | Cooldown | @{Name}, gegen {NPC} kannst du in {1 Stunde 30 Minuten} wieder antreten. | | |
 | 30 | Too few Pokémon | @{Name}, du hast erst {n} Pokémon – für einen Kampf brauchst du mindestens 6. | | |
 | 31 | First win | {Name} besiegt {NPC} und bekommt den Orden von {NPC}, {Pokémon} und {n} Tokens! | | |
 | 32 | Later win | {Name} besiegt {NPC} erneut – eine Belohnung gibt es nur beim ersten Sieg. | | |
