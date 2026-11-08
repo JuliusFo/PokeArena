@@ -8,7 +8,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <!-- Fixed, not "latest": a newer SDK on the CI runner must not turn new analyzer warnings into errors. -->
     <AnalysisLevel>10.0</AnalysisLevel>
-    <Version>1.1.0</Version>
+    <Version>1.2.0</Version>
     <Product>PokeArena</Product>
     <Authors>JuliusFo</Authors>
     <Copyright>Copyright (c) 2026 JuliusFo</Copyright>
