@@ -65,6 +65,12 @@ public sealed record BattleLog(IReadOnlyList<LogFighter> Fighters, IReadOnlyList
         return Enumerable.Range(0, Fighters.Count).Where(i => !fainted.Contains(i));
     }
 
+    /// <summary>HP of fighter <paramref name="index"/> after its last hit taken; its full HP if it was never hit.</summary>
+    public int HpLeft(int index) =>
+        Events.LastOrDefault(e => e.Kind == BattleEventKind.Attack && e.Target == index) is { } lastHit
+            ? lastHit.TargetHp
+            : Fighters[index].MaxHp;
+
     /// <exception cref="JsonException">Not a battle log.</exception>
     public static BattleLog FromJson(string json) =>
         JsonSerializer.Deserialize<BattleLog>(json, Json) ?? throw new JsonException("Empty battle log");

@@ -148,7 +148,8 @@ possible, so no artificial pacing):
   besiegt! Gefangen von: A, B.“ or „Arkani ist entkommen – alle Pokémon wurden
   besiegt. Arkani hatte noch 45 von 270 HP.“ (an escaped boss reports its HP
   left and at the start — streamer request 2026-11-08; the start value matters
-  because boss HP grows with `N`); too few see above. The result ends with the battle link
+  because boss HP grows with `N`; the fight page and the desktop list of fights
+  show the same sentence, read from the log); too few see above. The result ends with the battle link
   (WP-06).
 - Dry run: cooldowns are skipped so a test can be repeated at once; an open
   lobby is dropped when the dry run is switched.

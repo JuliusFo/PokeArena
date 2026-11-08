@@ -15,7 +15,9 @@ tagged `vX.Y.Z` once its section is complete.
 - The website says when its data is still in an older format after an update.
 - Whoever joins a boss fight in its last 10 seconds for the first time extends
   the countdown by 10 seconds, so a last-second `!boss` still counts.
-- When the boss escapes, the bot says how many HP it had left.
+- When the boss escapes, the bot says how many HP it had left; the fight page
+  and the desktop list of fights say it too (for older fights after „Alles neu
+  veröffentlichen“).
 
 ### Changed
 - The boss lobby stays open for 2 minutes instead of 60 seconds.

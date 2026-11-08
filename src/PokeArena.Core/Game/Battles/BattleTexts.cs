@@ -27,6 +27,9 @@ public sealed class BattleTexts(SpeciesCatalog species, NpcCatalog npcs)
     /// <summary>„1 Token“ or „3 Tokens“.</summary>
     public static string Tokens(int count) => count == 1 ? "1 Token" : $"{count} Tokens";
 
+    /// <summary>„Arkani hatte noch 45 von 270 HP.“ after an escaped boss (chat and website).</summary>
+    public static string BossHpLeft(Species boss, int hp, int maxHp) => $"{boss.Name} hatte noch {hp} von {maxHp} HP.";
+
     public BattleDescription Describe(Battle battle, BattleLog log)
     {
         var trainerSide = log.Fighters.Where(f => f.Side == 0).ToList();
@@ -45,9 +48,10 @@ public sealed class BattleTexts(SpeciesCatalog species, NpcCatalog npcs)
                     .Where(f => f.Side == 0)
                     .Select(f => f.Owner)
                     .ToList();
+                var bossIndex = log.Fighters.Select((f, i) => (f, i)).First(x => x.f.Side == 1).i;
                 var result = defeated
                     ? $"{boss.Name} wurde besiegt! Gefangen von: {string.Join(", ", catchers)}."
-                    : $"{boss.Name} ist entkommen.";
+                    : $"{boss.Name} ist entkommen. {BossHpLeft(boss, log.HpLeft(bossIndex), log.Fighters[bossIndex].MaxHp)}";
                 return new BattleDescription($"Boss-Kampf gegen {boss.Name}{TierSuffix(boss)}", result, "Trainer", boss.Name, defeated);
             }
 

@@ -222,7 +222,7 @@ public sealed class BossEncounter(
             boss.Slug, n, result.BossDefeated ? "defeated" : "escaped", catchers.Count, seed);
 
         chat.Send($"Ein wildes {boss.Name}{BattleTexts.TierSuffix(boss)} erscheint! {n} Trainer kämpfen mit.");
-        var bossHpLeft = $"{boss.Name} hatte noch {result.BossHp} von {result.BossMaxHp} HP.";
+        var bossHpLeft = BattleTexts.BossHpLeft(boss, result.BossHp, result.BossMaxHp);
         var outcome = result.BossDefeated
             ? $"{boss.Name} wurde besiegt! Gefangen von: {string.Join(", ", catchers.Select(c => c.DisplayName))}."
             : result.Survived.Any(s => s)

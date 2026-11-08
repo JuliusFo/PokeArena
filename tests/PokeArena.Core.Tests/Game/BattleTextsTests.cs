@@ -34,13 +34,31 @@ public class BattleTextsTests
     }
 
     [Fact]
-    public void An_escaped_boss_says_so()
+    public void An_escaped_boss_says_so_with_the_hp_left_after_its_last_hit_taken()
+    {
+        var log = new BattleLog(
+            [new LogFighter(0, Pikachu, 35, "1", "Ash"), new LogFighter(1, Arkani, 200, null, "Boss")],
+            [
+                new BattleEvent(BattleEventKind.Attack, 1, Fighter: 0, FighterHp: 35, Target: 1, TargetHp: 170, Damage: 30),
+                new BattleEvent(BattleEventKind.Attack, 1, Fighter: 1, FighterHp: 170, Target: 0, TargetHp: 10, Damage: 25),
+                new BattleEvent(BattleEventKind.Attack, 2, Fighter: 0, FighterHp: 10, Target: 1, TargetHp: 145, Damage: 25),
+                new BattleEvent(BattleEventKind.Attack, 2, Fighter: 1, FighterHp: 145, Target: 0, TargetHp: 0, Damage: 25),
+                new BattleEvent(BattleEventKind.Fainted, 2, Fighter: 0),
+            ]);
+
+        var texts = Texts.Describe(Battle(BattleKind.Boss, BattleOutcome.BossEscaped, boss: Arkani), log);
+
+        Assert.Equal(("Arkani ist entkommen. Arkani hatte noch 145 von 200 HP.", false), (texts.Result, texts.TrainerSideWon));
+    }
+
+    [Fact]
+    public void A_boss_never_hit_has_its_full_hp_left()
     {
         var log = new BattleLog([new LogFighter(0, Pikachu, 35, "1", "Ash"), new LogFighter(1, Arkani, 200, null, "Boss")], []);
 
         var texts = Texts.Describe(Battle(BattleKind.Boss, BattleOutcome.BossEscaped, boss: Arkani), log);
 
-        Assert.Equal(("Arkani ist entkommen.", false), (texts.Result, texts.TrainerSideWon));
+        Assert.Equal("Arkani ist entkommen. Arkani hatte noch 200 von 200 HP.", texts.Result);
     }
 
     [Theory]

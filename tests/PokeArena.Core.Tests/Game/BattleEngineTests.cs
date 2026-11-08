@@ -130,6 +130,9 @@ public class BattleEngineTests
         Assert.Equal(mewtu.MaxHp, strongBoss.BossMaxHp);
         Assert.Equal(mewtu.MaxHp - damageToBoss, strongBoss.BossHp);
         Assert.InRange(strongBoss.BossHp, 1, mewtu.MaxHp - 1);
+
+        // The website reads the same value back from the stored log.
+        Assert.Equal(strongBoss.BossHp, strongBoss.Log.HpLeft(2));
     }
 
     [Fact]
