@@ -7,10 +7,16 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-11-08
+
 ### Added
 - The bot tells the chat when the next boss can be called, 30 minutes after a
   boss fight („Der Boss ist wieder bereit …“).
 - `!version` answers like `!pokearena`: the bot is online, with its version.
+
+### Fixed
+- The NPC table on the „So geht's“ page no longer stretches across the whole
+  page.
 
 ## [1.0.2] - 2026-11-08
 

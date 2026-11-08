@@ -126,7 +126,7 @@ possible, so no artificial pacing):
   the battle-log link. The global cooldown (`BossCooldownMinutes`, default 30)
   starts when the encounter **ends**.
 - When that cooldown runs out, the bot announces „Der Boss ist wieder bereit –
-  schreibt !boss, um ihn zu rufen!“ (added after 1.0.2). Not after the short
+  schreibt !boss, um ihn zu rufen!“ (since 1.0.3). Not after the short
   retry cooldown of a failed lobby, not after `!bossreset` (it announces
   itself), not in the dry run, not while the bot takes no commands (§8), and
   not if the app was restarted during the cooldown (the timer is not stored).
