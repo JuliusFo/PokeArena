@@ -311,11 +311,12 @@ h1:focus {
 /* Only name and type chips fade; the end state itself keeps full contrast (review feat/battle-end-state). */
 .fighters .fighter-fainted .species,
 .fighters .fighter-unused .species {
-  opacity: 0.55;
+  opacity: 0.7;
 }
 
+/* Text colour, not --accent: the accent on white stays just under 4.5 : 1 for 14 px text. */
 .fighters .fighter-fainted .end-state {
-  color: var(--accent);
+  color: var(--text);
   font-weight: 600;
 }
 
