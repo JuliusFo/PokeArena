@@ -14,6 +14,11 @@ roadmap.md first. Format: idea — date, origin.
 - Catch bonus for species the trainer does not own yet, to shorten the grind —
   2026-10-11, design review. (The PvP-loot variant is planned in WP-09; a boss
   bonus does not fit, all survivors catch the same species.)
+- Set the boss countdown length without a release (streamer request) — not as
+  a chat command (spec §8: settings live in the desktop app), but as a desktop
+  setting, which WP-09 allows for countdown and boss cooldown; the „So geht's“
+  page then words the time loosely or reads it from `meta.json` —
+  2026-11-08, streamer feature request.
 
 ## Continuation of WP-04 (PvP)
 
