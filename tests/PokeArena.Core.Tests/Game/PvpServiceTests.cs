@@ -109,6 +109,7 @@ public class PvpServiceTests : IDisposable
         await pvp.FightAsync(Fight("1", "Ash"), "@ASH", _ct);
         await pvp.FightAsync(Fight("1", "Ash"), "@misty", _ct);
         await pvp.FightAsync(Fight("2", "Misty"), "@ash", _ct);
+        await pvp.FightAsync(Fight("1", "Ash"), "Hallo @misty " + new string('a', 400), _ct);
 
         Assert.Equal(
         [
@@ -118,7 +119,37 @@ public class PvpServiceTests : IDisposable
             "@Ash, du kannst dich nicht selbst herausfordern.",
             "@Ash, Misty hat erst 3 Pokémon – für einen Kampf braucht ihr beide mindestens 6.",
             "@Misty, du hast erst 3 Pokémon – für einen Kampf braucht ihr beide mindestens 6.",
+            "@Ash, Hallo ist noch kein Trainer.",
         ], _chat.Sent);
+        Assert.Equal(_chat.Sent, _chat.Hints.Select(h => h.Text));
+        Assert.Equal(["1", "1", "1", "1", "1", "2", "1"], _chat.Hints.Select(h => h.ViewerId));
+    }
+
+    [Fact]
+    public async Task A_name_that_is_not_safe_to_repeat_gets_a_generic_hint()
+    {
+        var pvp = Pvp(OneHitKnockouts);
+        await RegisterAsync("1", "Ash", "Mewtu", 5);
+
+        await pvp.FightAsync(Fight("1", "Ash"), "@" + new string('a', 26), _ct);
+        await pvp.FightAsync(Fight("1", "Ash"), "<b>misty</b>", _ct);
+
+        Assert.Equal(["@Ash, diesen Trainer gibt es noch nicht.", "@Ash, diesen Trainer gibt es noch nicht."], _chat.Sent);
+    }
+
+    [Fact]
+    public async Task Deleting_a_trainer_drops_their_open_challenge()
+    {
+        var pvp = Pvp(OneHitKnockouts);
+        await RegisterAsync("1", "Ash", "Mewtu", 5);
+        await RegisterAsync("2", "Misty", "Karpador", 5);
+        await RegisterAsync("3", "Rocko", "Onix", 5);
+        await pvp.FightAsync(Fight("1", "Ash"), "@misty", _ct);
+
+        await _game.Trainers.DeleteAsync("1", _ct);
+        await pvp.FightAsync(Fight("2", "Misty"), "@rocko", _ct);
+
+        Assert.StartsWith("@Rocko, Misty fordert dich zum Kampf heraus!", _chat.Sent[^1]);
     }
 
     [Fact]
@@ -279,16 +310,4 @@ public class PvpServiceTests : IDisposable
         new(Guid.NewGuid().ToString(), userId, name.ToLowerInvariant(), name, "!fight", ChatRole.Viewer);
 
     public void Dispose() => _game.Dispose();
-
-    private sealed class FixedSeeds(int seed) : ISeedSource
-    {
-        public int NextSeed() => seed;
-    }
-
-    private sealed class RecordingSender : IChatSender
-    {
-        public List<string> Sent { get; } = [];
-
-        public void Send(string text) => Sent.Add(text);
-    }
 }

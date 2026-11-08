@@ -82,7 +82,8 @@ public sealed class SpeciesCatalog
         }
 
         var species = file.Pokemon
-            .Select(p => new Species(p.Id, p.Name, p.Slug, p.Types, p.Hp, p.Atk, p.Def, p.Spez, p.Rarity))
+            // A missing "typen" must end in the readable problem list below, not in a NullReferenceException.
+            .Select(p => new Species(p.Id, p.Name, p.Slug, p.Types ?? [], p.Hp, p.Atk, p.Def, p.Spez, p.Rarity))
             .OrderBy(s => s.Id)
             .ToList();
         Validate(species);
@@ -129,6 +130,11 @@ public sealed class SpeciesCatalog
                 problems.Add($"#{s.Id}: rarity must be 1–3");
             }
         }
+
+        // Every boss draw picks a tier first; an empty tier would fail the fight at the end of the countdown.
+        problems.AddRange(Enumerable.Range(1, 3)
+            .Where(rarity => !species.Any(s => s.Rarity == rarity))
+            .Select(rarity => $"no species with rarity {rarity}"));
 
         var slugs = species.Select(s => s.Slug).ToHashSet(StringComparer.OrdinalIgnoreCase);
         problems.AddRange(StarterSlugs.Where(slug => !slugs.Contains(slug)).Select(slug => $"starter '{slug}' missing"));

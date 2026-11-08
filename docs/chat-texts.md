@@ -9,6 +9,11 @@ Reviewed 2026-11-04: the user accepted all six proposals (rows 2, 4, 10, 16,
 goes into this table and the code together. The **Proposal** and **Change**
 columns stay for the next review.
 
+**Hints** (review 1.0.3): error and hint replies to one viewer — rows 1, 3, 4, 17–22 and
+26–30 — go out at most once per viewer and 30 seconds
+(`ChatSender.HintInterval`); further ones in that time are dropped. Fight results, announcements and
+moderator replies are never dropped.
+
 ## Registration and status
 
 | # | Situation | Text | Proposal | Change |
@@ -41,7 +46,7 @@ columns stay for the next review.
 | # | Situation | Text | Proposal | Change |
 |---|---|---|---|---|
 | 17 | Without a name | @{Name}, fordere jemanden zum Kampf heraus – zum Beispiel: !fight @Name | | |
-| 18 | Unknown name | @{Name}, {x} ist noch kein Trainer. | | |
+| 18 | Unknown name | @{Name}, {x} ist noch kein Trainer. ({x} only if it is a plain name of at most 25 letters, digits or „_“; otherwise: „@{Name}, diesen Trainer gibt es noch nicht.“) | | |
 | 19 | Challenging oneself | @{Name}, du kannst dich nicht selbst herausfordern. | | |
 | 20 | Own challenge still open | @{Name}, du hast schon eine offene Herausforderung. | | |
 | 21 | Target has an open challenge | @{Name}, {Target} hat schon eine offene Herausforderung. | | |
@@ -55,7 +60,7 @@ columns stay for the next review.
 | # | Situation | Text | Proposal | Change |
 |---|---|---|---|---|
 | 26 | Without/unknown NPC, nothing unlocked | @{Name}, fordere einen NPC heraus. Den ersten (Eich) schaltest du mit 15 verschiedenen Pokémon frei. | | |
-| 27 | Without/unknown NPC, some unlocked | @{Name}, fordere einen NPC heraus – zum Beispiel: !challenge {Eich}. Freigeschaltet: {Eich, Rocko}. (unknown name: „einen NPC namens {x} gibt es nicht“) | | |
+| 27 | Without/unknown NPC, some unlocked | @{Name}, fordere einen NPC heraus – zum Beispiel: !challenge {Eich}. Freigeschaltet: {Eich, Rocko}. (unknown name: „einen NPC namens {x} gibt es nicht“, {x} only if it is a plain name as in row 18, otherwise „diesen NPC gibt es nicht“; a leading „@“ is ignored) | | |
 | 28 | Not unlocked yet | @{Name}, für {NPC} brauchst du noch {n} verschiedene Pokémon. | | |
 | 29 | Cooldown | @{Name}, gegen {NPC} kannst du in {1 Stunde 30 Minuten} wieder antreten. | | |
 | 30 | Too few Pokémon | @{Name}, du hast erst {n} Pokémon – für einen Kampf brauchst du mindestens 6. | | |

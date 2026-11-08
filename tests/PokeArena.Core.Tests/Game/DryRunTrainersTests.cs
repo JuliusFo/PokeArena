@@ -18,7 +18,7 @@ public class DryRunTrainersTests : IDisposable
     {
         _chatLog = new ChatLog(_game.Time);
         _trainers = new DryRunTrainers(
-            _game.Database, GameFixture.Species, GameFixture.Npcs, _game.Trainers, PvpSettings.Default, new FixedSeeds(), _inbox, _chatLog, _game.Time);
+            _game.Database, GameFixture.Species, GameFixture.Npcs, _game.Trainers, PvpSettings.Default, new FixedSeeds(99), _inbox, _chatLog, _game.Time);
     }
 
     [Fact]
@@ -96,9 +96,4 @@ public class DryRunTrainersTests : IDisposable
     }
 
     public void Dispose() => _game.Dispose();
-
-    private sealed class FixedSeeds : ISeedSource
-    {
-        public int NextSeed() => 99;
-    }
 }

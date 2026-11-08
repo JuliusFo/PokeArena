@@ -61,7 +61,7 @@
 
     protected override void OnInitialized() => DryRun.Changed += OnChanged;
 
-    private void Toggle(ChangeEventArgs e) => DryRun.Enabled = e.Value is true;
+    private void Toggle(ChangeEventArgs e) => DryRun.SwitchOnQueue(Inbox, e.Value is true);
 
     private Task SendAsync()
     {

@@ -10,6 +10,13 @@ public interface IChatSender
 {
     /// <summary>Queues <paramref name="text"/>; longer texts go out as several messages.</summary>
     void Send(string text);
+
+    /// <summary>
+    /// An error or hint for one viewer (unknown name, too few Pokémon, cooldown …): at most one per viewer and
+    /// <see cref="ChatSender.HintInterval"/>, so a viewer spamming commands cannot fill the send queue and delay
+    /// fight results (spec §8, review 1.0.3 A5). Test doubles may simply send.
+    /// </summary>
+    void SendHint(string viewerId, string text) => Send(text);
 }
 
 /// <summary>Where the bot writes: the channel and the bot account, known once connected.</summary>
@@ -40,6 +47,25 @@ public sealed class ChatSender(
     internal static readonly TimeSpan TargetWait = TimeSpan.FromSeconds(60);
 
     private static readonly TimeSpan TargetPoll = TimeSpan.FromSeconds(1);
+
+    /// <summary>One error or hint reply per viewer at most this often (spec §8).</summary>
+    public static readonly TimeSpan HintInterval = TimeSpan.FromSeconds(30);
+
+    private readonly ReplyThrottle _hints = new(HintInterval, time);
+
+    public void SendHint(string viewerId, string text)
+    {
+        bool allowed;
+        lock (_hints)
+        {
+            allowed = _hints.Allows(viewerId);
+        }
+
+        if (allowed)
+        {
+            Send(text);
+        }
+    }
 
     public void Send(string text)
     {

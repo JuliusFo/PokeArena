@@ -89,16 +89,22 @@ public class ComponentTests : BunitContext
     }
 
     [Fact]
-    public void Dry_run_form_appears_when_enabled_and_posts_a_simulated_message()
+    public async Task Dry_run_form_appears_when_enabled_and_posts_a_simulated_message()
     {
         var cut = Render<DryRunPanel>();
         Assert.Empty(cut.FindAll("form"));
 
         cut.Find("input[type=checkbox]").Change(true);
+
+        // The switch runs on the command queue, between two commands (review 1.0.3, A13).
+        Assert.False(_dryRun.Enabled);
+        Assert.True(_inbox.Reader.TryRead(out var switchItem));
+        await cut.InvokeAsync(() => Assert.IsType<QueuedWork>(switchItem).RunAsync(Xunit.TestContext.Current.CancellationToken));
+        Assert.True(_dryRun.Enabled);
+
         cut.Find("input[aria-label=Nachricht]").Input("!pokearena");
         cut.Find("form").Submit();
 
-        Assert.True(_dryRun.Enabled);
         Assert.True(_inbox.Reader.TryRead(out var item));
         var message = Assert.IsType<ChatMessage>(item);
         Assert.Equal("!pokearena", message.Text);

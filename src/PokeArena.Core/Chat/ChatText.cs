@@ -6,6 +6,30 @@ public static class ChatText
     /// <summary>Twitch rejects longer messages.</summary>
     public const int MaxLength = 500;
 
+    /// <summary>Longest name the bot repeats back (Twitch logins have at most 25 characters).</summary>
+    private const int MaxEchoLength = 25;
+
+    /// <summary>
+    /// The words of a command's arguments, split at any whitespace — not only U+0020, or a no-break space would turn
+    /// a whole sentence into one "name".
+    /// </summary>
+    public static string[] Words(string arguments) =>
+        arguments.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+
+    /// <summary>The first word of a command's arguments, or "".</summary>
+    public static string FirstWord(string arguments) => Words(arguments).FirstOrDefault() ?? "";
+
+    /// <summary>
+    /// A name typed by a viewer, safe to repeat in a bot message: without a leading "@", only letters, digits and
+    /// "_", at most 25 characters. Anything else is not repeated (review 1.0.3, A18), so the bot never posts a
+    /// viewer's sentence, mention or link under its own name.
+    /// </summary>
+    public static string? Echo(string word)
+    {
+        var name = word.TrimStart('@');
+        return name.Length is > 0 and <= MaxEchoLength && name.All(c => char.IsLetterOrDigit(c) || c == '_') ? name : null;
+    }
+
     /// <summary>
     /// Splits <paramref name="text"/> into messages of at most <paramref name="maxLength"/> characters, preferring
     /// breaks at spaces and never cutting a surrogate pair (emoji) in half.

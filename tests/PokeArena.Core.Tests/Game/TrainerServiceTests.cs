@@ -15,6 +15,30 @@ public class TrainerServiceTests : IDisposable
     private static Species Pikachu => GameFixture.Species.Get(25);
 
     [Fact]
+    public async Task A_login_that_shows_up_on_another_account_is_released_by_the_old_trainer()
+    {
+        await _game.Trainers.RegisterAsync("1", "bob", "Bob", Pikachu, _ct);
+        await _game.Trainers.RegisterAsync("2", "rob", "Rob", Pikachu, _ct);
+
+        // Twitch user 2 now has the login "bob"; trainer 1 renamed and has not chatted since.
+        await _game.Trainers.ObserveAsync(new ChatMessage("m-1", "2", "bob", "Bob", "hallo", ChatRole.Viewer), _ct);
+
+        Assert.Equal("2", (await _game.Trainers.FindByNameAsync("@bob", _ct))?.TwitchUserId);
+        await using var db = _game.OpenLive();
+        Assert.Equal("", (await db.Trainers.SingleAsync(t => t.TwitchUserId == "1", _ct)).Login);
+    }
+
+    [Fact]
+    public async Task Two_trainers_with_the_same_display_name_are_never_guessed_between()
+    {
+        await _game.Trainers.RegisterAsync("1", "ash_one", "Ash", Pikachu, _ct);
+        await _game.Trainers.RegisterAsync("2", "ash_two", "Ash", Pikachu, _ct);
+
+        Assert.Null(await _game.Trainers.FindByNameAsync("@Ash", _ct));
+        Assert.Equal("2", (await _game.Trainers.FindByNameAsync("@ash_two", _ct))?.TwitchUserId);
+    }
+
+    [Fact]
     public async Task Registration_creates_the_trainer_with_a_protected_starter()
     {
         var result = await _game.Trainers.RegisterAsync("1001", "ash", "Ash", Pikachu, _ct);

@@ -348,6 +348,24 @@ public class TwitchConnectionTests
         await _connection.DisconnectAsync();
     }
 
+    [Fact]
+    public void Hints_go_out_once_per_viewer_and_interval()
+    {
+        var sender = new ChatSender(_helix, _connection, new DryRunMode { Enabled = true }, _chatLog, _time, NullLogger<ChatSender>.Instance);
+
+        sender.SendHint("1", "erster");
+        sender.SendHint("1", "gedrosselt");
+        sender.SendHint("2", "anderer Zuschauer");
+        _time.Advance(ChatSender.HintInterval);
+        sender.SendHint("1", "wieder erlaubt");
+        sender.Send("Ergebnis");
+        sender.Send("Ergebnis");
+
+        Assert.Equal(
+            ["erster", "anderer Zuschauer", "wieder erlaubt", "Ergebnis", "Ergebnis"],
+            _chatLog.Snapshot().Where(e => e.Kind == ChatLogKind.Outgoing).Select(e => e.Text));
+    }
+
     private const string ValidJson =
         """{"client_id":"client-1","login":"pokearenabot","scopes":["user:read:chat","user:write:chat","user:bot"],"user_id":"2001","expires_in":14000}""";
 

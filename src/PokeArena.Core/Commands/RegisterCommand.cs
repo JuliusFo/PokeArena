@@ -1,3 +1,4 @@
+using PokeArena.Core.Chat;
 using PokeArena.Core.Data;
 using PokeArena.Core.Game;
 
@@ -15,19 +16,25 @@ public sealed class RegisterCommand(TrainerService trainers, SpeciesCatalog spec
         var mention = "@" + context.Message.DisplayName;
 
         // Only the first word counts: "!registrieren Pikachu bitte" still works.
-        var choice = context.Arguments.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "";
+        var choice = ChatText.FirstWord(context.Arguments);
         if (species.FindStarter(choice) is not { } starter)
         {
             var names = species.Starters.Select(s => s.Name).ToList();
-            context.Chat.Send(
+            context.Chat.SendHint(
+                context.Message.UserId,
                 $"{mention}, wähle deinen Starter: {string.Join(", ", names[..^1])} oder {names[^1]} – " +
                 "zum Beispiel: !registrieren Pikachu");
             return;
         }
 
         var result = await trainers.RegisterAsync(context.Message.UserId, context.Message.Login, context.Message.DisplayName, starter, ct);
-        context.Chat.Send(result.Status == RegistrationStatus.Registered
-            ? $"{mention}, willkommen bei PokeArena! Dein Starter ist {result.Starter.Name}. Mit !boss kämpfst du mit, sobald ein Boss erscheint."
-            : $"{mention}, du bist schon dabei – dein Starter ist {result.Starter.Name}.");
+        if (result.Status == RegistrationStatus.Registered)
+        {
+            context.Chat.Send($"{mention}, willkommen bei PokeArena! Dein Starter ist {result.Starter.Name}. Mit !boss kämpfst du mit, sobald ein Boss erscheint.");
+        }
+        else
+        {
+            context.Chat.SendHint(context.Message.UserId, $"{mention}, du bist schon dabei – dein Starter ist {result.Starter.Name}.");
+        }
     }
 }

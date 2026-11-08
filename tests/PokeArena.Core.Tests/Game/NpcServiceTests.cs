@@ -151,6 +151,7 @@ public class NpcServiceTests : IDisposable
         await npc.ChallengeAsync(Challenge("2", "Misty"), "", _ct);
         await npc.ChallengeAsync(Challenge("2", "Misty"), "Gary", _ct);
         await npc.ChallengeAsync(Challenge("2", "Misty"), "Rocko", _ct);
+        await npc.ChallengeAsync(Challenge("2", "Misty"), "Hallo @alle kommt her", _ct);
 
         Assert.Equal(
         [
@@ -159,9 +160,33 @@ public class NpcServiceTests : IDisposable
             "@Misty, fordere einen NPC heraus – zum Beispiel: !challenge Eich. Freigeschaltet: Eich.",
             "@Misty, einen NPC namens Gary gibt es nicht – zum Beispiel: !challenge Eich. Freigeschaltet: Eich.",
             "@Misty, für Rocko brauchst du noch 23 verschiedene Pokémon.",
+            "@Misty, einen NPC namens Hallo gibt es nicht – zum Beispiel: !challenge Eich. Freigeschaltet: Eich.",
         ], _chat.Sent);
+        Assert.Equal(_chat.Sent, _chat.Hints.Select(h => h.Text));
+        Assert.Equal(["1", "1", "2", "2", "2", "2"], _chat.Hints.Select(h => h.ViewerId));
         await using var db = _game.OpenLive();
         Assert.Empty(db.Battles);
+    }
+
+    [Fact]
+    public async Task A_name_that_is_not_safe_to_repeat_gets_a_generic_hint()
+    {
+        await RegisterAsync("2", "Misty", "Karpador", 5, unlock: 15);
+
+        await Npc().ChallengeAsync(Challenge("2", "Misty"), "https://example.org", _ct);
+
+        Assert.Equal(["@Misty, diesen NPC gibt es nicht – zum Beispiel: !challenge Eich. Freigeschaltet: Eich."], _chat.Sent);
+    }
+
+    [Fact]
+    public async Task An_at_sign_before_the_npc_name_is_ignored()
+    {
+        await RegisterAsync("2", "Misty", "Karpador", 5, unlock: 15);
+
+        await Npc().ChallengeAsync(Challenge("2", "Misty"), "@Eich", _ct);
+
+        await using var db = _game.OpenLive();
+        Assert.Single(db.Battles);
     }
 
     [Fact]
@@ -258,16 +283,4 @@ public class NpcServiceTests : IDisposable
         new(Guid.NewGuid().ToString(), userId, name.ToLowerInvariant(), name, "!challenge", ChatRole.Viewer, simulated);
 
     public void Dispose() => _game.Dispose();
-
-    private sealed class FixedSeeds(int seed) : ISeedSource
-    {
-        public int NextSeed() => seed;
-    }
-
-    private sealed class RecordingSender : IChatSender
-    {
-        public List<string> Sent { get; } = [];
-
-        public void Send(string text) => Sent.Add(text);
-    }
 }

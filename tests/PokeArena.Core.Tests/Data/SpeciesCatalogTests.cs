@@ -59,6 +59,25 @@ public class SpeciesCatalogTests
     }
 
     [Fact]
+    public void An_empty_rarity_tier_and_missing_types_fail_validation()
+    {
+        var json = Modify(pokemon =>
+        {
+            foreach (var entry in pokemon.Where(p => (int)p!["seltenheit"]! == 3))
+            {
+                entry!["seltenheit"] = 2;
+            }
+
+            pokemon[0]!.AsObject().Remove("typen");
+        });
+
+        var ex = Assert.Throws<InvalidDataException>(() => SpeciesCatalog.Parse(json));
+
+        Assert.Contains("no species with rarity 3", ex.Message);
+        Assert.Contains("#1: one or two types required", ex.Message);
+    }
+
+    [Fact]
     public void Malformed_or_missing_file_is_reported_as_invalid_data()
     {
         Assert.Throws<InvalidDataException>(() => SpeciesCatalog.Parse("{ nope"));

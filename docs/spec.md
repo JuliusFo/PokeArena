@@ -290,9 +290,17 @@ command gets „PokeArena läuft nur, solange der Stream live ist. Bis zum
 nächsten Stream!“ — at most once every 5 minutes for the whole chat; unknown
 commands stay silent as always. Fights already under way (a running boss
 countdown, an open challenge) finish normally. The streamer can switch on
-„Befehle auch ohne Stream annehmen“ in the desktop app to test offline; the
+„Auch ohne Stream“ in the desktop app to test offline; the
 switch is not stored and is off after every app start. The dry run is never
 gated.
+
+Error and hint replies to one viewer (unknown name, too few Pokémon, NPC
+cooldown, not registered …) go out at most once per viewer and 30 seconds;
+further ones in that time are dropped, so a viewer spamming commands cannot
+delay fight results (review 1.0.3). Names typed by a viewer are repeated in a
+reply only if they are a plain name (letters, digits, „_“, at most 25
+characters); otherwise the reply says „diesen Trainer / NPC“. Arguments are
+split at any whitespace. `!challenge @Eich` works like `!challenge Eich`.
 
 ## 9. Website
 

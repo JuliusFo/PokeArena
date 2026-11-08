@@ -104,13 +104,14 @@ public sealed class NpcCatalog
                 problems.Add($"{entry.Name}: tokens must not be negative");
             }
 
-            if (entry.Team.Count != TeamSize)
+            var slugs = entry.Team ?? [];
+            if (slugs.Count != TeamSize)
             {
                 problems.Add($"{entry.Name}: team must have {TeamSize} species");
             }
 
             var team = new List<Species>();
-            foreach (var slug in entry.Team)
+            foreach (var slug in slugs)
             {
                 if (species.Find(slug) is { } s)
                 {

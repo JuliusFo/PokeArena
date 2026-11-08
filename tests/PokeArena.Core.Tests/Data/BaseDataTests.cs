@@ -76,6 +76,11 @@ public class BaseDataTests
         var unknown = RealNpcsJson.Replace("\"hornliu\"", "\"agumon\"");
         var duplicate = RealNpcsJson.Replace("\"schwelle\": 25", "\"schwelle\": 15");
         var negative = RealNpcsJson.Replace("\"tokens\": 1,", "\"tokens\": -1,");
+        var noTeam = RealNpcsJson.Replace(
+            "\"tokens\": 1, \"team\": [\"bisasam\", \"schiggy\", \"glumanda\", \"raupy\", \"hornliu\", \"pikachu\"]",
+            "\"tokens\": 1");
+        Assert.NotEqual(RealNpcsJson, noTeam);
+        Assert.Contains("Eich: team must have 6 species", Assert.Throws<InvalidDataException>(() => NpcCatalog.Parse(noTeam, GameFixture.Species)).Message);
 
         Assert.Contains("unknown species 'agumon'", Assert.Throws<InvalidDataException>(() => NpcCatalog.Parse(unknown, GameFixture.Species)).Message);
         Assert.Contains("duplicate threshold 15", Assert.Throws<InvalidDataException>(() => NpcCatalog.Parse(duplicate, GameFixture.Species)).Message);

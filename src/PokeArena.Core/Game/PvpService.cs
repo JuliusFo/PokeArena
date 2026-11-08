@@ -63,6 +63,10 @@ public sealed class PvpService
         _time = time;
         _log = log;
         _database.Switched += () => Interlocked.Increment(ref _generation);
+
+        // Deletions run on the command queue, like every use of _open: a deleted trainer's open challenge must not
+        // block the other side until it expires (review 1.0.3, A15).
+        _trainers.Deleted += id => _open.RemoveAll(c => c.Involves(id));
     }
 
     /// <summary><c>!fight @name</c> from a registered trainer: challenges <paramref name="arguments"/> or accepts their challenge.</summary>
@@ -73,22 +77,24 @@ public sealed class PvpService
         _open.RemoveAll(c => c.ExpiresAt <= now || c.Generation != generation);
 
         var mention = "@" + message.DisplayName;
-        var name = arguments.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "";
+        var name = ChatText.FirstWord(arguments);
         if (name.TrimStart('@').Length == 0)
         {
-            _chat.Send($"{mention}, fordere jemanden zum Kampf heraus – zum Beispiel: !fight @Name");
+            _chat.SendHint(message.UserId, $"{mention}, fordere jemanden zum Kampf heraus – zum Beispiel: !fight @Name");
             return;
         }
 
         if (await _trainers.FindByNameAsync(name, ct) is not { } target)
         {
-            _chat.Send($"{mention}, {name.TrimStart('@')} ist noch kein Trainer.");
+            _chat.SendHint(message.UserId, ChatText.Echo(name) is { } typed
+                ? $"{mention}, {typed} ist noch kein Trainer."
+                : $"{mention}, diesen Trainer gibt es noch nicht.");
             return;
         }
 
         if (target.TwitchUserId == message.UserId)
         {
-            _chat.Send($"{mention}, du kannst dich nicht selbst herausfordern.");
+            _chat.SendHint(message.UserId, $"{mention}, du kannst dich nicht selbst herausfordern.");
             return;
         }
 
@@ -101,20 +107,20 @@ public sealed class PvpService
 
         if (_open.Exists(c => c.Involves(message.UserId)))
         {
-            _chat.Send($"{mention}, du hast schon eine offene Herausforderung.");
+            _chat.SendHint(message.UserId, $"{mention}, du hast schon eine offene Herausforderung.");
             return;
         }
 
         if (_open.Exists(c => c.Involves(target.TwitchUserId)))
         {
-            _chat.Send($"{mention}, {target.DisplayName} hat schon eine offene Herausforderung.");
+            _chat.SendHint(message.UserId, $"{mention}, {target.DisplayName} hat schon eine offene Herausforderung.");
             return;
         }
 
         var counts = await CountSpecimensAsync([message.UserId, target.TwitchUserId], ct);
         if (TooFew(counts, message.UserId, "du hast", target.TwitchUserId, $"{target.DisplayName} hat") is { } tooFew)
         {
-            _chat.Send($"{mention}, {tooFew}");
+            _chat.SendHint(message.UserId, $"{mention}, {tooFew}");
             return;
         }
 

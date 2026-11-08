@@ -24,7 +24,7 @@ public sealed class TrainerRemoval(
     public async Task RequestAsync(ChatMessage message, string arguments, CancellationToken ct)
     {
         var mention = "@" + message.DisplayName;
-        var words = arguments.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var words = ChatText.Words(arguments);
         if (words.Length == 0)
         {
             chat.Send($"{mention}, wen soll ich löschen? Zum Beispiel: !entfernen @name");

@@ -102,7 +102,7 @@ public sealed class CommandProcessor(
                 case CommandAccess.Moderators when !message.IsModerator:
                     return;
                 case CommandAccess.Registered when !registered:
-                    chat.Send($"@{message.DisplayName}, du bist noch nicht dabei. Melde dich an, zum Beispiel mit !registrieren Pikachu.");
+                    chat.SendHint(message.UserId, $"@{message.DisplayName}, du bist noch nicht dabei. Melde dich an, zum Beispiel mit !registrieren Pikachu.");
                     return;
             }
 
@@ -110,7 +110,8 @@ public sealed class CommandProcessor(
         }
         catch (Exception ex) when (!ct.IsCancellationRequested)
         {
-            log.LogError(ex, "Processing \"{Text}\" from {UserId} failed", message.Text, message.UserId);
+            // Command name only: the chat text may hold names that must not outlive a deletion (review 1.0.3, A20).
+            log.LogError(ex, "Processing !{Command} from {UserId} failed", parsed?.Name ?? "(no command)", message.UserId);
             var what = parsed is null ? "einer Chatnachricht" : $"!{parsed.Name}";
             chatLog.Add(ChatLogKind.Warning, null, $"Fehler bei {what} – Details stehen in der Logdatei.");
         }

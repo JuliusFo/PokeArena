@@ -331,16 +331,4 @@ public class BossEncounterTests : IDisposable
     private static string Suffix(Species boss) => boss.Rarity switch { 3 => " (legendär)", 2 => " (selten)", _ => "" };
 
     public void Dispose() => _game.Dispose();
-
-    private sealed class FixedSeeds(int seed) : ISeedSource
-    {
-        public int NextSeed() => seed;
-    }
-
-    private sealed class RecordingSender : IChatSender
-    {
-        public List<string> Sent { get; } = [];
-
-        public void Send(string text) => Sent.Add(text);
-    }
 }

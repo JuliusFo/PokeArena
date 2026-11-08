@@ -35,6 +35,24 @@ public class ChatTests
         Assert.Equal(expected, message?.Role);
     }
 
+    [Theory]
+    [InlineData("@misty", "misty")]
+    [InlineData("Eich", "Eich")]
+    [InlineData("Jürgen_2", "Jürgen_2")]
+    [InlineData("@", null)]
+    [InlineData("https://example.org", null)]
+    [InlineData("<b>x</b>", null)]
+    [InlineData("aaaaaaaaaaaaaaaaaaaaaaaaaa", null)]
+    public void Only_plain_names_are_repeated_in_chat(string typed, string? expected) =>
+        Assert.Equal(expected, ChatText.Echo(typed));
+
+    [Fact]
+    public void Arguments_split_at_any_whitespace()
+    {
+        Assert.Equal(["Hallo", "@alle"], ChatText.Words(" Hallo @alle　"));
+        Assert.Equal("", ChatText.FirstWord("   "));
+    }
+
     [Fact]
     public void Own_messages_and_shared_chat_messages_from_other_channels_are_ignored()
     {

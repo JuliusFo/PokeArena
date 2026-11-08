@@ -143,11 +143,4 @@ public class TrainerRemovalTests : IDisposable
         new(Guid.NewGuid().ToString(), userId, name.ToLowerInvariant(), name, "!entfernen", ChatRole.Moderator);
 
     public void Dispose() => _game.Dispose();
-
-    private sealed class RecordingSender : IChatSender
-    {
-        public List<string> Sent { get; } = [];
-
-        public void Send(string text) => Sent.Add(text);
-    }
 }

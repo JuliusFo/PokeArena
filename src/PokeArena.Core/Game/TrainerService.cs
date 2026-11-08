@@ -56,6 +56,9 @@ public sealed class TrainerService
     /// <summary>Raised after trainers were added, renamed or gained specimens, or the database was switched.</summary>
     public event Action? Changed;
 
+    /// <summary>Raised on the command queue after a trainer was deleted, with their Twitch user id.</summary>
+    public event Action<string>? Deleted;
+
     /// <summary>Called by game logic that changed specimens (e.g. boss catches), so lists reload.</summary>
     public void NotifyChanged() => Changed?.Invoke();
 
@@ -66,6 +69,9 @@ public sealed class TrainerService
     public async Task<RegistrationResult> RegisterAsync(string twitchUserId, string login, string displayName, Species starter, CancellationToken ct)
     {
         await using var db = _database.Open();
+        // BEGIN IMMEDIATE: the publish worker must not delete an outbox row between our read and our update of it
+        // (review 1.0.3, A25).
+        await using var transaction = await db.Database.BeginTransactionAsync(ct);
         var existingStarter = await db.Specimens
             .Where(s => s.TrainerId == twitchUserId && s.IsStarter)
             .Select(s => (int?)s.SpeciesId)
@@ -95,8 +101,10 @@ public sealed class TrainerService
                 },
             ],
         });
+        await ReleaseLoginAsync(db, login, twitchUserId, ct);
         await SiteOutbox.EnqueueAsync(db, SiteOutbox.ForTrainers([twitchUserId]), now, ct);
         await db.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
 
         _known[twitchUserId] = new KnownNames(displayName, login);
         _log.LogInformation("Trainer {UserId} registered with {Starter}", twitchUserId, starter.Slug);
@@ -135,11 +143,15 @@ public sealed class TrainerService
 
         if (trainer.DisplayName != message.DisplayName || trainer.Login != message.Login)
         {
-            _log.LogInformation("Trainer {UserId} renamed to {DisplayName} ({Login})", trainer.TwitchUserId, message.DisplayName, message.Login);
+            // Only the id: names in the log file would outlive a deletion (review 1.0.3, A20).
+            _log.LogInformation("Trainer {UserId} changed their name", trainer.TwitchUserId);
+            await using var transaction = await db.Database.BeginTransactionAsync(ct);
             trainer.DisplayName = message.DisplayName;
             trainer.Login = message.Login;
+            await ReleaseLoginAsync(db, message.Login, trainer.TwitchUserId, ct);
             await SiteOutbox.EnqueueAsync(db, SiteOutbox.ForTrainers([trainer.TwitchUserId]), _time.GetUtcNow(), ct);
             await db.SaveChangesAsync(ct);
+            await transaction.CommitAsync(ct);
             Changed?.Invoke();
         }
 
@@ -164,8 +176,24 @@ public sealed class TrainerService
             .Where(t => t.Login == name || t.DisplayName.ToLower() == name)
             .Select(t => new TrainerName(t.TwitchUserId, t.DisplayName, t.Login))
             .ToListAsync(ct);
-        return matches.FirstOrDefault(t => t.Login == name) ?? matches.FirstOrDefault();
+
+        // Logins are unique (ReleaseLoginAsync). Two trainers with the same display name are never guessed between:
+        // a wrong guess could delete the wrong trainer (review 1.0.3, A14).
+        var byLogin = matches.Where(t => t.Login == name).ToList();
+        return byLogin.Count > 0
+            ? (byLogin.Count == 1 ? byLogin[0] : null)
+            : (matches.Count == 1 ? matches[0] : null);
     }
+
+    /// <summary>
+    /// A Twitch login belongs to one account at a time. A trainer who renamed and has not chatted since still has
+    /// the old login stored; when someone else now shows up with it, the old entry is stale and is cleared, so
+    /// <c>@login</c> never finds two trainers (review 1.0.3, A14).
+    /// </summary>
+    private static Task ReleaseLoginAsync(PokeArenaDb db, string login, string ownerId, CancellationToken ct) =>
+        db.Trainers
+            .Where(t => t.Login == login && t.TwitchUserId != ownerId)
+            .ExecuteUpdateAsync(s => s.SetProperty(t => t.Login, ""), ct);
 
     /// <summary>
     /// Deletes a trainer for good (spec §11): specimens, achievements, badges, NPC cooldowns and fight
@@ -217,6 +245,7 @@ public sealed class TrainerService
 
         _known[twitchUserId] = null;
         _log.LogInformation("Trainer {UserId} deleted ({Battles} fights anonymized)", twitchUserId, battleIds.Count);
+        Deleted?.Invoke(twitchUserId);
         Changed?.Invoke();
         return true;
     }

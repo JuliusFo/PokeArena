@@ -239,13 +239,6 @@ public class CommandTests : IDisposable
     private static ChatMessage Message(string text, ChatRole role = ChatRole.Viewer) =>
         new(Guid.NewGuid().ToString(), "1001", "ash", "Ash", text, role);
 
-    private sealed class RecordingSender : IChatSender
-    {
-        public List<string> Sent { get; } = [];
-
-        public void Send(string text) => Sent.Add(text);
-    }
-
     private sealed class RecordingCommand(string name, CommandAccess access) : IChatCommand
     {
         public int Calls { get; private set; }

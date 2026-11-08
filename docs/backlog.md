@@ -5,8 +5,6 @@ roadmap.md first. Format: idea — date, origin.
 
 ## Continuation of WP-01 (chat)
 
-- Throttle repeated cooldown/error replies per user so chat is not spammed —
-  2026-10-11, design review.
 - `!hilfe` command listing the commands — 2026-10-11, design review.
 - `!dex` command: own distinct/total count in chat for viewers who don't open
   the website — 2026-10-11, design review.
