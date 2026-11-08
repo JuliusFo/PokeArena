@@ -54,6 +54,7 @@ public class TrainerListTests : BunitContext
         var r2 = new R2Access(new WebsiteOptions(), new MemorySecretStore());
         Services.AddSingleton(r2);
         Services.AddSingleton(new OverlayOptions());
+        Services.AddSingleton(new OverlayStatus());
         Services.AddSingleton(new DatabaseBackup(_paths, _database, _time, NullLogger<DatabaseBackup>.Instance));
         Services.AddSingleton(new SettingsFile(_paths));
         Services.AddSingleton(new TwitchOptions { Channel = "shiyofurball" });

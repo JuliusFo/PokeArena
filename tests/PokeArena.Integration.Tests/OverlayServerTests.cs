@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using PokeArena.Contracts;
 using PokeArena.Core;
 using PokeArena.Core.Data;
+using PokeArena.Core.Game;
 using PokeArena.Core.Publishing;
 using PokeArena.Desktop.Services;
 
@@ -27,8 +28,15 @@ public sealed class OverlayServerTests : IAsyncDisposable
         _database = new GameDatabase(connectionString, new DryRunMode(), NullLogger<GameDatabase>.Instance);
         _database.MigrateLiveAsync(_ct).GetAwaiter().GetResult();
         var species = SpeciesCatalog.Load(Path.Combine(AppContext.BaseDirectory, "data", "pokemon.json"));
-        _generator = new SiteGenerator(species, NpcCatalog.Load(Path.Combine(AppContext.BaseDirectory, "data", "npcs.json"), species));
+        var npcs = NpcCatalog.Load(Path.Combine(AppContext.BaseDirectory, "data", "npcs.json"), species);
+        _generator = new SiteGenerator(species, npcs);
+        _trainers = new TrainerService(_database, species, TimeProvider.System, NullLogger<TrainerService>.Instance);
+        _battles = new BattleService(_database, species, npcs);
     }
+
+    private readonly OverlayStatus _status = new();
+    private readonly TrainerService _trainers;
+    private readonly BattleService _battles;
 
     [Fact]
     public async Task Serves_the_page_and_the_current_state()
@@ -56,6 +64,19 @@ public sealed class OverlayServerTests : IAsyncDisposable
         Assert.Contains("/overlay/state", page);
         Assert.Null(state.LatestBattle);
         Assert.Equal([new LeaderboardEntry(1, "1", "Ash", 1, 1)], state.Top);
+
+        // The state is cached until a change is reported.
+        await using (var db = _database.Open())
+        {
+            db.Specimens.Add(new Specimen { TrainerId = "1", SpeciesId = 4 });
+            await db.SaveChangesAsync(_ct);
+        }
+
+        var cached = JsonSerializer.Deserialize(await http.GetStringAsync(options.Url + "/state", _ct), SiteJson.Default.OverlayState)!;
+        _trainers.NotifyChanged();
+        var fresh = JsonSerializer.Deserialize(await http.GetStringAsync(options.Url + "/state", _ct), SiteJson.Default.OverlayState)!;
+        Assert.Equal(1, cached.Top[0].Distinct);
+        Assert.Equal(2, fresh.Top[0].Distinct);
         await server.StopAsync(_ct);
     }
 
@@ -71,6 +92,7 @@ public sealed class OverlayServerTests : IAsyncDisposable
             await server.StartAsync(_ct);
 
             Assert.False(server.IsRunning);
+            Assert.True(_status.PortInUse);
         }
         finally
         {
@@ -79,7 +101,7 @@ public sealed class OverlayServerTests : IAsyncDisposable
     }
 
     private OverlayServer Server(OverlayOptions options) =>
-        new(options, _database, _generator, TimeProvider.System, NullLogger<OverlayServer>.Instance);
+        new(options, _status, _database, _generator, _trainers, _battles, TimeProvider.System, NullLogger<OverlayServer>.Instance);
 
     private static int FreePort()
     {

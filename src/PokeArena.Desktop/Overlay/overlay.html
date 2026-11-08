@@ -113,7 +113,7 @@
       const list = document.getElementById("entries");
       list.replaceChildren(...state.top.map(entry => {
         const item = document.createElement("li");
-        for (const [css, text] of [["rank", entry.rank], ["name", entry.displayName], ["count", entry.distinct + " Arten"]]) {
+        for (const [css, text] of [["rank", entry.rank], ["name", entry.displayName], ["count", entry.distinct + (entry.distinct === 1 ? " Art" : " Arten")]]) {
           const span = document.createElement("span");
           span.className = css;
           span.textContent = text;

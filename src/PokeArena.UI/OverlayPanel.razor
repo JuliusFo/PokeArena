@@ -1,17 +1,38 @@
 @* Where the streamer points the OBS browser source (spec §9). *@
 @using PokeArena.Core.Publishing
+@implements IDisposable
 @inject OverlayOptions Overlay
+@inject OverlayStatus Status
 
 <section class="card">
     <h2>OBS-Overlay</h2>
-    @if (Overlay.Enabled)
+    @if (!Overlay.Enabled)
+    {
+        <p class="hint">Das Overlay ist ausgeschaltet.</p>
+    }
+    else if (Status.PortInUse)
+    {
+        <p class="problem" data-testid="overlay-problem">
+            Das Overlay konnte nicht starten, weil ein anderes Programm die Adresse @Overlay.Url schon benutzt.
+            Schließe das andere Programm und starte PokeArena neu.
+        </p>
+    }
+    else
     {
         <p class="hint">Füge in OBS eine Browserquelle mit dieser Adresse hinzu. Sie zeigt den letzten Kampf und die besten fünf Trainer.</p>
         <p class="overlay-url" data-testid="overlay-url">@Overlay.Url</p>
         <p class="hint">Größe zum Beispiel 400 × 400. Das Overlay funktioniert nur auf diesem PC und nur, solange PokeArena läuft.</p>
-    }
-    else
-    {
-        <p class="hint">Das Overlay ist ausgeschaltet.</p>
+        <p class="hint">
+            Starte PokeArena vor OBS. Lief OBS schon vorher, klicke in OBS bei der Browserquelle auf „Aktualisieren“ –
+            oder hake in ihren Eigenschaften „Browser aktualisieren, wenn Szene aktiv wird“ an.
+        </p>
     }
 </section>
+
+@code {
+    protected override void OnInitialized() => Status.Changed += OnChanged;
+
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Status.Changed -= OnChanged;
+}
