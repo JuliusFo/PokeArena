@@ -28,7 +28,9 @@ public sealed class CommandProcessor(
 
     internal const string OfflineHint = "PokeArena läuft nur, solange der Stream live ist. Bis zum nächsten Stream!";
 
-    private readonly Dictionary<string, IChatCommand> _commands = commands.ToDictionary(c => c.Name);
+    private readonly Dictionary<string, IChatCommand> _commands = commands
+        .SelectMany(c => c.Aliases.Prepend(c.Name).Select(name => (Name: name, Command: c)))
+        .ToDictionary(e => e.Name, e => e.Command);
     private DateTimeOffset? _lastOfflineHint;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)

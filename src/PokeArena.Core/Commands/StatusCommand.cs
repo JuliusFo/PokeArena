@@ -1,8 +1,9 @@
 namespace PokeArena.Core.Commands;
 
 /// <summary>
-/// <c>!pokearena</c>: answers that the bot is online (spec §8). A short global cooldown keeps a spamming viewer
-/// from filling the send queue. Runs on the single command queue, so the cooldown field needs no lock.
+/// <c>!pokearena</c> (alias <c>!version</c>): answers that the bot is online and with which version (spec §8). A
+/// short global cooldown, shared by both names, keeps a spamming viewer from filling the send queue. Runs on the
+/// single command queue, so the cooldown field needs no lock.
 /// </summary>
 public sealed class StatusCommand(AppInfo app, TimeProvider time) : IChatCommand
 {
@@ -11,6 +12,8 @@ public sealed class StatusCommand(AppInfo app, TimeProvider time) : IChatCommand
     private DateTimeOffset? _lastReply;
 
     public string Name => "pokearena";
+
+    public IReadOnlyList<string> Aliases => ["version"];
 
     public CommandAccess Access => CommandAccess.Everyone;
 

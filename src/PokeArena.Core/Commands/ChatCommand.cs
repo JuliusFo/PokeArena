@@ -21,6 +21,9 @@ public interface IChatCommand
     /// <summary>Lower-case name without the "!".</summary>
     string Name { get; }
 
+    /// <summary>Further lower-case names without the "!" that run the same command (e.g. <c>!version</c>).</summary>
+    IReadOnlyList<string> Aliases => [];
+
     CommandAccess Access { get; }
 
     Task ExecuteAsync(CommandContext context, CancellationToken ct);

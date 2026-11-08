@@ -63,6 +63,19 @@ public class CommandTests : IDisposable
     }
 
     [Fact]
+    public async Task Version_runs_the_status_command_and_shares_its_cooldown()
+    {
+        var processor = Processor(new StatusCommand(new AppInfo("1.2.3"), _time));
+
+        await processor.ProcessAsync(Message("!version"), _ct);
+        await processor.ProcessAsync(Message("!pokearena"), _ct);
+        _time.Advance(StatusCommand.Cooldown);
+        await processor.ProcessAsync(Message("!Version"), _ct);
+
+        Assert.Equal(["PokeArena-Bot ist online (Version 1.2.3).", "PokeArena-Bot ist online (Version 1.2.3)."], _chat.Sent);
+    }
+
+    [Fact]
     public async Task Processor_logs_every_message_and_runs_only_permitted_known_commands()
     {
         var modOnly = new RecordingCommand("geheim", CommandAccess.Moderators);
