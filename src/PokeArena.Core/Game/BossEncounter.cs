@@ -4,6 +4,7 @@ using PokeArena.Core.Chat;
 using PokeArena.Core.Data;
 using PokeArena.Core.Game.Battles;
 using PokeArena.Core.Publishing;
+using PokeArena.Core.Twitch;
 
 namespace PokeArena.Core.Game;
 
@@ -11,7 +12,8 @@ namespace PokeArena.Core.Game;
 /// The boss encounter (spec §4): idle → <c>!boss</c> opens a lobby → countdown, others join → the fight resolves
 /// instantly → cooldown. Runs only on the command queue (commands and <see cref="QueuedWork"/>), so the lobby
 /// needs no lock. The cooldown is stored in the database and survives a restart; an open lobby does not.
-/// In the dry run cooldowns are skipped, so the streamer can test again right away.
+/// In the dry run cooldowns are skipped, so the streamer can test again right away. When the cooldown after a
+/// fight runs out, the chat hears that the boss is ready again — unless the app was restarted meanwhile.
 /// </summary>
 public sealed class BossEncounter(
     GameDatabase database,
@@ -27,10 +29,13 @@ public sealed class BossEncounter(
     BattleService battles,
     SiteLinks links,
     DryRunMode dryRun,
+    StreamStatus stream,
     TimeProvider time,
     ILogger<BossEncounter> log)
 {
     public const string CooldownKey = "boss";
+
+    internal const string ReadyAnnouncement = "Der Boss ist wieder bereit – schreibt !boss, um ihn zu rufen!";
 
     /// <summary>Cooldown replies go out at most this often, so a spamming chat does not fill the send queue.</summary>
     public static readonly TimeSpan CooldownReplyInterval = TimeSpan.FromSeconds(30);
@@ -180,13 +185,18 @@ public sealed class BossEncounter(
 
         var achievements = await Achievements.UnlockNewAsync(db, [.. catchers.Select(c => c.UserId)], npcs, now, ct);
         await SiteOutbox.EnqueueAsync(db, SiteOutbox.ForBattle(battle.Id, participants.Select(p => p.Member.UserId)), now, ct);
+        var cooldownUntil = now + settings.Cooldown;
         if (!lobby.IsSimulated)
         {
-            await SetCooldownAsync(db, now + settings.Cooldown, ct);
+            await SetCooldownAsync(db, cooldownUntil, ct);
         }
 
         await db.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
+        if (!lobby.IsSimulated)
+        {
+            _ = AnnounceReadyAfterCooldownAsync(cooldownUntil, ct);
+        }
         log.LogInformation(
             "Boss fight: {Boss} vs {Count} participants, {Outcome}, {Catches} catches, seed {Seed}",
             boss.Slug, n, result.BossDefeated ? "defeated" : "escaped", catchers.Count, seed);
@@ -208,6 +218,39 @@ public sealed class BossEncounter(
         {
             trainers.NotifyChanged();
         }
+    }
+
+    private async Task AnnounceReadyAfterCooldownAsync(DateTimeOffset until, CancellationToken ct)
+    {
+        try
+        {
+            await Task.Delay(until - time.GetUtcNow(), time, ct);
+            inbox.Post(new QueuedWork("Boss bereit", workCt => AnnounceReadyAsync(until, workCt)));
+        }
+        catch (OperationCanceledException)
+        {
+            // App shutting down: nobody is left to hear it.
+        }
+    }
+
+    /// <summary>
+    /// Runs on the command queue once the cooldown ending at <paramref name="until"/> has elapsed. Stays silent if
+    /// that cooldown is no longer the current one (<c>!bossreset</c> already said so, or a newer one replaced it),
+    /// if a lobby is open, during the dry run, or while the bot takes no commands (stream offline).
+    /// </summary>
+    internal async Task AnnounceReadyAsync(DateTimeOffset until, CancellationToken ct)
+    {
+        if (dryRun.Enabled || !stream.AcceptsCommands || _lobby is { IsSimulated: false })
+        {
+            return;
+        }
+
+        if (await CooldownUntilAsync(ct) != until)
+        {
+            return;
+        }
+
+        chat.Send(ReadyAnnouncement);
     }
 
     /// <summary>„ (legendär)“ or „ (selten)“ after the boss name; nothing for common species.</summary>

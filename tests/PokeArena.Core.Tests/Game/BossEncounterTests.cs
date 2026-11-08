@@ -7,6 +7,7 @@ using PokeArena.Core.Game;
 using PokeArena.Core.Game.Battles;
 using PokeArena.Core.Publishing;
 using PokeArena.Core.Tests.Fakes;
+using PokeArena.Core.Twitch;
 using BattleKind = PokeArena.Core.Data.BattleKind;
 
 namespace PokeArena.Core.Tests.Game;
@@ -24,6 +25,7 @@ public class BossEncounterTests : IDisposable
     private readonly GameFixture _game = new();
     private readonly ChatInbox _inbox = new();
     private readonly RecordingSender _chat = new();
+    private readonly StreamStatus _stream = Live();
     private SiteLinks _links = SiteLinks.None;
     private readonly CancellationToken _ct = TestContext.Current.CancellationToken;
 
@@ -74,7 +76,9 @@ public class BossEncounterTests : IDisposable
         await boss.JoinAsync(Boss("1", "Ash"), _ct);
         Assert.Equal("@Ash, der nächste Boss kann in 2 Minuten gerufen werden.", _chat.Sent[^1]);
 
+        // The short retry cooldown ends without an announcement.
         _game.Time.Advance(BossSettings.Default.FailedLobbyCooldown);
+        Assert.False(_inbox.Reader.TryRead(out _));
         await boss.JoinAsync(Boss("1", "Ash"), _ct);
         Assert.StartsWith("Ein wilder Boss nähert sich!", _chat.Sent[^1]);
 
@@ -94,6 +98,39 @@ public class BossEncounterTests : IDisposable
 
         Assert.Equal("Der Boss-Cooldown ist zurückgesetzt – mit !boss geht es sofort weiter.", _chat.Sent[^2]);
         Assert.StartsWith("Ein wilder Boss nähert sich!", _chat.Sent[^1]);
+    }
+
+    [Fact]
+    public async Task The_chat_hears_when_the_boss_is_ready_again()
+    {
+        var boss = Boss(EasyBoss);
+        await RegisterAsync("1", "Ash", "2", "Misty");
+        await RunEncounterAsync(boss, ("1", "Ash"), ("2", "Misty"));
+        var sentAfterFight = _chat.Sent.Count;
+
+        _game.Time.Advance(BossSettings.Default.Cooldown - TimeSpan.FromSeconds(1));
+        Assert.False(_inbox.Reader.TryRead(out _));
+
+        _game.Time.Advance(TimeSpan.FromSeconds(1));
+        await RunQueuedWorkUntilAsync("Boss bereit");
+
+        Assert.Equal([BossEncounter.ReadyAnnouncement], _chat.Sent.Skip(sentAfterFight));
+    }
+
+    [Fact]
+    public async Task No_ready_announcement_after_a_reset_or_while_the_stream_is_offline()
+    {
+        var boss = Boss(EasyBoss);
+        await RegisterAsync("1", "Ash", "2", "Misty");
+        await RunEncounterAsync(boss, ("1", "Ash"), ("2", "Misty"));
+        await boss.ResetCooldownAsync(_ct);
+        await EndCooldownAsync();
+
+        await RunEncounterAsync(boss, ("1", "Ash"), ("2", "Misty"));
+        _stream.Report(false);
+        await EndCooldownAsync();
+
+        Assert.DoesNotContain(BossEncounter.ReadyAnnouncement, _chat.Sent);
     }
 
     [Fact]
@@ -220,6 +257,7 @@ public class BossEncounterTests : IDisposable
         new BattleService(_game.Database, Species, GameFixture.Npcs),
         _links,
         _game.DryRun,
+        _stream,
         _game.Time,
         NullLogger<BossEncounter>.Instance);
 
@@ -230,14 +268,34 @@ public class BossEncounterTests : IDisposable
         await EndCountdownAsync();
     }
 
-    /// <summary>Lets the countdown elapse and runs the work it queued, as the command processor would.</summary>
+    /// <summary>
+    /// Lets the countdown elapse and runs the queued work up to the fight, as the command processor would — including
+    /// a ready announcement still waiting in the queue.
+    /// </summary>
     private async Task EndCountdownAsync()
     {
         _game.Time.Advance(BossSettings.Default.Countdown);
+        await RunQueuedWorkUntilAsync("Boss-Kampf");
+    }
+
+    /// <summary>Lets the cooldown after a fight elapse and runs the ready announcement it queued.</summary>
+    private async Task EndCooldownAsync()
+    {
+        _game.Time.Advance(BossSettings.Default.Cooldown);
+        await RunQueuedWorkUntilAsync("Boss bereit");
+    }
+
+    private async Task RunQueuedWorkUntilAsync(string name)
+    {
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(_ct);
         timeout.CancelAfter(TimeSpan.FromSeconds(5));
-        var work = Assert.IsType<QueuedWork>(await _inbox.Reader.ReadAsync(timeout.Token));
-        await work.RunAsync(_ct);
+        QueuedWork work;
+        do
+        {
+            work = Assert.IsType<QueuedWork>(await _inbox.Reader.ReadAsync(timeout.Token));
+            await work.RunAsync(_ct);
+        }
+        while (work.Name != name);
     }
 
     private async Task RegisterAsync(params string[] idsAndNames)
@@ -262,6 +320,13 @@ public class BossEncounterTests : IDisposable
 
     private static ChatMessage Boss(string userId, string name, bool simulated = false) =>
         new(Guid.NewGuid().ToString(), userId, name.ToLowerInvariant(), name, "!boss", ChatRole.Viewer, simulated);
+
+    private static StreamStatus Live()
+    {
+        var stream = new StreamStatus();
+        stream.Report(true);
+        return stream;
+    }
 
     private static string Suffix(Species boss) => boss.Rarity switch { 3 => " (legendär)", 2 => " (selten)", _ => "" };
 
