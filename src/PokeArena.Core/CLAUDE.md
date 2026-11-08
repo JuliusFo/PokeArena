@@ -56,6 +56,9 @@
 - Error and hint replies to one viewer (unknown name, too few Pokémon, cooldown …) go through
   `IChatSender.SendHint(viewerId, command, …)`, throttled per viewer and command (not in the dry run); fight results and announcements use `Send`. A name a
   viewer typed is repeated only through `ChatText.Echo` (review 1.0.3).
+- A fight's result is worded twice: the chat message when it happens, and `BattleTexts.Describe` (fight page, website
+  and desktop lists) from the stored log. Information added to one belongs in the other; share the sentence via a
+  `BattleTexts` helper (feat/boss-lobby).
 - Twitch: only 403 (and a missing channel or a wrong account) stops the connection for good; every other refusal
   is retried with backoff. A Helix `GET /streams` answer never overrides a stream event of the last 10 minutes
   (review 1.0.3).
