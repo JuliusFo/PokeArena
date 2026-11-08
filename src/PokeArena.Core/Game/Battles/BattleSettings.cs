@@ -38,7 +38,13 @@ public sealed record BossSettings
     public static BossSettings Default { get; } = new();
 
     /// <summary>BossCountdownSeconds: how long the lobby stays open.</summary>
-    public TimeSpan Countdown { get; init; } = TimeSpan.FromSeconds(60);
+    public TimeSpan Countdown { get; init; } = TimeSpan.FromSeconds(120);
+
+    /// <summary>
+    /// BossVerlaengerungSeconds: a new participant joining with at most this much countdown left extends the
+    /// countdown by this much, so a last-second <c>!boss</c> still makes it.
+    /// </summary>
+    public TimeSpan LateJoinExtension { get; init; } = TimeSpan.FromSeconds(10);
 
     /// <summary>BossMinTeilnehmer.</summary>
     public int MinParticipants { get; init; } = 2;

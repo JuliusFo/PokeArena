@@ -118,10 +118,18 @@ public class BattleEngineTests
         Assert.True(weakBoss.BossDefeated);
         Assert.Equal([true, true], weakBoss.Survived);
         Assert.Equal(1, weakBoss.Rounds);
+        Assert.Equal((0, F("Karpador", owner: "Boss").MaxHp), (weakBoss.BossHp, weakBoss.BossMaxHp));
 
-        var strongBoss = new BossBattle(Damage()).Fight(F("Mewtu", owner: "Boss", hpMultiplier: 50), [F("Karpador", owner: "A"), F("Raupy", owner: "B")], 3, new BattleRandom(1));
+        var mewtu = F("Mewtu", owner: "Boss", hpMultiplier: 50);
+        var strongBoss = new BossBattle(Damage()).Fight(mewtu, [F("Karpador", owner: "A"), F("Raupy", owner: "B")], 3, new BattleRandom(1));
         Assert.False(strongBoss.BossDefeated);
         Assert.Equal([false, false], strongBoss.Survived);
+
+        // The HP left are the boss's HP after the last hit on it.
+        var damageToBoss = strongBoss.Log.Events.Where(e => e is { Kind: BattleEventKind.Attack, Target: 2 }).Sum(e => e.Damage);
+        Assert.Equal(mewtu.MaxHp, strongBoss.BossMaxHp);
+        Assert.Equal(mewtu.MaxHp - damageToBoss, strongBoss.BossHp);
+        Assert.InRange(strongBoss.BossHp, 1, mewtu.MaxHp - 1);
     }
 
     [Fact]

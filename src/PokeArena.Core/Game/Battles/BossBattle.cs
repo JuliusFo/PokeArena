@@ -2,7 +2,10 @@ namespace PokeArena.Core.Game.Battles;
 
 /// <param name="Survived">Per participant, in input order: still standing at the end.</param>
 /// <param name="HitRoundLimit">MaxRunden reached — a bug; the caller logs a warning.</param>
-public sealed record BossBattleResult(bool BossDefeated, IReadOnlyList<bool> Survived, int Rounds, bool HitRoundLimit, BattleLog Log);
+/// <param name="BossHp">The boss's HP left at the end (0 if defeated).</param>
+/// <param name="BossMaxHp">The boss's HP at the start.</param>
+public sealed record BossBattleResult(
+    bool BossDefeated, IReadOnlyList<bool> Survived, int Rounds, bool HitRoundLimit, BattleLog Log, int BossHp, int BossMaxHp);
 
 /// <summary>
 /// The group fight against a boss (spec §4). Per round all living participants hit the boss once in random order;
@@ -53,6 +56,14 @@ public sealed class BossBattle(DamageCalculator damage)
     private static IEnumerable<int> Living(BattleRecorder recorder, int partySize) =>
         Enumerable.Range(0, partySize).Where(recorder.IsAlive);
 
+    /// <remarks>The boss is the last fighter of the recorder, right after the party.</remarks>
     private static BossBattleResult Result(BattleRecorder recorder, int partySize, bool bossDefeated, int rounds, bool hitRoundLimit) =>
-        new(bossDefeated, [.. Enumerable.Range(0, partySize).Select(recorder.IsAlive)], rounds, hitRoundLimit, recorder.ToLog());
+        new(
+            bossDefeated,
+            [.. Enumerable.Range(0, partySize).Select(recorder.IsAlive)],
+            rounds,
+            hitRoundLimit,
+            recorder.ToLog(),
+            recorder.Hp[partySize],
+            recorder.Fighters[partySize].MaxHp);
 }

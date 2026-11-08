@@ -54,32 +54,42 @@ public sealed class BossEncounter(
             _lobby = null;
         }
 
+        var now = time.GetUtcNow();
         if (_lobby is { } open)
         {
-            open.Join(message.UserId, message.DisplayName);
+            // A newcomer in the last seconds extends the countdown (spec §4); joining twice never does.
+            if (open.Join(message.UserId, message.DisplayName) && open.EndsAt - now <= settings.LateJoinExtension)
+            {
+                open.EndsAt += settings.LateJoinExtension;
+                log.LogInformation("Boss lobby {Number} extended by a late join of {UserId}", open.Number, message.UserId);
+            }
+
             return;
         }
 
-        var now = time.GetUtcNow();
         if (!message.IsSimulated && await CooldownUntilAsync(ct) is { } until && until > now)
         {
             ReplyCooldown(message, until - now);
             return;
         }
 
-        var lobby = new Lobby(++_lobbyNumber, message.IsSimulated);
+        var lobby = new Lobby(++_lobbyNumber, message.IsSimulated, now + settings.Countdown);
         lobby.Join(message.UserId, message.DisplayName);
         _lobby = lobby;
         log.LogInformation("Boss lobby {Number} opened by {UserId}", lobby.Number, message.UserId);
-        chat.Send($"Ein wilder Boss nähert sich! Schreibt !boss, um mitzukämpfen – noch {settings.Countdown.TotalSeconds:0} Sekunden.");
-        _ = CloseAfterCountdownAsync(lobby.Number, ct);
+        chat.Send($"Ein wilder Boss nähert sich! Schreibt !boss, um mitzukämpfen – noch {CountdownText(settings.Countdown)}.");
+        _ = CloseAfterAsync(lobby.Number, settings.Countdown, ct);
     }
 
-    private async Task CloseAfterCountdownAsync(long number, CancellationToken ct)
+    /// <summary>Whole minutes as „2 Minuten“, anything else in seconds.</summary>
+    private static string CountdownText(TimeSpan countdown) =>
+        countdown.Ticks % TimeSpan.TicksPerMinute == 0 ? ChatText.Duration(countdown) : $"{countdown.TotalSeconds:0} Sekunden";
+
+    private async Task CloseAfterAsync(long number, TimeSpan delay, CancellationToken ct)
     {
         try
         {
-            await Task.Delay(settings.Countdown, time, ct);
+            await Task.Delay(delay, time, ct);
             inbox.Post(new QueuedWork("Boss-Kampf", workCt => CloseLobbyAsync(number, workCt)));
         }
         catch (OperationCanceledException)
@@ -88,11 +98,21 @@ public sealed class BossEncounter(
         }
     }
 
-    /// <summary>Runs on the command queue once the countdown of lobby <paramref name="number"/> has ended.</summary>
+    /// <summary>
+    /// Runs on the command queue once the countdown of lobby <paramref name="number"/> has ended. If late joins
+    /// extended it meanwhile, it waits for the rest instead.
+    /// </summary>
     internal async Task CloseLobbyAsync(long number, CancellationToken ct)
     {
         if (_lobby is not { } lobby || lobby.Number != number)
         {
+            return;
+        }
+
+        var now = time.GetUtcNow();
+        if (lobby.EndsAt > now)
+        {
+            _ = CloseAfterAsync(number, lobby.EndsAt - now, ct);
             return;
         }
 
@@ -103,7 +123,6 @@ public sealed class BossEncounter(
             return;
         }
 
-        var now = time.GetUtcNow();
         await using var db = database.Open();
         var participants = await FieldParticipantsAsync(db, lobby, ct);
         if (participants.Count < settings.MinParticipants)
@@ -203,11 +222,12 @@ public sealed class BossEncounter(
             boss.Slug, n, result.BossDefeated ? "defeated" : "escaped", catchers.Count, seed);
 
         chat.Send($"Ein wildes {boss.Name}{BattleTexts.TierSuffix(boss)} erscheint! {n} Trainer kämpfen mit.");
+        var bossHpLeft = $"{boss.Name} hatte noch {result.BossHp} von {result.BossMaxHp} HP.";
         var outcome = result.BossDefeated
             ? $"{boss.Name} wurde besiegt! Gefangen von: {string.Join(", ", catchers.Select(c => c.DisplayName))}."
             : result.Survived.Any(s => s)
-                ? $"{boss.Name} ist entkommen."
-                : $"{boss.Name} ist entkommen – alle Pokémon wurden besiegt.";
+                ? $"{boss.Name} ist entkommen. {bossHpLeft}"
+                : $"{boss.Name} ist entkommen – alle Pokémon wurden besiegt. {bossHpLeft}";
         chat.Send(links.WithBattle(outcome, battle.Id, lobby.IsSimulated));
         foreach (var a in achievements)
         {
@@ -280,7 +300,7 @@ public sealed class BossEncounter(
         }
     }
 
-    private sealed class Lobby(long number, bool isSimulated)
+    private sealed class Lobby(long number, bool isSimulated, DateTimeOffset endsAt)
     {
         private readonly List<Member> _members = [];
 
@@ -289,16 +309,22 @@ public sealed class BossEncounter(
         /// <summary>Opened from the dry run; only simulated messages may join, only the sandbox gets the result.</summary>
         public bool IsSimulated => isSimulated;
 
+        /// <summary>When the countdown ends; late joins move it back.</summary>
+        public DateTimeOffset EndsAt { get; set; } = endsAt;
+
         /// <summary>In join order; the initiator first.</summary>
         public IReadOnlyList<Member> Members => _members;
 
-        /// <summary>Joining twice is a no-op (spec §4).</summary>
-        public void Join(string userId, string displayName)
+        /// <summary>Joining twice is a no-op (spec §4). True if the trainer is new in this lobby.</summary>
+        public bool Join(string userId, string displayName)
         {
-            if (_members.All(m => m.UserId != userId))
+            if (_members.Any(m => m.UserId == userId))
             {
-                _members.Add(new Member(userId, displayName));
+                return false;
             }
+
+            _members.Add(new Member(userId, displayName));
+            return true;
         }
 
         public sealed record Member(string UserId, string DisplayName);

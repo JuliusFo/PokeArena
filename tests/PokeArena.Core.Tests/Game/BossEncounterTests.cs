@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using PokeArena.Contracts;
@@ -40,7 +42,7 @@ public class BossEncounterTests : IDisposable
         await boss.JoinAsync(Boss("2", "Misty"), _ct);
         await boss.JoinAsync(Boss("2", "Misty"), _ct);
         await boss.JoinAsync(Boss("3", "Rocko"), _ct);
-        Assert.Equal(["Ein wilder Boss nähert sich! Schreibt !boss, um mitzukämpfen – noch 60 Sekunden."], _chat.Sent);
+        Assert.Equal(["Ein wilder Boss nähert sich! Schreibt !boss, um mitzukämpfen – noch 2 Minuten."], _chat.Sent);
 
         await EndCountdownAsync();
 
@@ -83,6 +85,62 @@ public class BossEncounterTests : IDisposable
 
         await using var db = _game.OpenLive();
         Assert.Empty(db.Battles);
+    }
+
+    [Fact]
+    public async Task A_countdown_that_is_not_whole_minutes_is_announced_in_seconds()
+    {
+        var boss = Boss(EasyBoss with { Countdown = TimeSpan.FromSeconds(90) });
+        await RegisterAsync("1", "Ash");
+
+        await boss.JoinAsync(Boss("1", "Ash"), _ct);
+
+        Assert.Equal(["Ein wilder Boss nähert sich! Schreibt !boss, um mitzukämpfen – noch 90 Sekunden."], _chat.Sent);
+    }
+
+    [Fact]
+    public async Task A_newcomer_in_the_last_ten_seconds_extends_the_countdown_by_ten_seconds()
+    {
+        var boss = Boss(EasyBoss);
+        await RegisterAsync("1", "Ash", "2", "Misty", "3", "Rocko");
+        await boss.JoinAsync(Boss("1", "Ash"), _ct);
+
+        // 10 s left: Misty extends to 20 s left; 5 s later Rocko is not late enough to extend again (15 s left).
+        _game.Time.Advance(BossSettings.Default.Countdown - TimeSpan.FromSeconds(10));
+        await boss.JoinAsync(Boss("2", "Misty"), _ct);
+        _game.Time.Advance(TimeSpan.FromSeconds(5));
+        await boss.JoinAsync(Boss("3", "Rocko"), _ct);
+
+        // The original countdown ends: its work only waits for the rest.
+        _game.Time.Advance(TimeSpan.FromSeconds(5));
+        await RunQueuedWorkUntilAsync("Boss-Kampf");
+        Assert.Single(_chat.Sent);
+
+        _game.Time.Advance(TimeSpan.FromSeconds(9));
+        Assert.False(_inbox.Reader.TryRead(out _));
+        Assert.Single(_chat.Sent);
+
+        _game.Time.Advance(TimeSpan.FromSeconds(1));
+        await RunQueuedWorkUntilAsync("Boss-Kampf");
+        Assert.EndsWith("3 Trainer kämpfen mit.", _chat.Sent[1]);
+    }
+
+    [Fact]
+    public async Task Early_joins_and_joining_twice_do_not_extend_the_countdown()
+    {
+        var boss = Boss(EasyBoss);
+        await RegisterAsync("1", "Ash", "2", "Misty");
+        await boss.JoinAsync(Boss("1", "Ash"), _ct);
+
+        _game.Time.Advance(TimeSpan.FromSeconds(30));
+        await boss.JoinAsync(Boss("2", "Misty"), _ct);
+        _game.Time.Advance(BossSettings.Default.Countdown - TimeSpan.FromSeconds(35));
+        await boss.JoinAsync(Boss("1", "Ash"), _ct);
+        await boss.JoinAsync(Boss("2", "Misty"), _ct);
+
+        _game.Time.Advance(TimeSpan.FromSeconds(5));
+        await RunQueuedWorkUntilAsync("Boss-Kampf");
+        Assert.EndsWith("2 Trainer kämpfen mit.", _chat.Sent[1]);
     }
 
     [Fact]
@@ -205,7 +263,13 @@ public class BossEncounterTests : IDisposable
 
         await RunEncounterAsync(boss, ("1", "Ash"), ("2", "Misty"));
 
-        Assert.EndsWith("ist entkommen – alle Pokémon wurden besiegt.", _chat.Sent[^1]);
+        // The result says how many HP the boss had left.
+        var expectedBoss = BossDraw.Species(Species, HopelessBoss, 2, new BattleRandom(Seed));
+        var maxHp = BossDraw.Fighter(expectedBoss, BattleSettings.Default, HopelessBoss, 2).MaxHp;
+        var name = Regex.Escape(expectedBoss.Name);
+        var match = Regex.Match(_chat.Sent[^1], $@"^{name} ist entkommen – alle Pokémon wurden besiegt\. {name} hatte noch (\d+) von {maxHp} HP\.$");
+        Assert.True(match.Success, _chat.Sent[^1]);
+        Assert.InRange(int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture), 1, maxHp - 1);
         await using var db = _game.OpenLive();
         Assert.Equal(BattleOutcome.BossEscaped, (await db.Battles.SingleAsync(_ct)).Outcome);
         Assert.Empty(db.Specimens.Where(s => s.Origin == SpecimenOrigin.Boss));
