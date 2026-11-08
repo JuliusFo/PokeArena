@@ -1,0 +1,125 @@
+@page "/anleitung"
+
+@* Static text. The numbers mirror the code defaults in docs/spec.md §13 — update them with every balancing release. *@
+
+<PageTitle>So geht's – PokeArena</PageTitle>
+
+<h1>So geht's</h1>
+
+<p>
+    PokeArena ist ein Sammel- und Kampfspiel im Twitch-Chat. Du sammelst die 151 Pokémon der ersten Generation, kämpfst
+    mit anderen gegen Bosse und forderst andere Trainer heraus. Alles läuft über Befehle im Chat – du musst nichts
+    installieren. Das Spiel läuft nur, solange der Stream live ist. Dein Fortschritt bleibt gespeichert, auch wenn du
+    deinen Twitch-Namen änderst.
+</p>
+
+<h2>Loslegen</h2>
+
+<p>
+    Melde dich einmal an und wähle dabei deinen Starter: <strong>Bisasam, Schiggy, Glumanda, Pikachu oder Evoli</strong>.
+    Schreib zum Beispiel <code>!registrieren Pikachu</code> in den Chat.
+</p>
+<ul>
+    <li>Die Wahl gilt für immer – du kannst den Starter nicht tauschen.</li>
+    <li>Deinen Starter kann dir niemand wegnehmen, auch nicht in einem verlorenen Kampf.</li>
+    <li>Mitspielen darf jeder, du musst weder folgen noch abonnieren.</li>
+</ul>
+
+<h2>Die Befehle</h2>
+
+<table class="table">
+    <thead>
+        <tr><th>Befehl</th><th>Was passiert</th></tr>
+    </thead>
+    <tbody>
+        <tr><td><code>!registrieren&nbsp;Starter</code></td><td>Einmalige Anmeldung mit deinem Starter</td></tr>
+        <tr><td><code>!boss</code></td><td>Ruft einen Boss oder macht beim Bosskampf mit</td></tr>
+        <tr><td><code>!fight&nbsp;@@Name</code></td><td>Fordert einen Trainer heraus – oder nimmt eine Herausforderung an</td></tr>
+        <tr><td><code>!challenge&nbsp;NPC</code></td><td>Kämpft gegen einen freigeschalteten NPC, zum Beispiel <code>!challenge&nbsp;Eich</code></td></tr>
+        <tr><td><code>!arena</code></td><td>Zeigt den Link zu dieser Seite</td></tr>
+        <tr><td><code>!pokearena</code></td><td>Zeigt, ob der Bot gerade läuft</td></tr>
+    </tbody>
+</table>
+
+<h2>Bosskampf</h2>
+
+<p>
+    Schreibt jemand <code>!boss</code>, nähert sich ein Boss. Ihr habt dann <strong>30 Sekunden</strong>, um ebenfalls
+    <code>!boss</code> zu schreiben und mitzumachen. Es müssen mindestens <strong>2 Trainer</strong> dabei sein, sonst
+    entkommt der Boss.
+</p>
+<ul>
+    <li>Jeder kämpft mit einem zufälligen Pokémon aus seiner Sammlung.</li>
+    <li>Der Kampf läuft von selbst ab, du musst nichts weiter tun.</li>
+    <li>Wird der Boss besiegt, fängt ihn <strong>jeder, dessen Pokémon noch steht</strong>.</li>
+    <li>Je mehr Trainer mitmachen, desto öfter erscheinen seltene und legendäre Bosse.</li>
+    <li>Danach dauert es etwa 30 Minuten bis zum nächsten Boss.</li>
+</ul>
+
+<h2>Trainerkampf</h2>
+
+<p>
+    Fordere einen anderen Trainer heraus, zum Beispiel mit <code>!fight&nbsp;@@Misty</code>. Die andere Person nimmt mit
+    <code>!fight&nbsp;@@DeinName</code> an und hat dafür 2 Minuten Zeit.
+</p>
+<ul>
+    <li>Ihr braucht beide mindestens <strong>6 Pokémon</strong>.</li>
+    <li>Jede Seite kämpft mit 6 zufälligen Pokémon.</li>
+    <li>Wer gewinnt, bekommt <strong>ein Pokémon aus dem Team der anderen Seite</strong> – aber nie den Starter.</li>
+</ul>
+
+<h2>NPC-Kampf</h2>
+
+<p>
+    NPCs sind feste Gegner mit eigenem Team, zum Beispiel Eich, Rocko oder Misty. Du schaltest sie frei, indem du
+    verschiedene Pokémon sammelst (siehe unten). <code>!challenge</code> ohne Namen zeigt dir, gegen wen du schon
+    antreten darfst.
+</p>
+<ul>
+    <li>Auch hier brauchst du mindestens <strong>6 Pokémon</strong>.</li>
+    <li>Der <strong>erste Sieg</strong> bringt einen Orden, Tokens und ein Pokémon aus dem Team des NPCs.</li>
+    <li>Nach einer Niederlage kannst du erst nach 48 Stunden wieder gegen diesen NPC antreten, nach einem Sieg nach 1 Stunde.</li>
+</ul>
+
+<h2>Sammeln und Erfolge</h2>
+
+<p>
+    Für die Rangliste zählt, wie viele <strong>verschiedene</strong> Pokémon du hast. Doppelte Pokémon darfst du
+    behalten, sie zählen aber nur einmal. Neue Pokémon bekommst du, wenn du einen Boss besiegst und dabei überlebst,
+    einen Trainerkampf gewinnst oder einen NPC zum ersten Mal besiegst.
+</p>
+<p>
+    Bei bestimmten Zahlen verschiedener Pokémon bekommst du einen Erfolg und schaltest einen neuen NPC frei. Einen
+    Erfolg verlierst du nie wieder – auch nicht, wenn du später Pokémon in Kämpfen abgibst.
+</p>
+
+<table class="table guide-npcs">
+    <thead>
+        <tr><th class="num">Verschiedene Pokémon</th><th>Neuer NPC</th></tr>
+    </thead>
+    <tbody>
+        @foreach (var (threshold, npc) in Npcs)
+        {
+            <tr><td class="num">@threshold</td><td>@npc</td></tr>
+        }
+    </tbody>
+</table>
+
+<h2>Die Website</h2>
+
+<p>
+    Hier findest du die <a href="">Rangliste</a>, eine Seite für jeden Trainer mit allen Pokémon und jeden
+    <a href="kaempfe">Kampf</a> Runde für Runde. Nach einem Kampf postet der Bot den Link dazu direkt in den Chat. Dein
+    Name erscheint öffentlich auf dieser Seite – mehr dazu und wie du dich löschen lassen kannst, steht unter
+    <a href="datenschutz">Datenschutz</a>.
+</p>
+
+@code {
+    // Thresholds and names as in data/npcs.json (spec §7). The website has no access to the base data.
+    private static readonly (int Threshold, string Npc)[] Npcs =
+    [
+        (15, "Eich"), (25, "Rocko"), (40, "Misty"), (60, "Jessie"), (70, "James"), (80, "Bob"), (90, "Erika"),
+        (100, "Koga"), (105, "Sabrina"), (110, "Pyro"), (115, "Giovanni"), (130, "Lorelei"), (135, "Bruno"),
+        (140, "Agathe"), (145, "Siegfried"), (150, "Garry"), (151, "Ash"),
+    ];
+}
