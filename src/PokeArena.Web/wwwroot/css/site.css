@@ -74,7 +74,8 @@ code {
 
 /* Guide */
 
-.guide-npcs {
+/* .table.guide-npcs: must outrank `.table { width: 100% }`, which comes later in this file. */
+.table.guide-npcs {
   width: auto;
   min-width: 280px;
 }
