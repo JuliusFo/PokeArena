@@ -35,7 +35,7 @@
                     <thead>
                         <tr>
                             <th>Zeit</th>
-                            <th>Gegner</th>
+                            <th>Kampf</th>
                             <th class="num">Trainer</th>
                             <th>Ergebnis</th>
                         </tr>
@@ -45,9 +45,9 @@
                         {
                             <tr class="@(battle.Id == _selectedId ? "selected" : "")" @onclick="() => SelectAsync(battle.Id)">
                                 <td>@battle.FoughtAt.ToLocalTime().ToString("dd.MM. HH:mm")</td>
-                                <td class="strong">@Opponent(battle)</td>
+                                <td class="strong">@battle.Headline</td>
                                 <td class="num">@battle.Participants</td>
-                                <td>@Result(battle)</td>
+                                <td>@battle.Result</td>
                             </tr>
                         }
                     </tbody>
@@ -78,7 +78,7 @@
 @code {
     private const int Limit = 50;
 
-    private IReadOnlyList<BattleSummary>? _battles;
+    private IReadOnlyList<BattleListRow>? _battles;
     private IReadOnlyList<string>? _lines;
     private long? _selectedId;
     private bool _sandbox;
@@ -90,32 +90,6 @@
         Battles.Changed += OnChanged;
         await ReloadAsync();
     }
-
-    // A deleted trainer has no name any more.
-    private const string Unknown = "(gelöscht)";
-
-    private static string Opponent(BattleSummary battle) => battle switch
-    {
-        { Boss: { } boss } => boss.Name + boss.Rarity switch { 3 => " (legendär)", 2 => " (selten)", _ => "" },
-        { Npc: { } npc } => $"{battle.Winner ?? battle.Loser ?? Unknown} gegen {npc.Name}",
-        { Outcome: BattleOutcome.ChallengerWon } => $"{battle.Winner ?? Unknown} gegen {battle.Loser ?? Unknown}",
-        { Outcome: BattleOutcome.OpponentWon } => $"{battle.Loser ?? Unknown} gegen {battle.Winner ?? Unknown}",
-        _ => "–",
-    };
-
-    private static string Result(BattleSummary battle) => battle switch
-    {
-        { Outcome: BattleOutcome.BossDefeated } => battle.Winners == 1 ? "besiegt, 1 Fang" : $"besiegt, {battle.Winners} Fänge",
-        { Npc: { } npc, Outcome: BattleOutcome.OpponentWon } => $"{npc.Name} gewinnt",
-        { Npc: not null, Loot: { } reward } => $"{battle.Winner ?? Unknown} gewinnt Orden, {reward.Name}, {Tokens(battle.Tokens ?? 0)}",
-        { Npc: not null } => $"{battle.Winner ?? Unknown} gewinnt erneut",
-        { Outcome: BattleOutcome.ChallengerWon or BattleOutcome.OpponentWon } =>
-            $"{battle.Winner ?? Unknown} gewinnt {battle.Loot?.Name ?? "ein Pokémon"}",
-        _ => "entkommen",
-    };
-
-    // Only a first win against an NPC brings a reward.
-    private static string Tokens(int tokens) => tokens == 1 ? "1 Token" : $"{tokens} Tokens";
 
     private async Task SelectAsync(long id)
     {

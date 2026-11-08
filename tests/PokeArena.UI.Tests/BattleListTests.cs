@@ -2,6 +2,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Time.Testing;
+using PokeArena.Contracts;
 using PokeArena.Core;
 using PokeArena.Core.Data;
 using PokeArena.Core.Game;
@@ -59,7 +60,7 @@ public class BattleListTests : BunitContext
         {
             var cells = cut.FindAll("tbody tr td").Select(td => td.TextContent).ToList();
             var time = _time.GetUtcNow().ToLocalTime().ToString("dd.MM. HH:mm");
-            Assert.Equal([time, "Arkani (selten)", "1", "besiegt, 1 Fang"], cells);
+            Assert.Equal([time, "Boss-Kampf gegen Arkani (selten)", "1", "Arkani wurde besiegt! Gefangen von: Ash."], cells);
         });
 
         cut.Find("tbody tr").Click();
@@ -71,78 +72,6 @@ public class BattleListTests : BunitContext
                 ["Runde 1", "Pikachu (Ash, HP 35) hat Arkani (Boss, HP 0) 200 Schaden zugefügt.", "Arkani (Boss) wurde besiegt."],
                 lines);
             Assert.Contains("selected", cut.Find("tbody tr").ClassName);
-        });
-    }
-
-    [Theory]
-    [InlineData(BattleOutcome.ChallengerWon, "Ash gegen Misty", "Ash gewinnt Karpador")]
-    [InlineData(BattleOutcome.OpponentWon, "Misty gegen Ash", "Ash gewinnt Karpador")]
-    public async Task Pvp_fight_shows_challenger_opponent_winner_and_loot(BattleOutcome outcome, string opponent, string result)
-    {
-        var cut = Render<BattleListPanel>();
-        await _trainers.RegisterAsync("1", "ash", "Ash", _species.Get(25), _ct);
-        await _trainers.RegisterAsync("2", "misty", "Misty", _species.Get(7), _ct);
-
-        // Ash wins in both cases; the outcome says who issued the challenge.
-        await using (var db = _database.Open())
-        {
-            db.Battles.Add(new Battle
-            {
-                Kind = BattleKind.Pvp,
-                FoughtAt = _time.GetUtcNow(),
-                Seed = 7,
-                LootSpecimenId = 99,
-                LootSpeciesId = 129,
-                Outcome = outcome,
-                Rounds = 6,
-                LogJson = new BattleLog([], []).ToJson(),
-                Participants = [new BattleParticipant { TrainerId = "1", Won = true }, new BattleParticipant { TrainerId = "2", Won = false }],
-            });
-            await db.SaveChangesAsync(_ct);
-        }
-
-        _battles.NotifyChanged();
-
-        cut.WaitForAssertion(() =>
-        {
-            var cells = cut.FindAll("tbody tr td").Select(td => td.TextContent).ToList();
-            Assert.Equal([opponent, "2", result], cells.Skip(1));
-        });
-    }
-
-    [Theory]
-    [InlineData(BattleOutcome.ChallengerWon, 129, 1, "Ash gewinnt Orden, Karpador, 1 Token")]
-    [InlineData(BattleOutcome.ChallengerWon, null, null, "Ash gewinnt erneut")]
-    [InlineData(BattleOutcome.OpponentWon, null, null, "Eich gewinnt")]
-    public async Task Npc_fight_shows_trainer_npc_and_reward(BattleOutcome outcome, int? rewardSpecies, int? tokens, string result)
-    {
-        var cut = Render<BattleListPanel>();
-        await _trainers.RegisterAsync("1", "ash", "Ash", _species.Get(25), _ct);
-
-        await using (var db = _database.Open())
-        {
-            db.Battles.Add(new Battle
-            {
-                Kind = BattleKind.Npc,
-                FoughtAt = _time.GetUtcNow(),
-                Seed = 7,
-                NpcId = "eich",
-                LootSpeciesId = rewardSpecies,
-                Tokens = tokens,
-                Outcome = outcome,
-                Rounds = 6,
-                LogJson = new BattleLog([], []).ToJson(),
-                Participants = [new BattleParticipant { TrainerId = "1", Won = outcome == BattleOutcome.ChallengerWon }],
-            });
-            await db.SaveChangesAsync(_ct);
-        }
-
-        _battles.NotifyChanged();
-
-        cut.WaitForAssertion(() =>
-        {
-            var cells = cut.FindAll("tbody tr td").Select(td => td.TextContent).ToList();
-            Assert.Equal(["Ash gegen Eich", "1", result], cells.Skip(1));
         });
     }
 

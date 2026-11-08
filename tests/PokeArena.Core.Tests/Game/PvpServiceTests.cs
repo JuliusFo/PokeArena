@@ -8,7 +8,6 @@ using PokeArena.Core.Game;
 using PokeArena.Core.Game.Battles;
 using PokeArena.Core.Publishing;
 using PokeArena.Core.Tests.Fakes;
-using BattleKind = PokeArena.Core.Data.BattleKind;
 
 namespace PokeArena.Core.Tests.Game;
 

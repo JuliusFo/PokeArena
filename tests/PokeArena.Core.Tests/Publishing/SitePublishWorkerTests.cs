@@ -242,7 +242,7 @@ public class SitePublishWorkerTests : IDisposable
         await using var db = _game.OpenLive();
         var battle = new Battle
         {
-            Kind = Core.Data.BattleKind.Pvp,
+            Kind = BattleKind.Pvp,
             FoughtAt = _game.Time.GetUtcNow(),
             Outcome = BattleOutcome.ChallengerWon,
             Rounds = 1,

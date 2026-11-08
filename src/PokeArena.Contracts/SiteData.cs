@@ -18,10 +18,15 @@ public sealed record Leaderboard(DateTimeOffset UpdatedAt, int PlayerCount, IRea
 /// <param name="Total">All specimens owned, duplicates included.</param>
 public sealed record LeaderboardEntry(int Rank, string TrainerId, string DisplayName, int Distinct, int Total);
 
+/// <summary>The kind of a fight — in the site JSON and, stored as text, in the bot's database (review 1.0.3, B2).</summary>
 public enum BattleKind
 {
     Boss,
+
+    /// <summary>Trainer against trainer (spec §6).</summary>
     Pvp,
+
+    /// <summary>Trainer against an NPC (spec §7).</summary>
     Npc,
 }
 

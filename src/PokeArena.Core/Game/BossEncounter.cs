@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using PokeArena.Contracts;
 using PokeArena.Core.Chat;
 using PokeArena.Core.Data;
 using PokeArena.Core.Game.Battles;
@@ -201,7 +202,7 @@ public sealed class BossEncounter(
             "Boss fight: {Boss} vs {Count} participants, {Outcome}, {Catches} catches, seed {Seed}",
             boss.Slug, n, result.BossDefeated ? "defeated" : "escaped", catchers.Count, seed);
 
-        chat.Send($"Ein wildes {boss.Name}{TierSuffix(boss)} erscheint! {n} Trainer kämpfen mit.");
+        chat.Send($"Ein wildes {boss.Name}{BattleTexts.TierSuffix(boss)} erscheint! {n} Trainer kämpfen mit.");
         var outcome = result.BossDefeated
             ? $"{boss.Name} wurde besiegt! Gefangen von: {string.Join(", ", catchers.Select(c => c.DisplayName))}."
             : result.Survived.Any(s => s)
@@ -252,14 +253,6 @@ public sealed class BossEncounter(
 
         chat.Send(ReadyAnnouncement);
     }
-
-    /// <summary>„ (legendär)“ or „ (selten)“ after the boss name; nothing for common species.</summary>
-    internal static string TierSuffix(Species boss) => boss.Rarity switch
-    {
-        3 => " (legendär)",
-        2 => " (selten)",
-        _ => "",
-    };
 
     /// <summary><c>!bossreset</c> (mods): the next <c>!boss</c> may open a lobby at once. An open lobby stays as it is.</summary>
     public async Task ResetCooldownAsync(CancellationToken ct)

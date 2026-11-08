@@ -3,8 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using PokeArena.Contracts;
 using PokeArena.Core.Data;
 using PokeArena.Core.Game.Battles;
-using DataBattleKind = PokeArena.Core.Data.BattleKind;
-using SiteBattleKind = PokeArena.Contracts.BattleKind;
 
 namespace PokeArena.Core.Publishing;
 
@@ -17,6 +15,8 @@ public sealed record SiteFile(byte[] Content, string CacheControl);
 /// </summary>
 public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
 {
+    private readonly BattleTexts _texts = new(species, npcs);
+
     /// <summary>Entries of <c>kaempfe.json</c>.</summary>
     public const int BattleIndexSize = 50;
 
@@ -160,7 +160,7 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
         }
 
         var log = BattleLog.FromJson(battle.LogJson);
-        var texts = Describe(battle, log);
+        var texts = _texts.Describe(battle, log);
         var sides = log.Fighters
             .GroupBy(f => f.Side)
             .OrderBy(g => g.Key)
@@ -169,7 +169,7 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
                 g.Key == 0 ? texts.TrainerSideWon : !texts.TrainerSideWon,
                 [.. g.Select(f => new BattleFighter(Info(f.SpeciesId), f.Owner, f.TrainerId, f.MaxHp))]))
             .ToList();
-        return new BattlePage(battle.Id, Kind(battle.Kind), battle.FoughtAt, battle.Seed, texts.Headline, texts.Result, sides, log.ToLines(species));
+        return new BattlePage(battle.Id, battle.Kind, battle.FoughtAt, battle.Seed, texts.Headline, texts.Result, sides, log.ToLines(species));
     }
 
     private async Task<IReadOnlyList<BattleSummary>> LatestBattlesAsync(
@@ -184,62 +184,9 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
             .ToListAsync(ct);
         return [.. battles.Select(b =>
         {
-            var texts = Describe(b, BattleLog.FromJson(b.LogJson));
-            return new BattleSummary(b.Id, Kind(b.Kind), b.FoughtAt, texts.Headline, texts.Result);
+            var texts = _texts.Describe(b, BattleLog.FromJson(b.LogJson));
+            return new BattleSummary(b.Id, b.Kind, b.FoughtAt, texts.Headline, texts.Result);
         })];
-    }
-
-    /// <summary>German headline and result of a fight. Names come from the log: as they were at the fight.</summary>
-    private BattleTexts Describe(Battle battle, BattleLog log)
-    {
-        var trainerSide = log.Fighters.Where(f => f.Side == 0).ToList();
-        var opponentSide = log.Fighters.Where(f => f.Side == 1).ToList();
-        var loot = battle.LootSpeciesId is { } lootId ? species.Get(lootId).Name : null;
-        switch (battle.Kind)
-        {
-            case DataBattleKind.Boss:
-            {
-                var boss = species.Get(battle.BossSpeciesId ?? opponentSide[0].SpeciesId);
-                var defeated = battle.Outcome == BattleOutcome.BossDefeated;
-                // From the log, not the participant rows: survivors are the catchers (spec §4), and a deleted
-                // trainer still counts as „[gelöscht]“.
-                var catchers = log.Survivors()
-                    .Select(i => log.Fighters[i])
-                    .Where(f => f.Side == 0)
-                    .Select(f => f.Owner)
-                    .ToList();
-                var result = defeated
-                    ? $"{boss.Name} wurde besiegt! Gefangen von: {string.Join(", ", catchers)}."
-                    : $"{boss.Name} ist entkommen.";
-                return new BattleTexts($"Boss-Kampf gegen {boss.Name}{Game.BossEncounter.TierSuffix(boss)}", result, "Trainer", boss.Name, defeated);
-            }
-
-            case DataBattleKind.Pvp:
-            {
-                var challenger = trainerSide[0].Owner;
-                var opponent = opponentSide[0].Owner;
-                var challengerWon = battle.Outcome == BattleOutcome.ChallengerWon;
-                var (winner, loser) = challengerWon ? (challenger, opponent) : (opponent, challenger);
-                var result = loot is null ? $"{winner} besiegt {loser}." : $"{winner} besiegt {loser} und bekommt {loot} von {loser}!";
-                return new BattleTexts($"{challenger} gegen {opponent}", result, challenger, opponent, challengerWon);
-            }
-
-            case DataBattleKind.Npc:
-            {
-                var trainer = trainerSide[0].Owner;
-                var npc = battle.NpcId is { } id ? npcs.Find(id)?.Name ?? id : opponentSide[0].Owner;
-                var won = battle.Outcome == BattleOutcome.ChallengerWon;
-                var result = !won
-                    ? $"{npc} besiegt {trainer}."
-                    : battle.Tokens is { } tokens
-                        ? $"{trainer} besiegt {npc} zum ersten Mal und bekommt den Orden, {Tokens(tokens)}{(loot is null ? "" : $" und {loot}")}!"
-                        : $"{trainer} besiegt {npc}.";
-                return new BattleTexts($"{trainer} gegen {npc}", result, trainer, npc, won);
-            }
-
-            default:
-                throw new InvalidOperationException($"Unknown battle kind {battle.Kind}");
-        }
     }
 
     private SpeciesInfo Info(int speciesId)
@@ -249,17 +196,4 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
     }
 
     private static SiteFile Mutable(byte[] content) => new(content, MutableCache);
-
-    private static SiteBattleKind Kind(DataBattleKind kind) => kind switch
-    {
-        DataBattleKind.Boss => SiteBattleKind.Boss,
-        DataBattleKind.Pvp => SiteBattleKind.Pvp,
-        DataBattleKind.Npc => SiteBattleKind.Npc,
-        _ => throw new InvalidOperationException($"Unknown battle kind {kind}"),
-    };
-
-    private static string Tokens(int count) => count == 1 ? "1 Token" : $"{count} Tokens";
-
-    /// <param name="TrainerSideWon">Side 0 of the log won: the boss was defeated, the challenger or the trainer won.</param>
-    private sealed record BattleTexts(string Headline, string Result, string TrainerSide, string OpponentSide, bool TrainerSideWon);
 }

@@ -1,3 +1,5 @@
+using PokeArena.Contracts;
+
 namespace PokeArena.Core.Data;
 
 /// <summary>A registered viewer. Identified only by the Twitch user id, never by name (spec §1).</summary>
@@ -58,17 +60,6 @@ public sealed class Specimen
 
     /// <summary>The protected starter: exactly one per trainer, never transferred (spec §1, §6).</summary>
     public bool IsStarter { get; init; }
-}
-
-public enum BattleKind
-{
-    Boss,
-
-    /// <summary>Trainer against trainer (spec §6).</summary>
-    Pvp,
-
-    /// <summary>Trainer against an NPC (spec §7).</summary>
-    Npc,
 }
 
 public enum BattleOutcome

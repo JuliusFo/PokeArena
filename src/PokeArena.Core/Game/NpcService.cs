@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using PokeArena.Contracts;
 using PokeArena.Core.Chat;
 using PokeArena.Core.Data;
 using PokeArena.Core.Game.Battles;
@@ -176,12 +177,9 @@ public sealed class NpcService(
             return $"{trainer} besiegt {npc.Name} erneut – eine Belohnung gibt es nur beim ersten Sieg.";
         }
 
-        var gains = npc.Tokens switch
-        {
-            0 => $"den Orden von {npc.Name} und {reward.Name}",
-            1 => $"den Orden von {npc.Name}, {reward.Name} und 1 Token",
-            _ => $"den Orden von {npc.Name}, {reward.Name} und {npc.Tokens} Tokens",
-        };
+        var gains = npc.Tokens == 0
+            ? $"den Orden von {npc.Name} und {reward.Name}"
+            : $"den Orden von {npc.Name}, {reward.Name} und {BattleTexts.Tokens(npc.Tokens)}";
         return $"{trainer} besiegt {npc.Name} und bekommt {gains}!";
     }
 
