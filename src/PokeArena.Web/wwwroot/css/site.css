@@ -308,8 +308,9 @@ h1:focus {
   font-variant-numeric: tabular-nums;
 }
 
-.fighters .fighter-fainted,
-.fighters .fighter-unused {
+/* Only name and type chips fade; the end state itself keeps full contrast (review feat/battle-end-state). */
+.fighters .fighter-fainted .species,
+.fighters .fighter-unused .species {
   opacity: 0.55;
 }
 

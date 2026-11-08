@@ -27,7 +27,7 @@
                             <SpeciesName Species="fighter.Species" />
                             @if (fighter.TrainerId is { } trainerId && fighter.Owner != side.Name)
                             {
-                                <a class="muted" href="trainer/@trainerId">@fighter.Owner</a>
+                                <a href="trainer/@trainerId">@fighter.Owner</a>
                             }
                             <span class="end-state">
                                 @switch (state)

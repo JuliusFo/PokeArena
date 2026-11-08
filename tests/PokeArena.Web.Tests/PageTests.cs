@@ -129,7 +129,7 @@ public class PageTests : BunitContext
             {
                 Sides =
                 [
-                    new BattleSide("Ash", true, [new BattleFighter(Bisasam, "Ash", "11", 40, HpLeft: 8, Used: true), new BattleFighter(Raupy, "Ash", "11", 30, HpLeft: 30, Used: false)]),
+                    new BattleSide("Trainer", true, [new BattleFighter(Bisasam, "Ash", "11", 40, HpLeft: 8, Used: true), new BattleFighter(Raupy, "Ash", "11", 30, HpLeft: 30, Used: false)]),
                     new BattleSide("Misty", false, [new BattleFighter(Raupy, "Misty", "12", 30, HpLeft: 0, Used: true)]),
                 ],
             },
@@ -145,6 +145,10 @@ public class PageTests : BunitContext
         // 8 of 40 HP is a fifth: the bar is short and marked low.
         var bar = rows[0].QuerySelector(".hp-bar > span")!;
         Assert.Equal(("low", "width: 20%"), (bar.ClassName, bar.GetAttribute("style")));
+        // The owner links keep the link colour: no „muted“ on the link itself (review feat/battle-end-state).
+        var links = cut.FindAll(".fighters a");
+        Assert.Equal(["trainer/11", "trainer/11"], links.Select(a => a.GetAttribute("href")));
+        Assert.All(links, a => Assert.False(a.ClassList.Contains("muted")));
     }
 
     [Fact]
