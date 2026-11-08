@@ -57,6 +57,17 @@ public class EventSubSessionTests
     }
 
     [Fact]
+    public async Task A_connect_without_answer_ends_as_connection_lost()
+    {
+        _sockets.Hang = true;
+
+        var run = _session.RunAsync(_handler, _stop.Token);
+        _time.Advance(EventSubSession.ConnectTimeout);
+
+        await Assert.ThrowsAsync<EventSubConnectionLostException>(() => run.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
     public async Task Missing_keepalive_ends_the_session_as_connection_lost()
     {
         var run = _session.RunAsync(_handler, _stop.Token);

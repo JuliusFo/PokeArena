@@ -14,8 +14,16 @@ public sealed class FakeEventSubSockets : IEventSubSocketFactory
     /// <summary>When set, connecting to this URL fails.</summary>
     public Uri? FailingUrl { get; set; }
 
+    /// <summary>When set, connecting hangs until cancelled (a server that never answers the upgrade).</summary>
+    public bool Hang { get; set; }
+
     public Task<IEventSubSocket> ConnectAsync(Uri url, CancellationToken ct)
     {
+        if (Hang)
+        {
+            return HangAsync(ct);
+        }
+
         if (url == FailingUrl)
         {
             throw new HttpRequestException("connect failed");
@@ -25,6 +33,12 @@ public sealed class FakeEventSubSockets : IEventSubSocketFactory
         var socket = new FakeEventSubSocket(url);
         _opened.Writer.TryWrite(socket);
         return Task.FromResult<IEventSubSocket>(socket);
+    }
+
+    private static async Task<IEventSubSocket> HangAsync(CancellationToken ct)
+    {
+        await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+        throw new OperationCanceledException(ct);
     }
 
     /// <summary>The next socket the session opens.</summary>

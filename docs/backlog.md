@@ -46,6 +46,8 @@ roadmap.md first. Format: idea — date, origin.
 - Website reads the previous data format (N-1) after a format change, instead
   of only the hint „Die Daten werden gerade umgestellt“ — 2026-11-08,
   review 1.0.3 (A33).
+- Fight page: cancel the retry loop when the fight id in the address changes, and
+  reset the error flag — 2026-11-08, R1 second review (pre-existing).
 
 ## Battle system
 

@@ -29,6 +29,22 @@ public class SiteGeneratorTests : IDisposable
     }
 
     [Fact]
+    public async Task The_overlay_shows_the_top_five_of_the_leaderboard()
+    {
+        for (var i = 1; i <= 7; i++)
+        {
+            // Trainer i owns i distinct species, so the order is 7, 6, 5 …
+            await AddTrainerAsync(i.ToString(System.Globalization.CultureInfo.InvariantCulture), $"T{i}", [.. Enumerable.Range(1, i).Select(s => (s, 0))]);
+        }
+
+        await using var db = _game.OpenLive();
+        var overlay = await _generator.OverlayAsync(db, Start, _ct);
+
+        Assert.Equal(["T7", "T6", "T5", "T4", "T3"], overlay.Top.Select(e => e.DisplayName));
+        Assert.Null(overlay.LatestBattle);
+    }
+
+    [Fact]
     public async Task Ties_go_to_whoever_completed_their_current_species_first()
     {
         // Early had species 3 first, but lost it and won it back at minute 30: their set is complete since then.

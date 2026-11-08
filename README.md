@@ -90,6 +90,7 @@ xUnit v3 on Microsoft Testing Platform.
    replies against slow mode and follow-only chat (ADR-0002 addendum).
 4. OBS: browser source `http://localhost:5299/overlay` — start PokeArena
    before OBS, or refresh the source once.
+
 **Updating:** when the top bar shows „Version … verfügbar“, close PokeArena,
 download the new ZIP and replace the program folder with its contents. Game
 data, settings and backups live in `%LOCALAPPDATA%\PokeArena` and are not
@@ -98,8 +99,10 @@ touched; the database is backed up before the new version upgrades it.
 **Restoring a backup:** close PokeArena, copy the wanted file from
 `%LOCALAPPDATA%\PokeArena\backups` (the „Sicherung“ card shows the folder)
 over `%LOCALAPPDATA%\PokeArena\pokearena.db`, delete `pokearena.db-wal` and
-`pokearena.db-shm` next to it if they exist, and start PokeArena again. Then
-„Alles neu veröffentlichen“ in the Website card brings the site in line. An
+`pokearena.db-shm` next to it if they exist, and start PokeArena again. Then,
+before the next fight (best before the stream), click „Alles neu veröffentlichen“
+in the Website card: it brings the site in line and keeps new fights from
+reusing the numbers of fights that are still on the site. An
 older backup may still contain trainers deleted since then (spec §11) —
 delete them again.
 
