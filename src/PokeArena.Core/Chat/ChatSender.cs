@@ -48,7 +48,14 @@ public sealed class ChatSender(
     /// <summary>How long a message waits for a lost Twitch connection (reconnects back off up to 60 s).</summary>
     internal static readonly TimeSpan TargetWait = TimeSpan.FromSeconds(60);
 
+    /// <summary>While the app closes: the host gives all services 5 s together.</summary>
+    internal static readonly TimeSpan StopTargetWait = TimeSpan.FromSeconds(3);
+
     private static readonly TimeSpan TargetPoll = TimeSpan.FromSeconds(1);
+
+    /// <summary>When a message first found no target; null while connected. Only the send loop touches it.</summary>
+    private DateTimeOffset? _noTargetSince;
+    private volatile bool _stopping;
 
     /// <summary>One error or hint reply per viewer at most this often (spec §8).</summary>
     public static readonly TimeSpan HintInterval = TimeSpan.FromSeconds(30);
@@ -107,6 +114,7 @@ public sealed class ChatSender(
     /// </summary>
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
+        _stopping = true;
         _queue.Writer.TryComplete();
         if (ExecuteTask is { } running)
         {
@@ -120,15 +128,27 @@ public sealed class ChatSender(
     /// During a reconnect there is no target for a few seconds; a fight result posted then would be lost. Wait for
     /// the connection instead — a message that was never sent cannot arrive twice.
     /// </summary>
+    /// <remarks>
+    /// The wait is counted from the first message that found no target, not per message: after a minute without
+    /// Twitch (login refused, long outage) the rest of the queue is dropped at once instead of one message per minute,
+    /// and nothing stale goes out much later. While stopping it waits at most <see cref="StopTargetWait"/>, so the
+    /// Twitch connection still gets its share of the host's stop time (R1 second review).
+    /// </remarks>
     private async Task<ChatTarget?> WaitForTargetAsync(CancellationToken ct)
     {
-        var until = time.GetUtcNow() + TargetWait;
-        while (targets.Target is null && time.GetUtcNow() < until)
+        var since = _noTargetSince ??= time.GetUtcNow();
+        while (targets.Target is null && time.GetUtcNow() - since < (_stopping ? StopTargetWait : TargetWait))
         {
             await Task.Delay(TargetPoll, time, ct);
         }
 
-        return targets.Target;
+        if (targets.Target is { } target)
+        {
+            _noTargetSince = null;
+            return target;
+        }
+
+        return null;
     }
 
     private async Task SendNowAsync(string text, CancellationToken ct)

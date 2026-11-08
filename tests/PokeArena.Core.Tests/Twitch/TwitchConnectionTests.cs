@@ -363,12 +363,29 @@ public class TwitchConnectionTests
 
         sender.Send("Der Boss wurde besiegt!");
         var stopping = sender.StopAsync(TestContext.Current.CancellationToken);
-        await AdvanceUntilAsync(() => _sockets.ConnectedUrls.Count == 2, TwitchConnection.RetryDelay(1));
+        await AdvanceUntilAsync(() => _sockets.ConnectedUrls.Count == 2, TimeSpan.FromSeconds(1));
         (await _sockets.NextAsync()).Push(EventSubFrames.Welcome("session-2"));
         await AdvanceUntilAsync(() => stopping.IsCompleted, TimeSpan.FromSeconds(1));
 
         Assert.Contains("Der Boss wurde besiegt!", _http.RequestsTo(Helix + "chat/messages").Single().Body);
         await _connection.DisconnectAsync();
+    }
+
+    [Fact]
+    public async Task Without_twitch_the_queue_waits_one_minute_in_total_not_per_message()
+    {
+        var sender = new ChatSender(_helix, _connection, new DryRunMode(), _chatLog, _time, NullLogger<ChatSender>.Instance);
+        await sender.StartAsync(TestContext.Current.CancellationToken);
+        int Dropped() => _chatLog.Snapshot().Count(e => e.Kind == ChatLogKind.Warning && e.Text.StartsWith("Nicht mit Twitch verbunden", StringComparison.Ordinal));
+
+        sender.Send("eins");
+        sender.Send("zwei");
+        sender.Send("drei");
+        await AdvanceUntilAsync(() => Dropped() >= 1, TimeSpan.FromSeconds(2));
+
+        // The other two are not held for another minute each.
+        await Eventually.TrueAsync(() => Dropped() == 3);
+        await sender.StopAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]

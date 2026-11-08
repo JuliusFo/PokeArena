@@ -41,6 +41,7 @@ public sealed class TwitchConnection(
     internal const int StartRechecks = 5;
 
     private readonly Lock _lock = new();
+    private readonly Lock _liveLock = new();
     private DateTimeOffset? _lastLiveEventAt;
     private TwitchConnectionState _state = new(TwitchStatus.Disconnected);
     private CancellationTokenSource? _loginCts;
@@ -410,21 +411,29 @@ public sealed class TwitchConnection(
         chatLog.Add(ChatLogKind.Info, null, $"Verbunden mit dem Chat von {target.BroadcasterLogin} als {target.BotLogin}.");
     }
 
+    // Events, the hourly check and the rechecks run on different pool threads: one lock keeps „was there a recent
+    // event?“ and the report together (R1 second review).
     private void ReportLiveEvent(bool isLive)
     {
-        _lastLiveEventAt = time.GetUtcNow();
-        ReportLive(isLive, announce: false);
+        lock (_liveLock)
+        {
+            _lastLiveEventAt = time.GetUtcNow();
+            ReportLive(isLive, announce: false);
+        }
     }
 
     /// <summary>An answer of <c>GET /streams</c>; ignored right after a stream event (<see cref="EventPrecedence"/>).</summary>
     private void ReportPolledLive(bool isLive, bool announce)
     {
-        if (_lastLiveEventAt is { } at && time.GetUtcNow() - at < EventPrecedence)
+        lock (_liveLock)
         {
-            isLive = stream.IsLive;
-        }
+            if (_lastLiveEventAt is { } at && time.GetUtcNow() - at < EventPrecedence)
+            {
+                isLive = stream.IsLive;
+            }
 
-        ReportLive(isLive, announce);
+            ReportLive(isLive, announce);
+        }
     }
 
     /// <param name="announce">Log the state even if it did not change (on connect, so the streamer sees it).</param>
