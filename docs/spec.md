@@ -125,6 +125,11 @@ possible, so no artificial pacing):
 - Chat output: start message, result summary (who caught / boss escaped) and
   the battle-log link. The global cooldown (`BossCooldownMinutes`, default 30)
   starts when the encounter **ends**.
+- When that cooldown runs out, the bot announces „Der Boss ist wieder bereit –
+  schreibt !boss, um ihn zu rufen!“ (added after 1.0.2). Not after the short
+  retry cooldown of a failed lobby, not after `!bossreset` (it announces
+  itself), not in the dry run, not while the bot takes no commands (§8), and
+  not if the app was restarted during the cooldown (the timer is not stored).
 - Achievement unlocks caused by the catches are announced afterwards:
   „X hat 15 verschiedene Pokémon gesammelt und kann jetzt Eich mit
   !challenge Eich herausfordern!"
@@ -272,7 +277,7 @@ Used by boss, PvP and NPC fights.
 | `!fight @name`             | registered | challenge (or accept a pending challenge)     |
 | `!challenge <NPC>`         | registered | fight an unlocked NPC                         |
 | `!arena`                   | anyone     | posts the website link                        |
-| `!pokearena`               | anyone     | status check: „PokeArena-Bot ist online (Version x).“ |
+| `!pokearena`, `!version`   | anyone     | status check: „PokeArena-Bot ist online (Version x).“ |
 | `!bossreset`               | mods       | reset the global boss cooldown                |
 | `!entfernen @name`         | mods       | delete a trainer (see §11)                    |
 

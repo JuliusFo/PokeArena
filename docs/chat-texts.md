@@ -17,7 +17,7 @@ columns stay for the next review.
 | 2 | Registered | @{Name}, willkommen bei PokeArena! Dein Starter ist {Starter}. Mit !boss kämpfst du mit, sobald ein Boss erscheint. | | |
 | 3 | Already registered | @{Name}, du bist schon dabei – dein Starter ist {Starter}. | | |
 | 4 | Game command while not registered | @{Name}, du bist noch nicht dabei. Melde dich an, zum Beispiel mit !registrieren Pikachu. | | |
-| 5 | `!pokearena` | PokeArena-Bot ist online (Version {Version}). | | |
+| 5 | `!pokearena`, `!version` | PokeArena-Bot ist online (Version {Version}). | | |
 | 6 | `!arena` | Rangliste, Kämpfe und Trainer: {Website} | | |
 | 7 | `!arena`, website not set up | Die PokeArena-Website ist noch nicht eingerichtet. | | |
 | 8 | Command while the stream is offline (at most every 5 min) | PokeArena läuft nur, solange der Stream live ist. Bis zum nächsten Stream! | | |
@@ -34,6 +34,7 @@ columns stay for the next review.
 | 14 | Boss escaped, all fainted | {Boss} ist entkommen – alle Pokémon wurden besiegt. | | |
 | 15 | `!boss` during the cooldown (at most every 30 s) | @{Name}, der nächste Boss kann in {X Minuten} gerufen werden. | | |
 | 16 | Achievement reached (boss, PvP, NPC) | {Name} hat {15} verschiedene Pokémon gesammelt und kann jetzt {Eich} mit !challenge {Eich} herausfordern! | | |
+| 39 | Boss cooldown after a fight has run out | Der Boss ist wieder bereit – schreibt !boss, um ihn zu rufen! | | |
 
 ## PvP (`!fight`)
 
