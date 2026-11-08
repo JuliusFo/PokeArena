@@ -308,7 +308,12 @@ noise in the code repository, and deletions are real — a public git history
 would keep deleted trainers' names forever (see §11).
 
 Pages (v1): leaderboard, battle log per fight, trainer detail page, OBS
-overlay view.
+overlay view, privacy note, player guide („So geht's“, `/anleitung`).
+
+The player guide is static text: it repeats the defaults of §13 (countdown,
+minimum team size, cooldowns) and the NPC thresholds of §7, because the site
+has no access to the bot's configuration or base data. A release that
+changes one of them updates `Pages/Guide.razor` as well.
 
 Data files (all derived — fully regenerable from the DB; the UI has a
 "republish everything" action):
@@ -415,7 +420,8 @@ Display names appear permanently on a public website. Therefore:
 
 Balancing values are code defaults in v1 and change by release, after a
 simulator run (user decision 2026-11-04, roadmap WP-09); there is no runtime
-balancing editor.
+balancing editor. The website's player guide repeats some of these values
+(§9) and changes with them.
 
 ## 14. Open points and later versions
 

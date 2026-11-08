@@ -273,6 +273,11 @@ Demo: measured win rates per NPC and boss group size, adjusted values.
 - NPC difficulty: measure win rates per NPC with random teams at its unlock
   threshold; set `staerke` so the first NPCs win ≈ 50–60 % and later ones
   clearly less (Eich lost all 10 fights in the WP-05 dry run).
+- The website's „So geht's“ page (`Pages/Guide.razor`, added 2026-11-08)
+  repeats countdown, minimum team size, cooldowns and NPC thresholds as plain
+  text — update it with every changed value. If countdown or boss cooldown
+  become a streamer setting, the page has to word them loosely („kurz“, „etwa
+  eine halbe Stunde“) or the values have to be published in `meta.json`.
 
 ## Open UX questions
 
