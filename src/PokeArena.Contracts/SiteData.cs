@@ -36,7 +36,10 @@ public sealed record BattleSummary(long Id, BattleKind Kind, DateTimeOffset Foug
 /// <summary><c>kaempfe.json</c>: the latest fights, newest first.</summary>
 public sealed record BattleIndex(DateTimeOffset UpdatedAt, IReadOnlyList<BattleSummary> Battles);
 
-/// <summary><c>kampf/&lt;id&gt;.json</c>: one fight with its full log. Never changes once written.</summary>
+/// <summary>
+/// <c>kampf/&lt;id&gt;.json</c>: one fight with its full log. The fight itself never changes; the file is rewritten only
+/// when a trainer in it is deleted or on „Alles neu veröffentlichen“.
+/// </summary>
 /// <param name="Sides">The trainers' side first, then the boss, NPC or challenged trainer.</param>
 /// <param name="Lines">German log lines (spec §5).</param>
 public sealed record BattlePage(

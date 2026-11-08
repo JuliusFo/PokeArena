@@ -360,8 +360,10 @@ species and regaining it moves the moment to the regain (WP-06 decision).
 „nicht eingesetzt“ if a team fight ended before it was sent in. Both values
 are read from the log (in a boss fight everyone takes part from the start).
 Files written before this change lack them and show the start HP as before, until
-„Alles neu veröffentlichen“; the fields are optional, so the data format
-version stays the same (ADR-0009).
+„Alles neu veröffentlichen“ — and because fight files are cached for a day
+(`max-age=86400`), browsers and Cloudflare may serve the old file for up to a
+day after that. The fields are optional, so the data format version stays the
+same (ADR-0009).
 
 - Files are uploaded **directly per change** via the publish queue.
 - Uploads normally land within seconds, but the queue may lag (network
