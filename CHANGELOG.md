@@ -7,6 +7,11 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+### Added
+- The website has a „So geht's“ page for players: registration, all chat
+  commands, boss, trainer and NPC fights, and which NPC unlocks at how many
+  different Pokémon.
+
 ## [1.0.1] - 2026-11-04
 
 ### Changed
