@@ -8,14 +8,14 @@ public sealed class RecordingSender : IChatSender
     /// <summary>Every message in order, hints included.</summary>
     public List<string> Sent { get; } = [];
 
-    /// <summary>The messages sent as a hint, with the viewer they were for.</summary>
-    public List<(string ViewerId, string Text)> Hints { get; } = [];
+    /// <summary>The messages sent as a hint, with the viewer and the command they answered.</summary>
+    public List<(string ViewerId, string Command, string Text)> Hints { get; } = [];
 
     public void Send(string text) => Sent.Add(text);
 
-    public void SendHint(string viewerId, string text)
+    public void SendHint(string viewerId, string command, string text)
     {
-        Hints.Add((viewerId, text));
+        Hints.Add((viewerId, command, text));
         Sent.Add(text);
     }
 }

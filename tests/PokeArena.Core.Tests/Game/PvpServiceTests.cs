@@ -126,6 +126,7 @@ public class PvpServiceTests : IDisposable
         ], _chat.Sent);
         Assert.Equal(_chat.Sent, _chat.Hints.Select(h => h.Text));
         Assert.Equal(["1", "1", "1", "1", "1", "2", "1"], _chat.Hints.Select(h => h.ViewerId));
+        Assert.All(_chat.Hints, h => Assert.Equal("fight", h.Command));
     }
 
     [Fact]

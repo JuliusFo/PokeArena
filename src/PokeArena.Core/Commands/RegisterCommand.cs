@@ -22,6 +22,7 @@ public sealed class RegisterCommand(TrainerService trainers, SpeciesCatalog spec
             var names = species.Starters.Select(s => s.Name).ToList();
             context.Chat.SendHint(
                 context.Message.UserId,
+                Name,
                 $"{mention}, wähle deinen Starter: {string.Join(", ", names[..^1])} oder {names[^1]} – " +
                 "zum Beispiel: !registrieren Pikachu");
             return;
@@ -34,7 +35,7 @@ public sealed class RegisterCommand(TrainerService trainers, SpeciesCatalog spec
         }
         else
         {
-            context.Chat.SendHint(context.Message.UserId, $"{mention}, du bist schon dabei – dein Starter ist {result.Starter.Name}.");
+            context.Chat.SendHint(context.Message.UserId, Name, $"{mention}, du bist schon dabei – dein Starter ist {result.Starter.Name}.");
         }
     }
 }

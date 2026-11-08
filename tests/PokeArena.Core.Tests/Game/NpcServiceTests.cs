@@ -176,6 +176,7 @@ public class NpcServiceTests : IDisposable
         ], _chat.Sent);
         Assert.Equal(_chat.Sent, _chat.Hints.Select(h => h.Text));
         Assert.Equal(["1", "1", "2", "2", "2", "2"], _chat.Hints.Select(h => h.ViewerId));
+        Assert.All(_chat.Hints, h => Assert.Equal("challenge", h.Command));
         await using var db = _game.OpenLive();
         Assert.Empty(db.Battles);
     }

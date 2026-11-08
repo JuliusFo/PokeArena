@@ -54,7 +54,7 @@
 - Backups (WP-08): `DatabaseBackup` uses `VACUUM INTO` on `OpenLive()`. From an in-memory database it writes the
   copy into memory (memdb VFS), so its tests run on a real file in Integration.Tests.
 - Error and hint replies to one viewer (unknown name, too few Pokémon, cooldown …) go through
-  `IChatSender.SendHint(viewerId, …)`, throttled per viewer; fight results and announcements use `Send`. A name a
+  `IChatSender.SendHint(viewerId, command, …)`, throttled per viewer and command (not in the dry run); fight results and announcements use `Send`. A name a
   viewer typed is repeated only through `ChatText.Echo` (review 1.0.3).
 - Twitch: only 403 (and a missing channel or a wrong account) stops the connection for good; every other refusal
   is retried with backoff. A Helix `GET /streams` answer never overrides a stream event of the last 10 minutes

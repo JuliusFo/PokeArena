@@ -30,6 +30,9 @@ public sealed class NpcService(
     TimeProvider time,
     ILogger<NpcService> log)
 {
+    /// <summary>The command whose hints share one throttle per viewer.</summary>
+    private const string Command = "challenge";
+
     /// <summary>The <see cref="Cooldown"/> key of a trainer and an NPC.</summary>
     public static string CooldownKey(string trainerId, string npcId) => $"npc:{trainerId}:{npcId}";
 
@@ -49,7 +52,7 @@ public sealed class NpcService(
             var start = name.Length == 0 ? $"{mention}, fordere einen NPC heraus"
                 : ChatText.Echo(name) is { } typed ? $"{mention}, einen NPC namens {typed} gibt es nicht"
                 : $"{mention}, diesen NPC gibt es nicht";
-            chat.SendHint(message.UserId, available.Count == 0
+            chat.SendHint(message.UserId, Command, available.Count == 0
                 ? $"{start}. Den ersten ({npcs.All[0].Name}) schaltest du mit {npcs.All[0].Threshold} verschiedenen Pokémon frei."
                 : $"{start} – zum Beispiel: !challenge {available[0]}. Freigeschaltet: {string.Join(", ", available)}.");
             return;
@@ -58,7 +61,7 @@ public sealed class NpcService(
         if (!unlocked.Contains(npc.Threshold))
         {
             var distinct = await db.Specimens.Where(s => s.TrainerId == message.UserId).Select(s => s.SpeciesId).Distinct().CountAsync(ct);
-            chat.SendHint(message.UserId, $"{mention}, für {npc.Name} brauchst du noch {Math.Max(1, npc.Threshold - distinct)} verschiedene Pokémon.");
+            chat.SendHint(message.UserId, Command, $"{mention}, für {npc.Name} brauchst du noch {Math.Max(1, npc.Threshold - distinct)} verschiedene Pokémon.");
             return;
         }
 
@@ -68,14 +71,14 @@ public sealed class NpcService(
             && await db.CooldownUntilAsync(cooldownKey, ct) is { } until
             && until > now)
         {
-            chat.SendHint(message.UserId, $"{mention}, gegen {npc.Name} kannst du in {ChatText.Duration(until - now)} wieder antreten.");
+            chat.SendHint(message.UserId, Command, $"{mention}, gegen {npc.Name} kannst du in {ChatText.Duration(until - now)} wieder antreten.");
             return;
         }
 
         var specimens = await db.Specimens.AsNoTracking().Where(s => s.TrainerId == message.UserId).OrderBy(s => s.Id).ToListAsync(ct);
         if (specimens.Count < pvpSettings.TeamSize)
         {
-            chat.SendHint(message.UserId, $"{mention}, du hast erst {specimens.Count} Pokémon – für einen Kampf brauchst du mindestens {pvpSettings.TeamSize}.");
+            chat.SendHint(message.UserId, Command, $"{mention}, du hast erst {specimens.Count} Pokémon – für einen Kampf brauchst du mindestens {pvpSettings.TeamSize}.");
             return;
         }
 

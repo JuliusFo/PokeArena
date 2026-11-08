@@ -10,8 +10,8 @@ goes into this table and the code together. The **Proposal** and **Change**
 columns stay for the next review.
 
 **Hints** (review 1.0.3): error and hint replies to one viewer — rows 1, 3, 4, 17–22 and
-26–30 — go out at most once per viewer and 30 seconds
-(`ChatSender.HintInterval`); further ones in that time are dropped. Fight results, announcements and
+26–30 — go out at most once per viewer, command and 30 seconds
+(`ChatSender.HintInterval`); further ones in that time are dropped. The dry run is not throttled. Fight results, announcements and
 moderator replies are never dropped.
 
 ## Registration and status

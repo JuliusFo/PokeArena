@@ -397,21 +397,38 @@ public class TwitchConnectionTests
     }
 
     [Fact]
-    public void Hints_go_out_once_per_viewer_and_interval()
+    public async Task Hints_go_out_once_per_viewer_command_and_interval_except_in_the_dry_run()
     {
-        var sender = new ChatSender(_helix, _connection, new DryRunMode { Enabled = true }, _chatLog, _time, NullLogger<ChatSender>.Instance);
+        StoreLogin();
+        ArrangeConnect();
+        _http.On(HttpMethod.Post, Helix + "chat/messages", HttpStatusCode.OK, """{"data":[{"message_id":"x","is_sent":true,"drop_reason":null}]}""");
+        var dryRun = new DryRunMode();
+        var sender = new ChatSender(_helix, _connection, dryRun, _chatLog, _time, NullLogger<ChatSender>.Instance);
+        await sender.StartAsync(TestContext.Current.CancellationToken);
+        _connection.Start();
+        (await _sockets.NextAsync()).Push(EventSubFrames.Welcome(keepaliveSeconds: 7200));
+        await Eventually.TrueAsync(() => _connection.State.Status == TwitchStatus.Connected);
 
-        sender.SendHint("1", "erster");
-        sender.SendHint("1", "gedrosselt");
-        sender.SendHint("2", "anderer Zuschauer");
+        sender.SendHint("1", "fight", "erster");
+        sender.SendHint("1", "fight", "gedrosselt");
+        sender.SendHint("1", "registrieren", "anderer Befehl");
+        sender.SendHint("2", "fight", "anderer Zuschauer");
         _time.Advance(ChatSender.HintInterval);
-        sender.SendHint("1", "wieder erlaubt");
-        sender.Send("Ergebnis");
-        sender.Send("Ergebnis");
+        sender.SendHint("1", "fight", "wieder erlaubt");
+        await AdvanceUntilAsync(() => _http.RequestsTo(Helix + "chat/messages").Count() == 4, TimeSpan.FromSeconds(1));
 
-        Assert.Equal(
-            ["erster", "anderer Zuschauer", "wieder erlaubt", "Ergebnis", "Ergebnis"],
-            _chatLog.Snapshot().Where(e => e.Kind == ChatLogKind.Outgoing).Select(e => e.Text));
+        var posted = _http.RequestsTo(Helix + "chat/messages").Select(r => r.Body).ToList();
+        Assert.All(["erster", "anderer Befehl", "anderer Zuschauer", "wieder erlaubt"], text => Assert.Contains(posted, b => b.Contains(text, StringComparison.Ordinal)));
+        Assert.DoesNotContain(posted, b => b.Contains("gedrosselt", StringComparison.Ordinal));
+
+        // The streamer tests replies on purpose: the dry run is never throttled.
+        dryRun.Enabled = true;
+        sender.SendHint("probelauf:a", "fight", "Probe 1");
+        sender.SendHint("probelauf:a", "fight", "Probe 2");
+        Assert.Equal(2, _chatLog.Snapshot().Count(e => e is { Kind: ChatLogKind.Outgoing, DryRun: true }));
+
+        await sender.StopAsync(TestContext.Current.CancellationToken);
+        await _connection.DisconnectAsync();
     }
 
     private const string ValidJson =

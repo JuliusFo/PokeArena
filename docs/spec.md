@@ -296,8 +296,8 @@ switch is not stored and is off after every app start. The dry run is never
 gated.
 
 Error and hint replies to one viewer (unknown name, too few Pokémon, NPC
-cooldown, not registered …) go out at most once per viewer and 30 seconds;
-further ones in that time are dropped, so a viewer spamming commands cannot
+cooldown, not registered …) go out at most once per viewer, command and 30
+seconds (not in the dry run); further ones in that time are dropped, so a viewer spamming commands cannot
 delay fight results (review 1.0.3). Names typed by a viewer are repeated in a
 reply only if they are a plain name (letters, digits, „_“, at most 25
 characters); otherwise the reply says „diesen Trainer / NPC“. Arguments are

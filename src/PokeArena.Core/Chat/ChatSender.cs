@@ -12,11 +12,13 @@ public interface IChatSender
     void Send(string text);
 
     /// <summary>
-    /// An error or hint for one viewer (unknown name, too few Pokémon, cooldown …): at most one per viewer and
-    /// <see cref="ChatSender.HintInterval"/>, so a viewer spamming commands cannot fill the send queue and delay
-    /// fight results (spec §8, review 1.0.3 A5). Test doubles may simply send.
+    /// An error or hint for one viewer (unknown name, too few Pokémon, cooldown …): at most one per viewer, command
+    /// and <see cref="ChatSender.HintInterval"/>, so a viewer spamming a command cannot fill the send queue and delay
+    /// fight results, while a hint for another command still gets through (spec §8, review 1.0.3 A5). Not throttled
+    /// in the dry run, where the streamer tests replies on purpose. Test doubles may simply send.
     /// </summary>
-    void SendHint(string viewerId, string text) => Send(text);
+    /// <param name="command">The command the hint answers, without „!“.</param>
+    void SendHint(string viewerId, string command, string text) => Send(text);
 }
 
 /// <summary>Where the bot writes: the channel and the bot account, known once connected.</summary>
@@ -53,12 +55,15 @@ public sealed class ChatSender(
 
     private readonly ReplyThrottle _hints = new(HintInterval, time);
 
-    public void SendHint(string viewerId, string text)
+    public void SendHint(string viewerId, string command, string text)
     {
-        bool allowed;
-        lock (_hints)
+        var allowed = dryRun.Enabled;
+        if (!allowed)
         {
-            allowed = _hints.Allows(viewerId);
+            lock (_hints)
+            {
+                allowed = _hints.Allows(viewerId + "\n" + command);
+            }
         }
 
         if (allowed)
