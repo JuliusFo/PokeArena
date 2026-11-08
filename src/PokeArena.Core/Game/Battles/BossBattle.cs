@@ -2,7 +2,10 @@ namespace PokeArena.Core.Game.Battles;
 
 /// <param name="Survived">Per participant, in input order: still standing at the end.</param>
 /// <param name="HitRoundLimit">MaxRunden reached — a bug; the caller logs a warning.</param>
-/// <param name="BossHp">The boss's HP left at the end (0 if defeated).</param>
+/// <param name="BossHp">
+/// The boss's HP left at the end: 0 if it fainted; can be above 0 with <paramref name="BossDefeated"/> when the round
+/// limit decided.
+/// </param>
 /// <param name="BossMaxHp">The boss's HP at the start.</param>
 public sealed record BossBattleResult(
     bool BossDefeated, IReadOnlyList<bool> Survived, int Rounds, bool HitRoundLimit, BattleLog Log, int BossHp, int BossMaxHp);

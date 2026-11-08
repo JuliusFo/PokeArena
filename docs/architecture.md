@@ -60,7 +60,9 @@ no runtime editor (user decision 2026-11-04).
 ## Flows
 
 - **Boss** (spec §4, built): `!boss` opens a lobby (in memory, lost on restart)
-  → countdown → `QueuedWork` closes it on the command queue → participant check
+  → countdown (a newcomer in the last 10 s moves the end back; the close work
+  then re-schedules itself for the rest) → `QueuedWork` closes it on the
+  command queue → participant check
   → one seed per encounter draws tier, boss species, each participant's
   specimen and all hits → `BossBattle` → battle, catches, achievements and
   cooldown in one transaction → site paths queued → chat messages with the battle link.
