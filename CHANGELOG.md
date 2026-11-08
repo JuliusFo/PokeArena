@@ -7,6 +7,8 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-11-08
+
 ### Added
 - The website has a „So geht's“ page for players: registration, all chat
   commands, boss, trainer and NPC fights, and which NPC unlocks at how many
