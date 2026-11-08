@@ -61,27 +61,14 @@ public class ChatTests
         Assert.NotNull(Read(EventSubFrames.ChatMessage("!pokearena", sourceBroadcasterId: "42")));
     }
 
-    [Fact]
-    public void Short_text_stays_one_message()
-    {
-        Assert.Equal(["Hallo Welt"], ChatText.Split("  Hallo Welt "));
-        Assert.Empty(ChatText.Split("   "));
-    }
-
-    [Fact]
-    public void Long_text_splits_at_spaces_within_the_limit()
-    {
-        var parts = ChatText.Split("aaaa bbbb cccc dddd", maxLength: 10);
-
-        Assert.Equal(["aaaa bbbb", "cccc dddd"], parts);
-    }
-
-    [Fact]
-    public void Text_without_spaces_is_cut_hard_but_never_inside_an_emoji()
-    {
-        Assert.Equal(["abcde", "fghij", "k"], ChatText.Split("abcdefghijk", maxLength: 5));
-        Assert.Equal(["abcd", "😀e"], ChatText.Split("abcd😀e", maxLength: 5));
-    }
+    [Theory]
+    [InlineData("  Hallo Welt ", 500, new[] { "Hallo Welt" })]
+    [InlineData("   ", 500, new string[0])]
+    [InlineData("aaaa bbbb cccc dddd", 10, new[] { "aaaa bbbb", "cccc dddd" })]
+    [InlineData("abcdefghijk", 5, new[] { "abcde", "fghij", "k" })]
+    [InlineData("abcd😀e", 5, new[] { "abcd", "😀e" })]
+    public void Texts_split_at_spaces_and_never_inside_an_emoji(string text, int maxLength, string[] expected) =>
+        Assert.Equal(expected, ChatText.Split(text, maxLength));
 
     [Fact]
     public void Default_split_respects_twitch_limit()

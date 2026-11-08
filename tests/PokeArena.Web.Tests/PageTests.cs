@@ -168,10 +168,21 @@ public class PageTests : BunitContext
 
         Assert.Contains("!registrieren", cut.Markup);
         Assert.Contains("!challenge", cut.Markup);
-        var npcs = cut.FindAll(".guide-npcs tbody tr");
-        Assert.Equal(17, npcs.Count);
-        Assert.Equal("15Eich", npcs[0].TextContent);
-        Assert.Equal("151Ash", npcs[^1].TextContent);
+        // Every row against data/npcs.json: threshold and name, in order (review 1.0.3, C16).
+        using var file = JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "data", "npcs.json")));
+        var expected = file.RootElement.GetProperty("npcs").EnumerateArray()
+            .Select(n => $"{n.GetProperty("schwelle").GetInt32()}{n.GetProperty("name").GetString()}");
+        Assert.Equal(expected, cut.FindAll(".guide-npcs tbody tr").Select(tr => tr.TextContent));
+    }
+
+    [Fact]
+    public void The_website_references_only_the_contracts()
+    {
+        // ADR-0009: EF Core, the Twitch client and the bot's logic must never end up in the browser download.
+        var references = typeof(Format).Assembly.GetReferencedAssemblies().Select(a => a.Name!).ToList();
+
+        Assert.Contains("PokeArena.Contracts", references);
+        Assert.DoesNotContain(references, r => r is "PokeArena.Core" or "PokeArena.UI" or "PokeArena.Desktop" || r.StartsWith("Microsoft.EntityFrameworkCore", StringComparison.Ordinal));
     }
 
     [Fact]

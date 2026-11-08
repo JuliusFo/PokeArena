@@ -9,8 +9,9 @@ namespace PokeArena.Integration.Tests;
 
 /// <summary>
 /// Checks the bot login stored on this machine against the real Twitch API. Skipped when no login is stored
-/// (always in CI). Reads only — but a due refresh rotates the stored token, so don't run it while the app is
-/// refreshing at the same moment.
+/// (always in CI). Not read-only: a due refresh rotates the stored token, so don't run it while the app is
+/// refreshing at the same moment — and if Twitch rejects the login, the provider deletes
+/// <c>PokeArena:twitch-token</c> from the Credential Manager, exactly as the app would (review 1.0.3, C19).
 /// </summary>
 public class TwitchLoginTests
 {

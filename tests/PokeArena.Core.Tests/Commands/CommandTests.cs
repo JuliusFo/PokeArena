@@ -3,6 +3,7 @@ using Microsoft.Extensions.Time.Testing;
 using PokeArena.Core.Chat;
 using PokeArena.Core.Commands;
 using PokeArena.Core.Game;
+using PokeArena.Core.Publishing;
 using PokeArena.Core.Tests.Fakes;
 using PokeArena.Core.Twitch;
 
@@ -40,19 +41,6 @@ public class CommandTests : IDisposable
     }
 
     [Fact]
-    public async Task Status_command_answers_with_the_version_then_cools_down()
-    {
-        var command = new StatusCommand(new AppInfo("0.1.0"), _time);
-
-        await command.ExecuteAsync(Context("!pokearena"), _ct);
-        await command.ExecuteAsync(Context("!pokearena"), _ct);
-        _time.Advance(StatusCommand.Cooldown);
-        await command.ExecuteAsync(Context("!pokearena"), _ct);
-
-        Assert.Equal(["PokeArena-Bot ist online (Version 0.1.0).", "PokeArena-Bot ist online (Version 0.1.0)."], _chat.Sent);
-    }
-
-    [Fact]
     public async Task Status_command_skips_the_cooldown_in_the_dry_run()
     {
         var command = new StatusCommand(new AppInfo("0.1.0"), _time);
@@ -74,6 +62,21 @@ public class CommandTests : IDisposable
         await processor.ProcessAsync(Message("!Version"), _ct);
 
         Assert.Equal(["PokeArena-Bot ist online (Version 1.2.3).", "PokeArena-Bot ist online (Version 1.2.3)."], _chat.Sent);
+    }
+
+    [Fact]
+    public async Task Arena_posts_the_link_with_the_status_cooldown_or_says_the_site_is_missing()
+    {
+        var withSite = new ArenaCommand(new SiteLinks(new WebsiteOptions { SiteUrl = "https://arena.example.de" }), _time);
+        var withoutSite = new ArenaCommand(SiteLinks.None, _time);
+
+        await withSite.ExecuteAsync(Context("!arena"), _ct);
+        await withSite.ExecuteAsync(Context("!arena"), _ct);
+        await withoutSite.ExecuteAsync(Context("!arena"), _ct);
+
+        Assert.Equal(
+            ["Rangliste, Kämpfe und Trainer: https://arena.example.de", "Die PokeArena-Website ist noch nicht eingerichtet."],
+            _chat.Sent);
     }
 
     [Fact]

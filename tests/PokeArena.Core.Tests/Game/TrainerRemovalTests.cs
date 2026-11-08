@@ -78,6 +78,18 @@ public class TrainerRemovalTests : IDisposable
     }
 
     [Fact]
+    public async Task A_deleted_viewer_counts_as_unregistered_at_once()
+    {
+        await ArrangeFightAsync();
+        var ash = new ChatMessage("m", "1001", "ash", "Ash", "hallo", ChatRole.Viewer);
+        Assert.True(await _game.Trainers.ObserveAsync(ash, _ct));
+
+        await _game.Trainers.DeleteAsync("1001", _ct);
+
+        Assert.False(await _game.Trainers.ObserveAsync(ash, _ct));
+    }
+
+    [Fact]
     public async Task A_confirmation_for_another_name_only_asks_about_that_one()
     {
         await ArrangeFightAsync();

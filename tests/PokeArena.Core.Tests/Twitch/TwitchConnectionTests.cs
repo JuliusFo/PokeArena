@@ -254,6 +254,23 @@ public class TwitchConnectionTests
     }
 
     [Fact]
+    public async Task A_revoked_authorization_signs_the_bot_out()
+    {
+        StoreLogin();
+        ArrangeConnect();
+        _connection.Start();
+        var socket = await _sockets.NextAsync();
+        socket.Push(EventSubFrames.Welcome());
+        await Eventually.TrueAsync(() => _connection.State.Status == TwitchStatus.Connected);
+
+        socket.Push(EventSubFrames.Revocation("authorization_revoked"));
+
+        await Eventually.TrueAsync(() => _connection.State.Status == TwitchStatus.SignedOut);
+        Assert.Equal(TwitchProblem.SessionExpired, _connection.State.Problem);
+        Assert.False(_tokens.HasToken);
+    }
+
+    [Fact]
     public async Task A_refused_subscription_is_retried_and_only_403_stops()
     {
         StoreLogin();

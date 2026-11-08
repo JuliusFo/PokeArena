@@ -48,7 +48,7 @@ public class TrainerListTests : BunitContext
         Services.AddSingleton(chatLog);
         Services.AddSingleton(inbox);
         Services.AddSingleton(new DryRunTrainers(_database, _species, _npcs, _trainers, PvpSettings.Default, new SystemSeedSource(), inbox, chatLog, _time));
-        Services.AddSingleton<ITwitchConnection>(new FakeTwitchConnection());
+        Services.AddSingleton<ITwitchConnection>(new FakeTwitchConnection { State = new(TwitchStatus.SignedOut) });
         Services.AddSingleton(new TrainerRemoval(_trainers, battles, new NullChatSender(), _time, NullLogger<TrainerRemoval>.Instance));
         Services.AddSingleton(new StreamStatus());
         var r2 = new R2Access(new WebsiteOptions(), new MemorySecretStore());
@@ -243,32 +243,5 @@ public class TrainerListTests : BunitContext
         public void Send(string text)
         {
         }
-    }
-
-    private sealed class FakeTwitchConnection : ITwitchConnection
-    {
-        public TwitchConnectionState State => new(TwitchStatus.SignedOut);
-
-        public string Channel => "shiyofurball";
-
-        public event Action? StateChanged
-        {
-            add { }
-            remove { }
-        }
-
-        public Task BeginLoginAsync() => Task.CompletedTask;
-
-        public void CancelLogin()
-        {
-        }
-
-        public void Connect()
-        {
-        }
-
-        public Task DisconnectAsync() => Task.CompletedTask;
-
-        public Task SignOutAsync() => Task.CompletedTask;
     }
 }

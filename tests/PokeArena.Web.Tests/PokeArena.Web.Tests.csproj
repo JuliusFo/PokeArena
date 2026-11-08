@@ -23,4 +23,9 @@
     <ProjectReference Include="..\..\src\PokeArena.Web\PokeArena.Web.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- The real NPC list, so the guide page cannot drift from it. -->
+    <None Include="..\..\data\npcs.json" Link="data\npcs.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
