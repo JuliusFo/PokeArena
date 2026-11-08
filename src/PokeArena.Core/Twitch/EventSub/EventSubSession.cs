@@ -37,6 +37,12 @@ public sealed class EventSubSession(IEventSubSocketFactory sockets, TimeProvider
     /// <summary>Wait for the welcome frame; Twitch sends it right after connecting.</summary>
     internal static readonly TimeSpan WelcomeTimeout = TimeSpan.FromSeconds(10);
 
+    /// <summary>TLS and HTTP upgrade; a server that accepts TCP but never answers must not hang the bot.</summary>
+    internal static readonly TimeSpan ConnectTimeout = TimeSpan.FromSeconds(15);
+
+    /// <summary>How long a polite close may take before the socket is dropped.</summary>
+    internal static readonly TimeSpan CloseTimeout = TimeSpan.FromSeconds(2);
+
     public async Task RunAsync(IEventSubHandler handler, CancellationToken ct, Uri? url = null)
     {
         var frames = Channel.CreateUnbounded<Frame>();
@@ -46,7 +52,7 @@ public sealed class EventSubSession(IEventSubSocketFactory sockets, TimeProvider
         Connection? pending = null;
         try
         {
-            current = await Connection.OpenAsync(sockets, url ?? DefaultUrl, frames.Writer, log, ct);
+            current = await Connection.OpenAsync(sockets, url ?? DefaultUrl, frames.Writer, time, log, ct);
             var started = false;
             while (true)
             {
@@ -148,7 +154,7 @@ public sealed class EventSubSession(IEventSubSocketFactory sockets, TimeProvider
     {
         try
         {
-            return await Connection.OpenAsync(sockets, url, frames, log, ct);
+            return await Connection.OpenAsync(sockets, url, frames, time, log, ct);
         }
         catch (Exception ex) when (!ct.IsCancellationRequested)
         {
@@ -165,19 +171,37 @@ public sealed class EventSubSession(IEventSubSocketFactory sockets, TimeProvider
     private sealed class Connection : IAsyncDisposable
     {
         private readonly IEventSubSocket _socket;
+        private readonly TimeProvider _time;
         private readonly CancellationTokenSource _stop = new();
         private Task _pump = Task.CompletedTask;
 
-        private Connection(IEventSubSocket socket) => _socket = socket;
+        private Connection(IEventSubSocket socket, TimeProvider time)
+        {
+            _socket = socket;
+            _time = time;
+        }
 
         public static async Task<Connection> OpenAsync(
             IEventSubSocketFactory sockets,
             Uri url,
             ChannelWriter<Frame> frames,
+            TimeProvider time,
             ILogger log,
             CancellationToken ct)
         {
-            var connection = new Connection(await sockets.ConnectAsync(url, ct));
+            using var timeout = new CancellationTokenSource(ConnectTimeout, time);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(ct, timeout.Token);
+            IEventSubSocket socket;
+            try
+            {
+                socket = await sockets.ConnectAsync(url, linked.Token);
+            }
+            catch (OperationCanceledException) when (timeout.IsCancellationRequested && !ct.IsCancellationRequested)
+            {
+                throw new EventSubConnectionLostException($"no answer from {url.Host} within {ConnectTimeout.TotalSeconds:0} s");
+            }
+
+            var connection = new Connection(socket, time);
             connection._pump = connection.PumpAsync(frames, log);
             return connection;
         }
@@ -225,7 +249,7 @@ public sealed class EventSubSession(IEventSubSocketFactory sockets, TimeProvider
         {
             try
             {
-                using var closeTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+                using var closeTimeout = new CancellationTokenSource(CloseTimeout, _time);
                 await _socket.CloseAsync(closeTimeout.Token);
             }
             catch (Exception)

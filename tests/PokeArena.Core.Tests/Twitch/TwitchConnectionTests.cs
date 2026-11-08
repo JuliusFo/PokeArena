@@ -231,6 +231,123 @@ public class TwitchConnectionTests
         await _connection.DisconnectAsync();
     }
 
+    [Fact]
+    public async Task A_login_with_the_channel_account_stops_with_a_hint()
+    {
+        StoreLogin();
+        _http.On(HttpMethod.Get, Id + "validate", HttpStatusCode.OK,
+                """{"client_id":"client-1","login":"shiyofurball","scopes":["user:read:chat","user:write:chat","user:bot"],"user_id":"42","expires_in":14000}""")
+            .On(HttpMethod.Get, Helix + "users", HttpStatusCode.OK, """{"data":[{"id":"42","login":"shiyofurball","display_name":"ShiyoFurball"}]}""");
+
+        _connection.Start();
+
+        await Eventually.TrueAsync(() => _connection.State.Status == TwitchStatus.Failed);
+        Assert.Equal(TwitchProblem.WrongAccount, _connection.State.Problem);
+        Assert.Empty(_sockets.ConnectedUrls);
+        Assert.True(_tokens.HasToken);
+    }
+
+    [Fact]
+    public async Task A_refused_subscription_is_retried_and_only_403_stops()
+    {
+        StoreLogin();
+        _http.On(HttpMethod.Post, Helix + "eventsub/subscriptions", HttpStatusCode.BadRequest, """{"status":400,"message":"session does not exist"}""");
+        ArrangeConnect();
+
+        _connection.Start();
+        (await _sockets.NextAsync()).Push(EventSubFrames.Welcome("session-1"));
+
+        await Eventually.TrueAsync(() => _connection.State.Status == TwitchStatus.Reconnecting);
+        await AdvanceUntilAsync(() => _sockets.ConnectedUrls.Count == 2, TwitchConnection.RetryDelay(1));
+        (await _sockets.NextAsync()).Push(EventSubFrames.Welcome("session-2"));
+        await Eventually.TrueAsync(() => _connection.State.Status == TwitchStatus.Connected);
+        await _connection.DisconnectAsync();
+    }
+
+    [Fact]
+    public async Task Forbidden_subscription_stops_with_missing_permission()
+    {
+        StoreLogin();
+        _http.On(HttpMethod.Post, Helix + "eventsub/subscriptions", HttpStatusCode.Forbidden, """{"status":403,"message":"forbidden"}""");
+        ArrangeConnect();
+
+        _connection.Start();
+        (await _sockets.NextAsync()).Push(EventSubFrames.Welcome());
+
+        await Eventually.TrueAsync(() => _connection.State.Status == TwitchStatus.Failed);
+        Assert.Equal(TwitchProblem.MissingPermission, _connection.State.Problem);
+    }
+
+    [Fact]
+    public async Task A_stream_that_went_live_just_before_the_start_is_found_by_a_recheck()
+    {
+        StoreLogin();
+        ArrangeConnect();
+        _http.On(HttpMethod.Get, Helix + "streams", HttpStatusCode.OK, """{"data":[{"id":"s-1","user_id":"42","type":"live"}]}""");
+
+        _connection.Start();
+        (await _sockets.NextAsync()).Push(EventSubFrames.Welcome(keepaliveSeconds: 7200));
+        await Eventually.TrueAsync(() => _http.RequestsTo(Helix + "streams").Count() == 1);
+        Assert.False(_stream.IsLive);
+
+        _time.Advance(TwitchConnection.StartRecheckInterval);
+
+        await Eventually.TrueAsync(() => _stream.IsLive);
+        await _connection.DisconnectAsync();
+    }
+
+    [Fact]
+    public async Task A_lagging_check_does_not_override_a_recent_stream_event()
+    {
+        StoreLogin();
+        ArrangeConnect();
+
+        _connection.Start();
+        var socket = await _sockets.NextAsync();
+        socket.Push(EventSubFrames.Welcome(keepaliveSeconds: 7200));
+        await Eventually.TrueAsync(() => _http.RequestsTo(Helix + "streams").Count() == 1);
+        socket.Push(EventSubFrames.Stream("stream.online"));
+        await Eventually.TrueAsync(() => _stream.IsLive);
+        socket.Push(EventSubFrames.Stream("stream.offline"));
+        await Eventually.TrueAsync(() => !_stream.IsLive);
+
+        // Helix still says live minutes after the offline event: the event wins. Had the first recheck set the
+        // channel live, the rechecks would stop and there would be no third request.
+        _http.On(HttpMethod.Get, Helix + "streams", HttpStatusCode.OK, """{"data":[{"id":"s-1","user_id":"42","type":"live"}]}""");
+        _time.Advance(TwitchConnection.StartRecheckInterval);
+        await Eventually.TrueAsync(() => _http.RequestsTo(Helix + "streams").Count() == 2);
+        _time.Advance(TwitchConnection.StartRecheckInterval);
+        await Eventually.TrueAsync(() => _http.RequestsTo(Helix + "streams").Count() == 3);
+
+        Assert.False(_stream.IsLive);
+        await _connection.DisconnectAsync();
+    }
+
+    [Fact]
+    public async Task A_message_waits_for_a_reconnect_and_queued_messages_are_sent_before_stopping()
+    {
+        StoreLogin();
+        ArrangeConnect();
+        _http.On(HttpMethod.Post, Helix + "chat/messages", HttpStatusCode.OK, """{"data":[{"message_id":"x","is_sent":true,"drop_reason":null}]}""");
+        var sender = new ChatSender(_helix, _connection, new DryRunMode(), _chatLog, _time, NullLogger<ChatSender>.Instance);
+        await sender.StartAsync(TestContext.Current.CancellationToken);
+        _connection.Start();
+        var first = await _sockets.NextAsync();
+        first.Push(EventSubFrames.Welcome("session-1"));
+        await Eventually.TrueAsync(() => _connection.State.Status == TwitchStatus.Connected);
+        first.ServerClose("4006 network error");
+        await Eventually.TrueAsync(() => _connection.Target is null);
+
+        sender.Send("Der Boss wurde besiegt!");
+        var stopping = sender.StopAsync(TestContext.Current.CancellationToken);
+        await AdvanceUntilAsync(() => _sockets.ConnectedUrls.Count == 2, TwitchConnection.RetryDelay(1));
+        (await _sockets.NextAsync()).Push(EventSubFrames.Welcome("session-2"));
+        await AdvanceUntilAsync(() => stopping.IsCompleted, TimeSpan.FromSeconds(1));
+
+        Assert.Contains("Der Boss wurde besiegt!", _http.RequestsTo(Helix + "chat/messages").Single().Body);
+        await _connection.DisconnectAsync();
+    }
+
     private const string ValidJson =
         """{"client_id":"client-1","login":"pokearenabot","scopes":["user:read:chat","user:write:chat","user:bot"],"user_id":"2001","expires_in":14000}""";
 

@@ -36,6 +36,11 @@ public sealed class ChatSender(
     private readonly Channel<string> _queue = Channel.CreateUnbounded<string>(new UnboundedChannelOptions { SingleReader = true });
     private readonly SendRateLimiter _limiter = new();
 
+    /// <summary>How long a message waits for a lost Twitch connection (reconnects back off up to 60 s).</summary>
+    internal static readonly TimeSpan TargetWait = TimeSpan.FromSeconds(60);
+
+    private static readonly TimeSpan TargetPoll = TimeSpan.FromSeconds(1);
+
     public void Send(string text)
     {
         foreach (var part in ChatText.Split(text))
@@ -65,9 +70,39 @@ public sealed class ChatSender(
         }
     }
 
+    /// <summary>
+    /// Sends what is still queued (e.g. the result of the last fight) before stopping, until the host's stop timeout.
+    /// Register this service after the Twitch connection, so it stops first while the connection is still up.
+    /// </summary>
+    public override async Task StopAsync(CancellationToken cancellationToken)
+    {
+        _queue.Writer.TryComplete();
+        if (ExecuteTask is { } running)
+        {
+            await running.WaitAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+        }
+
+        await base.StopAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// During a reconnect there is no target for a few seconds; a fight result posted then would be lost. Wait for
+    /// the connection instead — a message that was never sent cannot arrive twice.
+    /// </summary>
+    private async Task<ChatTarget?> WaitForTargetAsync(CancellationToken ct)
+    {
+        var until = time.GetUtcNow() + TargetWait;
+        while (targets.Target is null && time.GetUtcNow() < until)
+        {
+            await Task.Delay(TargetPoll, time, ct);
+        }
+
+        return targets.Target;
+    }
+
     private async Task SendNowAsync(string text, CancellationToken ct)
     {
-        var target = targets.Target;
+        var target = await WaitForTargetAsync(ct);
         if (target is null)
         {
             chatLog.Add(ChatLogKind.Warning, null, $"Nicht mit Twitch verbunden – Nachricht nicht gesendet: {text}");

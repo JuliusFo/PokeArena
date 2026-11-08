@@ -84,7 +84,9 @@ public sealed class TwitchTokenProvider(
             TwitchToken refreshed;
             try
             {
-                refreshed = await auth.RefreshAsync(token.RefreshToken, ct);
+                // Not cancelled by the caller (shutdown, session end): once Twitch has spent the single-use refresh
+                // token, only this answer holds the new one. The HttpClient timeout still bounds the request.
+                refreshed = await auth.RefreshAsync(token.RefreshToken, CancellationToken.None);
             }
             catch (TwitchAuthRequiredException)
             {

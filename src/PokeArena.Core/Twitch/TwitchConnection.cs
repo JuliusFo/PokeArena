@@ -11,7 +11,7 @@ namespace PokeArena.Core.Twitch;
 /// Ties login, chat subscription and reconnects together. While running it validates the token hourly (Twitch
 /// requires it), feeds chat messages into the <see cref="ChatInbox"/> and provides the <see cref="ChatTarget"/>
 /// for sending. It also keeps <see cref="StreamStatus"/> current: live/offline events plus a Helix check on every new
-/// session and with the hourly validation. Lost connections are retried with growing pauses; only problems a retry
+/// session, a few rechecks after it and with the hourly validation; a recent event wins over a check. Lost connections are retried with growing pauses; only problems a retry
 /// cannot fix stop it.
 /// </summary>
 public sealed class TwitchConnection(
@@ -28,7 +28,20 @@ public sealed class TwitchConnection(
 {
     internal static readonly TimeSpan ValidationInterval = TimeSpan.FromHours(1);
 
+    /// <summary>
+    /// Helix <c>GET /streams</c> lags behind going live or offline by a few minutes. A polled answer therefore never
+    /// overrides what a stream event said within this window (review 1.0.3, A3).
+    /// </summary>
+    internal static readonly TimeSpan EventPrecedence = TimeSpan.FromMinutes(10);
+
+    /// <summary>After a session start that found the channel offline: ask again this often …</summary>
+    internal static readonly TimeSpan StartRecheckInterval = TimeSpan.FromMinutes(2);
+
+    /// <summary>… this many times, in case the stream went live just before the app connected.</summary>
+    internal const int StartRechecks = 5;
+
     private readonly Lock _lock = new();
+    private DateTimeOffset? _lastLiveEventAt;
     private TwitchConnectionState _state = new(TwitchStatus.Disconnected);
     private CancellationTokenSource? _loginCts;
     private CancellationTokenSource? _runCts;
@@ -78,7 +91,8 @@ public sealed class TwitchConnection(
         {
             var login = await auth.StartDeviceLoginAsync(cts.Token);
             SetState(new TwitchConnectionState(TwitchStatus.WaitingForLogin, Login: login));
-            _ = PollLoginAsync(login, cts.Token);
+            // Off the UI thread: the caller is a button, and Core code does not use ConfigureAwait(false).
+            _ = Task.Run(() => PollLoginAsync(login, cts.Token), CancellationToken.None);
         }
         catch (OperationCanceledException) when (cts.IsCancellationRequested)
         {
@@ -121,8 +135,10 @@ public sealed class TwitchConnection(
                 return;
             }
 
-            _runCts = new CancellationTokenSource();
-            _runTask = RunAsync(_runCts.Token);
+            // On the thread pool: started from the UI thread, the whole session (receive loop, keepalive, hourly
+            // check) would otherwise run there, and blocking on shutdown would deadlock (review 1.0.3, A4).
+            var token = (_runCts = new CancellationTokenSource()).Token;
+            _runTask = Task.Run(() => RunAsync(token), CancellationToken.None);
         }
     }
 
@@ -216,7 +232,6 @@ public sealed class TwitchConnection(
 
     private async Task RunAsync(CancellationToken ct)
     {
-        await Task.Yield(); // Leave the caller's lock before the first await does real work.
         var failures = 0;
         while (!ct.IsCancellationRequested)
         {
@@ -243,17 +258,16 @@ public sealed class TwitchConnection(
                 SetState(new TwitchConnectionState(TwitchStatus.Failed, ex.Problem));
                 return;
             }
-            catch (TwitchApiException ex) when (!ex.IsTransient)
+            catch (TwitchApiException ex) when (ex.Status == HttpStatusCode.Forbidden)
             {
                 log.LogWarning(ex, "Twitch refused the connection");
-                SetState(new TwitchConnectionState(
-                    TwitchStatus.Failed,
-                    ex.Status == HttpStatusCode.Forbidden ? TwitchProblem.MissingPermission : TwitchProblem.ConnectionLost));
+                SetState(new TwitchConnectionState(TwitchStatus.Failed, TwitchProblem.MissingPermission));
                 return;
             }
             catch (Exception ex)
             {
-                // Network trouble, Twitch hiccups, closed sockets — and anything unexpected: keep the bot alive.
+                // Network trouble, Twitch hiccups, closed sockets, other refusals (a 400 for a session Twitch closed
+                // while we subscribed, review 1.0.3 A2) — and anything unexpected: keep the bot alive.
                 failures++;
                 var delay = RetryDelay(failures);
                 log.LogWarning(ex, "Twitch connection lost (attempt {Attempt}), retrying in {Delay}", failures, delay);
@@ -280,6 +294,12 @@ public sealed class TwitchConnection(
         var bot = await tokens.ValidateAsync(ct);
         var channel = await helix.GetUserByLoginAsync(Channel, ct)
             ?? throw new StopException(TwitchProblem.ChannelNotFound, $"Twitch channel '{Channel}' not found");
+        if (bot.UserId == channel.Id)
+        {
+            // Confirmed with the streamer's own account: every message of the streamer would count as the bot's own.
+            throw new StopException(TwitchProblem.WrongAccount, "The stored login is the channel itself, not the bot account");
+        }
+
         var target = new ChatTarget(channel.Id, channel.Login, bot.UserId, bot.Login);
         _target = target;
         try
@@ -293,12 +313,18 @@ public sealed class TwitchConnection(
                 {
                     onSessionStarted();
                     OnConnected(target);
-                    ReportLive(isLive, announce: true);
+                    ReportPolledLive(isLive, announce: true);
                 },
-                isLive => ReportLive(isLive, announce: false));
+                ReportLiveEvent);
             var session = eventSub.RunAsync(handler, stop.Token);
             var validation = ValidatePeriodicallyAsync(target, stop.Token);
-            var first = await Task.WhenAny(session, validation);
+            var recheck = RecheckLiveAfterStartAsync(target, stop.Token);
+            var first = await Task.WhenAny(session, validation, recheck);
+            if (first == recheck && recheck.IsCompletedSuccessfully)
+            {
+                first = await Task.WhenAny(session, validation);
+            }
+
             try
             {
                 await first;
@@ -306,7 +332,7 @@ public sealed class TwitchConnection(
             finally
             {
                 await stop.CancelAsync();
-                await Task.WhenAll(session, validation).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+                await Task.WhenAll(session, validation, recheck).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
             }
         }
         finally
@@ -327,11 +353,36 @@ public sealed class TwitchConnection(
             try
             {
                 await tokens.ValidateAsync(ct);
-                ReportLive(await helix.IsLiveAsync(target.BroadcasterId, ct), announce: false);
+                ReportPolledLive(await helix.IsLiveAsync(target.BroadcasterId, ct), announce: false);
             }
             catch (Exception ex) when (ex is HttpRequestException or TwitchApiException { IsTransient: true })
             {
                 log.LogWarning(ex, "Hourly Twitch check failed, trying again later");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Started shortly after going live, the first check may still say offline, and the <c>stream.online</c> event
+    /// came before the subscription. Ask a few more times while the channel counts as offline.
+    /// </summary>
+    private async Task RecheckLiveAfterStartAsync(ChatTarget target, CancellationToken ct)
+    {
+        for (var i = 0; i < StartRechecks; i++)
+        {
+            await Task.Delay(StartRecheckInterval, time, ct);
+            if (stream.IsLive)
+            {
+                return;
+            }
+
+            try
+            {
+                ReportPolledLive(await helix.IsLiveAsync(target.BroadcasterId, ct), announce: false);
+            }
+            catch (Exception ex) when (ex is HttpRequestException or TwitchApiException { IsTransient: true })
+            {
+                log.LogWarning(ex, "Checking the live state failed, trying again later");
             }
         }
     }
@@ -357,6 +408,23 @@ public sealed class TwitchConnection(
     {
         SetState(new TwitchConnectionState(TwitchStatus.Connected, BotLogin: target.BotLogin));
         chatLog.Add(ChatLogKind.Info, null, $"Verbunden mit dem Chat von {target.BroadcasterLogin} als {target.BotLogin}.");
+    }
+
+    private void ReportLiveEvent(bool isLive)
+    {
+        _lastLiveEventAt = time.GetUtcNow();
+        ReportLive(isLive, announce: false);
+    }
+
+    /// <summary>An answer of <c>GET /streams</c>; ignored right after a stream event (<see cref="EventPrecedence"/>).</summary>
+    private void ReportPolledLive(bool isLive, bool announce)
+    {
+        if (_lastLiveEventAt is { } at && time.GetUtcNow() - at < EventPrecedence)
+        {
+            isLive = stream.IsLive;
+        }
+
+        ReportLive(isLive, announce);
     }
 
     /// <param name="announce">Log the state even if it did not change (on connect, so the streamer sees it).</param>

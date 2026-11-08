@@ -40,12 +40,14 @@ public static class TwitchServiceCollectionExtensions
         services.AddSingleton<ChatLog>();
         services.AddSingleton<ChatSender>();
         services.AddSingleton<IChatSender>(sp => sp.GetRequiredService<ChatSender>());
-        services.AddHostedService(sp => sp.GetRequiredService<ChatSender>());
 
         services.AddSingleton<IChatCommand, StatusCommand>();
-        services.AddHostedService<CommandProcessor>();
 
+        // Hosts stop in reverse order: first no new commands, then the sender empties its queue, then Twitch
+        // disconnects (review 1.0.3, A4).
         services.AddHostedService<TwitchStartup>();
+        services.AddHostedService(sp => sp.GetRequiredService<ChatSender>());
+        services.AddHostedService<CommandProcessor>();
         return services;
     }
 
@@ -58,6 +60,7 @@ public static class TwitchServiceCollectionExtensions
             return Task.CompletedTask;
         }
 
-        public Task StopAsync(CancellationToken cancellationToken) => connection.DisconnectAsync();
+        public Task StopAsync(CancellationToken cancellationToken) =>
+            connection.DisconnectAsync().WaitAsync(cancellationToken);
     }
 }

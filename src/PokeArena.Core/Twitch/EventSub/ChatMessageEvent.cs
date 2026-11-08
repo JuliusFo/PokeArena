@@ -46,7 +46,8 @@ public static class ChatMessageEvent
         {
             foreach (var badge in badges.EnumerateArray())
             {
-                if (OptionalString(badge, "set_id") == "moderator")
+                // Lead moderators show "lead_moderator" instead of "moderator" (Twitch, 2025; review 1.0.3).
+                if (OptionalString(badge, "set_id") is "moderator" or "lead_moderator")
                 {
                     return ChatRole.Moderator;
                 }

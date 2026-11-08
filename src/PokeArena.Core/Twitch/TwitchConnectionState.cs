@@ -49,6 +49,9 @@ public enum TwitchProblem
     /// <summary>Twitch ended the chat subscription (e.g. the bot account was suspended).</summary>
     SubscriptionRevoked,
 
+    /// <summary>The login belongs to the channel itself instead of the bot account.</summary>
+    WrongAccount,
+
     /// <summary>Connection lost; see <see cref="TwitchConnectionState.RetryAt"/>.</summary>
     ConnectionLost,
 }
