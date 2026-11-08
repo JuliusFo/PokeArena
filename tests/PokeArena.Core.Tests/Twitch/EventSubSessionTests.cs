@@ -64,14 +64,20 @@ public class EventSubSessionTests
         socket.Push(EventSubFrames.Welcome(keepaliveSeconds: 10));
         await Eventually.TrueAsync(() => _handler.Sessions.Count == 1);
 
+        // A keepalive after 10 s restarts the wait; a message right behind it shows it was read (no real-time sleep).
+        _time.Advance(TimeSpan.FromSeconds(10));
         socket.Push(EventSubFrames.Keepalive());
-        await Task.Delay(50, TestContext.Current.CancellationToken);
-        _time.Advance(TimeSpan.FromSeconds(14));
-        Assert.False(run.IsCompleted);
+        socket.Push(EventSubFrames.ChatMessage("nach dem Keepalive"));
+        await Eventually.TrueAsync(() => _handler.Texts.Count == 1);
 
-        _time.Advance(TimeSpan.FromSeconds(2));
+        // 10 s later the session still lives: Twitch's 10 s plus the grace of 5 s are not over.
+        _time.Advance(TimeSpan.FromSeconds(10));
+        socket.Push(EventSubFrames.ChatMessage("noch da"));
+        await Eventually.TrueAsync(() => _handler.Texts.Count == 2);
 
-        await Assert.ThrowsAsync<EventSubConnectionLostException>(() => run);
+        _time.Advance(TimeSpan.FromSeconds(10) + EventSubSession.KeepaliveGrace + TimeSpan.FromSeconds(1));
+
+        await Assert.ThrowsAsync<EventSubConnectionLostException>(() => run.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken));
         Assert.True(socket.Disposed);
     }
 

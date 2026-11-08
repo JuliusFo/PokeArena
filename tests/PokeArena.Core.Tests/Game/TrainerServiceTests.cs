@@ -82,6 +82,10 @@ public class TrainerServiceTests : IDisposable
         await _game.Trainers.RegisterAsync("1001", "ash", "Ash", Pikachu, _ct);
         var changes = 0;
         _game.Trainers.Changed += () => changes++;
+        await using (var published = _game.OpenLive())
+        {
+            await published.PublishQueue.ExecuteDeleteAsync(_ct);
+        }
 
         Assert.True(await _game.Trainers.ObserveAsync(Message("1001", "Ash"), _ct));
         Assert.True(await _game.Trainers.ObserveAsync(Message("1001", "AshKetchum"), _ct));
@@ -90,6 +94,9 @@ public class TrainerServiceTests : IDisposable
         var trainer = await db.Trainers.SingleAsync(_ct);
         Assert.Equal(("AshKetchum", "ashketchum"), (trainer.DisplayName, trainer.Login));
         Assert.Equal(1, changes);
+        Assert.Equal(
+            [Contracts.SitePaths.Meta, Contracts.SitePaths.Leaderboard, Contracts.SitePaths.Trainer("1001")],
+            await db.PublishQueue.Select(i => i.Path).OrderBy(p => p).ToListAsync(_ct));
     }
 
     [Fact]

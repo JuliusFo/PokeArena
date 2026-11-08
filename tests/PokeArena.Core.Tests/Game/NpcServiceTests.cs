@@ -54,6 +54,9 @@ public class NpcServiceTests : IDisposable
         Assert.Equal(("1", "eich", battle.Id, _game.Time.GetUtcNow()), (badge.TrainerId, badge.NpcId, badge.BattleId, badge.WonAt));
         Assert.Equal(_game.Time.GetUtcNow() + NpcSettings.Default.WinCooldown, (await db.Cooldowns.SingleAsync(_ct)).Until);
         Assert.Equal([$"Ash besiegt Eich und bekommt den Orden von Eich, {Species.Get(reward.SpeciesId).Name} und 1 Token!"], _chat.Sent);
+        Assert.Equal(
+            [SitePaths.BattleIndex, SitePaths.Battle(battle.Id), SitePaths.Meta, SitePaths.Leaderboard, SitePaths.Trainer("1")],
+            await db.PublishQueue.Select(i => i.Path).OrderBy(p => p).ToListAsync(_ct));
     }
 
     [Fact]
@@ -127,17 +130,25 @@ public class NpcServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task The_dry_run_skips_the_cooldown()
+    public async Task The_dry_run_fights_in_the_sandbox_and_skips_the_cooldown()
     {
-        await RegisterAsync("1", "Ash", "Karpador", 5, unlock: 15);
+        _game.DryRun.Enabled = true;
+        await RegisterAsync("probelauf:ash", "Ash", "Karpador", 5, unlock: 15);
         var npc = Npc();
 
-        await npc.ChallengeAsync(Challenge("1", "Ash", simulated: true), "eich", _ct);
-        await npc.ChallengeAsync(Challenge("1", "Ash", simulated: true), "eich", _ct);
+        await npc.ChallengeAsync(Challenge("probelauf:ash", "Ash", simulated: true), "eich", _ct);
+        await npc.ChallengeAsync(Challenge("probelauf:ash", "Ash", simulated: true), "eich", _ct);
 
         Assert.Equal("Ash besiegt Eich erneut – eine Belohnung gibt es nur beim ersten Sieg.", _chat.Sent[^1]);
-        await using var db = _game.OpenLive();
-        Assert.Empty(db.Cooldowns);
+        await using (var sandbox = _game.Database.Open())
+        {
+            Assert.Equal(2, await sandbox.Battles.CountAsync(_ct));
+            Assert.Empty(sandbox.Cooldowns);
+        }
+
+        await using var live = _game.OpenLive();
+        Assert.Empty(live.Battles);
+        Assert.Empty(live.PublishQueue);
     }
 
     [Fact]

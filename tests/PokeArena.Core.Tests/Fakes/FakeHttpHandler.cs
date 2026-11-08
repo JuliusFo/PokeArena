@@ -11,6 +11,9 @@ public sealed class FakeHttpHandler : HttpMessageHandler
 
     public List<RecordedRequest> Requests { get; } = [];
 
+    /// <summary>Awaited by every request after it was recorded and before it is answered.</summary>
+    public Func<Task>? Gate { get; set; }
+
     /// <summary>Queues a response; the last one queued for a route repeats once the queue is down to it.</summary>
     public FakeHttpHandler On(HttpMethod method, string urlPrefix, HttpStatusCode status, string json = "{}")
     {
@@ -52,7 +55,16 @@ public sealed class FakeHttpHandler : HttpMessageHandler
                 request.Headers.Authorization?.ToString(),
                 request.Headers.TryGetValues("Client-Id", out var ids) ? ids.Single() : null,
                 body));
+        }
 
+        // Recorded first, then held: a test can see how many requests are in flight at once.
+        if (Gate is { } gate)
+        {
+            await gate();
+        }
+
+        lock (_lock)
+        {
             var route = _routes
                 .Where(r => r.Method == request.Method.Method && url.StartsWith(r.UrlPrefix, StringComparison.Ordinal))
                 .OrderByDescending(r => r.UrlPrefix.Length)

@@ -47,10 +47,36 @@ public class BattleEngineTests
     }
 
     [Fact]
-    public void Boss_hp_scales_with_the_hp_multiplier()
+    public void Boss_hp_scales_with_the_participants()
     {
-        // Arkani base HP 90 × 1.8 × 4 participants = 648.
-        Assert.Equal(648, F("Arkani", hpMultiplier: 1.8 * 4).MaxHp);
+        // Arkani base HP 90 × HPFaktor 1.0 × BossHPProSpieler 1.5 (1.0.1) × 4 participants = 540.
+        var arkani = GameFixture.Species.Find("Arkani")!;
+
+        Assert.Equal(540, BossDraw.Fighter(arkani, BattleSettings.Default, BossSettings.Default, 4).MaxHp);
+        Assert.Equal(135, BossDraw.Fighter(arkani, BattleSettings.Default, BossSettings.Default, 1).MaxHp);
+    }
+
+    [Theory]
+    [InlineData(5, 0.06, 0.20)]
+    [InlineData(30, 0.20, 0.40)]
+    public void Tier_odds_grow_with_the_participants_up_to_their_caps(int participants, double legendary, double rare)
+    {
+        Assert.Equal(legendary, BossSettings.Default.Legendary.For(participants), 6);
+        Assert.Equal(rare, BossSettings.Default.Rare.For(participants), 6);
+    }
+
+    [Fact]
+    public void Boss_tiers_follow_the_odds()
+    {
+        // 30 participants: legendary 20 %, rare 40 %, common 40 % (spec §4). Fixed seeds, so the counts never change.
+        var tiers = Enumerable.Range(0, 2000)
+            .Select(seed => BossDraw.Species(GameFixture.Species, BossSettings.Default, 30, new BattleRandom(seed)).Rarity)
+            .GroupBy(r => r)
+            .ToDictionary(g => g.Key, g => g.Count() / 2000.0);
+
+        Assert.InRange(tiers[3], 0.17, 0.23);
+        Assert.InRange(tiers[2], 0.37, 0.43);
+        Assert.InRange(tiers[1], 0.37, 0.43);
     }
 
     [Fact]

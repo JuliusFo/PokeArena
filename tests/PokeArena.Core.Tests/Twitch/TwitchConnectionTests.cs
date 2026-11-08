@@ -202,6 +202,12 @@ public class TwitchConnectionTests
         Assert.Contains(subscriptions, b => b.Contains("\"type\":\"stream.online\"") && b.Contains("\"broadcaster_user_id\":\"42\""));
         Assert.Contains(subscriptions, b => b.Contains("\"type\":\"stream.offline\"") && b.Contains("\"broadcaster_user_id\":\"42\""));
         Assert.Contains("user_id=42", _http.RequestsTo(Helix + "streams").Single().Url);
+
+        // Asked only after both subscriptions exist, or a change in between would get lost (Core pitfall).
+        var order = _http.Requests.Select(r => r.Url).ToList();
+        Assert.True(
+            order.FindIndex(u => u.StartsWith(Helix + "streams", StringComparison.Ordinal))
+                > order.FindLastIndex(u => u.StartsWith(Helix + "eventsub/subscriptions", StringComparison.Ordinal)));
         Assert.Contains(_chatLog.Snapshot(), e => e.Text == "Der Stream ist live – PokeArena nimmt Befehle an.");
 
         socket.Push(EventSubFrames.Stream("stream.offline"));
@@ -345,6 +351,31 @@ public class TwitchConnectionTests
         await AdvanceUntilAsync(() => stopping.IsCompleted, TimeSpan.FromSeconds(1));
 
         Assert.Contains("Der Boss wurde besiegt!", _http.RequestsTo(Helix + "chat/messages").Single().Body);
+        await _connection.DisconnectAsync();
+    }
+
+    [Fact]
+    public async Task The_sender_splits_long_texts_and_keeps_one_second_between_messages()
+    {
+        StoreLogin();
+        ArrangeConnect();
+        _http.On(HttpMethod.Post, Helix + "chat/messages", HttpStatusCode.OK, """{"data":[{"message_id":"x","is_sent":true,"drop_reason":null}]}""");
+        var sender = new ChatSender(_helix, _connection, new DryRunMode(), _chatLog, _time, NullLogger<ChatSender>.Instance);
+        await sender.StartAsync(TestContext.Current.CancellationToken);
+        _connection.Start();
+        (await _sockets.NextAsync()).Push(EventSubFrames.Welcome());
+        await Eventually.TrueAsync(() => _connection.State.Status == TwitchStatus.Connected);
+
+        sender.Send(string.Join(' ', Enumerable.Repeat("Pikachu", 75)));
+        await Eventually.TrueAsync(() => _http.RequestsTo(Helix + "chat/messages").Any());
+
+        // The second part waits for the limiter (1 per second), driven by the fake clock.
+        Assert.Single(_http.RequestsTo(Helix + "chat/messages"));
+        _time.Advance(TimeSpan.FromSeconds(1));
+        await Eventually.TrueAsync(() => _http.RequestsTo(Helix + "chat/messages").Count() == 2);
+        Assert.All(_http.RequestsTo(Helix + "chat/messages"), r => Assert.True(r.Body.Length < ChatText.MaxLength + 200));
+
+        await sender.StopAsync(TestContext.Current.CancellationToken);
         await _connection.DisconnectAsync();
     }
 

@@ -78,6 +78,31 @@ public class TrainerRemovalTests : IDisposable
     }
 
     [Fact]
+    public async Task A_confirmation_for_another_name_only_asks_about_that_one()
+    {
+        await ArrangeFightAsync();
+
+        await _removal.RequestAsync(Mod("9", "Rocko"), "@ash", _ct);
+        await _removal.RequestAsync(Mod("9", "Rocko"), "@misty ja", _ct);
+
+        Assert.True(await TrainerExistsAsync("1001"));
+        Assert.True(await TrainerExistsAsync("1002"));
+        Assert.StartsWith("@Rocko, wirklich Misty", _chat.Sent[^1]);
+    }
+
+    [Fact]
+    public async Task A_request_from_the_dry_run_never_confirms_a_real_deletion()
+    {
+        await ArrangeFightAsync();
+
+        await _removal.RequestAsync(Mod("9", "Rocko") with { IsSimulated = true }, "@ash", _ct);
+        await _removal.RequestAsync(Mod("9", "Rocko"), "@ash ja", _ct);
+
+        Assert.True(await TrainerExistsAsync("1001"));
+        Assert.StartsWith("@Rocko, wirklich Ash", _chat.Sent[^1]);
+    }
+
+    [Fact]
     public async Task An_expired_confirmation_only_asks_again()
     {
         await ArrangeFightAsync();

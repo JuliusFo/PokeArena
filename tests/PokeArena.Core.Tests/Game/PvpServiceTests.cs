@@ -53,6 +53,9 @@ public class PvpServiceTests : IDisposable
         Assert.Equal(("1", Species.Find("Karpador")!.Id, false), (loot.TrainerId, loot.SpeciesId, loot.IsStarter));
         Assert.Equal(loot.SpeciesId, battle.LootSpeciesId);
         Assert.Equal(7, await db.Specimens.CountAsync(s => s.TrainerId == "1", _ct));
+        Assert.Equal(
+            [SitePaths.BattleIndex, SitePaths.Battle(battle.Id), SitePaths.Meta, SitePaths.Leaderboard, SitePaths.Trainer("1"), SitePaths.Trainer("2")],
+            await db.PublishQueue.Select(i => i.Path).OrderBy(p => p).ToListAsync(_ct));
         Assert.Equal(5, await db.Specimens.CountAsync(s => s.TrainerId == "2", _ct));
     }
 
@@ -82,10 +85,11 @@ public class PvpServiceTests : IDisposable
     [InlineData(8)]
     public async Task The_starter_is_never_the_loot(int seed)
     {
-        // The loser owns exactly six specimens, so the starter is always in the team.
-        var pvp = Pvp(OneHitKnockouts, seed);
-        await RegisterAsync("1", "Ash", "Mewtu", 5);
-        await RegisterAsync("2", "Misty", "Karpador", 5);
+        // Teams of two and the loser owns exactly two: the starter and one Karpador. Without the starter rule every
+        // seed would pick between those two, so most of these seeds would take the starter (review 1.0.3, C13).
+        var pvp = Pvp(OneHitKnockouts, seed, PvpSettings.Default with { TeamSize = 2 });
+        await RegisterAsync("1", "Ash", "Mewtu", 1);
+        await RegisterAsync("2", "Misty", "Karpador", 1);
 
         await pvp.FightAsync(Fight("1", "Ash"), "@misty", _ct);
         await pvp.FightAsync(Fight("2", "Misty"), "@ash", _ct);
@@ -268,12 +272,12 @@ public class PvpServiceTests : IDisposable
         Assert.Equal(_game.Time.GetUtcNow(), loot.AcquiredAt);
     }
 
-    private PvpService Pvp(BattleSettings battleSettings, int seed = Seed) => new(
+    private PvpService Pvp(BattleSettings battleSettings, int seed = Seed, PvpSettings? pvpSettings = null) => new(
         _game.Database,
         Species,
         GameFixture.Npcs,
         battleSettings,
-        PvpSettings.Default,
+        pvpSettings ?? PvpSettings.Default,
         new DamageCalculator(battleSettings, GameFixture.Types),
         new FixedSeeds(seed),
         _chat,

@@ -116,8 +116,17 @@ public class TwitchAuthTests
         var provider = Provider(new TwitchToken("at-1", "rt-1", _time.GetUtcNow().AddHours(1)));
         _http.On(HttpMethod.Post, Id + "token", HttpStatusCode.OK, """{"access_token":"at-2","expires_in":14400,"refresh_token":"rt-2"}""");
 
-        var results = await Task.WhenAll(Enumerable.Range(0, 5).Select(_ => provider.RefreshAsync("at-1", _ct)));
+        // The first refresh is held at Twitch while the other four start: without the lock they would all be in
+        // flight with the same single-use token (review 1.0.3, C1).
+        var twitch = new TaskCompletionSource();
+        _http.Gate = () => twitch.Task;
+        var refreshes = Enumerable.Range(0, 5).Select(_ => provider.RefreshAsync("at-1", _ct)).ToList();
+        await Eventually.TrueAsync(() => _http.RequestsTo(Id + "token").Any());
+        var inFlight = _http.RequestsTo(Id + "token").Count();
+        twitch.SetResult();
+        var results = await Task.WhenAll(refreshes);
 
+        Assert.Equal(1, inFlight);
         Assert.All(results, r => Assert.Equal("at-2", r));
         Assert.Single(_http.RequestsTo(Id + "token"));
     }

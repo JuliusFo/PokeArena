@@ -45,7 +45,7 @@ public class BossEncounterTests : IDisposable
         await EndCountdownAsync();
 
         var expectedBoss = BossDraw.Species(Species, EasyBoss, 3, new BattleRandom(Seed));
-        Assert.Equal($"Ein wildes {expectedBoss.Name}{Suffix(expectedBoss)} erscheint! 3 Trainer kämpfen mit.", _chat.Sent[1]);
+        Assert.Equal($"Ein wildes {expectedBoss.Name}{BattleTexts.TierSuffix(expectedBoss)} erscheint! 3 Trainer kämpfen mit.", _chat.Sent[1]);
         Assert.Equal($"{expectedBoss.Name} wurde besiegt! Gefangen von: Ash, Misty, Rocko.", _chat.Sent[2]);
 
         await using var db = _game.OpenLive();
@@ -117,6 +117,52 @@ public class BossEncounterTests : IDisposable
     }
 
     [Fact]
+    public async Task The_timer_of_an_earlier_cooldown_stays_silent_after_a_reset_and_a_new_fight()
+    {
+        var boss = Boss(EasyBoss);
+        await RegisterAsync("1", "Ash", "2", "Misty");
+        await RunEncounterAsync(boss, ("1", "Ash"), ("2", "Misty"));
+        await boss.ResetCooldownAsync(_ct);
+        _game.Time.Advance(TimeSpan.FromMinutes(10));
+        await RunEncounterAsync(boss, ("1", "Ash"), ("2", "Misty"));
+
+        // The first fight's timer ends while the second cooldown still runs.
+        _game.Time.Advance(BossSettings.Default.Cooldown - TimeSpan.FromMinutes(11));
+        await RunQueuedWorkUntilAsync("Boss bereit");
+        Assert.DoesNotContain(BossEncounter.ReadyAnnouncement, _chat.Sent);
+
+        _game.Time.Advance(TimeSpan.FromMinutes(11));
+        await RunQueuedWorkUntilAsync("Boss bereit");
+        Assert.Single(_chat.Sent, BossEncounter.ReadyAnnouncement);
+    }
+
+    [Fact]
+    public async Task No_ready_announcement_when_a_lobby_opened_first_or_during_the_dry_run()
+    {
+        var boss = Boss(EasyBoss);
+        await RegisterAsync("1", "Ash", "2", "Misty");
+        await RunEncounterAsync(boss, ("1", "Ash"), ("2", "Misty"));
+
+        // The timer's work waits in the queue behind a !boss that already opened the next lobby.
+        _game.Time.Advance(BossSettings.Default.Cooldown);
+        using (var timeout = CancellationTokenSource.CreateLinkedTokenSource(_ct))
+        {
+            timeout.CancelAfter(TimeSpan.FromSeconds(5));
+            var ready = Assert.IsType<QueuedWork>(await _inbox.Reader.ReadAsync(timeout.Token));
+            await boss.JoinAsync(Boss("1", "Ash"), _ct);
+            await ready.RunAsync(_ct);
+        }
+
+        Assert.DoesNotContain(BossEncounter.ReadyAnnouncement, _chat.Sent);
+
+        await boss.JoinAsync(Boss("2", "Misty"), _ct);
+        await EndCountdownAsync();
+        _game.DryRun.Enabled = true;
+        await EndCooldownAsync();
+        Assert.DoesNotContain(BossEncounter.ReadyAnnouncement, _chat.Sent);
+    }
+
+    [Fact]
     public async Task No_ready_announcement_after_a_reset_or_while_the_stream_is_offline()
     {
         var boss = Boss(EasyBoss);
@@ -185,7 +231,7 @@ public class BossEncounterTests : IDisposable
         // A second catch of the same species neither re-announces nor duplicates the unlock.
         _game.Time.Advance(BossSettings.Default.Cooldown);
         await RunEncounterAsync(boss, ("1", "Ash"), ("2", "Misty"));
-        Assert.DoesNotContain("AV", _chat.Sent[^1]);
+        Assert.Single(_chat.Sent, t => t.StartsWith("Ash hat 15 verschiedene Pokémon gesammelt", StringComparison.Ordinal));
         await using (var db = _game.OpenLive())
         {
             Assert.Equal(1, await db.AchievementUnlocks.CountAsync(_ct));
@@ -326,8 +372,6 @@ public class BossEncounterTests : IDisposable
         stream.Report(true);
         return stream;
     }
-
-    private static string Suffix(Species boss) => boss.Rarity switch { 3 => " (legendär)", 2 => " (selten)", _ => "" };
 
     public void Dispose() => _game.Dispose();
 }

@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Time.Testing;
 using PokeArena.Core.Chat;
 using PokeArena.Core.Commands;
+using PokeArena.Core.Game;
 using PokeArena.Core.Tests.Fakes;
 using PokeArena.Core.Twitch;
 
@@ -73,6 +74,45 @@ public class CommandTests : IDisposable
         await processor.ProcessAsync(Message("!Version"), _ct);
 
         Assert.Equal(["PokeArena-Bot ist online (Version 1.2.3).", "PokeArena-Bot ist online (Version 1.2.3)."], _chat.Sent);
+    }
+
+    [Fact]
+    public void Every_command_has_the_expected_access()
+    {
+        // Every IChatCommand in Core, also future ones: a new command fails here until its access is decided.
+        var actual = typeof(IChatCommand).Assembly.GetTypes()
+            .Where(t => t is { IsClass: true, IsAbstract: false } && typeof(IChatCommand).IsAssignableFrom(t))
+            .Select(t => (IChatCommand)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(t))
+            .Select(c => $"{c.Name}: {c.Access}")
+            .Order(StringComparer.Ordinal);
+
+        Assert.Equal(
+            [
+                "arena: Everyone",
+                "boss: Registered",
+                "bossreset: Moderators",
+                "challenge: Registered",
+                "entfernen: Moderators",
+                "fight: Registered",
+                "pokearena: Everyone",
+                "registrieren: Everyone",
+            ],
+            actual);
+    }
+
+    [Fact]
+    public async Task A_viewer_cannot_delete_a_trainer()
+    {
+        await _game.Trainers.RegisterAsync("2002", "misty", "Misty", GameFixture.Species.Starters[0], _ct);
+        var removal = new TrainerRemoval(
+            _game.Trainers, new BattleService(_game.Database, GameFixture.Species, GameFixture.Npcs), _chat, _time, NullLogger<TrainerRemoval>.Instance);
+        var processor = Processor(new RemoveCommand(removal));
+
+        await processor.ProcessAsync(Message("!entfernen @misty"), _ct);
+        await processor.ProcessAsync(Message("!entfernen @misty ja"), _ct);
+
+        Assert.Empty(_chat.Sent);
+        Assert.NotNull(await _game.Trainers.FindByNameAsync("misty", _ct));
     }
 
     [Fact]
