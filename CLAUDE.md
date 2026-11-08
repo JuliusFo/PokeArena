@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-11-08 · v1.0.3 (WP-00 – WP-08 done, boss HP 1.5, guide page, 60 s countdown, !version, boss-ready message) · WP-09 after a few streams
+Status: 2026-11-08 · v1.0.3 released · R1 (review 1.0.3 fixes) on `wp/r1-review-1.0.3`, not yet released · WP-09 after a few streams
 
 ## 1. Where to find what
 
@@ -125,7 +125,8 @@ PokeArena.slnx
 ## 7. Way of working
 
 - Work in packages: branch `wp/NN-short-name` (smaller topics `feat/…`,
-  `fix/…`, `docs/…`), always from `main`. State the plan before starting, then
+  `fix/…`, `docs/…`; review fixes as package R<n> on `wp/r<n>-review-X.Y.Z`),
+  always from `main`. State the plan before starting, then
   implement; finish a package before starting another. On UX uncertainty build
   the simplest variant and note the question in roadmap.md instead of blocking.
 - Done means: build with warnings as errors and tests green, ADR if needed, log
@@ -153,8 +154,9 @@ PokeArena.slnx
 
 - Solo project. The user builds it **for another streamer**; the app runs on
   the streamer's Windows PC together with OBS and the overlay.
-- The user sets up the dedicated bot account and its Twitch tokens. The
-  broadcaster still has to grant `channel:bot` or make the bot a moderator.
+- The user sets up the dedicated bot account and its Twitch tokens. Neither
+  `channel:bot` nor moderator status is required (ADR-0002 addendum); the
+  streamer makes the bot a moderator anyway (slow mode).
 - Small channel: load assumption ~30 concurrent viewers, a few hundred trainers.
 - Dev machine: Windows 11, PowerShell (Git Bash available); **no Python
   installed** — write scripts in PowerShell or as `dotnet` tools.
@@ -162,8 +164,9 @@ PokeArena.slnx
 
 ## 9. Next
 
-1.0.3 is released (installation: README, „Running it on the streamer's PC“).
-Next: install it on the streamer's PC; after a few streams WP-09 balancing
+1.0.3 is released (installation: README, „Running it on the streamer's PC“). R1
+(fixes of the whole review 1.0.3, docs/review-1.0.3.md) waits for its live test
+and release. Next: install it on the streamer's PC; after a few streams WP-09 balancing
 (`N = 4` dip, PvP loot preferring missing species, NPC difficulty; no runtime
 balancing editor). Ideas meanwhile go to docs/backlog.md. Details:
 docs/roadmap.md.

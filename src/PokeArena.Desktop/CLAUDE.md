@@ -19,11 +19,10 @@ Thin WPF host around a `BlazorWebView` (ADR-0007). UI belongs in PokeArena.UI, l
   to the output only if it exists. The command line still overrides both.
 - The Twitch login is stored in the Credential Manager as `PokeArena:twitch-token` — independent of
   `--PokeArena:DataDirectory`, so a test profile shares the real login.
-- `data/pokemon.json` is linked into the output (`data\pokemon.json`); the app refuses to start if it is missing or
+- `data/*.json` is linked into the output (`data\`); the app refuses to start if a file is missing or
   invalid. Startup order matters: `AddPokeArenaGame` (base data check, migration) before `AddPokeArenaChat`.
 - Smoke tests without touching the real chat: `--PokeArena:DataDirectory=<scratch> --PokeArena:Twitch:Channel=`
   (empty channel = not configured, the bot stays offline).
-- WPF projects have no implicit `System.IO` using — add `using System.IO;` where needed.
 - The OBS overlay (`OverlayServer`) is a second, slim Kestrel host on the loopback interface (`PokeArena:Overlay:Port`,
   default 5299; 0 = off). A busy port only disables the overlay. `Microsoft.AspNetCore` logs at Warning, else the
   2-second polling floods the log file.
@@ -32,3 +31,5 @@ Thin WPF host around a `BlazorWebView` (ADR-0007). UI belongs in PokeArena.UI, l
 - Streamer settings (WP-08): `settings.json` in the data directory (written by the „Einstellungen“ card via
   `SettingsFile`) is inserted as a configuration source between `appsettings.json` and `appsettings.local.json`
   (`App.AddStreamerSettings`); it is read once at start, so changes apply after a restart.
+- Shutdown: the main window's `Closing` cancels once, awaits `IHost.StopAsync` and then calls `Shutdown()`.
+  Never await in `OnExit` — the dispatcher is already shutting down and the continuation never runs (review 1.0.3).

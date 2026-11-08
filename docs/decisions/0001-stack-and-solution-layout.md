@@ -45,3 +45,11 @@ tests.
   intent — packages only from nuget.org — is now enforced, not just agreed.
 - Logging: Serilog file sink under `%LOCALAPPDATA%\PokeArena\logs`.
 - Secrets: `Meziantou.Framework.Win32.CredentialManager` (user decision).
+
+## Addendum 2026-11-08 (review 1.0.3)
+
+- The Decision's list of database contents is narrowed: open PvP challenges
+  and the boss lobby are short-lived and stay in memory (spec §10), and
+  balancing values are code defaults that change by release, without a
+  runtime editor (user decision 2026-11-04, roadmap WP-09). Neither is a
+  "source of truth" question: nothing published depends on them.

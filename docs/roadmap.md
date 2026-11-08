@@ -28,7 +28,8 @@ Demo: the bot answers `!pokearena` in the channel.
   the user's own channel `ShiyoFurball`.
 - Answered by the docs (ADR-0002 addendum 2026-10-13): with a user token over
   WebSocket neither `channel:bot` nor moderator status is required (live
-  test ran with the bot as moderator; without it untested).- **Done 2026-10-13**: live test passed — bot account signed in via device
+  test ran with the bot as moderator; without it untested).
+- **Done 2026-10-13**: live test passed — bot account signed in via device
   code, `!pokearena` answered in the test channel, integration test green
   against the real API. See the log in work-packages.md.
 - Proposal (review 2026-10-11, accepted for WP-01): process all chat commands
@@ -217,8 +218,10 @@ Demo: stream-ready.
     Version verfügbar“ hint from the GitHub releases API, no auto-update.
   - Settings: channel and website URLs move out of the `appsettings.json`
     next to the program (an update would overwrite it) into an
-    „Einstellungen“ card, stored in the data directory, with a connection
-    test. No guided first-start wizard — the user sets the PC up once.
+    „Einstellungen“ card, stored in the data directory. (Planned with a
+    connection test, which was not built; noted in review 1.0.3 — the Twitch
+    card shows after the restart whether the channel exists. Backlog.) No
+    guided first-start wizard — the user sets the PC up once.
   - Cached fight files after a deletion: no Cloudflare purge (it would need a
     second token with zone rights). Fight files get a shorter max-age (about
     one day) instead of a year; a deleted name is gone from the cache within
@@ -281,7 +284,7 @@ Demo: measured win rates per NPC and boss group size, adjusted values.
 
 ## Open UX questions
 
-- Exact German wording of all chat messages (spec §14) — drafted during
-  implementation, reviewed 2026-11-04 (docs/chat-texts.md).
+- Done: exact German wording of all chat messages — reviewed 2026-11-04
+  (docs/chat-texts.md).
 - First start for the streamer: decided 2026-11-04 — no guided setup, the
   user configures the PC once (see WP-08).

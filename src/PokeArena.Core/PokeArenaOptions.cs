@@ -2,7 +2,7 @@ namespace PokeArena.Core;
 
 /// <summary>
 /// Static configuration from the "PokeArena" section (appsettings.json, command line
-/// <c>--PokeArena:DataDirectory=...</c>). Balancing values are runtime settings in the database, not here.
+/// <c>--PokeArena:DataDirectory=...</c>). Balancing values are code defaults (BattleSettings and friends), not here.
 /// </summary>
 public sealed class PokeArenaOptions
 {

@@ -8,8 +8,10 @@ and work their way through 17 NPC trainers, all via chat commands. A desktop
 app on the streamer's PC runs the bot; a static website shows the leaderboard,
 trainer pages and battle logs.
 
-> **Status:** stream-ready (1.0.0, WP-08). Balancing with data from real
-> streams follows in 1.1.0. See the [roadmap](#roadmap).
+> **Status:** stream-ready since 1.0.0 (WP-08); see the
+> [releases](https://github.com/JuliusFo/PokeArena/releases) for the current
+> version. Balancing with data from real streams follows in 1.1.0. See the
+> [roadmap](#roadmap).
 
 ## How it plays
 
@@ -78,11 +80,16 @@ xUnit v3 on Microsoft Testing Platform.
    needed (Windows 10/11 with WebView2, which ships with Windows 11).
 2. Start `PokeArena.exe` (a desktop shortcut helps). On the first start:
    Bot → **Einstellungen** (Twitch channel, website addresses) → restart the
-   app → **Twitch-Verbindung** → sign in the bot account → **Website** →
+   app → **Twitch-Verbindung** → sign in the **bot account** (not the
+   streamer's own: a browser logged in to twitch.tv as the streamer confirms
+   the code with the wrong account; the app then says so) → **Website** →
    enter the Cloudflare key. [docs/website-setup.md](docs/website-setup.md)
    has the details.
-3. OBS: browser source `http://localhost:5299/overlay`.
-
+3. In the Twitch chat of the channel, the streamer makes the bot a moderator:
+   `/mod <botname>`. Not required for chatting, but it protects the bot's
+   replies against slow mode and follow-only chat (ADR-0002 addendum).
+4. OBS: browser source `http://localhost:5299/overlay` — start PokeArena
+   before OBS, or refresh the source once.
 **Updating:** when the top bar shows „Version … verfügbar“, close PokeArena,
 download the new ZIP and replace the program folder with its contents. Game
 data, settings and backups live in `%LOCALAPPDATA%\PokeArena` and are not
@@ -116,6 +123,14 @@ dotnet test tests/PokeArena.Core.Tests
 
 ```bash
 dotnet test tests/PokeArena.UI.Tests
+```
+
+```bash
+dotnet test tests/PokeArena.Web.Tests
+```
+
+```bash
+dotnet test tests/PokeArena.Integration.Tests
 ```
 
 ```bash

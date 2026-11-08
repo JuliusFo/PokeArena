@@ -167,5 +167,3 @@ tagged `vX.Y.Z` once its section is complete.
 - `!pokearena` answers that the bot is online and shows its version.
 - Desktop app: connection status with plain-German hints, live chat log, and
   a dry run ("Probelauf") to try commands without writing to Twitch.
-
-  scale with participant count via HP and number of targets (ADR-0006).

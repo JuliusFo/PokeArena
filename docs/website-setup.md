@@ -46,14 +46,22 @@ labels are from memory and may differ slightly.
      opened a second before its upload; a cached 404 would hide the fight for
      minutes.
    - Browser TTL: respect origin.
-2. **Rate-limiting rule** (Security → WAF → Rate limiting rules; the free plan
+   - Cache key: **Query string → Ignore**. Otherwise `rangliste.json?r=<random>`
+     misses the cache on every request, and every miss is a billed R2 read —
+     exactly what the cache is there to prevent (ADR-0003 addendum; review
+     1.0.3).
+2. **WAF custom rule** (Security → WAF → Custom rules): when *Hostname equals*
+   `arena-daten.<domain>` and (*URI Query String* is not empty or *Request
+   Method* is not `GET`/`HEAD`/`OPTIONS`) → **Block**. The site never sends a
+   query string; scripts that do are refused before they reach R2.
+3. **Rate-limiting rule** (Security → WAF → Rate limiting rules; the free plan
    has one per zone, currently unused). The free plan cannot match the
    hostname, only the path: when *URI Path contains* `.json`, counted per IP,
    **more than 50 requests in 10 seconds** → block for 10 seconds. It applies
    to the whole zone, but other sites on it (HorizonNET) fetch hardly any
    `.json`. A viewer with the site open makes about one request per 15
    seconds plus two per page opened, so only scripts hit the limit.
-3. Optional: Notifications → check whether a usage/billing alert for R2
+4. Optional: Notifications → check whether a usage/billing alert for R2
    exists and enable it.
 
 ## 3. GitHub Pages
@@ -86,10 +94,15 @@ labels are from memory and may differ slightly.
 
 ## 5. Checks
 
-- `dotnet test tests/PokeArena.Integration.Tests` — the R2 test now runs
-  instead of being skipped.
+- Developer PC only: put the R2 endpoint and bucket under `PokeArena:Website`
+  into `src/PokeArena.Desktop/appsettings.local.json` (the test does not read
+  the streamer's `settings.json`); then
+  `dotnet test tests/PokeArena.Integration.Tests` runs the R2 test instead of
+  skipping it.
 - `https://arena-daten.<domain>/rangliste.json` shows JSON; a second request
   has `cf-cache-status: HIT` (browser dev tools, Network tab).
+- `curl -I "https://arena-daten.<domain>/rangliste.json?x=1"` twice: the second
+  answer is `cf-cache-status: HIT` (query string ignored) or 403 (WAF rule).
 - `https://arena.<domain>/` shows the leaderboard without CORS errors in the
   browser console. If cached responses lack the CORS header, add a response
   header transform rule for the data host

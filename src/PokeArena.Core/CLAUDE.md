@@ -5,7 +5,6 @@
 - Time and randomness: `DateTime.Now/UtcNow/Today`, `DateTimeOffset.Now/UtcNow`, `new Random()` and
   `Random.Shared` break the build (`BannedSymbols.txt`, ADR-0004). Inject `TimeProvider`; tests use
   `FakeTimeProvider`. Seeded `new Random(seed)` is allowed — only inside the injected random source.
-- `data/pokemon.json` is generated: change `tools/GeneratePokemonData.cs`, rerun it, never edit the JSON.
 - Twitch (WP-01): EventSub WebSocket sends keepalives; missing ones mean reconnect. `session_reconnect`
   must connect to the new URL **before** closing the old socket, or messages are lost. Public-client refresh
   tokens are single-use (store each new one at once) and expire after 30 days of inactivity; on
@@ -19,7 +18,8 @@
 - Chat events: ignore the bot's own messages (reply loops) and shared-chat messages from other channels
   (`source_broadcaster_user_id`). Some clients append U+E0000 to repeated messages; `ParsedCommand` strips it.
 - Timers in async loops: `Task.Delay(delay, timeProvider, ct)` and `new CancellationTokenSource(timeout,
-  timeProvider)`, so tests drive them with `FakeTimeProvider.Advance`.
+  timeProvider)`, so tests drive them with `FakeTimeProvider.Advance`. The overloads without a `TimeProvider`
+  (and `Stopwatch`, `CancelAfter`) break the build since review 1.0.3.
 - SQLite (WP-02/08): copying the database file while it is open loses the WAL content — back up with
   `VACUUM INTO` or the SQLite backup API.
 - Database access only through `GameDatabase.Open()` (one short-lived context per unit of work, `await using`):
@@ -38,20 +38,24 @@
 - Battles: draw everything of one encounter from one `BattleRandom(seed)`, in a fixed order (boss, specimens,
   hits). Changing the order changes what a seed means — fine, logs are data (ADR-0004), but tests that predict
   the boss with `BossDraw.Species(…, new BattleRandom(seed))` rely on the boss being drawn first.
-- `tools/*.cs` file-based apps default to AOT, which disables reflection-based `System.Text.Json` and breaks the
-  base data loaders: keep `#:property PublishAot=false` next to `#:project`.
 - In-memory game state tied to one database (WP-04, open PvP challenges) must not be mutated from
-  `GameDatabase.Switched` — it fires on the UI thread. Bump a generation counter there (`Interlocked`) and drop
-  stale entries on the command queue (see `PvpService`).
+  `GameDatabase.Switched` other than by a generation counter (`Interlocked`); drop stale entries on the command
+  queue (see `PvpService`). The UI switches the dry run with `DryRunMode.SwitchOnQueue`, so `Switched` fires
+  between two commands (review 1.0.3).
 - Chat mentions (`@name`) resolve by `Trainer.Login` first, then by display name (`TrainerService.FindByNameAsync`);
   the bot's own replies should mention the login when the viewer has to type it (`!fight @login`).
 - Website (WP-06): every change a viewer could see on the site queues its paths with `SiteOutbox.EnqueueAsync` in
   the **same** context/transaction as the change (`SiteOutbox.ForBattle` / `ForTrainers`). Forgetting it leaves
   the site stale until "republish everything". The battle id exists only after the first `SaveChangesAsync`.
 - The publish worker reads `GameDatabase.OpenLive()` — the one exception to `Open()`; the sandbox is never published.
-- Site files must stay derivable from the database: no state that exists only in a JSON file (ADR-0003).
 - Live gate (WP-07): `CommandProcessor` drops real messages while `StreamStatus.AcceptsCommands` is false — new
   `CommandProcessor` tests must report the stream live first. Stream events only report changes: whenever a new
   EventSub session starts, ask `HelixClient.IsLiveAsync` **after** subscribing, or a change in between is lost.
 - Backups (WP-08): `DatabaseBackup` uses `VACUUM INTO` on `OpenLive()`. From an in-memory database it writes the
   copy into memory (memdb VFS), so its tests run on a real file in Integration.Tests.
+- Error and hint replies to one viewer (unknown name, too few Pokémon, cooldown …) go through
+  `IChatSender.SendHint(viewerId, …)`, throttled per viewer; fight results and announcements use `Send`. A name a
+  viewer typed is repeated only through `ChatText.Echo` (review 1.0.3).
+- Twitch: only 403 (and a missing channel or a wrong account) stops the connection for good; every other refusal
+  is retried with backoff. A Helix `GET /streams` answer never overrides a stream event of the last 10 minutes
+  (review 1.0.3).

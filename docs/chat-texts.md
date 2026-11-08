@@ -1,6 +1,6 @@
 # Chat texts (wording pass, WP-08)
 
-Every message the bot writes into the Twitch chat (spec §14). Placeholders in
+Every message the bot writes into the Twitch chat (spec §8; wording accepted 2026-11-04). Placeholders in
 `{braces}`. Links („Zum Kampf: …“) are appended to fight results when the
 website is set up.
 
@@ -64,9 +64,9 @@ moderator replies are never dropped.
 | 28 | Not unlocked yet | @{Name}, für {NPC} brauchst du noch {n} verschiedene Pokémon. | | |
 | 29 | Cooldown | @{Name}, gegen {NPC} kannst du in {1 Stunde 30 Minuten} wieder antreten. | | |
 | 30 | Too few Pokémon | @{Name}, du hast erst {n} Pokémon – für einen Kampf brauchst du mindestens 6. | | |
-| 31 | First win | {Name} besiegt {NPC} und bekommt den Orden von {NPC}, {Pokémon} und {n} Tokens! | | |
+| 31 | First win | {Name} besiegt {NPC} und bekommt den Orden von {NPC}, {Pokémon} und {n} Tokens! (1 Token: „und 1 Token“; an NPC without tokens: „den Orden von {NPC} und {Pokémon}“) | | |
 | 32 | Later win | {Name} besiegt {NPC} erneut – eine Belohnung gibt es nur beim ersten Sieg. | | |
-| 33 | Lost | {NPC} besiegt {Name}! Nächster Versuch in {48 Stunden}. | | |
+| 33 | Lost | {NPC} besiegt {Name}! Nächster Versuch in {48 Stunden}. (Dry run: without „Nächster Versuch …“, there is no cooldown.) Durations as „1 Stunde 30 Minuten“ everywhere (`ChatText.Duration`). | | |
 
 ## Moderators
 

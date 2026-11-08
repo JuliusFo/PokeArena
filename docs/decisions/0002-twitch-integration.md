@@ -81,5 +81,5 @@ a hosted auth backend.
   chat session are ignored — their viewers do not play here. The bot's own
   messages are ignored too.
 - **Channel setting**: `PokeArena:Twitch:Channel`; during development it comes
-  from a git-ignored `appsettings.local.json`. How the streamer sets it is the
-  open setup question of WP-08.
+  from a git-ignored `appsettings.local.json`. The streamer sets it in the
+  „Einstellungen“ card (`settings.json`, WP-08).

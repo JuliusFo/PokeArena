@@ -40,6 +40,12 @@ roadmap.md first. Format: idea — date, origin.
 - Live boss countdown in the OBS overlay (seconds left, participants) — the
   on-screen call to join; only after the streamer's feedback on the overlay —
   2026-11-04, open-points review.
+- Overlay as a local HTML file that polls the app (CORS), so OBS shows it even
+  when OBS starts before PokeArena; for now the overlay card explains the start
+  order — 2026-11-08, review 1.0.3 (A8).
+- Website reads the previous data format (N-1) after a format change, instead
+  of only the hint „Die Daten werden gerade umgestellt“ — 2026-11-08,
+  review 1.0.3 (A33).
 
 ## Battle system
 
@@ -54,6 +60,8 @@ roadmap.md first. Format: idea — date, origin.
   specimen, tokens) — 2026-11-04, WP-08 plan (architecture sketch).
 - Backups to a second location (e.g. a cloud folder the streamer picks) —
   2026-11-04, WP-08 plan.
+- Connection test in the „Einstellungen“ card (channel exists, R2 bucket
+  reachable) — planned in WP-08, not built; 2026-11-08, review 1.0.3 (D5).
 
 ## Abuse protection
 

@@ -1,10 +1,9 @@
 # Architecture
 
 Gameplay rules live in [spec.md](spec.md); this file describes how the code is
-organised around them. Status: WP-01 (Twitch, chat queue, commands), WP-02
-(database, base data, registration), WP-03 (battle engine, boss,
-achievements), WP-04 (PvP), WP-05 (NPC fights) and WP-06 (website, overlay)
-built; the rest is planned.
+organised around them. Everything described here is built (WP-00 to WP-08,
+review 1.0.3); balancing after the first streams (WP-09) changes values, not
+structure.
 
 ## Core modules (`PokeArena.Core`)
 
@@ -38,8 +37,7 @@ check; the streamer's „Auch ohne Stream“ switch overrides it in memory.
 Built in WP-02: `Trainer` and `Specimen`; in WP-03: `Battle`,
 `BattleParticipant`, `AchievementUnlock`, `Cooldown`; in WP-04: `Trainer.Login` and the
 PvP loot columns of `Battle`; in WP-05: `Trainer.Tokens`, `Battle.NpcId` /
-`Tokens` and `NpcBadge`; in WP-06: `PublishQueueItem` and `Specimen.AcquiredAt`. The rest is a sketch for
-later packages. Timestamps are stored as UTC ticks (SQLite cannot compare
+`Tokens` and `NpcBadge`; in WP-06: `PublishQueueItem` and `Specimen.AcquiredAt`. Timestamps are stored as UTC ticks (SQLite cannot compare
 `DateTimeOffset`); enums as text. The live database is
 `%LOCALAPPDATA%\PokeArena\pokearena.db` (WAL), migrated at startup.
 
@@ -55,9 +53,9 @@ later packages. Timestamps are stored as UTC ticks (SQLite cannot compare
 | `PublishQueueItem` | Path (PK), Revision, QueuedAt, NextAttemptAt, Attempts, LastError | Website outbox: only the path — the file is rendered at upload time, so queuing a path twice is one upload. `Revision` keeps a row that was queued again during its upload |
 
 Species, type chart and NPC teams stay in `data/*.json`, referenced by id (NPC
-teams by slug). Runtime balancing values (spec §13) are planned in the DB and
-editable in the UI; until then `BattleSettings` / `BossSettings` hold the spec
-defaults in code.
+teams by slug). Balancing values (spec §13) are code defaults in `BattleSettings` /
+`BossSettings` / `PvpSettings` / `NpcSettings`; they change by release, there is
+no runtime editor (user decision 2026-11-04).
 
 ## Flows
 
@@ -136,7 +134,3 @@ knowledge. Areas:
   top bar.
 - Not planned for v1: manual corrections of trainers (backlog), a balancing
   editor (spec §13, WP-09).
-
-## Keyboard shortcuts
-
-None defined yet.

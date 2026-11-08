@@ -70,7 +70,8 @@ Sinks (never unchecked):
 - Local endpoints: the overlay listens on loopback only.
 - Size and load: limits for input and lists, no unbounded loops or retries (reconnect, publish worker), the chat cannot
   make the bot spam.
-- Git: no player data, real channel names or tokens in code, tests, sample data (`wwwroot/beispieldaten/`) or commits.
+- Git: no player data, tokens or other people's channel names in code, tests, sample data (`wwwroot/beispieldaten/`)
+  or commits. The developer's own test channel and the project's own domains are fine (review 1.0.3).
 
 A security finding names the concrete path from source to sink, the check at the boundary and a test that fails
 without the fix.

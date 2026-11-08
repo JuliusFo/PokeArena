@@ -1,8 +1,8 @@
 namespace PokeArena.Core.Game.Battles;
 
 /// <summary>
-/// Balancing values of the battle engine with the defaults of spec §13 (German key names in the comments). Fixed
-/// in code for now; editing them at runtime in the UI is a later package.
+/// Balancing values of the battle engine with the defaults of spec §13 (German key names in the comments). Code
+/// defaults that change by release, without a runtime editor (user decision 2026-11-04, WP-09).
 /// </summary>
 public sealed record BattleSettings
 {

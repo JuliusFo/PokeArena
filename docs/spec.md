@@ -172,9 +172,10 @@ Used by boss, PvP and NPC fights.
 - **Determinism:** the RNG is injected; every battle stores its seed. The
   full log is still persisted verbatim (replaying a seed after a balancing
   change would yield a different outcome, so logs are data, not derived).
-- Log line format follows the PDF, e.g.
-  `Pokemon 1 (HP X) hat Pokemon 2 (HP X) X Schaden zugefügt.` /
-  `Pokemon X wurde besiegt.`
+- Log lines (German, owner and HP after the hit in brackets): `Runde 1` /
+  `Pikachu (Ash, HP 35) hat Arkani (Boss, HP 120) 40 Schaden zugefügt.`
+  plus ` Volltreffer!`, ` Sehr effektiv!` or ` Nicht sehr effektiv.` /
+  `Arkani (Boss) wurde besiegt.` / `Misty schickt Karpador in den Kampf.`
 
 ## 6. PvP (`!fight`)
 
@@ -202,7 +203,7 @@ Used by boss, PvP and NPC fights.
 - Open challenges live in memory: a restart or switching the dry run drops
   them. Requirements are checked again when the challenge is accepted.
 - Achievements reached through loot are announced like boss catches.
-- Reply drafts (WP-04, reviewed in WP-08): challenge „@Misty, Ash fordert dich
+- Replies (WP-04, wording accepted in WP-08, `docs/chat-texts.md`): challenge „@Misty, Ash fordert dich
   zum Kampf heraus! Nimm an mit !fight @ash – du hast 2 Minuten.“; result
   „Ash besiegt Misty und bekommt Karpador von Misty!“; on accept with too few
   specimens „Der Kampf fällt aus: Ash hat erst 5 Pokémon – …“; rejections:
@@ -211,8 +212,8 @@ Used by boss, PvP and NPC fights.
   selbst herausfordern.“), too few specimens („du hast erst 3 Pokémon – für
   einen Kampf braucht ihr beide mindestens 6.“), an open challenge on either
   side („du hast schon eine offene Herausforderung.“ / „Misty hat schon eine
-  offene Herausforderung.“). Until the website exists (WP-06) the result
-  carries no battle link.
+  offene Herausforderung.“). With the website set up, the result carries the
+  link to the fight page (§9).
 
 ## 7. NPC fights (`!challenge <NPC>`)
 
@@ -261,7 +262,7 @@ Used by boss, PvP and NPC fights.
     achievements like a catch.
 
   Further wins and losses bring nothing; NPCs can still be fought again.
-- Replies (drafts): „Ash besiegt Eich und bekommt den Orden von Eich,
+- Replies (`docs/chat-texts.md`): „Ash besiegt Eich und bekommt den Orden von Eich,
   Glumanda und 1 Token!“ (first win) / „Ash besiegt Eich erneut – eine
   Belohnung gibt es nur beim ersten Sieg.“ / „Eich besiegt Ash! Nächster
   Versuch in 48 Stunden.“; without or with an unknown name the bot lists the
@@ -320,8 +321,9 @@ Rationale: no deploy per data change (uploads are live in seconds), no commit
 noise in the code repository, and deletions are real — a public git history
 would keep deleted trainers' names forever (see §11).
 
-Pages (v1): leaderboard, battle log per fight, trainer detail page, OBS
-overlay view, privacy note, player guide („So geht's“, `/anleitung`).
+Pages (v1): leaderboard, list of fights, battle log per fight, trainer detail
+page, privacy note, player guide („So geht's“, `/anleitung`). The OBS overlay
+is served by the desktop app, not by the website (below).
 
 The player guide is static text: it repeats the defaults of §13 (countdown,
 minimum team size, cooldowns) and the NPC thresholds of §7, because the site
@@ -353,9 +355,12 @@ species and regaining it moves the moment to the regain (WP-06 decision).
   (§11), so it gets `max-age=86400` — a deleted name drops out of every cache
   within a day without a purge (WP-08 decision);
   all other files are mutable and uploaded with a short max-age (≤ the poll
-  interval) so browsers (and a CDN, once a custom domain is used) never
-  serve stale leaderboards.
-- Leaderboard/overlay pages poll every 15 s; battle pages are static.
+  interval) so browsers and the Cloudflare cache never serve stale
+  leaderboards.
+- The leaderboard and the list of fights poll every 15 s; a fight page
+  retries a missing file for 2 minutes (a chat link can be faster than the
+  upload), then says the fight is not there yet. The OBS overlay is not part
+  of the website: the desktop app serves it locally and it polls every 2 s.
 - Trainer URLs use the Twitch user id as filename; friendly routes resolve
   names via the leaderboard data.
 - **OBS overlay:** OBS runs on the same machine as the bot, so the overlay
@@ -367,8 +372,8 @@ species and regaining it moves the moment to the regain (WP-06 decision).
 
 - **SQLite (EF Core) is the single source of truth**: trainers, specimens,
   fights (including full logs and seeds), achievements, NPC badges, token
-  balances, cooldowns, publish
-  queue, balancing config. Loot transfers run in one transaction. Open PvP
+  balances, cooldowns and the publish queue. Balancing values are code
+  defaults (§13), not data. Loot transfers run in one transaction. Open PvP
   challenges and the boss lobby are short-lived and stay in memory.
 - A **publish queue** (outbox) decouples game logic from uploads; network
   failures lose nothing.
@@ -398,16 +403,20 @@ Display names appear permanently on a public website. Therefore:
 - Transport: **EventSub WebSocket** (`channel.chat.message`) for reading,
   **Helix Send Chat Message** for writing. No IRC.
 - Auth: **Device Code Flow** (public client, no secret) for the dedicated
-  bot account; scopes `user:read:chat`, `user:write:chat`, `user:bot`;
-  broadcaster grants `channel:bot` (or the bot is made a moderator — also
-  recommended for the higher rate limit).
+  bot account; scopes `user:read:chat`, `user:write:chat`, `user:bot`. With
+  this user token neither `channel:bot` nor moderator status is required
+  (ADR-0002 addendum); the streamer still makes the bot a moderator, which
+  protects its replies against slow mode. The sender keeps the normal-user
+  limits either way. A login with the channel's own account is refused.
 - Outgoing messages run through a rate limiter with a queue; results of mass
   events (boss) are aggregated into few messages and respect the 500-char
   message limit.
 - Live status (WP-07): EventSub `stream.online` / `stream.offline` on the
   same session (no extra scope). Events only report changes, so the bot asks
-  Helix `GET /streams` for the current state on every new session and once an
-  hour; unknown counts as offline.
+  Helix `GET /streams` for the current state on every new session, every
+  2 minutes for the first 10 minutes while it says offline, and once an hour;
+  unknown counts as offline. Helix lags a few minutes, so its answer never
+  overrides a stream event of the last 10 minutes (review 1.0.3).
 
 ## 13. Configuration defaults
 
@@ -438,11 +447,8 @@ balancing editor. The website's player guide repeats some of these values
 
 ## 14. Open points and later versions
 
-**OPEN for v1:**
-
-1. Exact German wording of all chat messages (drafted during implementation).
-
-Decided: NPC reward (E22) on 2026-10-21, see §7.
+Nothing is open for v1. Decided: NPC reward (E22) on 2026-10-21, see §7; chat
+wording on 2026-11-04 (`docs/chat-texts.md`).
 
 **Deferred (v2+):** everything not in v1 — from the PDF, the design review
 and later ideas — is collected in [backlog.md](backlog.md).
