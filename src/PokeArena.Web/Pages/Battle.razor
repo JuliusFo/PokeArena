@@ -48,15 +48,23 @@
     </ol>
     <p class="muted">Seed @battle.Seed.ToString(CultureInfo.InvariantCulture)</p>
 }
+else if (_gaveUp && _failed)
+{
+    <h1>Kampf</h1>
+    <LoadFailed Retrying="false" />
+}
 else if (_gaveUp)
 {
     <h1>Kampf nicht gefunden</h1>
-    <p>Diesen Kampf gibt es nicht. <a href="kaempfe">Zu den letzten Kämpfen</a></p>
+    <p>
+        Diesen Kampf gibt es (noch) nicht. Wurde er gerade erst gekämpft, lade die Seite in ein paar Minuten neu.
+        <a href="kaempfe">Zu den letzten Kämpfen</a>
+    </p>
 }
 else if (_failed)
 {
     <h1>Kampf</h1>
-    <p class="notice">Die Daten konnten gerade nicht geladen werden. Die Seite versucht es gleich noch einmal.</p>
+    <LoadFailed />
 }
 else
 {
@@ -93,8 +101,9 @@ else
                     _battle = await Data.BattleAsync(Id, _stop.Token);
                     _failed = false;
                 }
-                catch (HttpRequestException)
+                catch (Exception ex) when (ex is HttpRequestException || (ex is OperationCanceledException && !_stop.IsCancellationRequested))
                 {
+                    // Host unreachable, rate limit or a HttpClient timeout: not „the fight does not exist“.
                     _failed = true;
                 }
 

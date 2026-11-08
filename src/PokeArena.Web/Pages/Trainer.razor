@@ -70,7 +70,7 @@ else if (_missing)
 }
 else if (_failed)
 {
-    <p class="notice">Die Daten konnten gerade nicht geladen werden. Bitte versuch es gleich noch einmal.</p>
+    <LoadFailed Retrying="false" />
 }
 else
 {
@@ -102,8 +102,9 @@ else
             _trainer = await Data.TrainerAsync(entry?.TrainerId ?? Key, _stop.Token);
             _missing = _trainer is null;
         }
-        catch (HttpRequestException)
+        catch (Exception ex) when (ex is HttpRequestException || (ex is OperationCanceledException && !_stop.IsCancellationRequested))
         {
+            // Also a HttpClient timeout, which would otherwise leave the page at „Lädt …“.
             _failed = true;
         }
         catch (OperationCanceledException)

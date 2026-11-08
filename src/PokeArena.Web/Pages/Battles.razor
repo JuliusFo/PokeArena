@@ -9,18 +9,18 @@
 {
     <p class="muted">Lädt …</p>
 }
-else if (_index is null || _index.Battles.Count == 0)
+else if (_index is null ? !Failed : _index.Battles.Count == 0)
 {
     <p>Noch keine Kämpfe. Schreib im Chat <strong>!boss</strong>, um den ersten Boss zu rufen!</p>
 }
-else
+else if (_index is not null)
 {
     <BattleList Battles="_index.Battles" />
 }
 
 @if (Failed)
 {
-    <p class="notice">Die Daten konnten gerade nicht geladen werden. Die Seite versucht es gleich noch einmal.</p>
+    <LoadFailed />
 }
 
 @code {

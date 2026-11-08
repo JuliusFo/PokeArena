@@ -21,7 +21,9 @@ public static class Format
     public static string TypeClass(string type) =>
         "type-" + type.ToLowerInvariant().Replace("ä", "ae", StringComparison.Ordinal).Replace("ö", "oe", StringComparison.Ordinal).Replace("ü", "ue", StringComparison.Ordinal);
 
-    public static string Count(int count, string one, string many) => count == 1 ? $"1 {one}" : $"{count} {many}";
+    /// <summary>„18:30 Uhr“ on the same day as <paramref name="now"/>, otherwise with the date (review 1.0.3, A34).</summary>
+    public static string Moment(DateTimeOffset value, DateTimeOffset now) =>
+        Date(value) == Date(now) ? Time(value) : DateTime(value);
 
     private static TimeZoneInfo FindGermanTime()
     {

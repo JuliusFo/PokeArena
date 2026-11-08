@@ -10,11 +10,19 @@ public sealed class FakeDataHost : HttpMessageHandler
 
     public bool Down { get; set; }
 
+    /// <summary>Every request ends like a HttpClient timeout (a <see cref="TaskCanceledException"/>).</summary>
+    public bool TimesOut { get; set; }
+
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         if (Down)
         {
             throw new HttpRequestException("offline");
+        }
+
+        if (TimesOut)
+        {
+            throw new TaskCanceledException("The request was canceled due to the configured HttpClient.Timeout.");
         }
 
         var path = request.RequestUri!.AbsolutePath.TrimStart('/');

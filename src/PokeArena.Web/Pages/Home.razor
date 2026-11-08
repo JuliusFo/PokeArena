@@ -9,14 +9,14 @@
 {
     <p class="muted">Lädt …</p>
 }
-else if (_leaderboard is null || _leaderboard.Entries.Count == 0)
+else if (_leaderboard is null ? !Failed : _leaderboard.Entries.Count == 0)
 {
     <p>Noch niemand dabei. Schreib im Chat <strong>!registrieren</strong> und such dir dein erstes Pokémon aus!</p>
 }
-else
+else if (_leaderboard is not null)
 {
     <p class="muted">
-        @Format.Count(_leaderboard.PlayerCount, "Trainer", "Trainer") · Stand @Format.Time(_leaderboard.UpdatedAt) ·
+        @_leaderboard.PlayerCount Trainer · Stand @Format.Moment(_leaderboard.UpdatedAt, Now) ·
         Es zählen verschiedene Arten, bei Gleichstand alle Pokémon.
     </p>
     <table class="table">
@@ -44,7 +44,7 @@ else
 
 @if (Failed)
 {
-    <p class="notice">Die Daten konnten gerade nicht geladen werden. Die Seite versucht es gleich noch einmal.</p>
+    <LoadFailed />
 }
 
 @code {

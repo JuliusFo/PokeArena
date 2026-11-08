@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Components;
 namespace PokeArena.Web.Services;
 
 /// <summary>
-/// A page that reloads its data every <see cref="Interval"/> while it is open (spec §9: leaderboard and overlay
-/// poll every 15 s). A failed load keeps the last data and shows a hint; the next round tries again.
+/// A page that reloads its data every <see cref="Interval"/> while it is open (spec §9: the leaderboard and the list
+/// of fights poll every 15 s). A failed load keeps the last data and shows a hint; the next round tries again.
 /// </summary>
 public abstract class PollingPage : ComponentBase, IDisposable
 {
@@ -24,6 +24,9 @@ public abstract class PollingPage : ComponentBase, IDisposable
 
     /// <summary>The last load failed (data host unreachable).</summary>
     protected bool Failed { get; private set; }
+
+    /// <summary>Now, for „Stand …“ lines.</summary>
+    protected DateTimeOffset Now => Time.GetUtcNow();
 
     protected abstract Task LoadAsync(CancellationToken ct);
 
@@ -57,8 +60,9 @@ public abstract class PollingPage : ComponentBase, IDisposable
             await LoadAsync(_stop.Token);
             Failed = false;
         }
-        catch (HttpRequestException)
+        catch (Exception ex) when (ex is HttpRequestException || (ex is OperationCanceledException && !_stop.IsCancellationRequested))
         {
+            // Also a HttpClient timeout (a TaskCanceledException): it must not end the polling (review 1.0.3, A28).
             Failed = true;
         }
         finally

@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
 using PokeArena.Contracts;
 using PokeArena.Web.Layout;
+using PokeArena.Web.Shared;
 using PokeArena.Web.Pages;
 using PokeArena.Web.Services;
 
@@ -60,6 +61,48 @@ public class PageTests : BunitContext
         Put(SitePaths.Leaderboard, new Leaderboard(Now, 1, [new(1, "11", "Anna", 1, 1)]), SiteJson.Default.Leaderboard);
         _time.Advance(PollingPage.Interval);
         cut.WaitForAssertion(() => Assert.DoesNotContain("konnten gerade nicht geladen werden", cut.Markup));
+    }
+
+    [Fact]
+    public void A_timeout_counts_as_a_failed_load_and_polling_goes_on()
+    {
+        _host.TimesOut = true;
+
+        var cut = Render<Home>();
+
+        cut.WaitForAssertion(() => Assert.Contains("konnten gerade nicht geladen werden", cut.Markup));
+        Assert.DoesNotContain("Noch niemand dabei", cut.Markup);
+        _host.TimesOut = false;
+        Put(SitePaths.Leaderboard, new Leaderboard(Now.AddDays(-2), 1, [new(1, "11", "Anna", 1, 1)]), SiteJson.Default.Leaderboard);
+        _time.Advance(PollingPage.Interval);
+        cut.WaitForAssertion(() => Assert.Contains("Anna", cut.Markup));
+        Assert.Contains("Stand 30.10.2026, 18:30 Uhr", cut.Markup);
+    }
+
+    [Fact]
+    public void A_battle_that_cannot_be_loaded_is_not_reported_missing()
+    {
+        _host.Down = true;
+        var cut = Render<Battle>(p => p.Add(b => b.Id, 8));
+
+        for (var waited = TimeSpan.Zero; waited <= Battle.GiveUpAfter; waited += Battle.RetryInterval)
+        {
+            _time.Advance(Battle.RetryInterval);
+            cut.WaitForState(() => true);
+        }
+
+        cut.WaitForAssertion(() => Assert.Contains("Bitte lade die Seite gleich noch einmal", cut.Markup));
+        Assert.DoesNotContain("nicht gefunden", cut.Markup);
+    }
+
+    [Fact]
+    public void Data_in_an_older_format_gets_a_hint()
+    {
+        Put(SitePaths.Meta, new SiteMeta(SiteMeta.CurrentFormatVersion - 1, Now), SiteJson.Default.SiteMeta);
+
+        var cut = Render<MainLayout>(p => p.Add(l => l.Body, b => b.AddContent(0, "Inhalt")));
+
+        cut.WaitForAssertion(() => Assert.Contains("Die Daten werden gerade umgestellt", cut.Markup));
     }
 
     [Fact]

@@ -16,6 +16,10 @@
     {
         <p class="notice" role="status">Es gibt eine neue Version der Seite. Bitte lade sie neu.</p>
     }
+    else if (_olderData)
+    {
+        <p class="notice" role="status">Die Daten werden gerade umgestellt. Manches fehlt vielleicht kurz – schau später noch einmal vorbei.</p>
+    }
 
     <main>
         @Body
@@ -33,14 +37,22 @@
 @code {
     private readonly CancellationTokenSource _stop = new();
     private bool _newerData;
+    private bool _olderData;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            _newerData = await Data.MetaAsync(_stop.Token) is { } meta && meta.FormatVersion > SiteMeta.CurrentFormatVersion;
+            if (await Data.MetaAsync(_stop.Token) is { } meta)
+            {
+                _newerData = meta.FormatVersion > SiteMeta.CurrentFormatVersion;
+
+                // The normal order after a format change: the site deploys on merge, the bot follows with the next
+                // update of the streamer's app (review 1.0.3, A33).
+                _olderData = meta.FormatVersion < SiteMeta.CurrentFormatVersion;
+            }
         }
-        catch (HttpRequestException)
+        catch (Exception ex) when (ex is HttpRequestException || (ex is OperationCanceledException && !_stop.IsCancellationRequested))
         {
             // The pages show their own hint when the data host is unreachable.
         }

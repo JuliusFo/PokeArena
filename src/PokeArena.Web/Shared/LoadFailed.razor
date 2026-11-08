@@ -1,0 +1,9 @@
+@* The hint when the data host could not be reached. *@
+
+<p class="notice">Die Daten konnten gerade nicht geladen werden. @(Retrying ? "Die Seite versucht es gleich noch einmal." : "Bitte lade die Seite gleich noch einmal.")</p>
+
+@code {
+    /// <summary>The page tries again by itself.</summary>
+    [Parameter]
+    public bool Retrying { get; set; } = true;
+}
