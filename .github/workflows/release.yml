@@ -8,8 +8,10 @@ on:
       - 'v*'
   workflow_dispatch:
 
+# Read-only by default: build and tests run code from NuGet packages (MSBuild targets, analyzers, tests) and must
+# not hold a token that can replace release assets (review 1.0.3, A21). Only the release job may write.
 permissions:
-  contents: write
+  contents: read
 
 env:
   DOTNET_NOLOGO: true
@@ -25,10 +27,24 @@ jobs:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - uses: actions/setup-dotnet@v5
         with:
           global-json-file: global.json
+
+      # A tag must match <Version> and have its CHANGELOG section, or the repository and the release disagree
+      # (review 1.0.3, A22). Fails before anything is built.
+      - name: Check version and changelog
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        run: |
+          $version = $env:GITHUB_REF_NAME.TrimStart('v')
+          $props = [xml](Get-Content Directory.Build.props -Encoding utf8)
+          $declared = @($props.Project.PropertyGroup | ForEach-Object { $_.Version } | Where-Object { $_ })[0]
+          if ($declared -ne $version) { throw "Tag $env:GITHUB_REF_NAME does not match <Version>$declared</Version> in Directory.Build.props." }
+          $changelog = Get-Content CHANGELOG.md -Encoding utf8
+          if (-not ($changelog -match "^##\s+\[$([regex]::Escape($version))\]")) { throw "CHANGELOG.md has no section for $version." }
 
       # Nothing gets published that does not pass the same checks as CI.
       - name: Build
@@ -67,12 +83,6 @@ jobs:
           if (-not (Test-Path publish/PokeArena/data/pokemon.json)) { throw 'Base data missing from the package.' }
           Compress-Archive -Path publish/PokeArena -DestinationPath "PokeArena-${{ steps.version.outputs.name }}-win-x64.zip"
 
-      - name: Upload artifact
-        if: github.ref_type != 'tag'
-        uses: actions/upload-artifact@v4
-        with:
-          name: package
-          path: '*.zip'
 
       # Everything goes through local fast-forward merges, so generated notes would be a bare compare link; the
       # changelog section says what changed.
@@ -90,10 +100,7 @@ jobs:
             if ($lines[$i] -match "^##\s+\[$([regex]::Escape($version))\]") { $start = $i + 1; break }
           }
 
-          if ($start -lt 0) {
-            Write-Host "No section for $version in CHANGELOG.md, the generated notes will have to do."
-            exit 0
-          }
+          if ($start -lt 0) { throw "No section for $version in CHANGELOG.md." }
 
           $end = $lines.Count
           for ($i = $start; $i -lt $lines.Count; $i++) {
@@ -101,10 +108,7 @@ jobs:
           }
 
           $body = if ($end -gt $start) { ($lines[$start..($end - 1)] -join "`n").Trim() } else { '' }
-          if (-not $body) {
-            Write-Host "Section for $version is empty, the generated notes will have to do."
-            exit 0
-          }
+          if (-not $body) { throw "The section for $version in CHANGELOG.md is empty." }
 
           # The next tag below this one, so rebuilding an older release never links forwards.
           $tags = @(git tag --list 'v*' --sort=-v:refname)
@@ -119,21 +123,43 @@ jobs:
           Set-Content release-notes.md -Value $body -Encoding utf8
           Write-Host $body
 
+      # Run by hand: the package is the result. For a tag: handed to the release job.
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: package
+          path: |
+            *.zip
+            release-notes.md
+          if-no-files-found: error
+
+  release:
+    name: Attach to the GitHub release
+    needs: build
+    if: github.ref_type == 'tag'
+    runs-on: windows-latest
+    timeout-minutes: 10
+    # The only step with write access; it runs no code from the repository or its packages.
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: package
+
       # Attach to the release, creating it if it does not exist yet; a release written by hand keeps its text.
       - name: Attach to release
-        if: github.ref_type == 'tag'
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
         run: |
-          $tag = "${{ steps.version.outputs.name }}"
           $files = Get-ChildItem *.zip | ForEach-Object { $_.Name }
 
-          gh release view $tag 2>$null
+          gh release view $env:TAG 2>$null
           if ($LASTEXITCODE -eq 0) {
-            gh release upload $tag $files --clobber
-          } elseif (Test-Path release-notes.md) {
-            gh release create $tag $files --title $tag --notes-file release-notes.md
+            gh release upload $env:TAG $files --clobber
           } else {
-            gh release create $tag $files --title $tag --generate-notes
+            gh release create $env:TAG $files --title $env:TAG --notes-file release-notes.md
           }
