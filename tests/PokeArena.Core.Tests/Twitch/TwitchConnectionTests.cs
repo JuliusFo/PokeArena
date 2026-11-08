@@ -405,8 +405,7 @@ public class TwitchConnectionTests
 
         // The second part waits for the limiter (1 per second), driven by the fake clock.
         Assert.Single(_http.RequestsTo(Helix + "chat/messages"));
-        _time.Advance(TimeSpan.FromSeconds(1));
-        await Eventually.TrueAsync(() => _http.RequestsTo(Helix + "chat/messages").Count() == 2);
+        await AdvanceUntilAsync(() => _http.RequestsTo(Helix + "chat/messages").Count() == 2, TimeSpan.FromSeconds(1));
         Assert.All(_http.RequestsTo(Helix + "chat/messages"), r => Assert.True(r.Body.Length < ChatText.MaxLength + 200));
 
         await sender.StopAsync(TestContext.Current.CancellationToken);

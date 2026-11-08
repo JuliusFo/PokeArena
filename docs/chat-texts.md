@@ -46,7 +46,7 @@ moderator replies are never dropped.
 | # | Situation | Text | Proposal | Change |
 |---|---|---|---|---|
 | 17 | Without a name | @{Name}, fordere jemanden zum Kampf heraus – zum Beispiel: !fight @Name | | |
-| 18 | Unknown name | @{Name}, {x} ist noch kein Trainer. ({x} only if it is a plain name of at most 25 letters, digits or „_“; otherwise: „@{Name}, diesen Trainer gibt es noch nicht.“) | | |
+| 18 | Unknown name | @{Name}, {x} ist noch kein Trainer. ({x} only if it is a plain name of at most 25 letters, digits or „_“; otherwise: „@{Name}, diesen Trainer gibt es noch nicht.“ Several trainers with that display name: „@{Name}, mehrere Trainer heißen {x} – nimm bitte den Twitch-Namen, zum Beispiel !fight @login.“) | | |
 | 19 | Challenging oneself | @{Name}, du kannst dich nicht selbst herausfordern. | | |
 | 20 | Own challenge still open | @{Name}, du hast schon eine offene Herausforderung. | | |
 | 21 | Target has an open challenge | @{Name}, {Target} hat schon eine offene Herausforderung. | | |
@@ -74,6 +74,6 @@ moderator replies are never dropped.
 |---|---|---|---|---|
 | 34 | `!bossreset` | Der Boss-Cooldown ist zurückgesetzt – mit !boss geht es sofort weiter. | | |
 | 35 | `!entfernen` without a name | @{Mod}, wen soll ich löschen? Zum Beispiel: !entfernen @name | | |
-| 36 | `!entfernen` unknown name | @{Mod}, ich finde keinen Trainer namens {x}. | | |
-| 37 | `!entfernen` asks for confirmation | @{Mod}, wirklich {Name} mit allen Pokémon löschen? Das lässt sich nicht rückgängig machen. Bestätige innerhalb von 60 Sekunden mit !entfernen @{login} ja | | |
+| 36 | `!entfernen` unknown name | @{Mod}, ich finde keinen Trainer namens {x}. ({x} only if plain as in row 18, otherwise „diesen Trainer finde ich nicht.“; several trainers with that display name: „@{Mod}, mehrere Trainer heißen {x} – bitte in der PokeArena-App löschen.“) | | |
+| 37 | `!entfernen` asks for confirmation | @{Mod}, wirklich {Name} mit allen Pokémon löschen? Das lässt sich nicht rückgängig machen. Bestätige innerhalb von 60 Sekunden mit !entfernen @{login} ja ({login}: the display name if another trainer took the login since) | | |
 | 38 | Deleted | {Name} wurde mit allen Pokémon gelöscht. | | |

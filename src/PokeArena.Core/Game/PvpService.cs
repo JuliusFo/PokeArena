@@ -88,11 +88,13 @@ public sealed class PvpService
             return;
         }
 
-        if (await _trainers.FindByNameAsync(name, ct) is not { } target)
+        var match = await _trainers.ResolveNameAsync(name, ct);
+        if (match.Trainer is not { } target)
         {
-            _chat.SendHint(message.UserId, Command, ChatText.Echo(name) is { } typed
-                ? $"{mention}, {typed} ist noch kein Trainer."
-                : $"{mention}, diesen Trainer gibt es noch nicht.");
+            var typed = ChatText.Echo(name);
+            _chat.SendHint(message.UserId, Command, match.Ambiguous
+                ? $"{mention}, mehrere Trainer heißen {typed ?? "so"} – nimm bitte den Twitch-Namen, zum Beispiel !fight @login."
+                : typed is null ? $"{mention}, diesen Trainer gibt es noch nicht." : $"{mention}, {typed} ist noch kein Trainer.");
             return;
         }
 

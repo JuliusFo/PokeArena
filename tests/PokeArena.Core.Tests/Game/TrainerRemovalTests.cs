@@ -90,6 +90,33 @@ public class TrainerRemovalTests : IDisposable
     }
 
     [Fact]
+    public async Task A_trainer_whose_login_was_released_is_confirmed_by_display_name()
+    {
+        await _game.Trainers.RegisterAsync("1", "bob", "Bobby", GameFixture.Species.Starters[0], _ct);
+        await _game.Trainers.RegisterAsync("2", "bob", "Bob", GameFixture.Species.Starters[0], _ct);
+
+        await _removal.RequestAsync(Mod("9", "Rocko"), "@Bobby", _ct);
+        Assert.EndsWith("mit !entfernen @Bobby ja", _chat.Sent[^1]);
+        await _removal.RequestAsync(Mod("9", "Rocko"), "@Bobby ja", _ct);
+
+        Assert.False(await TrainerExistsAsync("1"));
+    }
+
+    [Fact]
+    public async Task Ambiguous_or_odd_names_are_not_guessed_or_repeated()
+    {
+        await _game.Trainers.RegisterAsync("1", "ash_one", "Ash", GameFixture.Species.Starters[0], _ct);
+        await _game.Trainers.RegisterAsync("2", "ash_two", "Ash", GameFixture.Species.Starters[0], _ct);
+
+        await _removal.RequestAsync(Mod("9", "Rocko"), "@Ash", _ct);
+        await _removal.RequestAsync(Mod("9", "Rocko"), "<b>x</b>", _ct);
+
+        Assert.Equal(
+            ["@Rocko, mehrere Trainer heißen Ash – bitte in der PokeArena-App löschen.", "@Rocko, diesen Trainer finde ich nicht."],
+            _chat.Sent);
+    }
+
+    [Fact]
     public async Task A_confirmation_for_another_name_only_asks_about_that_one()
     {
         await ArrangeFightAsync();

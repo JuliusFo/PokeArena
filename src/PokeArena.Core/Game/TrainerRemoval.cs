@@ -31,10 +31,13 @@ public sealed class TrainerRemoval(
             return;
         }
 
-        var target = await trainers.FindByNameAsync(words[0], ct);
-        if (target is null)
+        var match = await trainers.ResolveNameAsync(words[0], ct);
+        if (match.Trainer is not { } target)
         {
-            chat.Send($"{mention}, ich finde keinen Trainer namens {words[0].TrimStart('@')}.");
+            var typed = ChatText.Echo(words[0]);
+            chat.Send(match.Ambiguous
+                ? $"{mention}, mehrere Trainer heißen {typed ?? "so"} – bitte in der PokeArena-App löschen."
+                : typed is null ? $"{mention}, diesen Trainer finde ich nicht." : $"{mention}, ich finde keinen Trainer namens {typed}.");
             return;
         }
 
@@ -55,7 +58,7 @@ public sealed class TrainerRemoval(
         _pending[message.UserId] = new Pending(target.TwitchUserId, message.IsSimulated, now + ConfirmationTimeout);
         chat.Send(
             $"{mention}, wirklich {target.DisplayName} mit allen Pokémon löschen? Das lässt sich nicht rückgängig machen. " +
-            $"Bestätige innerhalb von {ConfirmationTimeout.TotalSeconds:0} Sekunden mit !entfernen @{target.Login} ja");
+            $"Bestätige innerhalb von {ConfirmationTimeout.TotalSeconds:0} Sekunden mit !entfernen @{target.Handle} ja");
     }
 
     /// <summary>Deletes right away — the desktop app asks for confirmation itself.</summary>

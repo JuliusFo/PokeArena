@@ -24,7 +24,15 @@ public sealed record TrainerSummary(
     string TwitchUserId, string DisplayName, Species Starter, int SpecimenCount, DateTimeOffset RegisteredAt, int Tokens = 0, int Badges = 0);
 
 /// <summary>A trainer found by a chat mention.</summary>
-public sealed record TrainerName(string TwitchUserId, string DisplayName, string Login);
+public sealed record TrainerName(string TwitchUserId, string DisplayName, string Login)
+{
+    /// <summary>What a viewer types to name this trainer: the login, or the display name once the login was released.</summary>
+    public string Handle => Login.Length > 0 ? Login : DisplayName;
+}
+
+/// <param name="Trainer">The one trainer the name means, or null.</param>
+/// <param name="Ambiguous">No trainer because several match (same display name, no login match).</param>
+public sealed record NameMatch(TrainerName? Trainer, bool Ambiguous);
 
 /// <summary>
 /// Registration and the trainer directory. Commands call it from the single command queue; the UI reads lists
@@ -163,12 +171,16 @@ public sealed class TrainerService
     /// Resolves a chat mention (<c>@name</c> or <c>name</c>) to a trainer: by login first, then by display name,
     /// both case-insensitive. Names are only as current as the trainer's last chat message.
     /// </summary>
-    public async Task<TrainerName?> FindByNameAsync(string mention, CancellationToken ct)
+    public async Task<TrainerName?> FindByNameAsync(string mention, CancellationToken ct) =>
+        (await ResolveNameAsync(mention, ct)).Trainer;
+
+    /// <summary>Like <see cref="FindByNameAsync"/>, and says whether a miss was because several trainers matched.</summary>
+    public async Task<NameMatch> ResolveNameAsync(string mention, CancellationToken ct)
     {
         var name = mention.Trim().TrimStart('@').ToLowerInvariant();
         if (name.Length == 0)
         {
-            return null;
+            return new NameMatch(null, Ambiguous: false);
         }
 
         await using var db = _database.Open();
@@ -180,9 +192,8 @@ public sealed class TrainerService
         // Logins are unique (ReleaseLoginAsync). Two trainers with the same display name are never guessed between:
         // a wrong guess could delete the wrong trainer (review 1.0.3, A14).
         var byLogin = matches.Where(t => t.Login == name).ToList();
-        return byLogin.Count > 0
-            ? (byLogin.Count == 1 ? byLogin[0] : null)
-            : (matches.Count == 1 ? matches[0] : null);
+        var candidates = byLogin.Count > 0 ? byLogin : matches;
+        return candidates.Count == 1 ? new NameMatch(candidates[0], Ambiguous: false) : new NameMatch(null, candidates.Count > 1);
     }
 
     /// <summary>

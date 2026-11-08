@@ -142,6 +142,19 @@ public class PvpServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Two_trainers_with_the_same_name_get_a_hint_to_use_the_login()
+    {
+        var pvp = Pvp(OneHitKnockouts);
+        await RegisterAsync("1", "Ash", "Mewtu", 5);
+        await _game.Trainers.RegisterAsync("2", "misty_a", "Misty", Starter, _ct);
+        await _game.Trainers.RegisterAsync("3", "misty_b", "Misty", Starter, _ct);
+
+        await pvp.FightAsync(Fight("1", "Ash"), "@Misty", _ct);
+
+        Assert.Equal(["@Ash, mehrere Trainer heißen Misty – nimm bitte den Twitch-Namen, zum Beispiel !fight @login."], _chat.Sent);
+    }
+
+    [Fact]
     public async Task Deleting_a_trainer_drops_their_open_challenge()
     {
         var pvp = Pvp(OneHitKnockouts);
