@@ -38,7 +38,7 @@ public sealed record BossSettings
     public static BossSettings Default { get; } = new();
 
     /// <summary>BossCountdownSeconds: how long the lobby stays open.</summary>
-    public TimeSpan Countdown { get; init; } = TimeSpan.FromSeconds(30);
+    public TimeSpan Countdown { get; init; } = TimeSpan.FromSeconds(60);
 
     /// <summary>BossMinTeilnehmer.</summary>
     public int MinParticipants { get; init; } = 2;

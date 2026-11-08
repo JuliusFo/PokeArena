@@ -39,7 +39,7 @@ public class BossEncounterTests : IDisposable
         await boss.JoinAsync(Boss("2", "Misty"), _ct);
         await boss.JoinAsync(Boss("2", "Misty"), _ct);
         await boss.JoinAsync(Boss("3", "Rocko"), _ct);
-        Assert.Equal(["Ein wilder Boss nähert sich! Schreibt !boss, um mitzukämpfen – noch 30 Sekunden."], _chat.Sent);
+        Assert.Equal(["Ein wilder Boss nähert sich! Schreibt !boss, um mitzukämpfen – noch 60 Sekunden."], _chat.Sent);
 
         await EndCountdownAsync();
 

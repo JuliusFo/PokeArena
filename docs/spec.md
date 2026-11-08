@@ -88,8 +88,8 @@ Trigger and lobby:
 
 1. A registered user types `!boss` while no encounter runs and the global
    cooldown has elapsed → a lobby opens with a countdown
-   (`BossCountdownSeconds`, default 30). Announcement is generic („Ein wilder
-   Boss nähert sich!") — the boss is not yet determined.
+   (`BossCountdownSeconds`, default 60, was 30 until 1.0.1). Announcement is
+   generic („Ein wilder Boss nähert sich!") — the boss is not yet determined.
 2. During the countdown every registered user (including the initiator,
    automatically) joins via `!boss`. Joining twice is a no-op.
 3. If fewer than `BossMinTeilnehmer` (default 2) joined when the countdown
@@ -132,7 +132,7 @@ possible, so no artificial pacing):
   `!boss` during a cooldown answers „@Name, der nächste Boss kann in X Minuten
   gerufen werden." — at most every 30 s for the whole chat (WP-03 decision).
 - Replies (final wording: [chat-texts.md](chat-texts.md)): lobby „Ein wilder Boss nähert sich!
-  Schreibt !boss, um mitzukämpfen – noch 30 Sekunden.“; start „Ein wildes
+  Schreibt !boss, um mitzukämpfen – noch 60 Sekunden.“; start „Ein wildes
   Arkani (selten) erscheint! 5 Trainer kämpfen mit.“; result „Arkani wurde
   besiegt! Gefangen von: A, B.“ or „Arkani ist entkommen – alle Pokémon wurden
   besiegt.“; too few see above. The result ends with the battle link
@@ -406,7 +406,7 @@ Display names appear permanently on a public website. Therefore:
 | KritChance / KritFaktor        | 6.25 % / 2.0 |
 | HPFaktor                       | 1.0       |
 | MaxRunden                      | 200       |
-| BossCountdownSeconds           | 30        |
+| BossCountdownSeconds           | 60        |
 | BossMinTeilnehmer              | 2         |
 | BossCooldownMinutes            | 30        |
 | BossFehlschlagCooldownMinutes  | 2         |
