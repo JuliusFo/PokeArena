@@ -65,10 +65,10 @@ public sealed class NpcService(
         var now = time.GetUtcNow();
         var cooldownKey = CooldownKey(message.UserId, npc.Id);
         if (!message.IsSimulated
-            && await db.Cooldowns.Where(c => c.Key == cooldownKey).Select(c => (DateTimeOffset?)c.Until).FirstOrDefaultAsync(ct) is { } until
+            && await db.CooldownUntilAsync(cooldownKey, ct) is { } until
             && until > now)
         {
-            chat.SendHint(message.UserId, $"{mention}, gegen {npc.Name} kannst du in {HoursAndMinutes(until - now)} wieder antreten.");
+            chat.SendHint(message.UserId, $"{mention}, gegen {npc.Name} kannst du in {ChatText.Duration(until - now)} wieder antreten.");
             return;
         }
 
@@ -126,7 +126,7 @@ public sealed class NpcService(
             LootSpeciesId = reward?.Id,
             Tokens = firstWin ? npc.Tokens : null,
             Outcome = won ? BattleOutcome.ChallengerWon : BattleOutcome.OpponentWon,
-            Rounds = (result.Attacks + 1) / 2,
+            Rounds = result.Rounds,
             LogJson = result.Log.ToJson(),
             Participants = [new BattleParticipant { TrainerId = message.UserId, Won = won }],
         };
@@ -145,7 +145,7 @@ public sealed class NpcService(
         TimeSpan? cooldown = message.IsSimulated ? null : won ? settings.WinCooldown : settings.LossCooldown;
         if (cooldown is { } span)
         {
-            await SetCooldownAsync(db, CooldownKey(message.UserId, npc.Id), now + span, ct);
+            await db.SetCooldownAsync(CooldownKey(message.UserId, npc.Id), now + span, ct);
         }
 
         await db.SaveChangesAsync(ct);
@@ -157,7 +157,7 @@ public sealed class NpcService(
         chat.Send(links.WithBattle(
             won
                 ? WinText(message.DisplayName, npc, reward)
-                : $"{npc.Name} besiegt {message.DisplayName}!" + (cooldown is { } wait ? $" Nächster Versuch in {Duration(wait)}." : ""),
+                : $"{npc.Name} besiegt {message.DisplayName}!" + (cooldown is { } wait ? $" Nächster Versuch in {ChatText.Duration(wait)}." : ""),
             battle.Id,
             message.IsSimulated));
         foreach (var a in achievements)
@@ -182,35 +182,4 @@ public sealed class NpcService(
             : $"den Orden von {npc.Name}, {reward.Name} und {BattleTexts.Tokens(npc.Tokens)}";
         return $"{trainer} besiegt {npc.Name} und bekommt {gains}!";
     }
-
-    private static async Task SetCooldownAsync(PokeArenaDb db, string key, DateTimeOffset until, CancellationToken ct)
-    {
-        var cooldown = await db.Cooldowns.FindAsync([key], ct);
-        if (cooldown is null)
-        {
-            db.Cooldowns.Add(new Cooldown { Key = key, Until = until });
-        }
-        else
-        {
-            cooldown.Until = until;
-        }
-    }
-
-    /// <summary>„47:59“: hours and minutes, rounded up to the next minute.</summary>
-    /// <summary>„46 Stunden 30 Minuten“, „1 Stunde“, „5 Minuten“ — rounded up to whole minutes.</summary>
-    private static string HoursAndMinutes(TimeSpan remaining)
-    {
-        var minutes = Math.Max(1, (int)Math.Ceiling(remaining.TotalMinutes));
-        var (h, m) = (minutes / 60, minutes % 60);
-        var hours = h switch { 0 => null, 1 => "1 Stunde", _ => $"{h} Stunden" };
-        var rest = m switch { 0 => null, 1 => "1 Minute", _ => $"{m} Minuten" };
-        return string.Join(' ', new[] { hours, rest }.OfType<string>());
-    }
-
-    private static string Duration(TimeSpan span) => span switch
-    {
-        { TotalMinutes: < 60 } or { Minutes: not 0 } => span.TotalMinutes == 1 ? "1 Minute" : $"{span.TotalMinutes:0} Minuten",
-        { TotalHours: 1 } => "1 Stunde",
-        _ => $"{span.TotalHours:0} Stunden",
-    };
 }

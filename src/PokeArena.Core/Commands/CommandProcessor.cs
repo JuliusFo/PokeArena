@@ -31,7 +31,7 @@ public sealed class CommandProcessor(
     private readonly Dictionary<string, IChatCommand> _commands = commands
         .SelectMany(c => c.Aliases.Prepend(c.Name).Select(name => (Name: name, Command: c)))
         .ToDictionary(e => e.Name, e => e.Command);
-    private DateTimeOffset? _lastOfflineHint;
+    private readonly ReplyThrottle _offlineHints = new(OfflineHintCooldown, time);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -119,13 +119,9 @@ public sealed class CommandProcessor(
 
     private void SendOfflineHint()
     {
-        var now = time.GetUtcNow();
-        if (_lastOfflineHint is { } last && now - last < OfflineHintCooldown)
+        if (_offlineHints.Allows())
         {
-            return;
+            chat.Send(OfflineHint);
         }
-
-        _lastOfflineHint = now;
-        chat.Send(OfflineHint);
     }
 }

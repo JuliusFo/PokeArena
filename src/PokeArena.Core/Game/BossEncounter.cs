@@ -43,7 +43,7 @@ public sealed class BossEncounter(
 
     private Lobby? _lobby;
     private long _lobbyNumber;
-    private DateTimeOffset? _lastCooldownReply;
+    private readonly ReplyThrottle _cooldownReplies = new(CooldownReplyInterval, time);
 
     /// <summary><c>!boss</c> from a registered trainer: opens a lobby or joins the open one.</summary>
     public async Task JoinAsync(ChatMessage message, CancellationToken ct)
@@ -63,7 +63,7 @@ public sealed class BossEncounter(
         var now = time.GetUtcNow();
         if (!message.IsSimulated && await CooldownUntilAsync(ct) is { } until && until > now)
         {
-            ReplyCooldown(message, until - now, now);
+            ReplyCooldown(message, until - now);
             return;
         }
 
@@ -266,33 +266,18 @@ public sealed class BossEncounter(
     private async Task<DateTimeOffset?> CooldownUntilAsync(CancellationToken ct)
     {
         await using var db = database.Open();
-        return await db.Cooldowns.Where(c => c.Key == CooldownKey).Select(c => (DateTimeOffset?)c.Until).FirstOrDefaultAsync(ct);
+        return await db.CooldownUntilAsync(CooldownKey, ct);
     }
 
-    private static async Task SetCooldownAsync(PokeArenaDb db, DateTimeOffset until, CancellationToken ct)
-    {
-        var cooldown = await db.Cooldowns.FindAsync([CooldownKey], ct);
-        if (cooldown is null)
-        {
-            db.Cooldowns.Add(new Cooldown { Key = CooldownKey, Until = until });
-        }
-        else
-        {
-            cooldown.Until = until;
-        }
-    }
+    private static Task SetCooldownAsync(PokeArenaDb db, DateTimeOffset until, CancellationToken ct) =>
+        db.SetCooldownAsync(CooldownKey, until, ct);
 
-    private void ReplyCooldown(ChatMessage message, TimeSpan remaining, DateTimeOffset now)
+    private void ReplyCooldown(ChatMessage message, TimeSpan remaining)
     {
-        if (_lastCooldownReply is { } last && now - last < CooldownReplyInterval)
+        if (_cooldownReplies.Allows())
         {
-            return;
+            chat.Send($"@{message.DisplayName}, der nächste Boss kann in {ChatText.Duration(remaining)} gerufen werden.");
         }
-
-        _lastCooldownReply = now;
-        var minutes = (int)Math.Ceiling(remaining.TotalMinutes);
-        var when = minutes == 1 ? "in 1 Minute" : $"in {minutes} Minuten";
-        chat.Send($"@{message.DisplayName}, der nächste Boss kann {when} gerufen werden.");
     }
 
     private sealed class Lobby(long number, bool isSimulated)

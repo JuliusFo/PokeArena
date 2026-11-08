@@ -1,3 +1,5 @@
+using PokeArena.Core.Chat;
+
 namespace PokeArena.Core.Commands;
 
 /// <summary>
@@ -9,7 +11,7 @@ public sealed class StatusCommand(AppInfo app, TimeProvider time) : IChatCommand
 {
     public static readonly TimeSpan Cooldown = TimeSpan.FromSeconds(30);
 
-    private DateTimeOffset? _lastReply;
+    private readonly ReplyThrottle _replies = new(Cooldown, time);
 
     public string Name => "pokearena";
 
@@ -20,15 +22,9 @@ public sealed class StatusCommand(AppInfo app, TimeProvider time) : IChatCommand
     public Task ExecuteAsync(CommandContext context, CancellationToken ct)
     {
         // The dry run skips the cooldown: a streamer testing twice in a row would otherwise see no answer.
-        if (!context.Message.IsSimulated)
+        if (!context.Message.IsSimulated && !_replies.Allows())
         {
-            var now = time.GetUtcNow();
-            if (_lastReply is { } last && now - last < Cooldown)
-            {
-                return Task.CompletedTask;
-            }
-
-            _lastReply = now;
+            return Task.CompletedTask;
         }
 
         context.Chat.Send($"PokeArena-Bot ist online (Version {app.Version}).");

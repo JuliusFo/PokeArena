@@ -23,8 +23,6 @@ public sealed class BattleRandom(int seed)
 {
     private readonly Random _random = new(seed);
 
-    public int Seed => seed;
-
     /// <summary>Uniform in [0, 1).</summary>
     public double NextDouble() => _random.NextDouble();
 

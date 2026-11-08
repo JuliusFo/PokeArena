@@ -1,7 +1,7 @@
 // Monte Carlo balancing simulator on the real battle engine (ADR-0006, WP-03).
 // Usage (from the repository root): dotnet run tools/BalancingSimulator.cs [-- options]
 //
-// Options (defaults = spec §13):
+// Options (defaults: the code defaults, BattleSettings/BossSettings = spec §13):
 //   --scaling 20      Skalierung
 //   --damping 50      Daempfung (k)
 //   --boss-hp 1.5     BossHPProSpieler
@@ -116,10 +116,11 @@ static Dictionary<string, double> ParseOptions(string[] args)
 {
     var options = new Dictionary<string, double>
     {
-        ["scaling"] = 20,
-        ["damping"] = 50,
-        ["boss-hp"] = 1.5,
-        ["divisor"] = 3,
+        // The code defaults (spec §13), so the simulator follows a changed default (review 1.0.3, B6).
+        ["scaling"] = BattleSettings.Default.Scaling,
+        ["damping"] = BattleSettings.Default.Damping,
+        ["boss-hp"] = BossSettings.Default.HpPerParticipant,
+        ["divisor"] = BossSettings.Default.TargetDivisor,
         ["duels"] = 10,
         ["bosses"] = 5000,
     };

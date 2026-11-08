@@ -1,3 +1,4 @@
+using PokeArena.Core.Chat;
 using PokeArena.Core.Publishing;
 
 namespace PokeArena.Core.Commands;
@@ -5,7 +6,7 @@ namespace PokeArena.Core.Commands;
 /// <summary><c>!arena</c>: posts the website link (spec §8). Same short global cooldown as <c>!pokearena</c>.</summary>
 public sealed class ArenaCommand(SiteLinks links, TimeProvider time) : IChatCommand
 {
-    private DateTimeOffset? _lastReply;
+    private readonly ReplyThrottle _replies = new(StatusCommand.Cooldown, time);
 
     public string Name => "arena";
 
@@ -13,15 +14,9 @@ public sealed class ArenaCommand(SiteLinks links, TimeProvider time) : IChatComm
 
     public Task ExecuteAsync(CommandContext context, CancellationToken ct)
     {
-        if (!context.Message.IsSimulated)
+        if (!context.Message.IsSimulated && !_replies.Allows())
         {
-            var now = time.GetUtcNow();
-            if (_lastReply is { } last && now - last < StatusCommand.Cooldown)
-            {
-                return Task.CompletedTask;
-            }
-
-            _lastReply = now;
+            return Task.CompletedTask;
         }
 
         context.Chat.Send(links.Home is { } home

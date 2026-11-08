@@ -129,7 +129,7 @@ public sealed class PvpService
         _log.LogInformation("PvP challenge from {Challenger} to {Target}", message.UserId, target.TwitchUserId);
         _chat.Send(
             $"@{target.DisplayName}, {message.DisplayName} fordert dich zum Kampf heraus! Nimm an mit !fight @{message.Login} – " +
-            $"du hast {Minutes(_settings.ChallengeTimeout)}.");
+            $"du hast {ChatText.Duration(_settings.ChallengeTimeout)}.");
     }
 
     private async Task AcceptAsync(Challenge challenge, string targetName, DateTimeOffset now, CancellationToken ct)
@@ -176,7 +176,7 @@ public sealed class PvpService
             LootSpecimenId = loot.Id,
             LootSpeciesId = loot.SpeciesId,
             Outcome = result.ChallengerWon ? BattleOutcome.ChallengerWon : BattleOutcome.OpponentWon,
-            Rounds = (result.Attacks + 1) / 2,
+            Rounds = result.Rounds,
             LogJson = result.Log.ToJson(),
             Participants =
             [
@@ -238,9 +238,6 @@ public sealed class PvpService
 
         return null;
     }
-
-    private static string Minutes(TimeSpan span) =>
-        span.TotalMinutes is var minutes && minutes == 1 ? "1 Minute" : $"{minutes:0} Minuten";
 
     private sealed record Challenge(string ChallengerId, string ChallengerName, string TargetId, DateTimeOffset ExpiresAt, int Generation)
     {

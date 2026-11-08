@@ -16,6 +16,19 @@ public static class ChatText
     public static string[] Words(string arguments) =>
         arguments.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
 
+    /// <summary>
+    /// „46 Stunden 30 Minuten“, „1 Stunde“, „5 Minuten“ — rounded up to whole minutes, at least one. The one way the
+    /// bot writes a duration, so a cooldown reads the same in every reply (review 1.0.3, B4).
+    /// </summary>
+    public static string Duration(TimeSpan span)
+    {
+        var minutes = Math.Max(1, (int)Math.Ceiling(span.TotalMinutes));
+        var (h, m) = (minutes / 60, minutes % 60);
+        var hours = h switch { 0 => null, 1 => "1 Stunde", _ => $"{h} Stunden" };
+        var rest = m switch { 0 => null, 1 => "1 Minute", _ => $"{m} Minuten" };
+        return string.Join(' ', new[] { hours, rest }.OfType<string>());
+    }
+
     /// <summary>The first word of a command's arguments, or "".</summary>
     public static string FirstWord(string arguments) => Words(arguments).FirstOrDefault() ?? "";
 

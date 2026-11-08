@@ -2,7 +2,11 @@ namespace PokeArena.Core.Game.Battles;
 
 /// <param name="Attacks">Number of hits, for balancing statistics.</param>
 /// <param name="HitRoundLimit">MaxRunden reached — a bug; the caller logs a warning.</param>
-public sealed record TeamBattleResult(bool ChallengerWon, int Attacks, bool HitRoundLimit, BattleLog Log);
+public sealed record TeamBattleResult(bool ChallengerWon, int Attacks, bool HitRoundLimit, BattleLog Log)
+{
+    /// <summary>Rounds as stored with the fight: two hits make a round (spec §5).</summary>
+    public int Rounds => (Attacks + 1) / 2;
+}
 
 /// <summary>
 /// One-vs-one with teams (spec §5), used by PvP and NPC fights and the balancing simulator: one Pokemon per side is

@@ -1,4 +1,4 @@
-/* PokeArena website. Same palette as the desktop app (PokeArena.UI); species are text, no images (ADR-0008). */
+/* PokeArena website. Own palette, close to the desktop app (PokeArena.UI); species are text, no images (ADR-0008). */
 
 :root {
   --bg: #f4f4f6;

@@ -1,7 +1,7 @@
 namespace PokeArena.Core;
 
 /// <summary>
-/// Per-user locations of the app's data (logs, database; later backups).
+/// Per-user locations of the app's data (logs, database, backups).
 /// Local, not roaming: the SQLite database must never be synced by a roaming profile.
 /// </summary>
 public sealed class AppPaths
