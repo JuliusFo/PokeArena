@@ -7,6 +7,44 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+### Added
+- If the bot is signed in with the channel's own Twitch account instead of the
+  bot account, the app says so instead of silently ignoring the streamer.
+- The OBS card says when the overlay could not start (port in use) and how to
+  refresh the source if OBS was started first.
+- The website says when its data is still in an older format after an update.
+
+### Changed
+- Error and hint replies (unknown name, too few Pokémon, cooldown …) go out at
+  most once per viewer and 30 seconds, so spam cannot delay fight results.
+- The bot repeats a name typed in chat only if it is a plain name; `!challenge
+  @Eich` works like `!challenge Eich`.
+- The desktop list of fights shows the same headline and result as the website.
+- „Alles neu veröffentlichen“ also removes files of trainers and fights the
+  database no longer knows (after restoring an older backup), and new fights
+  are uploaded before the rest of a full republish.
+- Lead moderators can use `!entfernen` and `!bossreset`.
+- Durations read the same in every reply („1 Stunde 30 Minuten“).
+
+### Fixed
+- The bot reconnects after more kinds of Twitch errors instead of staying
+  offline until „Erneut versuchen“, and it no longer hangs when a connection
+  attempt gets no answer.
+- Shortly after going live, a lagging Twitch status no longer keeps the bot
+  closed for up to an hour; it asks again a few times.
+- Replies queued when the app is closed or while it reconnects are still sent.
+- A fight page that cannot be loaded no longer claims the fight does not exist;
+  website pages keep polling after a timeout.
+- Deleting a trainer also drops their open challenge, and `!entfernen` never
+  guesses between two trainers with the same name.
+- A new R2 key is tried at once instead of after the previous failures' wait.
+- The overlay shows „1 Art“ instead of „1 Arten“; the leaderboard's „Stand“
+  shows the date on other days.
+
+### Security
+- The release workflow builds and tests with a read-only token; the log file
+  keeps no names or chat text; the privacy page lists everything stored.
+
 ## [1.0.3] - 2026-11-08
 
 ### Added

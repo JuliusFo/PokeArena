@@ -9,7 +9,7 @@ Auftrag des Nutzers (2026-11-08): „Mach mal ein Code-Review auf unseren bisher
 - TE: Tests; als einziger Agent mit Build und Tests, dazu Mutationstests auf einer Kopie
 - RD: Wiederverwendung, toter Code, Struktur, Doku
 
-**Stand:** in Arbeit mit R1 (`wp/r1-review-1.0.3`).
+**Stand:** umgesetzt mit R1 (`docs/work-packages.md`, Branch `wp/r1-review-1.0.3`), noch nicht released; nicht reproduziert A31, nicht gemacht C22, offen im Backlog A8-Datei, A33 (N-1), Verbindungstest der Einstellungen.
 
 Doppelte Befunde sind zusammengeführt (alle IDs genannt). **Nachgeprüft** heißt: zusätzlich von Hand im Code bestätigt; sonst gilt die Einschätzung des Agenten.
 
