@@ -389,6 +389,34 @@ public class TwitchConnectionTests
     }
 
     [Fact]
+    public async Task After_a_dropped_backlog_the_next_message_waits_again()
+    {
+        StoreLogin();
+        _http.On(HttpMethod.Post, Helix + "chat/messages", HttpStatusCode.OK, """{"data":[{"message_id":"x","is_sent":true,"drop_reason":null}]}""");
+        var targets = new SettableTarget();
+        var sender = new ChatSender(_helix, targets, new DryRunMode(), _chatLog, _time, NullLogger<ChatSender>.Instance);
+        await sender.StartAsync(TestContext.Current.CancellationToken);
+
+        sender.Send("verworfen");
+        await AdvanceUntilAsync(() => _chatLog.Snapshot().Any(e => e.Kind == ChatLogKind.Warning), TimeSpan.FromSeconds(2));
+
+        // Later, during another short reconnect, a fight result waits for the connection instead of being dropped.
+        _time.Advance(TimeSpan.FromMinutes(5));
+        sender.Send("Der Boss wurde besiegt!");
+        _time.Advance(TimeSpan.FromSeconds(3));
+        targets.Target = new ChatTarget("42", "shiyofurball", "2001", "pokearenabot");
+        await AdvanceUntilAsync(() => _http.RequestsTo(Helix + "chat/messages").Any(), TimeSpan.FromSeconds(1));
+
+        Assert.Contains("Der Boss wurde besiegt!", _http.RequestsTo(Helix + "chat/messages").Single().Body);
+        await sender.StopAsync(TestContext.Current.CancellationToken);
+    }
+
+    private sealed class SettableTarget : IChatTargetSource
+    {
+        public ChatTarget? Target { get; set; }
+    }
+
+    [Fact]
     public async Task The_sender_splits_long_texts_and_keeps_one_second_between_messages()
     {
         StoreLogin();

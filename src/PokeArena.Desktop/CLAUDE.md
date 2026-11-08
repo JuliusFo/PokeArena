@@ -31,5 +31,6 @@ Thin WPF host around a `BlazorWebView` (ADR-0007). UI belongs in PokeArena.UI, l
 - Streamer settings (WP-08): `settings.json` in the data directory (written by the „Einstellungen“ card via
   `SettingsFile`) is inserted as a configuration source between `appsettings.json` and `appsettings.local.json`
   (`App.AddStreamerSettings`); it is read once at start, so changes apply after a restart.
-- Shutdown: the main window's `Closing` cancels once, awaits `IHost.StopAsync` and then calls `Shutdown()`.
-  Never await in `OnExit` — the dispatcher is already shutting down and the continuation never runs (review 1.0.3).
+- Shutdown: the main window's `Closing` cancels once, awaits `IHost.StopAsync`, closes the window, awaits the host's
+  `DisposeAsync` (at most 5 s) and only then calls `Shutdown()`. `OnExit` neither awaits nor disposes the host: the
+  dispatcher is already shutting down, and a synchronous `Dispose` could deadlock on async disposal (review 1.0.3).

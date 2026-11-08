@@ -42,7 +42,7 @@ public sealed class ChatSender(
     TimeProvider time,
     ILogger<ChatSender> log) : BackgroundService, IChatSender
 {
-    private readonly Channel<string> _queue = Channel.CreateUnbounded<string>(new UnboundedChannelOptions { SingleReader = true });
+    private readonly Channel<Queued> _queue = Channel.CreateUnbounded<Queued>(new UnboundedChannelOptions { SingleReader = true });
     private readonly SendRateLimiter _limiter = new();
 
     /// <summary>How long a message waits for a lost Twitch connection (reconnects back off up to 60 s).</summary>
@@ -53,9 +53,8 @@ public sealed class ChatSender(
 
     private static readonly TimeSpan TargetPoll = TimeSpan.FromSeconds(1);
 
-    /// <summary>When a message first found no target; null while connected. Only the send loop touches it.</summary>
-    private DateTimeOffset? _noTargetSince;
-    private volatile bool _stopping;
+    /// <summary>UTC ticks of when <see cref="StopAsync"/> began; 0 while running. Ticks, so the send loop reads it atomically.</summary>
+    private long _stoppingTicks;
 
     /// <summary>One error or hint reply per viewer at most this often (spec §8).</summary>
     public static readonly TimeSpan HintInterval = TimeSpan.FromSeconds(30);
@@ -89,14 +88,14 @@ public sealed class ChatSender(
             }
             else
             {
-                _queue.Writer.TryWrite(part);
+                _queue.Writer.TryWrite(new Queued(part, time.GetUtcNow()));
             }
         }
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await foreach (var text in _queue.Reader.ReadAllAsync(stoppingToken))
+        await foreach (var message in _queue.Reader.ReadAllAsync(stoppingToken))
         {
             var delay = _limiter.GetDelay(time.GetUtcNow());
             if (delay > TimeSpan.Zero)
@@ -104,7 +103,7 @@ public sealed class ChatSender(
                 await Task.Delay(delay, time, stoppingToken);
             }
 
-            await SendNowAsync(text, stoppingToken);
+            await SendNowAsync(message, stoppingToken);
         }
     }
 
@@ -114,7 +113,7 @@ public sealed class ChatSender(
     /// </summary>
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
-        _stopping = true;
+        Interlocked.Exchange(ref _stoppingTicks, time.GetUtcNow().UtcTicks);
         _queue.Writer.TryComplete();
         if (ExecuteTask is { } running)
         {
@@ -129,31 +128,33 @@ public sealed class ChatSender(
     /// the connection instead — a message that was never sent cannot arrive twice.
     /// </summary>
     /// <remarks>
-    /// The wait is counted from the first message that found no target, not per message: after a minute without
-    /// Twitch (login refused, long outage) the rest of the queue is dropped at once instead of one message per minute,
-    /// and nothing stale goes out much later. While stopping it waits at most <see cref="StopTargetWait"/>, so the
-    /// Twitch connection still gets its share of the host's stop time (R1 second review).
+    /// Each message waits until <see cref="TargetWait"/> after it was queued, not after it reached the front: after a
+    /// minute without Twitch (login refused, long outage) a backlog is dropped at once instead of one message per
+    /// minute, nothing stale goes out much later, and a new message still gets its full minute. While stopping it
+    /// waits at most <see cref="StopTargetWait"/>, so the Twitch connection still gets its share of the host's stop
+    /// time (R1 second review).
     /// </remarks>
-    private async Task<ChatTarget?> WaitForTargetAsync(CancellationToken ct)
+    private async Task<ChatTarget?> WaitForTargetAsync(Queued message, CancellationToken ct)
     {
-        var since = _noTargetSince ??= time.GetUtcNow();
-        while (targets.Target is null && time.GetUtcNow() - since < (_stopping ? StopTargetWait : TargetWait))
+        while (targets.Target is null && time.GetUtcNow() < Deadline(message))
         {
             await Task.Delay(TargetPoll, time, ct);
         }
 
-        if (targets.Target is { } target)
-        {
-            _noTargetSince = null;
-            return target;
-        }
-
-        return null;
+        return targets.Target;
     }
 
-    private async Task SendNowAsync(string text, CancellationToken ct)
+    private DateTimeOffset Deadline(Queued message)
     {
-        var target = await WaitForTargetAsync(ct);
+        var deadline = message.QueuedAt + TargetWait;
+        var stopping = Interlocked.Read(ref _stoppingTicks);
+        return stopping == 0 ? deadline : new DateTimeOffset(Math.Min(deadline.UtcTicks, stopping + StopTargetWait.Ticks), TimeSpan.Zero);
+    }
+
+    private async Task SendNowAsync(Queued message, CancellationToken ct)
+    {
+        var text = message.Text;
+        var target = await WaitForTargetAsync(message, ct);
         if (target is null)
         {
             chatLog.Add(ChatLogKind.Warning, null, $"Nicht mit Twitch verbunden – Nachricht nicht gesendet: {text}");
@@ -180,4 +181,6 @@ public sealed class ChatSender(
             chatLog.Add(ChatLogKind.Warning, null, $"Senden fehlgeschlagen: {text}");
         }
     }
+
+    private sealed record Queued(string Text, DateTimeOffset QueuedAt);
 }

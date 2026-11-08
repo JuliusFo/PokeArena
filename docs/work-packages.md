@@ -309,7 +309,7 @@ in [roadmap.md](roadmap.md).
   gaps proven by mutation closed (see the review), architecture and asset
   tests, guide vs `npcs.json`, shared fakes. Part D: spec, architecture,
   README, roadmap, ADRs, chat texts, setup guide, checklist, pitfalls. Tests
-  233 → 291 (Core 192 → 249, UI 30 → 27, Web 11 → 15), integration tests
+  233 → 292 (Core 192 → 250, UI 30 → 27, Web 11 → 15), integration tests
   adjusted.
 - User decisions: one package for everything; the process as a skill.
   Questions 2–7 left open → the default of each proposal (recorded in the
@@ -336,6 +336,11 @@ in [roadmap.md](roadmap.md).
   - 9 README blank line and „republish before the next fight“ → fixed.
   - Pre-existing: tag name pasted into release scripts → fixed (env); fight
     page retry loop on an id change → backlog.
+  - Re-check of the fixes: all nine confirmed; two new small points, the
+    user's decision „Ja, beide“: (10) the shared wait start of fix 5 made a
+    later fight result drop at once → each queued message now waits until one
+    minute after it was queued; test. (11) Desktop pitfall still described the
+    old shutdown → updated; disposal capped at 5 s, checked by hand again.
 - Not done: C22 (a theory would mix the reason test with the backoff test);
   RD5's NPC team size from `PvpSettings` (spec: one team size for all team
   fights); folder moves of test files beyond the shared fakes.

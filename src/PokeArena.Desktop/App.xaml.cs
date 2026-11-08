@@ -165,7 +165,8 @@ public partial class App : Application
         {
             if (_host is IAsyncDisposable host)
             {
-                await host.DisposeAsync();
+                // A hanging disposal must not keep the process alive without a window.
+                await host.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(5));
             }
             else
             {
