@@ -282,6 +282,12 @@ public class PvpServiceTests : IDisposable
         Assert.Equal([("Ash", true, 6), ("Misty", false, 6)], page.Sides.Select(s => (s.Name, s.Won, s.Fighters.Count)));
         Assert.Equal("Runde 1", page.Lines[0]);
 
+        // End state from a real fight: the loser's team all fainted; a fighter never sent in still has full HP.
+        Assert.All(page.Sides[1].Fighters, f => Assert.Equal((0, true), (f.HpLeft, f.Used)));
+        Assert.All(page.Sides[0].Fighters.Where(f => f.Used == false), f => Assert.Equal(f.MaxHp, f.HpLeft));
+        Assert.True(page.Sides[0].Fighters[0].Used);
+        Assert.Contains(page.Sides[0].Fighters, f => f.HpLeft > 0);
+
         var loot = await db.Specimens.SingleAsync(s => s.Id == db.Battles.Single().LootSpecimenId, _ct);
         Assert.Equal(_game.Time.GetUtcNow(), loot.AcquiredAt);
     }

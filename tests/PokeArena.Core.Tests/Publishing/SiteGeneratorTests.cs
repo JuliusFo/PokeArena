@@ -1,5 +1,7 @@
+using System.Text.Json;
 using PokeArena.Contracts;
 using PokeArena.Core.Data;
+using PokeArena.Core.Game.Battles;
 using PokeArena.Core.Publishing;
 using PokeArena.Core.Tests.Fakes;
 
@@ -68,6 +70,48 @@ public class SiteGeneratorTests : IDisposable
     }
 
     [Fact]
+    public async Task A_team_fight_page_shows_hp_left_fainted_and_not_sent_in()
+    {
+        // Ash's Pikachu beats Misty's only Karpador after one hit taken; Ash's Raupy never enters.
+        var log = new BattleLog(
+            [new LogFighter(0, 25, 70, "1", "Ash"), new LogFighter(0, 10, 90, "1", "Ash"), new LogFighter(1, 129, 40, "2", "Misty")],
+            [
+                new BattleEvent(BattleEventKind.SentOut, 1, Fighter: 0),
+                new BattleEvent(BattleEventKind.SentOut, 1, Fighter: 2),
+                new BattleEvent(BattleEventKind.Attack, 1, Fighter: 2, FighterHp: 40, Target: 0, TargetHp: 52, Damage: 18),
+                new BattleEvent(BattleEventKind.Attack, 1, Fighter: 0, FighterHp: 52, Target: 2, TargetHp: 0, Damage: 45),
+                new BattleEvent(BattleEventKind.Fainted, 1, Fighter: 2),
+            ]);
+
+        var page = await BattlePageAsync(new Battle { Kind = BattleKind.Pvp, FoughtAt = Start, Outcome = BattleOutcome.ChallengerWon, LogJson = log.ToJson() });
+
+        Assert.Equal(
+            [("Pikachu", (int?)52, (bool?)true), ("Raupy", 90, false), ("Karpador", 0, true)],
+            page.Sides.SelectMany(s => s.Fighters).Select(f => (f.Species.Name, f.HpLeft, f.Used)));
+    }
+
+    [Fact]
+    public async Task In_a_boss_fight_everyone_takes_part_from_the_start()
+    {
+        var log = new BattleLog(
+            [new LogFighter(0, 25, 70, "1", "Ash"), new LogFighter(0, 10, 90, "2", "Misty"), new LogFighter(1, 59, 400, null, "Boss")],
+            [
+                new BattleEvent(BattleEventKind.Attack, 1, Fighter: 0, FighterHp: 70, Target: 2, TargetHp: 380, Damage: 20),
+                new BattleEvent(BattleEventKind.Attack, 1, Fighter: 2, FighterHp: 380, Target: 0, TargetHp: 0, Damage: 90),
+                new BattleEvent(BattleEventKind.Fainted, 1, Fighter: 0),
+            ]);
+
+        var page = await BattlePageAsync(new Battle
+        {
+            Kind = BattleKind.Boss, FoughtAt = Start, BossSpeciesId = 59, Outcome = BattleOutcome.BossEscaped, LogJson = log.ToJson(),
+        });
+
+        Assert.Equal(
+            [("Pikachu", (int?)0, (bool?)true), ("Raupy", 90, true), ("Arkani", 380, true)],
+            page.Sides.SelectMany(s => s.Fighters).Select(f => (f.Species.Name, f.HpLeft, f.Used)));
+    }
+
+    [Fact]
     public async Task Unknown_paths_are_rejected() =>
         await Assert.ThrowsAsync<ArgumentException>(async () =>
         {
@@ -83,6 +127,15 @@ public class SiteGeneratorTests : IDisposable
         Assert.Equal(42, SitePaths.BattleIdOf(SitePaths.Battle(42)));
         Assert.Null(SitePaths.BattleIdOf("kampf/x.json"));
         Assert.Null(SitePaths.TrainerIdOf(SitePaths.Leaderboard));
+    }
+
+    private async Task<BattlePage> BattlePageAsync(Battle battle)
+    {
+        await using var db = _game.OpenLive();
+        db.Battles.Add(battle);
+        await db.SaveChangesAsync(_ct);
+        var file = await _generator.RenderAsync(db, SitePaths.Battle(battle.Id), Start, _ct);
+        return JsonSerializer.Deserialize(file!.Content, SiteJson.Default.BattlePage)!;
     }
 
     private async Task<Leaderboard> LeaderboardAsync()

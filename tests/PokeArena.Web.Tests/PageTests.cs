@@ -121,6 +121,49 @@ public class PageTests : BunitContext
     }
 
     [Fact]
+    public void A_battle_shows_how_each_pokemon_ended()
+    {
+        Put(
+            SitePaths.Battle(5),
+            BattlePage(5) with
+            {
+                Sides =
+                [
+                    new BattleSide("Ash", true, [new BattleFighter(Bisasam, "Ash", "11", 40, HpLeft: 8, Used: true), new BattleFighter(Raupy, "Ash", "11", 30, HpLeft: 30, Used: false)]),
+                    new BattleSide("Misty", false, [new BattleFighter(Raupy, "Misty", "12", 30, HpLeft: 0, Used: true)]),
+                ],
+            },
+            SiteJson.Default.BattlePage);
+
+        var cut = Render<Battle>(p => p.Add(b => b.Id, 5));
+
+        cut.WaitForAssertion(() => Assert.Equal(3, cut.FindAll(".fighters li").Count));
+        var rows = cut.FindAll(".fighters li");
+        Assert.Equal(
+            [("fighter-survived", "8 / 40 HP"), ("fighter-unused", "nicht eingesetzt"), ("fighter-fainted", "besiegt")],
+            rows.Select(li => (li.ClassName, li.QuerySelector(".end-state")!.TextContent.Trim())));
+        // 8 of 40 HP is a fifth: the bar is short and marked low.
+        var bar = rows[0].QuerySelector(".hp-bar > span")!;
+        Assert.Equal(("low", "width: 20%"), (bar.ClassName, bar.GetAttribute("style")));
+    }
+
+    [Fact]
+    public void A_battle_file_from_before_the_end_state_shows_the_start_hp()
+    {
+        _host.Files[SitePaths.Battle(6)] = """
+            {"id":6,"kind":"Pvp","foughtAt":"2026-11-01T17:30:00+00:00","seed":1,"headline":"Ash gegen Misty","result":"Ash besiegt Misty.",
+            "sides":[{"name":"Ash","won":true,"fighters":[{"species":{"id":1,"name":"Bisasam","types":["Pflanze","Gift"]},"owner":"Ash","trainerId":"11","maxHp":40}]}],
+            "lines":[]}
+            """;
+
+        var cut = Render<Battle>(p => p.Add(b => b.Id, 6));
+
+        cut.WaitForAssertion(() => Assert.Equal("40 HP", cut.Find(".fighters .end-state").TextContent.Trim()));
+        Assert.Equal("fighter-unknown", cut.Find(".fighters li").ClassName);
+        Assert.Empty(cut.FindAll(".hp-bar"));
+    }
+
+    [Fact]
     public void A_battle_that_never_appears_is_reported_missing()
     {
         var cut = Render<Battle>(p => p.Add(b => b.Id, 8));
