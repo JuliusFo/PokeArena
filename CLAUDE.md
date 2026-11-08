@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-11-08 · v1.0.3 released · R1 (review 1.0.3 fixes) on `wp/r1-review-1.0.3`, not yet released · WP-09 after a few streams
+Status: 2026-11-08 · v1.1.0 released (R1 review fixes, boss lobby) · WP-09 (→ 1.2.0) after a few streams
 
 ## 1. Where to find what
 
@@ -43,7 +43,8 @@ shows leaderboard, trainer pages and battle logs.
 | 0.6.0 | Public website + OBS overlay | WP-06 |
 | 0.7.0 | Commands only while the stream is live | WP-07 |
 | 1.0.0 | Stream-ready: mod commands, deletion, backup | WP-08 |
-| 1.1.0 | Balancing with real stream data | WP-09 |
+| 1.1.0 | Review 1.0.3 fixes, boss lobby (2 min, late-join extension, HP left) | R1, feat/boss-lobby |
+| 1.2.0 | Balancing with real stream data | WP-09 |
 
 **Invariants — never weaken:**
 
@@ -164,9 +165,9 @@ PokeArena.slnx
 
 ## 9. Next
 
-1.0.3 is released (installation: README, „Running it on the streamer's PC“). R1
-(fixes of the whole review 1.0.3, docs/review-1.0.3.md) waits for its live test
-and release. Next: install it on the streamer's PC; after a few streams WP-09 balancing
+1.1.0 is released (installation: README, „Running it on the streamer's PC“): R1
+(fixes of the whole review 1.0.3, docs/review-1.0.3.md) and the boss lobby
+(streamer requests). Next: update the streamer's PC; after a few streams WP-09 balancing
 (`N = 4` dip, PvP loot preferring missing species, NPC difficulty; no runtime
 balancing editor). Ideas meanwhile go to docs/backlog.md. Details:
 docs/roadmap.md.

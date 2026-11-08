@@ -7,6 +7,8 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-08
+
 ### Added
 - If the bot is signed in with the channel's own Twitch account instead of the
   bot account, the app says so instead of silently ignoring the streamer.

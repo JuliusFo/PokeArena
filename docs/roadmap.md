@@ -252,7 +252,7 @@ Demo: stream-ready.
   channel. See the log in work-packages.md.
 - Pitfall: SQLite backup with WAL, see `src/PokeArena.Core/CLAUDE.md`.
 
-## WP-09 — Balancing after the first streams (≈ 2 days) → v1.1.0
+## WP-09 — Balancing after the first streams (≈ 2 days) → v1.2.0
 
 Tuning with real stream data and the Monte Carlo simulator instead of
 guesses. Starts after 1.0 has run on a few streams.

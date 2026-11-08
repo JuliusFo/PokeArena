@@ -14,9 +14,9 @@ in [roadmap.md](roadmap.md).
 | WP-06 | Website | 0.6.0 | done 2026-11-01 |
 | WP-07 | Live status | 0.7.0 | done 2026-11-03 |
 | WP-08 | Operations | 1.0.0 | done 2026-11-04 |
-| R1 | Review 1.0.3 fixes ([review-1.0.3.md](review-1.0.3.md)) | – | built 2026-11-08, live test open |
-| – | Boss lobby (streamer requests, `feat/boss-lobby`) | – | built 2026-11-08, live test open |
-| WP-09 | Balancing after the first streams | 1.1.0 | planned |
+| R1 | Review 1.0.3 fixes ([review-1.0.3.md](review-1.0.3.md)) | 1.1.0 | done 2026-11-08 |
+| – | Boss lobby (streamer requests, `feat/boss-lobby`) | 1.1.0 | done 2026-11-08 |
+| WP-09 | Balancing after the first streams | 1.2.0 | planned |
 
 ## Log
 
