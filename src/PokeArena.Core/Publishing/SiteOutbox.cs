@@ -41,11 +41,15 @@ public static class SiteOutbox
         }
     }
 
-    /// <summary>„Alles neu veröffentlichen“: every file the database can produce (spec §9).</summary>
-    public static async Task EnqueueEverythingAsync(PokeArenaDb db, DateTimeOffset now, CancellationToken ct)
+    /// <summary>
+    /// „Alles neu veröffentlichen“: every file the database can produce (spec §9), plus <paramref name="inBucket"/> —
+    /// files found in the bucket. Those without a source in the database (after restoring an older backup) are
+    /// deleted by the worker (review 1.0.3, A6).
+    /// </summary>
+    public static async Task EnqueueEverythingAsync(PokeArenaDb db, IEnumerable<string> inBucket, DateTimeOffset now, CancellationToken ct)
     {
         var trainers = await db.Trainers.Select(t => t.TwitchUserId).ToListAsync(ct);
         var battles = await db.Battles.Select(b => b.Id).ToListAsync(ct);
-        await EnqueueAsync(db, [SitePaths.BattleIndex, .. ForTrainers(trainers), .. battles.Select(SitePaths.Battle)], now, ct);
+        await EnqueueAsync(db, [SitePaths.BattleIndex, .. ForTrainers(trainers), .. battles.Select(SitePaths.Battle), .. inBucket], now, ct);
     }
 }

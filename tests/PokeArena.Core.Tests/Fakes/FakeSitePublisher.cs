@@ -16,7 +16,23 @@ public sealed class FakeSitePublisher : ISitePublisher, ISitePublisherFactory
 
     public Func<string, Task>? OnPut { get; set; }
 
+    public event Action? Changed;
+
     public ISitePublisher? Create() => IsSetUp ? this : null;
+
+    /// <summary>Like a new R2 token being saved.</summary>
+    public void RaiseChanged() => Changed?.Invoke();
+
+    public Task<IReadOnlyList<string>> ListAsync(string prefix, CancellationToken ct)
+    {
+        Calls.Add("list " + prefix);
+        if (Failure is { } failure)
+        {
+            throw failure;
+        }
+
+        return Task.FromResult<IReadOnlyList<string>>([.. Files.Keys.Where(k => k.StartsWith(prefix, StringComparison.Ordinal)).Order(StringComparer.Ordinal)]);
+    }
 
     public async Task PutAsync(string path, SiteFile file, CancellationToken ct)
     {

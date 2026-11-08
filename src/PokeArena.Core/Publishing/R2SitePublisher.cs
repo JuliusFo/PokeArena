@@ -45,13 +45,29 @@ public sealed class R2SitePublisher : ISitePublisher, IDisposable
     public Task DeleteAsync(string path, CancellationToken ct) =>
         RunAsync(() => _client.DeleteObjectAsync(new DeleteObjectRequest { BucketName = _bucket, Key = path }, ct));
 
+    public async Task<IReadOnlyList<string>> ListAsync(string prefix, CancellationToken ct)
+    {
+        var paths = new List<string>();
+        var request = new ListObjectsV2Request { BucketName = _bucket, Prefix = prefix };
+        ListObjectsV2Response response;
+        do
+        {
+            response = await RunAsync(() => _client.ListObjectsV2Async(request, ct));
+            paths.AddRange((response.S3Objects ?? []).Select(o => o.Key));
+            request.ContinuationToken = response.NextContinuationToken;
+        }
+        while (response.IsTruncated == true);
+
+        return paths;
+    }
+
     public void Dispose() => _client.Dispose();
 
-    private static async Task RunAsync<T>(Func<Task<T>> call)
+    private static async Task<T> RunAsync<T>(Func<Task<T>> call)
     {
         try
         {
-            await call();
+            return await call();
         }
         catch (AmazonS3Exception ex) when (ex.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
         {
@@ -83,6 +99,12 @@ public sealed class R2Access(WebsiteOptions options, ISecretStore secrets) : ISi
 
     private readonly Lock _lock = new();
     private R2SitePublisher? _publisher;
+
+    /// <summary>
+    /// Publishers replaced by a new token. The publish worker may still be uploading with one, so they are disposed
+    /// only with this object (review 1.0.3, A26).
+    /// </summary>
+    private readonly List<R2SitePublisher> _retired = [];
 
     /// <summary>Raised after the token was saved or removed.</summary>
     public event Action? Changed;
@@ -128,12 +150,22 @@ public sealed class R2Access(WebsiteOptions options, ISecretStore secrets) : ISi
         {
             _publisher?.Dispose();
             _publisher = null;
+            _retired.ForEach(p => p.Dispose());
+            _retired.Clear();
         }
     }
 
     private void Reset()
     {
-        Dispose();
+        lock (_lock)
+        {
+            if (_publisher is not null)
+            {
+                _retired.Add(_publisher);
+                _publisher = null;
+            }
+        }
+
         Changed?.Invoke();
     }
 }

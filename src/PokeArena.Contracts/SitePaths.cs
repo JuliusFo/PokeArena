@@ -11,8 +11,11 @@ public static class SitePaths
 
     public const string BattleIndex = "kaempfe.json";
 
-    private const string TrainerPrefix = "trainer/";
-    private const string BattlePrefix = "kampf/";
+    /// <summary>Folder of the trainer pages.</summary>
+    public const string TrainerPrefix = "trainer/";
+
+    /// <summary>Folder of the fight pages.</summary>
+    public const string BattlePrefix = "kampf/";
     private const string Extension = ".json";
 
     /// <summary>Keyed by Twitch user id, never by name (spec §1).</summary>

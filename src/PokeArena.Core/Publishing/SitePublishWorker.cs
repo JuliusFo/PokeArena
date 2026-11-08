@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using PokeArena.Contracts;
 using PokeArena.Core.Data;
 
 namespace PokeArena.Core.Publishing;
@@ -35,32 +36,62 @@ public sealed class SitePublishWorker(
     private const int BatchSize = 25;
 
     private PublishState _state = new(false, 0, null, null);
+    private int _retryAll;
+    private int _subscribed;
 
     public event Action? Changed;
 
     public PublishState State => Volatile.Read(ref _state);
 
-    /// <summary>„Alles neu veröffentlichen“: queues every file of the live database (spec §9).</summary>
+    /// <summary>
+    /// „Alles neu veröffentlichen“: queues every file of the live database (spec §9) and every trainer or fight file
+    /// in the bucket, so files the database no longer knows (an older backup was restored) get deleted. Fight ids
+    /// then continue above the highest one in the bucket: a reused id would show the old, cached fight for a day.
+    /// </summary>
     public async Task RepublishEverythingAsync(CancellationToken ct)
     {
+        var inBucket = await ListBucketAsync(ct);
         await using var db = database.OpenLive();
-        await SiteOutbox.EnqueueEverythingAsync(db, time.GetUtcNow(), ct);
+        await using var transaction = await db.Database.BeginTransactionAsync(ct);
+        await SiteOutbox.EnqueueEverythingAsync(db, inBucket, time.GetUtcNow(), ct);
+        if (inBucket.Select(SitePaths.BattleIdOf).Max() is { } highest)
+        {
+            await KeepBattleIdsAboveAsync(db, highest, ct);
+        }
+
         await db.SaveChangesAsync(ct);
-        log.LogInformation("Queued every site file for upload");
+        await transaction.CommitAsync(ct);
+        log.LogInformation("Queued every site file for upload ({InBucket} found in the bucket)", inBucket.Count);
     }
 
     /// <summary>One round: uploads the files that are due. Public for tests; the service calls it in a loop.</summary>
     public async Task PublishDueAsync(CancellationToken ct)
     {
+        if (Interlocked.Exchange(ref _subscribed, 1) == 0)
+        {
+            publishers.Changed += () => Interlocked.Exchange(ref _retryAll, 1);
+        }
+
         var publisher = publishers.Create();
         var now = time.GetUtcNow();
         await using var db = database.OpenLive();
+        if (Interlocked.Exchange(ref _retryAll, 0) == 1)
+        {
+            // New access: the old failures say nothing about it.
+            await db.PublishQueue.ExecuteUpdateAsync(
+                s => s.SetProperty(i => i.NextAttemptAt, now).SetProperty(i => i.Attempts, 0).SetProperty(i => i.LastError, (string?)null),
+                ct);
+            Publish(State with { LastError = null });
+        }
+
+        // Fresh changes first, newest first: a fight posted in chat must not wait behind a full republish
+        // (review 1.0.3, A7). Files that failed before come after them.
         var due = publisher is null
             ? []
             : await db.PublishQueue.AsNoTracking()
                 .Where(i => i.NextAttemptAt <= now)
-                .OrderBy(i => i.NextAttemptAt)
-                .ThenBy(i => i.QueuedAt)
+                .OrderBy(i => i.Attempts == 0 ? 0 : 1)
+                .ThenByDescending(i => i.QueuedAt)
                 .Take(BatchSize)
                 .ToListAsync(ct);
 
@@ -102,6 +133,36 @@ public sealed class SitePublishWorker(
         }
 
         Publish(state with { Pending = await db.PublishQueue.CountAsync(ct) });
+    }
+
+    private async Task<IReadOnlyList<string>> ListBucketAsync(CancellationToken ct)
+    {
+        if (publishers.Create() is not { } publisher)
+        {
+            return [];
+        }
+
+        try
+        {
+            return [.. await publisher.ListAsync(SitePaths.TrainerPrefix, ct), .. await publisher.ListAsync(SitePaths.BattlePrefix, ct)];
+        }
+        catch (SitePublishException ex)
+        {
+            // The database's own files still go out; only leftovers stay until the next republish.
+            log.LogWarning(ex, "Listing the bucket failed, republishing without it");
+            return [];
+        }
+    }
+
+    /// <summary>Raises the AUTOINCREMENT counter of the fights so the next id is above <paramref name="highest"/>.</summary>
+    private static async Task KeepBattleIdsAboveAsync(PokeArenaDb db, long highest, CancellationToken ct)
+    {
+        await db.Database.ExecuteSqlInterpolatedAsync(
+            $"INSERT INTO sqlite_sequence (name, seq) SELECT 'Battles', 0 WHERE NOT EXISTS (SELECT 1 FROM sqlite_sequence WHERE name = 'Battles')",
+            ct);
+        await db.Database.ExecuteSqlInterpolatedAsync(
+            $"UPDATE sqlite_sequence SET seq = MAX(seq, {highest}) WHERE name = 'Battles'",
+            ct);
     }
 
     internal static TimeSpan Backoff(int attempts)
