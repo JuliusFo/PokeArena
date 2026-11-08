@@ -187,6 +187,30 @@ public class SitePublishWorkerTests : IDisposable
     }
 
     [Fact]
+    public async Task Republishing_ignores_foreign_files_and_far_away_fight_ids()
+    {
+        await _game.Trainers.RegisterAsync("1", "ash", "Ash", Starter, _ct);
+        var fight = await AddFightAsync("1");
+        var worker = Worker();
+        await worker.PublishDueAsync(_ct);
+        foreach (var key in new[] { "kampf/abc.json", "kampf/1.json.bak", "kampf/", "trainer/readme.txt", "trainer/probelauf:x.json", "kampf/9223372036854775807.json" })
+        {
+            _bucket.Files[key] = new SiteFile([], SiteGenerator.MutableCache);
+        }
+
+        await worker.RepublishEverythingAsync(_ct);
+        await worker.PublishDueAsync(_ct);
+
+        // Files in the bot's own format are cleaned up, everything else stays untouched and blocks nothing.
+        Assert.Null(worker.State.LastError);
+        Assert.Equal(0, worker.State.Pending);
+        Assert.DoesNotContain("kampf/9223372036854775807.json", _bucket.Files.Keys);
+        Assert.Contains("kampf/abc.json", _bucket.Files.Keys);
+        Assert.Contains("trainer/probelauf:x.json", _bucket.Files.Keys);
+        Assert.Equal(fight + 1, await AddFightAsync("1"));
+    }
+
+    [Fact]
     public async Task A_new_change_goes_out_before_a_full_republish()
     {
         await using (var db = _game.OpenLive())

@@ -35,6 +35,12 @@ public sealed class SitePublishWorker(
     /// <summary>Files per round, so a full republish does not block the status for minutes.</summary>
     private const int BatchSize = 25;
 
+    /// <summary>
+    /// How far fight ids in the bucket may run ahead of the database after restoring a backup. A file further ahead
+    /// was not written by this bot (review 1.0.3, second pass) and must not raise the id counter.
+    /// </summary>
+    internal const long MaxBattleIdGap = 100_000;
+
     private PublishState _state = new(false, 0, null, null);
     private int _retryAll;
     private int _subscribed;
@@ -54,9 +60,16 @@ public sealed class SitePublishWorker(
         await using var db = database.OpenLive();
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
         await SiteOutbox.EnqueueEverythingAsync(db, inBucket, time.GetUtcNow(), ct);
-        if (inBucket.Select(SitePaths.BattleIdOf).Max() is { } highest)
+        var highestInDb = await db.Battles.MaxAsync(b => (long?)b.Id, ct) ?? 0;
+        var highestInBucket = inBucket.Select(SitePaths.BattleIdOf).Max() ?? 0;
+        if (highestInBucket > highestInDb + MaxBattleIdGap)
         {
-            await KeepBattleIdsAboveAsync(db, highest, ct);
+            // Not from an older backup of this database: never let such a file push the counter towards its end.
+            log.LogWarning("Fight {Id} in the bucket is far above the database ({Highest}); ids are not raised", highestInBucket, highestInDb);
+        }
+        else if (highestInBucket > highestInDb)
+        {
+            await KeepBattleIdsAboveAsync(db, highestInBucket, ct);
         }
 
         await db.SaveChangesAsync(ct);
@@ -144,7 +157,15 @@ public sealed class SitePublishWorker(
 
         try
         {
-            return [.. await publisher.ListAsync(SitePaths.TrainerPrefix, ct), .. await publisher.ListAsync(SitePaths.BattlePrefix, ct)];
+            var keys = (await publisher.ListAsync(SitePaths.TrainerPrefix, ct)).Concat(await publisher.ListAsync(SitePaths.BattlePrefix, ct)).ToList();
+            var paths = keys.Where(IsOwnPath).ToList();
+            if (paths.Count < keys.Count)
+            {
+                // Anyone with the R2 key can put files there; only what the bot itself would write is queued.
+                log.LogWarning("Ignored {Count} files in the bucket that the bot does not write", keys.Count - paths.Count);
+            }
+
+            return paths;
         }
         catch (SitePublishException ex)
         {
@@ -153,6 +174,12 @@ public sealed class SitePublishWorker(
             return [];
         }
     }
+
+    /// <summary>A trainer page of a numeric Twitch id or a fight page, exactly as <see cref="SitePaths"/> writes it.</summary>
+    private static bool IsOwnPath(string key) =>
+        SitePaths.BattleIdOf(key) is { } battleId
+            ? key == SitePaths.Battle(battleId)
+            : SitePaths.TrainerIdOf(key) is { Length: > 0 } trainerId && trainerId.All(char.IsAsciiDigit) && key == SitePaths.Trainer(trainerId);
 
     /// <summary>Raises the AUTOINCREMENT counter of the fights so the next id is above <paramref name="highest"/>.</summary>
     private static async Task KeepBattleIdsAboveAsync(PokeArenaDb db, long highest, CancellationToken ct)
