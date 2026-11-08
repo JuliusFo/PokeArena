@@ -282,14 +282,33 @@ public class PvpServiceTests : IDisposable
         Assert.Equal([("Ash", true, 6), ("Misty", false, 6)], page.Sides.Select(s => (s.Name, s.Won, s.Fighters.Count)));
         Assert.Equal("Runde 1", page.Lines[0]);
 
-        // End state from a real fight: the loser's team all fainted; a fighter never sent in still has full HP.
+        // End state from a real fight: the loser's team all fainted, the winner has someone left standing.
         Assert.All(page.Sides[1].Fighters, f => Assert.Equal((0, true), (f.HpLeft, f.Used)));
-        Assert.All(page.Sides[0].Fighters.Where(f => f.Used == false), f => Assert.Equal(f.MaxHp, f.HpLeft));
-        Assert.True(page.Sides[0].Fighters[0].Used);
         Assert.Contains(page.Sides[0].Fighters, f => f.HpLeft > 0);
 
         var loot = await db.Specimens.SingleAsync(s => s.Id == db.Battles.Single().LootSpecimenId, _ct);
         Assert.Equal(_game.Time.GetUtcNow(), loot.AcquiredAt);
+    }
+
+    [Fact]
+    public async Task The_page_of_a_lopsided_fight_marks_the_winners_never_sent_in()
+    {
+        // Normal damage: Mewtu sweeps Karpador, so the winner's later Pokémon never enter (review feat/battle-end-state).
+        var pvp = Pvp(BattleSettings.Default);
+        await RegisterAsync("1", "Ash", "Mewtu", 5);
+        await RegisterAsync("2", "Misty", "Karpador", 5);
+
+        await pvp.FightAsync(Fight("1", "Ash"), "@misty", _ct);
+        await pvp.FightAsync(Fight("2", "Misty"), "@Ash", _ct);
+
+        await using var db = _game.OpenLive();
+        var file = await new SiteGenerator(Species, GameFixture.Npcs).RenderAsync(db, SitePaths.Battle(1), _game.Time.GetUtcNow(), _ct);
+        var winner = JsonSerializer.Deserialize(file!.Content, SiteJson.Default.BattlePage)!.Sides[0];
+        Assert.True(winner.Won);
+        var unused = winner.Fighters.Where(f => f.Used == false).ToList();
+        Assert.NotEmpty(unused);
+        Assert.All(unused, f => Assert.Equal(f.MaxHp, f.HpLeft));
+        Assert.Equal(winner.Fighters.Count - unused.Count, winner.Fighters.Count(f => f.Used == true));
     }
 
     private PvpService Pvp(BattleSettings battleSettings, int seed = Seed, PvpSettings? pvpSettings = null) => new(
