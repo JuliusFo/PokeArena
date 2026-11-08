@@ -88,10 +88,16 @@ Trigger and lobby:
 
 1. A registered user types `!boss` while no encounter runs and the global
    cooldown has elapsed → a lobby opens with a countdown
-   (`BossCountdownSeconds`, default 60, was 30 until 1.0.1). Announcement is
-   generic („Ein wilder Boss nähert sich!") — the boss is not yet determined.
+   (`BossCountdownSeconds`, default 120, was 60 until 1.0.3 and 30 until
+   1.0.1; a whole number of minutes is announced as „2 Minuten“). Announcement
+   is generic („Ein wilder Boss nähert sich!") — the boss is not yet determined.
 2. During the countdown every registered user (including the initiator,
-   automatically) joins via `!boss`. Joining twice is a no-op.
+   automatically) joins via `!boss`. Joining twice is a no-op. A trainer who
+   joins **for the first time** with at most `BossVerlaengerungSeconds`
+   (default 10) left extends the countdown by that much (streamer request
+   2026-11-08), so a last-second `!boss` still makes it. Joining again never
+   extends; the extension is not announced in chat (one message per join
+   would flood it). The total is bounded by the number of trainers.
 3. If fewer than `BossMinTeilnehmer` (default 2) joined when the countdown
    ends: message „Der Boss entkommt – es haben sich zu wenige Trainer
    getraut. Mindestens 2 müssen mit !boss mitmachen.", short retry
@@ -137,10 +143,12 @@ possible, so no artificial pacing):
   `!boss` during a cooldown answers „@Name, der nächste Boss kann in X Minuten
   gerufen werden." — at most every 30 s for the whole chat (WP-03 decision).
 - Replies (final wording: [chat-texts.md](chat-texts.md)): lobby „Ein wilder Boss nähert sich!
-  Schreibt !boss, um mitzukämpfen – noch 60 Sekunden.“; start „Ein wildes
+  Schreibt !boss, um mitzukämpfen – noch 2 Minuten.“; start „Ein wildes
   Arkani (selten) erscheint! 5 Trainer kämpfen mit.“; result „Arkani wurde
   besiegt! Gefangen von: A, B.“ or „Arkani ist entkommen – alle Pokémon wurden
-  besiegt.“; too few see above. The result ends with the battle link
+  besiegt. Arkani hatte noch 45 von 270 HP.“ (an escaped boss reports its HP
+  left and at the start — streamer request 2026-11-08; the start value matters
+  because boss HP grows with `N`); too few see above. The result ends with the battle link
   (WP-06).
 - Dry run: cooldowns are skipped so a test can be repeated at once; an open
   lobby is dropped when the dry run is switched.
@@ -428,7 +436,8 @@ Display names appear permanently on a public website. Therefore:
 | KritChance / KritFaktor        | 6.25 % / 2.0 |
 | HPFaktor                       | 1.0       |
 | MaxRunden                      | 200       |
-| BossCountdownSeconds           | 60        |
+| BossCountdownSeconds           | 120       |
+| BossVerlaengerungSeconds       | 10        |
 | BossMinTeilnehmer              | 2         |
 | BossCooldownMinutes            | 30        |
 | BossFehlschlagCooldownMinutes  | 2         |

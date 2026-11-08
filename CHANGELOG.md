@@ -13,8 +13,12 @@ tagged `vX.Y.Z` once its section is complete.
 - The OBS card says when the overlay could not start (port in use) and how to
   refresh the source if OBS was started first.
 - The website says when its data is still in an older format after an update.
+- Whoever joins a boss fight in its last 10 seconds for the first time extends
+  the countdown by 10 seconds, so a last-second `!boss` still counts.
+- When the boss escapes, the bot says how many HP it had left.
 
 ### Changed
+- The boss lobby stays open for 2 minutes instead of 60 seconds.
 - Error and hint replies (unknown name, too few Pokémon, cooldown …) go out at
   most once per viewer and 30 seconds, so spam cannot delay fight results.
 - The bot repeats a name typed in chat only if it is a plain name; `!challenge

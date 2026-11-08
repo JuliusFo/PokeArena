@@ -15,6 +15,7 @@ in [roadmap.md](roadmap.md).
 | WP-07 | Live status | 0.7.0 | done 2026-11-03 |
 | WP-08 | Operations | 1.0.0 | done 2026-11-04 |
 | R1 | Review 1.0.3 fixes ([review-1.0.3.md](review-1.0.3.md)) | – | built 2026-11-08, live test open |
+| – | Boss lobby (streamer requests, `feat/boss-lobby`) | – | built 2026-11-08, live test open |
 | WP-09 | Balancing after the first streams | 1.1.0 | planned |
 
 ## Log
@@ -349,6 +350,20 @@ in [roadmap.md](roadmap.md).
   `OnExit`).
 - Deliberately not done (→ backlog): local overlay file (A8), reading the
   previous data format (A33), connection test in the settings card.
+
+### Boss lobby — streamer requests (2026-11-08, branch feat/boss-lobby)
+- Built: `BossCountdownSeconds` 60 → 120, announced as „noch 2 Minuten“
+  (seconds if not whole minutes); a first join with ≤ 10 s left moves the
+  lobby's end back by `BossVerlaengerungSeconds` (10) — the countdown work on
+  the queue re-schedules itself for the rest; an escaped boss reports „hatte
+  noch X von Y HP“ (`BossBattleResult.BossHp`/`BossMaxHp`). Spec §4/§13,
+  chat-texts rows 9, 13, 14, „So geht's“ page updated; tests.
+- User decisions (proposed defaults, accepted with the go-ahead): the
+  extension is +10 s on top of the end (not „reset to 10 s“), silent in chat,
+  no cap; HP text with the start value because boss HP grows with the
+  participant count.
+- Deliberately not done (→ backlog): setting the countdown length without a
+  release — not as a chat command (spec §8), at most as a desktop setting.
 
 Template per entry:
 

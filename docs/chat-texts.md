@@ -31,12 +31,12 @@ moderator replies are never dropped.
 
 | # | Situation | Text | Proposal | Change |
 |---|---|---|---|---|
-| 9 | Lobby opens | Ein wilder Boss nähert sich! Schreibt !boss, um mitzukämpfen – noch 60 Sekunden. | | |
+| 9 | Lobby opens | Ein wilder Boss nähert sich! Schreibt !boss, um mitzukämpfen – noch {2 Minuten}. (whole minutes as „2 Minuten“, otherwise „90 Sekunden“) | | |
 | 10 | Too few joined | Der Boss entkommt – es haben sich zu wenige Trainer getraut. Mindestens 2 müssen mit !boss mitmachen. | | |
 | 11 | Fight starts | Ein wildes {Boss}{ (selten) / (legendär)} erscheint! {N} Trainer kämpfen mit. | | |
 | 12 | Boss defeated | {Boss} wurde besiegt! Gefangen von: {A, B}. | | |
-| 13 | Boss escaped, some survived | {Boss} ist entkommen. | | |
-| 14 | Boss escaped, all fainted | {Boss} ist entkommen – alle Pokémon wurden besiegt. | | |
+| 13 | Boss escaped, some survived | {Boss} ist entkommen. {Boss} hatte noch {45} von {270} HP. | | |
+| 14 | Boss escaped, all fainted | {Boss} ist entkommen – alle Pokémon wurden besiegt. {Boss} hatte noch {45} von {270} HP. | | |
 | 15 | `!boss` during the cooldown (at most every 30 s) | @{Name}, der nächste Boss kann in {X Minuten} gerufen werden. | | |
 | 16 | Achievement reached (boss, PvP, NPC) | {Name} hat {15} verschiedene Pokémon gesammelt und kann jetzt {Eich} mit !challenge {Eich} herausfordern! | | |
 | 39 | Boss cooldown after a fight has run out | Der Boss ist wieder bereit – schreibt !boss, um ihn zu rufen! | | |
