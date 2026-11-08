@@ -3,6 +3,7 @@ using System.Text.Json.Serialization.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
 using PokeArena.Contracts;
+using PokeArena.Web.Layout;
 using PokeArena.Web.Pages;
 using PokeArena.Web.Services;
 
@@ -115,6 +116,27 @@ public class PageTests : BunitContext
         var cut = Render<Trainer>(p => p.Add(t => t.Key, "999"));
 
         cut.WaitForAssertion(() => Assert.Contains("Trainer nicht gefunden", cut.Markup));
+    }
+
+    [Fact]
+    public void The_guide_explains_the_commands_and_lists_every_npc()
+    {
+        var cut = Render<Guide>();
+
+        Assert.Contains("!registrieren", cut.Markup);
+        Assert.Contains("!challenge", cut.Markup);
+        var npcs = cut.FindAll(".guide-npcs tbody tr");
+        Assert.Equal(17, npcs.Count);
+        Assert.Equal("15Eich", npcs[0].TextContent);
+        Assert.Equal("151Ash", npcs[^1].TextContent);
+    }
+
+    [Fact]
+    public void The_menu_links_to_the_guide()
+    {
+        var cut = Render<MainLayout>(p => p.Add(l => l.Body, b => b.AddContent(0, "Inhalt")));
+
+        Assert.Contains(cut.FindAll(".site-header nav a"), a => a.GetAttribute("href") == "anleitung");
     }
 
     [Theory]
