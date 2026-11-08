@@ -1,0 +1,8 @@
+{"id":3,"kind":"Boss","foughtAt":"2026-11-01T18:40:00+00:00","seed":777,"headline":"Boss-Kampf gegen Arkani (selten)","result":"Arkani ist entkommen. Arkani hatte noch 45 von 405 HP.",
+"sides":[
+{"name":"Trainer","won":false,"fighters":[
+{"species":{"id":7,"name":"Schiggy","types":["Wasser"]},"owner":"Ben","trainerId":"1002","maxHp":88,"hpLeft":0,"used":true},
+{"species":{"id":4,"name":"Glumanda","types":["Feuer"]},"owner":"Clara","trainerId":"1003","maxHp":78,"hpLeft":0,"used":true},
+{"species":{"id":25,"name":"Pikachu","types":["Elektro"]},"owner":"Dennis","trainerId":"1004","maxHp":70,"hpLeft":0,"used":true}]},
+{"name":"Arkani","won":true,"fighters":[{"species":{"id":59,"name":"Arkani","types":["Feuer"]},"owner":"Boss","trainerId":null,"maxHp":405,"hpLeft":45,"used":true}]}],
+"lines":["Runde 1","Schiggy (Ben, HP 88) hat Arkani (Boss, HP 301) 104 Schaden zugefügt. Sehr effektiv!","Glumanda (Clara, HP 78) hat Arkani (Boss, HP 281) 20 Schaden zugefügt. Nicht sehr effektiv.","Pikachu (Dennis, HP 70) hat Arkani (Boss, HP 236) 45 Schaden zugefügt.","Arkani (Boss, HP 236) hat Schiggy (Ben, HP 0) 95 Schaden zugefügt. Volltreffer!","Schiggy (Ben) wurde besiegt.","…","Pikachu (Dennis) wurde besiegt."]}

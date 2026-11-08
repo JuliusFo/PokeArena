@@ -1,3 +1,4 @@
-{"updatedAt":"2026-11-01T18:30:00+00:00","battles":[
+{"updatedAt":"2026-11-01T18:45:00+00:00","battles":[
+{"id":3,"kind":"Boss","foughtAt":"2026-11-01T18:40:00+00:00","headline":"Boss-Kampf gegen Arkani (selten)","result":"Arkani ist entkommen. Arkani hatte noch 45 von 405 HP."},
 {"id":2,"kind":"Pvp","foughtAt":"2026-11-01T18:25:00+00:00","headline":"Anna gegen Ben","result":"Anna besiegt Ben und bekommt Taubsi von Ben!"},
 {"id":1,"kind":"Boss","foughtAt":"2026-11-01T18:10:00+00:00","headline":"Boss-Kampf gegen Relaxo (selten)","result":"Relaxo wurde besiegt! Gefangen von: Anna, Clara."}]}

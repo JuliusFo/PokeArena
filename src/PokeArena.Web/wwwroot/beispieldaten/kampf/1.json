@@ -1,7 +1,7 @@
 {"id":1,"kind":"Boss","foughtAt":"2026-11-01T18:10:00+00:00","seed":123456,"headline":"Boss-Kampf gegen Relaxo (selten)","result":"Relaxo wurde besiegt! Gefangen von: Anna, Clara.",
 "sides":[
 {"name":"Trainer","won":true,"fighters":[
-{"species":{"id":1,"name":"Bisasam","types":["Pflanze","Gift"]},"owner":"Anna","trainerId":"1001","maxHp":90},
-{"species":{"id":4,"name":"Glumanda","types":["Feuer"]},"owner":"Clara","trainerId":"1003","maxHp":78}]},
-{"name":"Relaxo","won":false,"fighters":[{"species":{"id":143,"name":"Relaxo","types":["Normal"]},"owner":"Boss","trainerId":null,"maxHp":576}]}],
-"lines":["Runde 1","Bisasam (Anna, HP 90) hat Relaxo (Boss, HP 541) 35 Schaden zugefügt.","Glumanda (Clara, HP 78) hat Relaxo (Boss, HP 503) 38 Schaden zugefügt. Volltreffer!","Relaxo (Boss, HP 503) hat Glumanda (Clara, HP 30) 48 Schaden zugefügt.","Runde 2","Relaxo wurde besiegt."]}
+{"species":{"id":1,"name":"Bisasam","types":["Pflanze","Gift"]},"owner":"Anna","trainerId":"1001","maxHp":90,"hpLeft":90,"used":true},
+{"species":{"id":4,"name":"Glumanda","types":["Feuer"]},"owner":"Clara","trainerId":"1003","maxHp":78,"hpLeft":18,"used":true}]},
+{"name":"Relaxo","won":false,"fighters":[{"species":{"id":143,"name":"Relaxo","types":["Normal"]},"owner":"Boss","trainerId":null,"maxHp":576,"hpLeft":0,"used":true}]}],
+"lines":["Runde 1","Bisasam (Anna, HP 90) hat Relaxo (Boss, HP 541) 35 Schaden zugefügt.","Glumanda (Clara, HP 78) hat Relaxo (Boss, HP 503) 38 Schaden zugefügt. Volltreffer!","Relaxo (Boss, HP 503) hat Glumanda (Clara, HP 18) 60 Schaden zugefügt.","Runde 2","Relaxo wurde besiegt."]}

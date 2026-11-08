@@ -298,6 +298,48 @@ h1:focus {
   border-bottom: none;
 }
 
+.fighters .end-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.fighters .fighter-fainted,
+.fighters .fighter-unused {
+  opacity: 0.55;
+}
+
+.fighters .fighter-fainted .end-state {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.fighters .fighter-unused .end-state {
+  font-style: italic;
+}
+
+.hp-bar {
+  width: 64px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.hp-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--ok);
+}
+
+.hp-bar > span.low {
+  background: var(--accent);
+}
+
 .log {
   margin: 0;
   padding: 12px 16px 12px 36px;

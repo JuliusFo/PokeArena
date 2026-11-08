@@ -162,12 +162,14 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
         var log = BattleLog.FromJson(battle.LogJson);
         var texts = _texts.Describe(battle, log);
         var sides = log.Fighters
-            .GroupBy(f => f.Side)
+            .Select((f, i) => (Fighter: f, Index: i))
+            .GroupBy(x => x.Fighter.Side)
             .OrderBy(g => g.Key)
             .Select(g => new BattleSide(
                 g.Key == 0 ? texts.TrainerSide : texts.OpponentSide,
                 g.Key == 0 ? texts.TrainerSideWon : !texts.TrainerSideWon,
-                [.. g.Select(f => new BattleFighter(Info(f.SpeciesId), f.Owner, f.TrainerId, f.MaxHp))]))
+                [.. g.Select(x => new BattleFighter(
+                    Info(x.Fighter.SpeciesId), x.Fighter.Owner, x.Fighter.TrainerId, x.Fighter.MaxHp, log.HpLeft(x.Index), log.WasUsed(x.Index)))]))
             .ToList();
         return new BattlePage(battle.Id, battle.Kind, battle.FoughtAt, battle.Seed, texts.Headline, texts.Result, sides, log.ToLines(species));
     }

@@ -52,7 +52,9 @@ public sealed record BattlePage(
 public sealed record BattleSide(string Name, bool Won, IReadOnlyList<BattleFighter> Fighters);
 
 /// <param name="TrainerId">Owner's Twitch user id; null for bosses and NPCs.</param>
-public sealed record BattleFighter(SpeciesInfo Species, string Owner, string? TrainerId, int MaxHp);
+/// <param name="HpLeft">HP at the end of the fight (0 = fainted); null in files written before it existed.</param>
+/// <param name="Used">False if a team fight ended before this one was sent in; null in older files.</param>
+public sealed record BattleFighter(SpeciesInfo Species, string Owner, string? TrainerId, int MaxHp, int? HpLeft = null, bool? Used = null);
 
 /// <summary><c>trainer/&lt;twitch-id&gt;.json</c>: one trainer's collection and history.</summary>
 public sealed record TrainerPage(

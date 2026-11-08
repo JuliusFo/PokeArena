@@ -22,15 +22,32 @@
                 <ul class="fighters">
                     @foreach (var fighter in side.Fighters)
                     {
-                        <li>
+                        var state = EndState(fighter);
+                        <li class="fighter-@state">
                             <SpeciesName Species="fighter.Species" />
-                            <span class="muted">
-                                @if (fighter.TrainerId is { } trainerId && fighter.Owner != side.Name)
+                            @if (fighter.TrainerId is { } trainerId && fighter.Owner != side.Name)
+                            {
+                                <a class="muted" href="trainer/@trainerId">@fighter.Owner</a>
+                            }
+                            <span class="end-state">
+                                @switch (state)
                                 {
-                                    <a href="trainer/@trainerId">@fighter.Owner</a>
-                                    <text> · </text>
+                                    case "survived":
+                                        <span class="hp-bar" aria-hidden="true">
+                                            <span class="@(fighter.HpLeft * 4 <= fighter.MaxHp ? "low" : "")" style="width: @HpPercent(fighter)%"></span>
+                                        </span>
+                                        <span>@fighter.HpLeft / @fighter.MaxHp HP</span>
+                                        break;
+                                    case "fainted":
+                                        <span>besiegt</span>
+                                        break;
+                                    case "unused":
+                                        <span>nicht eingesetzt</span>
+                                        break;
+                                    default:
+                                        <span>@fighter.MaxHp HP</span>
+                                        break;
                                 }
-                                @fighter.MaxHp HP
                             </span>
                         </li>
                     }
@@ -86,6 +103,18 @@ else
 
     [Parameter]
     public long Id { get; set; }
+
+    /// <summary>„survived“, „fainted“, „unused“, or „unknown“ for files written before the end state existed.</summary>
+    private static string EndState(BattleFighter fighter) => fighter switch
+    {
+        { Used: false } => "unused",
+        { HpLeft: 0 } => "fainted",
+        { HpLeft: > 0 } => "survived",
+        _ => "unknown",
+    };
+
+    private static string HpPercent(BattleFighter fighter) =>
+        (100.0 * (fighter.HpLeft ?? 0) / Math.Max(1, fighter.MaxHp)).ToString("0.#", CultureInfo.InvariantCulture);
 
     protected override async Task OnParametersSetAsync()
     {

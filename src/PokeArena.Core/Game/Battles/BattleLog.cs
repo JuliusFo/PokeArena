@@ -71,6 +71,14 @@ public sealed record BattleLog(IReadOnlyList<LogFighter> Fighters, IReadOnlyList
             ? lastHit.TargetHp
             : Fighters[index].MaxHp;
 
+    /// <summary>
+    /// Whether fighter <paramref name="index"/> took part: in a team fight only once sent in; in a boss fight (no
+    /// send-in events) everyone fights from the start.
+    /// </summary>
+    public bool WasUsed(int index) =>
+        !Events.Any(e => e.Kind == BattleEventKind.SentOut) ||
+        Events.Any(e => e.Kind == BattleEventKind.SentOut && e.Fighter == index);
+
     /// <exception cref="JsonException">Not a battle log.</exception>
     public static BattleLog FromJson(string json) =>
         JsonSerializer.Deserialize<BattleLog>(json, Json) ?? throw new JsonException("Empty battle log");
