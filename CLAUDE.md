@@ -16,6 +16,7 @@ Status: 2026-11-08 · v1.0.3 (WP-00 – WP-08 done, boss HP 1.5, guide page, 60 
 | `docs/work-packages.md` | Package overview + log per finished package | After finishing a package |
 | `CHANGELOG.md` | Release notes (Keep a Changelog, SemVer) | Before tagging a release |
 | `src/<Project>/CLAUDE.md` | Pitfalls of that project (Core, UI, Desktop; loads automatically) | — |
+| `.claude/skills/` | `/branch-code-review` (separate reviewer agent, `checklist.md`), `/release` | Before a review or release; keep the checklist in line with §3 |
 
 ## 2. Goal and audience
 
