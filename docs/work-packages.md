@@ -309,12 +309,33 @@ in [roadmap.md](roadmap.md).
   gaps proven by mutation closed (see the review), architecture and asset
   tests, guide vs `npcs.json`, shared fakes. Part D: spec, architecture,
   README, roadmap, ADRs, chat texts, setup guide, checklist, pitfalls. Tests
-  233 → 283 (Core 192 → 241, UI 30 → 27, Web 11 → 15), integration tests
+  233 → 291 (Core 192 → 249, UI 30 → 27, Web 11 → 15), integration tests
   adjusted.
 - User decisions: one package for everything; the process as a skill.
   Questions 2–7 left open → the default of each proposal (recorded in the
   review document).
 - Not reproduced: A31 (the battle list is already notified on deletion).
+- Code review (2026-11-08, second pass with `/branch-code-review`): „Jo, deine
+  Vorschläge passen.“ — all points, hint throttle per viewer and command.
+  - 1 Bucket listing unchecked → fixed: only the bot's own paths, id jump
+    capped (`MaxBattleIdGap`), test with foreign and far-away files.
+  - 2 Synchronous host dispose in `OnExit` → fixed: closed window, `await`
+    `DisposeAsync`, then `Shutdown`; checked by hand on a scratch data
+    directory (process gone after ~0.2 s, shutdown lines in the log).
+  - 3 Hint throttle shared by all commands and active in the dry run → fixed:
+    per viewer and command, never in the dry run; test.
+  - 4 Live state reports unsynchronised on the thread pool → fixed: one lock.
+  - 5 Sender waited 60 s per message and up to 5 s while closing → fixed: one
+    minute in total, at most 3 s while closing; test.
+  - 6 Released login, odd names in mod replies, ambiguous names → fixed:
+    confirmation by display name, `ChatText.Echo`, own replies for ambiguous
+    names (`docs/chat-texts.md` rows 18, 36, 37); tests.
+  - 7 Not noted: A5's maximum age for queued hints → not done, the throttle per
+    viewer and command bounds the queue; C11's overlay top five → test added.
+  - 8 Tests for A12 and A13 → added.
+  - 9 README blank line and „republish before the next fight“ → fixed.
+  - Pre-existing: tag name pasted into release scripts → fixed (env); fight
+    page retry loop on an id change → backlog.
 - Not done: C22 (a theory would mix the reason test with the backoff test);
   RD5's NPC team size from `PvpSettings` (spec: one team size for all team
   fights); folder moves of test files beyond the shared fakes.
