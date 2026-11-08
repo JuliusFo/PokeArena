@@ -6,7 +6,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <AnalysisLevel>latest</AnalysisLevel>
+    <!-- Fixed, not "latest": a newer SDK on the CI runner must not turn new analyzer warnings into errors. -->
+    <AnalysisLevel>10.0</AnalysisLevel>
     <Version>1.0.3</Version>
     <Product>PokeArena</Product>
     <Authors>JuliusFo</Authors>
