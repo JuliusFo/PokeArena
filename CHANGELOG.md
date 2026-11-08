@@ -7,6 +7,11 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+### Added
+- The fight page shows how each Pokémon ended: HP left with a small bar,
+  „besiegt“, or „nicht eingesetzt“ if a team fight was over before its turn
+  (older fights after „Alles neu veröffentlichen“).
+
 ## [1.1.0] - 2026-11-08
 
 ### Added

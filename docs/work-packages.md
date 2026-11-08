@@ -16,6 +16,7 @@ in [roadmap.md](roadmap.md).
 | WP-08 | Operations | 1.0.0 | done 2026-11-04 |
 | R1 | Review 1.0.3 fixes ([review-1.0.3.md](review-1.0.3.md)) | 1.1.0 | done 2026-11-08 |
 | – | Boss lobby (streamer requests, `feat/boss-lobby`) | 1.1.0 | done 2026-11-08 |
+| – | Battle end state (streamer request, `feat/battle-end-state`) | – | built 2026-11-08, live test open |
 | WP-09 | Balancing after the first streams | 1.2.0 | planned |
 
 ## Log
@@ -364,6 +365,19 @@ in [roadmap.md](roadmap.md).
   participant count.
 - Deliberately not done (→ backlog): setting the countdown length without a
   release — not as a chat command (spec §8), at most as a desktop setting.
+
+### Battle end state — streamer request (2026-11-08, branch feat/battle-end-state)
+- Built: `BattleFighter` gains optional `HpLeft` and `Used` (no format bump,
+  ADR-0009); `SiteGenerator` fills them from the log (`BattleLog.HpLeft`,
+  `BattleLog.WasUsed` — `SentOut` events in team fights, everyone in a boss
+  fight); the fight page shows „X / Y HP“ with a bar (red at a quarter or
+  less), „besiegt“, „nicht eingesetzt“, or the start HP for older files.
+  Sample data: fight 2 (team fight, was listed but missing) and 3 (escaped
+  boss). Spec §9, CHANGELOG; Core and bUnit tests; checked in the preview
+  (light, dark, phone width).
+- User decisions: built from a spike („Ja, ausbauen“), HP bar included.
+- Deliberately not done: end state in the desktop list of fights (headline
+  and result only) and in the OBS overlay.
 
 Template per entry:
 

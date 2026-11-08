@@ -346,7 +346,7 @@ Data files (all derived — fully regenerable from the DB; the UI has a
 |----------------------------|------------------------------------------------------|
 | `rangliste.json`           | rank, display name, distinct count, total count, player count, timestamp. Sort: distinct desc, then total desc, then earliest attainment¹ |
 | `trainer/<twitch-id>.json` | pokedex (species + count), achievements, recent fights, stats |
-| `kampf/<id>.json`          | participants, teams, log lines, result, loot, seed   |
+| `kampf/<id>.json`          | participants, teams, log lines, result, loot, seed; per fighter its HP left and whether it was sent in² |
 | `kaempfe.json`             | last N fights for an index page                      |
 | `meta.json`                | data format version, timestamp                       |
 
@@ -354,6 +354,14 @@ Data files (all derived — fully regenerable from the DB; the UI has a
 own now: for each owned species the earliest time they got a specimen of it
 that they still hold (caught or won), and of those the latest. Losing a
 species and regaining it moves the moment to the regain (WP-06 decision).
+
+² The fight page shows how each Pokémon ended (streamer request 2026-11-08):
+„45 / 120 HP“ with a small HP bar if it survived, „besiegt“ if it fainted,
+„nicht eingesetzt“ if a team fight ended before it was sent in. Both values
+are read from the log (in a boss fight everyone takes part from the start).
+Files written before this change lack them and show the start HP as before, until
+„Alles neu veröffentlichen“; the fields are optional, so the data format
+version stays the same (ADR-0009).
 
 - Files are uploaded **directly per change** via the publish queue.
 - Uploads normally land within seconds, but the queue may lag (network
