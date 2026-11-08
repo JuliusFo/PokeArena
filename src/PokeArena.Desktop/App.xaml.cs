@@ -155,12 +155,36 @@ public partial class App : Application
         }
 
         _hostStopped = true;
+
+        // Close the window first, so the BlazorWebView goes while its services still exist; then dispose the host
+        // with await while the dispatcher still runs — a synchronous Dispose in OnExit could deadlock on the overlay
+        // server's async disposal and leave a hidden process holding the mutex (R1 second review).
+        ShutdownMode = ShutdownMode.OnExplicitShutdown;
+        ((Window)sender!).Close();
+        try
+        {
+            if (_host is IAsyncDisposable host)
+            {
+                await host.DisposeAsync();
+            }
+            else
+            {
+                _host.Dispose();
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Disposing PokeArena failed");
+        }
+
+        _host = null;
         Shutdown();
     }
 
     protected override void OnExit(ExitEventArgs e)
     {
-        _host?.Dispose();
+        // A host still here was not stopped through the window (Windows logs off and ignores e.Cancel): the process
+        // ends anyway, so it is not disposed synchronously on the shutting-down dispatcher.
         Log.CloseAndFlush();
         _singleInstance?.Dispose();
         base.OnExit(e);
