@@ -16,3 +16,6 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
 - GitHub Pages has no SPA routing: the workflow copies `index.html` to `404.html` and adds `.nojekyll`
   (`_framework`). Links in markup are relative (`kampf/12`, not `/kampf/12`) so they follow `<base href>`.
 - `index.html` uses the .NET 10 asset placeholders (`#[.{fingerprint}]`, `OverrideHtmlAssetPlaceholders`).
+- Contrast (WCAG AA 4.5 : 1): never fade text that carries information with `opacity`, and `--accent` on white is
+  only ≈ 4.4 : 1 — fine for links, not for small status text. Measure light and dark in the preview
+  (feat/battle-end-state).
