@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Threading;
@@ -22,6 +23,8 @@ public partial class App : Application
 {
     private IHost? _host;
     private Mutex? _singleInstance;
+    private bool _stopping;
+    private bool _hostStopped;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -116,20 +119,48 @@ public partial class App : Application
             string.IsNullOrWhiteSpace(twitchOptions.Channel) ? "(none)" : twitchOptions.Channel);
 
         var window = _host.Services.GetRequiredService<MainWindow>();
+        window.Closing += OnMainWindowClosing;
         MainWindow = window;
         window.Show();
     }
 
-    protected override async void OnExit(ExitEventArgs e)
+    /// <summary>
+    /// Stops the host before the window goes away: <c>OnExit</c> runs while the dispatcher shuts down, so an
+    /// <c>await</c> there never continues — the chat queue would not be sent and the log not flushed (review 1.0.3).
+    /// </summary>
+    private async void OnMainWindowClosing(object? sender, CancelEventArgs e)
     {
-        Log.Information("PokeArena shutting down");
-        if (_host is not null)
+        if (_hostStopped || _host is null)
         {
-            await _host.StopAsync(TimeSpan.FromSeconds(5));
-            _host.Dispose();
+            return;
         }
 
-        await Log.CloseAndFlushAsync();
+        e.Cancel = true;
+        if (_stopping)
+        {
+            return;
+        }
+
+        _stopping = true;
+        ((Window)sender!).Hide();
+        Log.Information("PokeArena shutting down");
+        try
+        {
+            await _host.StopAsync(TimeSpan.FromSeconds(5));
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Stopping PokeArena failed");
+        }
+
+        _hostStopped = true;
+        Shutdown();
+    }
+
+    protected override void OnExit(ExitEventArgs e)
+    {
+        _host?.Dispose();
+        Log.CloseAndFlush();
         _singleInstance?.Dispose();
         base.OnExit(e);
     }
