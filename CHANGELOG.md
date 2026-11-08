@@ -12,6 +12,9 @@ tagged `vX.Y.Z` once its section is complete.
   commands, boss, trainer and NPC fights, and which NPC unlocks at how many
   different Pokémon.
 
+### Changed
+- After `!boss`, players have 60 seconds instead of 30 to join the fight.
+
 ## [1.0.1] - 2026-11-04
 
 ### Changed

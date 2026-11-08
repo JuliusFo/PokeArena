@@ -26,7 +26,7 @@ columns stay for the next review.
 
 | # | Situation | Text | Proposal | Change |
 |---|---|---|---|---|
-| 9 | Lobby opens | Ein wilder Boss nähert sich! Schreibt !boss, um mitzukämpfen – noch 30 Sekunden. | | |
+| 9 | Lobby opens | Ein wilder Boss nähert sich! Schreibt !boss, um mitzukämpfen – noch 60 Sekunden. | | |
 | 10 | Too few joined | Der Boss entkommt – es haben sich zu wenige Trainer getraut. Mindestens 2 müssen mit !boss mitmachen. | | |
 | 11 | Fight starts | Ein wildes {Boss}{ (selten) / (legendär)} erscheint! {N} Trainer kämpfen mit. | | |
 | 12 | Boss defeated | {Boss} wurde besiegt! Gefangen von: {A, B}. | | |
