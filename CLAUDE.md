@@ -140,8 +140,9 @@ PokeArena.slnx
   (not confirmed)" until the user agrees — otherwise the next session takes
   them as settled.
 - Done means: build with warnings as errors and tests green, ADR if needed, log
-  in work-packages.md, CHANGELOG entry, then a short summary (built / open / to
-  test).
+  in work-packages.md, CHANGELOG entry, a line on the website's „Neuigkeiten“
+  page if players notice the change (user decision 2026-11-09, review WP-10),
+  then a short summary (built / open / to test).
 - Small, topical commits, Conventional Commits (`feat:`, `fix:`, `test:`,
   `docs:`, `refactor:`).
 - Integration (user decision 2026-10-13): code goes through a PR — `main`
