@@ -1,0 +1,8 @@
+# Keeps the GitHub Actions current, including the commit pins in release.yml and pages.yml (as in FerretSharp).
+# NuGet packages are updated by hand (Directory.Packages.props), together with a build and the tests.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

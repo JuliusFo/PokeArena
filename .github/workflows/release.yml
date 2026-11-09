@@ -13,6 +13,9 @@ on:
 permissions:
   contents: read
 
+# Actions pinned to commits, as in pages.yml: this workflow publishes what the streamer installs, so a moved tag must
+# not change what runs here. Dependabot (.github/dependabot.yml) keeps the pins current.
+
 env:
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
@@ -24,12 +27,12 @@ jobs:
     timeout-minutes: 30
     steps:
       # Full history: the release notes link the previous version, which comes from the tags.
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
 
-      - uses: actions/setup-dotnet@v5
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
           global-json-file: global.json
 
@@ -133,7 +136,7 @@ jobs:
 
       # Run by hand: the package is the result. For a tag: handed to the release job.
       - name: Upload package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: package
           path: |
@@ -151,7 +154,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: package
 
