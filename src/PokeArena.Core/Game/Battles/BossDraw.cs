@@ -18,6 +18,14 @@ public static class BossDraw
         return random.Pick(species.All.Where(s => s.Rarity == tier).ToList());
     }
 
+    /// <summary>
+    /// The species a participant fields: uniform over the distinct species they own, so duplicates (early, mostly
+    /// common catches) do not crowd out the few rare ones. Specimens of one species fight identically, so the
+    /// species is all the fight needs. Sorted by id, so a seed always means the same pick.
+    /// </summary>
+    public static int FieldedSpecies(IEnumerable<int> ownedSpeciesIds, BattleRandom random) =>
+        random.Pick(ownedSpeciesIds.Distinct().Order().ToList());
+
     /// <summary>The boss as a fighter: HP = base HP × HpFactor × BossHpPerParticipant × N, other stats are base values.</summary>
     public static Fighter Fighter(Species boss, BattleSettings battle, BossSettings settings, int participants) =>
         Battles.Fighter.Create(boss, battle, trainerId: null, owner: "Boss", hpMultiplier: settings.HpPerParticipant * participants);

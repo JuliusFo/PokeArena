@@ -66,6 +66,18 @@ public class BattleEngineTests
     }
 
     [Fact]
+    public void A_participant_fields_each_owned_species_equally_often_however_many_duplicates()
+    {
+        // 99 × Digda (50) and one Arkani (59): by species, not by specimen. Fixed seeds, so the count never changes.
+        int[] owned = [.. Enumerable.Repeat(50, 99), 59];
+
+        var arkani = Enumerable.Range(0, 2000).Count(seed => BossDraw.FieldedSpecies(owned, new BattleRandom(seed)) == 59);
+
+        Assert.InRange(arkani / 2000.0, 0.45, 0.55);
+        Assert.Equal(50, BossDraw.FieldedSpecies([50, 50], new BattleRandom(1)));
+    }
+
+    [Fact]
     public void Boss_tiers_follow_the_odds()
     {
         // 30 participants: legendary 20 %, rare 40 %, common 40 % (spec §4). Fixed seeds, so the counts never change.

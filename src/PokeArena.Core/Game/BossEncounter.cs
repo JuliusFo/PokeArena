@@ -157,13 +157,17 @@ public sealed class BossEncounter(
         DateTimeOffset now,
         CancellationToken ct)
     {
-        // Everything random — boss, the specimen each participant fields, the hits — comes from one seed.
+        // Everything random — boss, the species each participant fields, the hits — comes from one seed.
         var seed = seeds.NextSeed();
         var random = new BattleRandom(seed);
         var n = participants.Count;
         var boss = BossDraw.Species(species, settings, n, random);
         var party = participants
-            .Select(p => Fighter.Create(species.Get(random.Pick(p.Specimens).SpeciesId), battleSettings, p.Member.UserId, p.Member.DisplayName))
+            .Select(p => Fighter.Create(
+                species.Get(BossDraw.FieldedSpecies(p.Specimens.Select(s => s.SpeciesId), random)),
+                battleSettings,
+                p.Member.UserId,
+                p.Member.DisplayName))
             .ToList();
         var result = new BossBattle(damage).Fight(BossDraw.Fighter(boss, battleSettings, settings, n), party, settings.TargetDivisor, random);
         if (result.HitRoundLimit)
