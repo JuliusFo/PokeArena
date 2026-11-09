@@ -7,6 +7,8 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-11-09
+
 ### Added
 - The website has a „Neuigkeiten“ page that tells players in simple words what
   changed in the game, per version, newest first. It starts with the changes
