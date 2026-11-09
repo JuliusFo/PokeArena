@@ -70,3 +70,8 @@ Stop on any failure.
 Short German summary: version, link to the GitHub release, what the streamer has to do (README "Updating": close the
 app, replace the program folder with the new ZIP; the top bar shows „Version … verfügbar“ by itself). Suggest `/branch-code-review` on the next package branch if this
 release went out without one.
+
+Then check whether a whole review is due (as in FerretSharp): count the rows of the table in `docs/work-packages.md`
+(packages and feature branches, R packages included) released after the version of the newest `docs/review-*.md`, and
+name those whose log entry has no `Code review (…)` bullet and whose PR description mentions no review. Five or more
+rows, or two or more without a review: suggest `/complete-code-review` in the final message.
