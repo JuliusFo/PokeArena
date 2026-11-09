@@ -1,7 +1,7 @@
 # Roadmap
 
-Planned work packages up to v1.0.0, plus the balancing package after it
-(WP-09). Read the package before starting it and
+Planned work packages up to v1.0.0, plus the packages after it (WP-10 news
+page, then WP-09 balancing). Read the package before starting it and
 agree the plan with the user. Estimates: solo, "day" = one focused person-day;
 total ≈ 25–31 days. Every package ends in a state that could run on stream.
 
@@ -252,7 +252,40 @@ Demo: stream-ready.
   channel. See the log in work-packages.md.
 - Pitfall: SQLite backup with WAL, see `src/PokeArena.Core/CLAUDE.md`.
 
-## WP-09 — Balancing after the first streams (≈ 2 days) → v1.3.0
+## WP-10 — „Neuigkeiten“ page on the website (≈ 0.5 day) → v1.3.0
+
+A website page that tells players in simple German what changed in the game,
+per version. Numbered WP-10 but runs before WP-09.
+Demo: the menu links „Neuigkeiten“; the page lists the player-visible changes
+of 1.1.0–1.3.0, newest first.
+
+- User decision (2026-11-09): own work package, done before WP-09.
+- Proposal (not confirmed): a page of its own for players, not a copy of
+  `CHANGELOG.md` — that one is written for the developer and the streamer (R2
+  keys, OBS port, „Alles neu veröffentlichen“, reconnects). The page carries
+  only what players notice: commands, rules, durations, odds, website changes.
+  One to three short lines per release.
+- Proposal (not confirmed): static content in `PokeArena.Web` (Razor page
+  `Pages/News.razor`, route `neuigkeiten`, entries hand-written in the
+  component or a small list in code), menu link next to „So geht's“, bUnit
+  test that the newest entry comes first. No R2, no Contracts change, no
+  CHANGELOG parsing.
+- Proposal (not confirmed): entries are labelled by version („ab Version
+  1.3.0“), not by date, and written in the release commit of the package
+  that brings the change. `/release` and `/ship-wp` get a step „player-visible
+  change? → entry on the Neuigkeiten page“.
+- Open question — timing: `pages.yml` deploys the site on every push to
+  `main` that touches `src/PokeArena.Web/**`, but the streamer updates the
+  desktop app later. The page can therefore announce a change that does not
+  apply on stream yet (critical for WP-09 values). Simplest variant: accept
+  it and word entries „ab Version X“; alternative: the app publishes the
+  entries as JSON to R2 so they always match the running version (Contracts,
+  publisher, more effort).
+- Back-fill: player-visible changes of 1.1.0 (2-minute boss lobby, late-join
+  extension, boss HP left, `!challenge @Name`) and 1.2.0 (fight page shows how
+  each Pokémon ended).
+
+## WP-09 — Balancing after the first streams (≈ 2 days) → v1.4.0
 
 Tuning with real stream data and the Monte Carlo simulator instead of
 guesses. Starts after 1.0 has run on a few streams.

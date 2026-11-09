@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-11-08 · v1.2.0 released (fight page end state) · WP-09 (→ 1.3.0) after a few streams
+Status: 2026-11-08 · v1.2.0 released (fight page end state) · WP-10 news page (→ 1.3.0), then WP-09 (→ 1.4.0) after a few streams
 
 ## 1. Where to find what
 
@@ -45,7 +45,8 @@ shows leaderboard, trainer pages and battle logs.
 | 1.0.0 | Stream-ready: mod commands, deletion, backup | WP-08 |
 | 1.1.0 | Review 1.0.3 fixes, boss lobby (2 min, late-join extension, HP left) | R1, feat/boss-lobby |
 | 1.2.0 | Fight page shows how each Pokémon ended | feat/battle-end-state |
-| 1.3.0 | Balancing with real stream data | WP-09 |
+| 1.3.0 | Website page „Neuigkeiten“ (player-visible changes per version) | WP-10 |
+| 1.4.0 | Balancing with real stream data | WP-09 |
 
 **Invariants — never weaken:**
 
@@ -176,7 +177,8 @@ PokeArena.slnx
 1.2.0 is released (installation: README, „Running it on the streamer's PC“): the
 fight page shows how each Pokémon ended; 1.1.0 brought R1 (fixes of the whole
 review 1.0.3, docs/review-1.0.3.md) and the boss lobby. Next: update the
-streamer's PC and „Alles neu veröffentlichen“; after a few streams WP-09 balancing
+streamer's PC and „Alles neu veröffentlichen“; WP-10 „Neuigkeiten“ page on the
+website (1.3.0); after a few streams WP-09 balancing (1.4.0)
 (`N = 4` dip, PvP loot preferring missing species, NPC difficulty; no runtime
 balancing editor). Ideas meanwhile go to docs/backlog.md. Details:
 docs/roadmap.md.

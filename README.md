@@ -10,7 +10,8 @@ trainer pages and battle logs.
 
 > **Status:** stream-ready since 1.0.0 (WP-08); see the
 > [releases](https://github.com/JuliusFo/PokeArena/releases) for the current
-> version. Balancing with data from real streams follows in 1.3.0. See the
+> version. A „Neuigkeiten“ page follows in 1.3.0, balancing with data from real
+> streams in 1.4.0. See the
 > [roadmap](#roadmap).
 
 ## How it plays
@@ -181,7 +182,8 @@ don't edit it by hand.
 | 1.0.0 | Stream-ready: mod commands, deletion, backup | done |
 | 1.1.0 | Review fixes, longer boss lobby with late-join extension, boss HP left | done |
 | 1.2.0 | Fight page shows how each Pokémon ended | done |
-| 1.3.0 | Balancing with real stream data | planned |
+| 1.3.0 | Website page „Neuigkeiten“ with player-visible changes | planned |
+| 1.4.0 | Balancing with real stream data | planned |
 
 Details per work package: [docs/roadmap.md](docs/roadmap.md) ·
 log: [docs/work-packages.md](docs/work-packages.md) ·

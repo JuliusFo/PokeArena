@@ -17,7 +17,8 @@ in [roadmap.md](roadmap.md).
 | R1 | Review 1.0.3 fixes ([review-1.0.3.md](review-1.0.3.md)) | 1.1.0 | done 2026-11-08 |
 | – | Boss lobby (streamer requests, `feat/boss-lobby`) | 1.1.0 | done 2026-11-08 |
 | – | Battle end state (streamer request, `feat/battle-end-state`) | 1.2.0 | done 2026-11-08 |
-| WP-09 | Balancing after the first streams | 1.3.0 | planned |
+| WP-10 | „Neuigkeiten“ page on the website (before WP-09) | 1.3.0 | planned |
+| WP-09 | Balancing after the first streams | 1.4.0 | planned |
 
 ## Log
 
