@@ -112,6 +112,50 @@ foreach (var n in new[] { 2, 3, 4, 5, 6, 8, 10, 12, 15, 20 })
         $"{(double)roundsSum / bossRepetitions,10:F1} ({roundsMax,3}) | {(double)linesSum / (bossRepetitions * n),21:F1} | {limits}");
 }
 
+// Part 3: which owned Pokemon a participant fields (feat/boss-pick-per-species). Each participant owns a starter
+// plus `catches` boss catches drawn by the tier odds of a 5-trainer lobby; "specimen" picks a random specimen (up to
+// 1.3.0), "species" a random distinct species (BossDraw.FieldedSpecies). Both modes use the same seed per encounter
+// — same boss, same collections — so the difference is the pick alone.
+Console.WriteLine();
+Console.WriteLine("Fielded Pokemon: random specimen (up to 1.3.0) vs. random distinct species (participants own starter + catches):");
+Console.WriteLine("  catches (distinct) |   N | group wins spec → species | catch/participant spec → species | commons fielded spec → species");
+foreach (var catches in new[] { 5, 15, 40, 100 })
+{
+    foreach (var n in new[] { 2, 3, 4, 5, 8, 12 })
+    {
+        var groupWins = new int[2];
+        var caught = new int[2];
+        var commons = new int[2];
+        long distinctSum = 0;
+        for (var r = 0; r < bossRepetitions; r++)
+        {
+            var encounterSeed = seed++;
+            for (var mode = 0; mode < 2; mode++)
+            {
+                var random = new BattleRandom(encounterSeed);
+                var bossSpecies = BossDraw.Species(species, boss, n, random);
+                var collections = Enumerable.Range(0, n)
+                    .Select(_ => (List<int>)[random.Pick(species.Starters).Id, .. Enumerable.Range(0, catches).Select(_ => BossDraw.Species(species, boss, 5, random).Id)])
+                    .ToList();
+                var fielded = collections
+                    .Select(c => mode == 0 ? random.Pick(c) : BossDraw.FieldedSpecies(c, random))
+                    .ToList();
+                var party = fielded.Select((id, i) => Fighter.Create(species.Get(id), battle, $"t{i}", $"T{i}")).ToList();
+                var result = bossBattle.Fight(BossDraw.Fighter(bossSpecies, battle, boss, n), party, boss.TargetDivisor, random);
+                groupWins[mode] += result.BossDefeated ? 1 : 0;
+                caught[mode] += result.BossDefeated ? result.Survived.Count(s => s) : 0;
+                commons[mode] += fielded.Count(id => species.Get(id).Rarity == 1);
+                distinctSum += mode == 0 ? collections.Sum(c => c.Distinct().Count()) : 0;
+            }
+        }
+
+        double Share(int count, int per) => (double)count / (bossRepetitions * per);
+        Console.WriteLine(
+            $"  {catches,7} ({(double)distinctSum / (bossRepetitions * n),5:F1})    | {n,3} | {Share(groupWins[0], 1),10:P0} → {Share(groupWins[1], 1),-12:P0} | " +
+            $"{Share(caught[0], n),17:P0} → {Share(caught[1], n),-12:P0} | {Share(commons[0], n),15:P0} → {Share(commons[1], n):P0}");
+    }
+}
+
 static Dictionary<string, double> ParseOptions(string[] args)
 {
     var options = new Dictionary<string, double>
