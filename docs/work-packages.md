@@ -395,6 +395,17 @@ in [roadmap.md](roadmap.md).
   with the date set at release, the page may be ahead of the streamer's app.
 - Deliberately not done (→ backlog): entries published from the app via R2
   so they always match the running version.
+- Code review (2026-11-09): „Alle fixen“ — six L findings, all fixed:
+  - L1 fixed: `/release` took the missing news lines from `[Unreleased]`
+    after emptying it; now from the new `[X.Y.Z]` section.
+  - L2 fixed: the news line was only in `/ship-wp`; now also in the review
+    checklist and in CLAUDE.md §7 „Done means“ (user decision).
+  - L3 fixed: Web pitfall claimed a fifth menu item wraps; four already do.
+  - L4 fixed: „Auf jeder Kampfseite“ → „Auf den Kampfseiten“ (old fights
+    show the end state only after a republish).
+  - L5 fixed: the hint throttle is per command; „schneller“ overstated.
+  - L6 fixed: news test trims headings, names a bad one and requires a date
+    on every section but the newest.
 
 Template per entry:
 
