@@ -1,216 +1,216 @@
-# Gesamt-Review 1.0.3 (2026-11-08)
+# Whole-solution review 1.0.3 (2026-11-08)
 
-Auftrag des Nutzers (2026-11-08): „Mach mal ein Code-Review auf unseren bisherigen Code. Du kannst dabei ja die Reviews von FerretSharp als Anleitung nehmen, musst sie aber nicht 1:1 übernehmen.“ Erstes Gesamt-Review über die ganze Solution (WP-00 bis WP-08, Releases bis 1.0.3), nach dem Muster von FerretSharp `complete-code-review`, verkleinert auf sechs parallele Agenten nach Themen. Alle Agenten haben nur gelesen, und zwar auf einer festen Kopie von `a2fdf4f` (= `main`):
+Request (2026-11-08): „Mach mal ein Code-Review auf unseren bisherigen Code. Du kannst dabei ja die Reviews von FerretSharp als Anleitung nehmen, musst sie aber nicht 1:1 übernehmen.“ First review of the whole solution (WP-00 to WP-08, releases up to 1.0.3), modelled on FerretSharp's `complete-code-review`, scaled down to six parallel agents by topic. All agents only read, on a fixed copy of `a2fdf4f` (= `main`):
 
-- GL: Spiellogik und Daten
-- TW: Twitch, Chat-Queue, Nebenläufigkeit, Host, Build/CI
-- WE: Publishing, Website, Overlay, Desktop-UI
-- SE: Sicherheit und Datenschutz
-- TE: Tests; als einziger Agent mit Build und Tests, dazu Mutationstests auf einer Kopie
-- RD: Wiederverwendung, toter Code, Struktur, Doku
+- GL: game logic and data
+- TW: Twitch, chat queue, concurrency, host, build/CI
+- WE: publishing, website, overlay, desktop UI
+- SE: security and privacy
+- TE: tests; the only agent that builds and runs tests, plus mutation tests on a copy
+- RD: reuse, dead code, structure, docs
 
-**Stand:** umgesetzt mit R1 (`docs/work-packages.md`, Branch `wp/r1-review-1.0.3`), noch nicht released; nicht reproduziert A31, nicht gemacht C22, offen im Backlog A8-Datei, A33 (N-1), Verbindungstest der Einstellungen.
+**Status:** implemented with R1 (`docs/work-packages.md`, branch `wp/r1-review-1.0.3`), released in 1.1.0; not reproduced A31, not done C22, open in the backlog: A8's local file, A33 (N-1), connection test in the settings.
 
-Doppelte Befunde sind zusammengeführt (alle IDs genannt). **Nachgeprüft** heißt: zusätzlich von Hand im Code bestätigt; sonst gilt die Einschätzung des Agenten.
+Duplicate findings are merged (all IDs named). **Confirmed** means: additionally checked by hand in the code; otherwise the agent's assessment applies.
 
-Schwere (wie `.claude/skills/branch-code-review/checklist.md`): **S** falsche oder verlorene Spieldaten, gebrochene Invariante, Sicherheits- oder Datenschutzlücke, Bot hängt, antwortet doppelt oder gar nicht · **M** falsches Verhalten in realistischen Fällen oder klare Wartungslast · **K** Kleinkram.
+Severity (as in `.claude/skills/branch-code-review/checklist.md`; this review originally used S/M/K): **H** wrong or lost game data, broken invariant, security or privacy hole, bot hangs, answers twice or not at all · **M** wrong behaviour in realistic cases or a clear maintenance burden · **L** minor.
 
-Build und Tests auf dem Snapshot:
-- `dotnet build -warnaserror` ohne Warnung.
-- 233 Tests grün: Core 192, UI 30, Web 11. Ebenso unter de, en-US, tr-TR und invariant sowie in 8 parallelen Läufen.
-- Integrationstests nur gelesen. Coverage: kein Paket referenziert.
-- Keine anfälligen Pakete; veraltet sind nur Patch-Stände (EF Core/Extensions 10.0.14, AWSSDK.S3, WebView.Wpf, CredentialManager, bunit, TimeProvider.Testing).
+Build and tests on the snapshot:
+- `dotnet build -warnaserror` without warnings.
+- 233 tests green: Core 192, UI 30, Web 11. Also under de, en-US, tr-TR and invariant culture, and in 8 parallel runs.
+- Integration tests only read. Coverage: no package referenced.
+- No vulnerable packages; only patch levels are outdated (EF Core/Extensions 10.0.14, AWSSDK.S3, WebView.Wpf, CredentialManager, bunit, TimeProvider.Testing).
 
-## Ohne Befund geprüft (Auszug)
+## Checked without findings (excerpt)
 
-- **Invarianten:**
-  - Schlüssel nur per Twitch-Id, R2-Pfade nur aus der numerischen Id.
-  - Keine Artwerte in der DB.
-  - Kein Zufall und keine Uhr in Core außerhalb der Schnittstellen. Ausnahme: ein Echtzeit-CTS, siehe A24.
-  - Starter nie Beute: Filter plus gefilterter Unique-Index.
-  - Achievements bleiben bei Artverlust.
-  - Ein `BattleRandom(seed)` je Begegnung in fester Reihenfolge; Seed und volles Log gespeichert.
-- **Spielregeln:**
-  - Boss: Stufen, HP 1,5 × N, Ziele ⌈N/3⌉, Fänger, Cooldowns, „Boss bereit“.
-  - Schadensformel, Team-Kampf, PvP, NPC: gegen spec §4–§7 und ADR-0006 geprüft.
-  - Alle 17 Defaults aus §13 stimmen mit dem Code überein, ebenso `npcs.json` mit §7 und der Anleitung.
-- **Transaktionen:**
-  - Boss, PvP, NPC und Löschung laufen in `BEGIN IMMEDIATE`, zusammen mit der Outbox.
-  - Die Löschung entfernt alles (inkl. Präfix-Grenzfall der NPC-Cooldowns), anonymisiert die Logs und reiht alle betroffenen Dateien ein.
-  - Die UI-Löschung läuft über die Queue.
+- **Invariants:**
+  - Keys only by Twitch id, R2 paths only from the numeric id.
+  - No species values in the DB.
+  - No randomness and no clock in Core outside the interfaces. Exception: one real-time CTS, see A23.
+  - Starter never loot: filter plus filtered unique index.
+  - Achievements stay when a species is lost.
+  - One `BattleRandom(seed)` per encounter in a fixed order; seed and full log stored.
+- **Game rules:**
+  - Boss: tiers, HP 1.5 × N, targets ⌈N/3⌉, catchers, cooldowns, „Boss bereit“.
+  - Damage formula, team fight, PvP, NPC: checked against spec §4–§7 and ADR-0006.
+  - All 17 defaults of §13 match the code, as does `npcs.json` with §7 and the guide page.
+- **Transactions:**
+  - Boss, PvP, NPC and deletion run in `BEGIN IMMEDIATE`, together with the outbox.
+  - Deletion removes everything (incl. the prefix edge case of the NPC cooldowns), anonymizes the logs and queues all affected files.
+  - Deletion from the UI runs through the queue.
 - **Twitch:**
-  - Refresh serialisiert und sofort gespeichert.
-  - `session_reconnect` verbindet erst neu, dann schließt er die alte Verbindung.
-  - Keepalive über `TimeProvider`.
-  - Eigene Nachrichten und Shared-Chat ignoriert, U+E0000 entfernt.
-  - Frames auf 1 MB begrenzt, Duplikatfilter.
+  - Refresh serialized and stored at once.
+  - `session_reconnect` connects first, then closes the old connection.
+  - Keepalive via `TimeProvider`.
+  - Own messages and shared chat ignored, U+E0000 removed.
+  - Frames limited to 1 MB, duplicate filter.
   - Backoff 2–60 s.
-  - `ChatText.Split` hält 500 Zeichen ein.
-- **Command-Fluss:**
-  - Ein Leser der `ChatInbox`; Timer posten nur `QueuedWork`.
-  - Live-Gate vor der ersten Nachricht; Mod-Befehle umgehen es gewollt.
-- **Sicherheit:**
-  - Mod-Rolle nur aus den Badges der Nachricht.
-  - Bestätigung beim Löschen: derselbe Mod, dieselbe Id, derselbe Modus, 60 s.
-  - Kein `MarkupString`, Overlay nur über `textContent`, Kestrel nur auf Loopback.
-  - Secrets nur im Credential Manager und nirgends geloggt; EF Core ohne SQL-Logging.
-  - Keine Tokens oder Spielerdaten in der Git-Historie.
+  - `ChatText.Split` keeps to 500 characters.
+- **Command flow:**
+  - One reader of `ChatInbox`; timers only post `QueuedWork`.
+  - Live gate before the first message; mod commands bypass it on purpose.
+- **Security:**
+  - Mod role only from the badges of the message.
+  - Deletion confirmation: same mod, same id, same mode, 60 s.
+  - No `MarkupString`, overlay only via `textContent`, Kestrel only on loopback.
+  - Secrets only in the Credential Manager and never logged; EF Core without SQL logging.
+  - No tokens or player data in the git history.
 - **Publishing:**
-  - Revisionsfeld fängt erneutes Einreihen während des Uploads ab.
-  - Backoff begrenzt, Neustart verliert nichts.
-  - `OpenLive()` nur in Worker, Republish und Backup.
-  - Cache-Header 10 s / 1 Tag, 404 nicht gecacht.
-- **Struktur und Doku:**
-  - Schichtregeln §5 eingehalten.
-  - Zentrale Paketversionen, `nuget.config` nur nuget.org.
-  - ADR 0001–0009 lückenlos.
-  - Alle relativen Links lösen auf, CHANGELOG-Abschnitte = Tags.
-  - Alle CSS-Klassen benutzt, Backlog ohne Erledigtes.
-  - `docs/chat-texts.md` vollständig in beide Richtungen, bis auf D8.
+  - A revision field catches re-queueing during an upload.
+  - Backoff bounded, a restart loses nothing.
+  - `OpenLive()` only in the worker, republish and backup.
+  - Cache headers 10 s / 1 day, 404 not cached.
+- **Structure and docs:**
+  - Layer rules §5 kept.
+  - Central package versions, `nuget.config` only nuget.org.
+  - ADR 0001–0009 without gaps.
+  - All relative links resolve, CHANGELOG sections = tags.
+  - All CSS classes used, backlog without done items.
+  - `docs/chat-texts.md` complete in both directions, except D8.
 - **Tests:**
-  - Keine festen Wartezeiten außer C12, keine echte Uhr.
-  - Kämpfe per Seed vorhergesagt.
-  - Kein Test langsamer als 0,1 s, außer dem Aufwärmen je Assembly.
+  - No fixed waits except C12, no real clock.
+  - Fights predicted by seed.
+  - No test slower than 0.1 s, except the warm-up per assembly.
 
-## Teil A – Fehler und Sicherheit
+## Part A – Bugs and security
 
-### Schwer
+### High
 
-Keine.
+None.
 
-### Mittel
+### Medium
 
-| # | IDs | Ort | Befund | Sicherheit |
+| # | IDs | Location | Finding | Certainty |
 |---|---|---|---|---|
-| A1 | TW4 | `Core/Twitch/TwitchConnection.cs:283`, `Core/Twitch/EventSub/ChatMessageEvent.cs:24` | **Login mit dem Streamer- statt dem Bot-Account wird nicht erkannt.**<br>Szenario: Auf dem PC des Streamers ist twitch.tv mit seinem Account angemeldet. Beim Geräte-Login (Ersteinrichtung oder nach 30 Tagen Inaktivität) bestätigt er deshalb mit seinem eigenen Account. Dann gilt `BotUserId == BroadcasterId`.<br>Folgen: Jede Nachricht des Streamers wird als „eigene Nachricht“ verworfen; er kann weder spielen noch `!bossreset`/`!entfernen` nutzen. Der Bot schreibt als Streamer. Die UI zeigt „Verbunden“.<br>Vorschlag: In `RunSessionAsync` bei `bot.UserId == channel.Id` abbrechen, mit neuem `TwitchProblem.WrongAccount` („Bitte mit dem Bot-Account anmelden“). Test dazu. | nachgeprüft |
-| A2 | TW2 | `TwitchConnection.cs:246-253` | **Jede nicht vorübergehende `TwitchApiException` (4xx außer 429) beendet die Verbindung endgültig.** Der Zustand ist dann `Failed`, ohne neuen Versuch.<br>Szenario: Nach Standby oder Netzverlust brauchen die Abos länger als die 10 s, die Twitch gewährt. Twitch schließt die Session, der laufende `POST eventsub/subscriptions` bekommt 400. Der Bot bleibt mitten im Stream offline, bis der Streamer „Erneut versuchen“ klickt.<br>Vorschlag: Nur 401, 403 und „Kanal nicht gefunden“ als endgültig behandeln; alle anderen 4xx mit dem vorhandenen Backoff wiederholen. | Pfad nachgeprüft, Auslöser (Statuscode der toten Session) Verdacht |
-| A3 | TW1 | `TwitchConnection.cs:330, 398` | **Der Live-Status aus Helix `GET /streams` überschreibt jedes Mal den bisherigen Status.**<br>Szenario: PokeArena startet (oder verbindet neu) in den ersten Minuten nach dem Livegang. `stream.online` kam vor dem Abo, und Helix meldet erfahrungsgemäß noch „offline“. Folge: Der Bot verwirft eine Stunde lang alle Befehle und antwortet „läuft nur, solange der Stream live ist“. Umgekehrt nimmt er nach dem Stream-Ende noch bis zu einer Stunde Befehle an.<br>Vorschlag: Ein Event der letzten ~10 min hat Vorrang vor der Abfrage. Nach dem Start bei „offline“ einige Minuten lang alle 2 min nachfragen (oder generell alle 5 min statt stündlich). Test mit `FakeTimeProvider`. → Frage 2. | Pfad nachgeprüft, Verzögerung von Helix Verdacht |
-| A4 | TW3, TW5 | `Desktop/App.xaml.cs:123-135` | **`async void OnExit`: Nach dem ersten `await` beendet WPF den Dispatcher, die Fortsetzung läuft nie.** Damit fehlen beim Beenden `_host.Dispose`, `Log.CloseAndFlushAsync`, das Leeren der Sende-Queue und das saubere Schließen des Sockets.<br>Szenario: Der Streamer schließt das Fenster direkt nach einem Boss-Kampf; Ergebnis und Achievement-Meldungen gehen verloren. Die Daten bleiben heil.<br>Vorschlag: Im `Closing` des Fensters `e.Cancel = true`, den Host per `await` stoppen, dann `Shutdown()`.<br>Achtung (TW5): Die Twitch-Schleife läuft wegen `Task.Yield` auf dem UI-Thread. Ein blockierendes Warten würde deshalb verklemmen. Also zugleich `Task.Run` statt `Task.Yield` und das Stop-Token in `TwitchStartup.StopAsync` beachten. | Mechanik nachgeprüft, WPF-Verhalten Verdacht |
-| A5 | SE1 | `Core/Chat/ChatSender.cs:36`, Fehlerantworten in `CommandProcessor.cs:105`, `PvpService.cs:79/85`, `NpcService.cs:47-50`, `RegisterCommand.cs:54` | **Chat-Flut staut wichtige Bot-Nachrichten.** Die Sende-Queue hat keine Grenze. Fehler- und Hinweisantworten werden pro Nutzer nicht gedrosselt; nur `!pokearena`, `!arena`, der Boss-Cooldown und der Offline-Hinweis sind gedrosselt.<br>Szenario: Zwei Zuschauer schicken je 20 `!fight`/`!challenge xyz` pro 30 s. Das ergibt 40 Antworten pro 30 s, der Limiter schafft aber nur 20. Nach 5 min Spam sind Boss-Ergebnisse 5 min verspätet. Die 2-min-Frist von `!fight` läuft ab, bevor der Herausgeforderte die Nachricht sieht.<br>Das Drosseln steht im Backlog, die Folge für wichtige Nachrichten nicht.<br>Vorschlag: Fehler- und Hinweisantworten pro Nutzer drosseln (eine pro 30 s), dazu `ReplyThrottle` aus B3. Hinweise mit Höchstalter in der Queue verwerfen, Ergebnisse nie. Test: 20× `!fight` in 10 s → höchstens eine Antwort. → Frage 3. | nachgeprüft |
-| A6 | WE1 | `Core/Publishing/SiteOutbox.cs:45-50`, `README.md:91-97` | **„Alles neu veröffentlichen“ nach dem Einspielen einer Sicherung räumt R2 nicht auf.** Die README verspricht das aber. Es werden nur Pfade eingereiht, die die DB kennt.<br>Szenario: Sicherung von gestern, heute kamen Trainer X und die Kämpfe 121–130 dazu. Folgen:<br>– `trainer/X.json` und `kampf/121…130.json` bleiben in R2.<br>– X ist nicht mehr in der DB, also löscht ihn auch `!entfernen` nicht. Seine Seite bleibt öffentlich (Datenschutz).<br>– Der nächste Kampf bekommt wieder die Id 121. Cloudflare und der Browser liefern einen Tag lang den alten Kampf 121 aus, der Chat-Link zeigt den falschen Kampf.<br>Vorschlag: Beim Republish zusätzlich `trainer/` und `kampf/` im Bucket auflisten (ListObjectsV2) und einreihen; der Worker löscht Pfade ohne Quelle von selbst. Nach dem Einspielen die Kampf-Sequenz über die höchste hochgeladene Id setzen, oder das in der README nennen. → Frage 4. | nachgeprüft |
-| A7 | WE2, WE6 | `SitePublishWorker.cs` (`OrderBy(NextAttemptAt)`), `SiteOutbox.cs:33/49`, `Web/Pages/Battle.razor:72` | **Republish hält neue Kämpfe auf.** Alle Zeilen bekommen `NextAttemptAt = T0`, ein späterer Kampf `T1 > T0` und wird damit hinten einsortiert.<br>Rechnung: Bei ~300 Trainern und 1000 Kämpfen sind das ~52 Runden zu 25 Dateien, also mehrere Minuten. Die Kampfseite gibt nach 2 min auf und meldet „Diesen Kampf gibt es nicht“ (WE6: auch bei reinen Netzfehlern). Der Chat-Link ist dann kaputt.<br>Vorschlag: Fällige Zeilen mit `Attempts == 0` nach `QueuedAt` absteigend abarbeiten. Die Kampfseite unterscheidet „noch nicht da“ von „Fehler“. | nachgeprüft |
-| A8 | WE3 | `UI/OverlayPanel.razor:125-127`, `Desktop/Services/OverlayServer.cs:46` | **Startet OBS vor PokeArena, bleibt das Overlay leer.** Die Overlay-Seite liefert die App selbst aus; die Browserquelle bekommt „Connection refused“ und lädt nicht von selbst neu. Die Wiederholung in `overlay.html` greift erst, wenn die Seite schon geladen ist. Das Overlay bleibt also den ganzen Stream leer.<br>Vorschlag: Mindestens ein Hinweis in der Karte („PokeArena vor OBS starten, sonst die Quelle aktualisieren“ bzw. die OBS-Option „Browser aktualisieren, wenn Szene aktiv wird“). Robuster: eine lokale HTML-Datei, die per CORS pollt. → Frage 5. | Verdacht (OBS/CEF-Verhalten) |
-| A9 | SE5 | `docs/website-setup.md:38-56` | **Die Cache-Regel ignoriert den Query-String nicht.** `rangliste.json?r=<zufall>` ist dann immer ein MISS und ein bezahlter R2-Lesezugriff. Das Rate-Limit erlaubt pro IP dauerhaft ~5/s, also ~13 Mio. Lesezugriffe pro Monat. Genau dagegen sollte der Cache laut Addendum zu ADR-0003 schützen („no spending cap“).<br>Vorschlag: Im Cache-Key den Query-String ignorieren, dazu eine WAF-Regel „Query-String nicht leer oder Methode nicht GET/HEAD → blockieren“. Prüfschritt in §5: `curl -I …?x=1` zweimal → `HIT` oder 403. | Doku nachgeprüft; Live-Konfiguration nicht prüfbar |
+| A1 | TW4 | `Core/Twitch/TwitchConnection.cs:283`, `Core/Twitch/EventSub/ChatMessageEvent.cs:24` | **A login with the streamer's instead of the bot's account is not detected.**<br>Scenario: on the streamer's PC twitch.tv is signed in with their account. During the device login (first setup or after 30 days of inactivity) they therefore confirm with their own account. Then `BotUserId == BroadcasterId`.<br>Consequences: every message of the streamer is dropped as the bot's "own message"; they can neither play nor use `!bossreset`/`!entfernen`. The bot writes as the streamer. The UI shows „Verbunden“.<br>Proposal: in `RunSessionAsync` stop when `bot.UserId == channel.Id`, with a new `TwitchProblem.WrongAccount` („Bitte mit dem Bot-Account anmelden“). Plus a test. | confirmed |
+| A2 | TW2 | `TwitchConnection.cs:246-253` | **Every non-transient `TwitchApiException` (4xx except 429) ends the connection for good.** The state is then `Failed`, without a new attempt.<br>Scenario: after standby or a network loss the subscriptions take longer than the 10 s Twitch allows. Twitch closes the session, the running `POST eventsub/subscriptions` gets 400. The bot stays offline in the middle of the stream until the streamer clicks „Erneut versuchen“.<br>Proposal: treat only 401, 403 and "channel not found" as final; retry all other 4xx with the existing backoff. | path confirmed, trigger (status code of the dead session) suspected |
+| A3 | TW1 | `TwitchConnection.cs:330, 398` | **The live status from Helix `GET /streams` overwrites the previous status every time.**<br>Scenario: PokeArena starts (or reconnects) in the first minutes after going live. `stream.online` came before the subscription, and Helix in practice still reports "offline". Consequence: for an hour the bot drops all commands and answers „läuft nur, solange der Stream live ist“. Conversely, after the stream ends it keeps accepting commands for up to an hour.<br>Proposal: an event of the last ~10 min takes precedence over the poll. After a start with "offline" ask every 2 min for a few minutes (or generally every 5 min instead of hourly). Test with `FakeTimeProvider`. → Question 2. | path confirmed, Helix delay suspected |
+| A4 | TW3, TW5 | `Desktop/App.xaml.cs:123-135` | **`async void OnExit`: after the first `await` WPF ends the dispatcher, the continuation never runs.** So on exit `_host.Dispose`, `Log.CloseAndFlushAsync`, draining the send queue and closing the socket cleanly are all missing.<br>Scenario: the streamer closes the window right after a boss fight; result and achievement messages are lost. The data stays intact.<br>Proposal: in the window's `Closing` set `e.Cancel = true`, `await` stopping the host, then `Shutdown()`.<br>Caution (TW5): because of `Task.Yield` the Twitch loop runs on the UI thread. A blocking wait would therefore deadlock. So at the same time use `Task.Run` instead of `Task.Yield` and honour the stop token in `TwitchStartup.StopAsync`. | mechanism confirmed, WPF behaviour suspected |
+| A5 | SE1 | `Core/Chat/ChatSender.cs:36`, error replies in `CommandProcessor.cs:105`, `PvpService.cs:79/85`, `NpcService.cs:47-50`, `RegisterCommand.cs:54` | **A chat flood backs up important bot messages.** The send queue is unbounded. Error and hint replies are not throttled per user; only `!pokearena`, `!arena`, the boss cooldown and the offline hint are.<br>Scenario: two viewers send 20 `!fight`/`!challenge xyz` each per 30 s. That makes 40 replies per 30 s, but the limiter manages only 20. After 5 min of spam boss results are 5 min late. The 2-min deadline of `!fight` runs out before the challenged viewer sees the message.<br>Throttling is in the backlog, its effect on important messages is not.<br>Proposal: throttle error and hint replies per user (one per 30 s), with `ReplyThrottle` from B3. Drop hints with a maximum age in the queue, never results. Test: 20× `!fight` in 10 s → at most one reply. → Question 3. | confirmed |
+| A6 | WE1 | `Core/Publishing/SiteOutbox.cs:45-50`, `README.md:91-97` | **„Alles neu veröffentlichen“ after restoring a backup does not clean up R2.** The README promises it does. Only paths the DB knows are queued.<br>Scenario: backup from yesterday, today trainer X and fights 121–130 were added. Consequences:<br>– `trainer/X.json` and `kampf/121…130.json` stay in R2.<br>– X is no longer in the DB, so `!entfernen` cannot delete them either. Their page stays public (privacy).<br>– The next fight gets id 121 again. Cloudflare and the browser serve the old fight 121 for a day, the chat link shows the wrong fight.<br>Proposal: on republish also list `trainer/` and `kampf/` in the bucket (ListObjectsV2) and queue them; the worker deletes paths without a source by itself. After restoring, set the fight sequence from the highest uploaded id, or say so in the README. → Question 4. | confirmed |
+| A7 | WE2, WE6 | `SitePublishWorker.cs` (`OrderBy(NextAttemptAt)`), `SiteOutbox.cs:33/49`, `Web/Pages/Battle.razor:72` | **Republishing holds up new fights.** All rows get `NextAttemptAt = T0`, a later fight `T1 > T0` and is therefore sorted to the end.<br>Estimate: with ~300 trainers and 1000 fights that is ~52 rounds of 25 files, so several minutes. The fight page gives up after 2 min and reports „Diesen Kampf gibt es nicht“ (WE6: also on plain network errors). The chat link is then broken.<br>Proposal: process due rows with `Attempts == 0` by `QueuedAt` descending. The fight page tells "not there yet" from "error". | confirmed |
+| A8 | WE3 | `UI/OverlayPanel.razor:125-127`, `Desktop/Services/OverlayServer.cs:46` | **If OBS starts before PokeArena, the overlay stays empty.** The app itself serves the overlay page; the browser source gets "Connection refused" and does not reload by itself. The retry in `overlay.html` only works once the page has loaded. So the overlay stays empty for the whole stream.<br>Proposal: at least a hint in the card („PokeArena vor OBS starten, sonst die Quelle aktualisieren“, or the OBS option "Refresh browser when scene becomes active"). More robust: a local HTML file that polls via CORS. → Question 5. | suspected (OBS/CEF behaviour) |
+| A9 | SE5 | `docs/website-setup.md:38-56` | **The cache rule does not ignore the query string.** `rangliste.json?r=<random>` is then always a MISS and a paid R2 read. The rate limit allows ~5/s per IP permanently, i.e. ~13 M reads per month. That is exactly what the cache should prevent according to the ADR-0003 addendum ("no spending cap").<br>Proposal: ignore the query string in the cache key, plus a WAF rule "query string not empty or method not GET/HEAD → block". Check step in §5: `curl -I …?x=1` twice → `HIT` or 403. | docs confirmed; live configuration not checkable |
 
-### Klein
+### Low
 
-| # | IDs | Befund |
+| # | IDs | Finding |
 |---|---|---|
-| A10 | TW8 | `ChatSender.cs:71` verwirft Nachrichten, solange es kein Twitch-Ziel gibt (Reconnect, 2–60 s). Ein Boss-Ergebnis in diesem Fenster erreicht den Chat nie. Begrenzt (z. B. 60 s) auf ein Ziel warten; eine nie gesendete Nachricht kann nicht doppelt ankommen. |
-| A11 | TW7 | `TwitchTokenProvider.cs:87` bricht den Refresh mit dem Token des Aufrufers ab. Hat Twitch den Refresh schon ausgeführt, geht das neue Einweg-Token verloren, und der Streamer braucht einen neuen Geräte-Login. Den Request mit eigenem Timeout und ohne Aufrufer-Abbruch laufen lassen. (Verdacht) |
-| A12 | TW6 | `EventSubSocket.cs:30`: `ConnectAsync` hat kein Zeitlimit. Beim Handover blockiert es die Session-Schleife samt Keepalive-Prüfung. Hängt der Upgrade, hängt der Bot unbegrenzt. Verknüpften CTS mit ~15 s über `timeProvider`. (Verdacht) |
-| A13 | GL1, TW9 | Der Schalter für den Probelauf springt auf dem UI-Thread um, mitten zwischen zwei `database.Open()` eines Befehls. Ein simuliertes `!registrieren` kann so in der Live-DB samt Outbox landen. Das Fenster ist Millisekunden groß. Umschalten als `QueuedWork` über die Inbox. |
-| A14 | GL2, SE6 | `TrainerService.FindByNameAsync` mit `FirstOrDefault` über einen nicht eindeutigen `Login`.<br>Szenario: A hieß „bob“, hat sich umbenannt und schreibt nicht mehr; B übernimmt später „bob“. `!entfernen @bob ja` kann A löschen.<br>Beim Speichern eines Logins denselben Login bei anderen Trainern leeren; bei mehreren Treffern im Chat nicht löschen. |
-| A15 | GL3 | Löschen eines Trainers lässt seine offenen Herausforderungen im Speicher. B bekommt bis zum Timeout „du hast schon eine offene Herausforderung“. `PvpService.Forget(trainerId)` aus der Löschung aufrufen. |
-| A16 | GL4 | `!challenge @Eich` → „einen NPC namens @Eich gibt es nicht“. `!fight` entfernt das `@`, `!challenge` nicht. |
-| A17 | GL5 | `SpeciesCatalog.Validate` prüft nicht, ob jede Seltenheitsstufe Arten hat. Fehlt eine, wirft jede Lobby mit dieser Stufe; im Chat bleibt nur „Ein wilder Boss nähert sich!“. Fehlende `typen`/`team` geben eine `NullReferenceException` statt der lesbaren Meldung. |
-| A18 | SE2 | `PvpService.cs:76/85`, `NpcService.cs:39/47` geben das Argument ungekürzt zurück. Geteilt wird nur an U+0020, ein „Wort“ kann also mit NBSP ein ganzer Satz von 480 Zeichen sein. Das kostet das doppelte Sendebudget, und das Echo bleibt stehen, wenn ein Mod die Nachricht löscht. Mention-Ping: Verdacht. Nur bei Login-Muster `^[A-Za-z0-9_]{1,25}$` zurückgeben, an `char.IsWhiteSpace` teilen. |
-| A19 | SE3 | `ChatMessageEvent.cs:49` erkennt nur das Badge `moderator`. Twitchs „Lead Moderator“ trägt vermutlich `lead_moderator` und kann `!entfernen`/`!bossreset` nicht nutzen. Fail-closed. (Verdacht – Badge-Namen gegen die Twitch-Doku prüfen) |
-| A20 | SE4, RD | Die Logdatei (Debug, 14 Tage) behält Anzeigename und Login bei Umbenennungen (`TrainerService.cs:138`) und den vollen Nachrichtentext bei Fehlern (`CommandProcessor.cs:113`), auch nach `!entfernen`. Die Datenschutzseite (`Web/Pages/Privacy.razor:10`) nennt weder das Log noch Login, Orden und Tokens. Nur Ids loggen, Seite ergänzen. |
-| A21 | SE7, TW11 | `release.yml`: `contents: write` für den ganzen Job, `actions/checkout` legt den Token in `.git/config`. Paketcode in Build und Tests könnte damit die Release-ZIP ersetzen. `persist-credentials: false`, Upload in einen eigenen Job; optional SHA-Pins. |
-| A22 | TW10 | `release.yml` prüft weder, ob Tag und `<Version>` übereinstimmen, noch ob es den CHANGELOG-Abschnitt gibt (`exit 0` → generierte Notizen). Ein früher Schritt soll in beiden Fällen fehlschlagen. |
-| A23 | TW12 | `BannedSymbols.txt` sperrt `Task.Delay`, `CancellationTokenSource(TimeSpan)`, `CancelAfter` und `Stopwatch` ohne `TimeProvider` nicht. Einen Verstoß gibt es schon: `EventSubSession.cs:228`. Aufnehmen und umstellen. |
-| A24 | TW13 | `global.json` `rollForward: latestFeature` plus `AnalysisLevel latest` plus Warnungen als Fehler: Ein neues SDK im Runner kann CI und Release ohne Codeänderung rot machen. `AnalysisLevel` fest auf `10.0`. (Verdacht) |
-| A25 | WE4 | `SiteOutbox.EnqueueAsync` ändert vorhandene Zeilen getrackt. `RegisterAsync` und `ObserveAsync` laufen ohne Transaktion. Löscht der Worker die Zeile genau dazwischen, gibt es eine `DbUpdateConcurrencyException`: Die Registrierung geht verloren, im Chat kommt keine Antwort. Beide in `BeginTransactionAsync` einschließen. |
-| A26 | WE5 | Nach Korrektur eines falschen R2-Schlüssels behalten die Zeilen ihr Backoff (bis 15 min). Die Karte zeigt weiter „Zugangsdaten abgelehnt“, und der neue Schlüssel wirkt falsch. Zudem entsorgt `SaveCredentials` den Publisher mitten im Upload. Bei `R2Access.Changed` die Wartezeiten zurücksetzen, den alten Publisher erst nach der Runde entsorgen. |
-| A27 | WE7 | `Home.razor:12-15`, `Battles.razor:66-69`: Scheitert der erste Ladeversuch, steht „Noch niemand dabei“ direkt neben dem Fehlerhinweis. Leerzustand nur bei `!Failed`. |
-| A28 | WE8 | `PollingPage.cs:101-121` fängt nur `HttpRequestException`. Ein HttpClient-Timeout (`TaskCanceledException`) beendet das Polling still bzw. lässt die Seite auf „Lädt …“ stehen. |
-| A29 | WE9 | `overlay.html:207`: „1 Arten“, im ersten Stream bei allen fünf Einträgen. |
-| A30 | WE10 | Ist Port 5299 belegt, steht das nur im Log; die Overlay-Karte gibt trotzdem die Anleitung. Status anzeigen. |
-| A31 | WE11 | `TrainerService.DeleteAsync` benachrichtigt `BattleService` nicht; der Reiter „Kämpfe“ zeigt den gelöschten Namen weiter. |
-| A32 | WE12 | Jede Overlay-Abfrage (alle 2 s, solange OBS läuft) lädt alle Trainer mit allen Exemplaren. Ergebnis cachen bis `Changed`. (Verdacht – nicht gemessen) |
-| A33 | WE13 | `MainLayout.razor:254` prüft nur „Daten neuer als App“. Normal ist aber der umgekehrte Fall: Pages wird beim Merge deployt, der Bot erst mit dem nächsten ZIP. Beim ersten Formatwechsel liest die neue Seite dann tagelang alte Dateien. N-1 lesen oder einen Hinweis zeigen; die Reihenfolge im `/release`-Skill festhalten. → Frage 6. |
-| A34 | WE14 | `Home.razor:19` „Stand 22:14 Uhr“ ohne Datum; zwei Tage später wirkt das wie heute. |
+| A10 | TW8 | `ChatSender.cs:71` drops messages while there is no Twitch target (reconnect, 2–60 s). A boss result in that window never reaches the chat. Wait for a target for a bounded time (e.g. 60 s); a message never sent cannot arrive twice. |
+| A11 | TW7 | `TwitchTokenProvider.cs:87` cancels the refresh with the caller's token. If Twitch has already executed the refresh, the new single-use token is lost, and the streamer needs a new device login. Run the request with its own timeout and without the caller's cancellation. (suspected) |
+| A12 | TW6 | `EventSubSocket.cs:30`: `ConnectAsync` has no time limit. During the handover it blocks the session loop including the keepalive check. If the upgrade hangs, the bot hangs indefinitely. Linked CTS with ~15 s via `timeProvider`. (suspected) |
+| A13 | GL1, TW9 | The dry-run switch flips on the UI thread, right between two `database.Open()` of one command. A simulated `!registrieren` can thus land in the live DB together with the outbox. The window is milliseconds wide. Switch as `QueuedWork` through the inbox. |
+| A14 | GL2, SE6 | `TrainerService.FindByNameAsync` with `FirstOrDefault` over a non-unique `Login`.<br>Scenario: A was called "bob", renamed and no longer writes; B later takes "bob". `!entfernen @bob ja` can delete A.<br>When storing a login, clear the same login on other trainers; with several matches in chat, do not delete. |
+| A15 | GL3 | Deleting a trainer leaves their open challenges in memory. B gets „du hast schon eine offene Herausforderung“ until the timeout. Call `PvpService.Forget(trainerId)` from the deletion. |
+| A16 | GL4 | `!challenge @Eich` → „einen NPC namens @Eich gibt es nicht“. `!fight` strips the `@`, `!challenge` does not. |
+| A17 | GL5 | `SpeciesCatalog.Validate` does not check that every rarity tier has species. If one is missing, every lobby with that tier throws; the chat only shows „Ein wilder Boss nähert sich!“. Missing `typen`/`team` give a `NullReferenceException` instead of the readable message. |
+| A18 | SE2 | `PvpService.cs:76/85`, `NpcService.cs:39/47` echo the argument unshortened. Splitting happens only at U+0020, so with NBSP a "word" can be a whole sentence of 480 characters. That costs twice the send budget, and the echo stays when a mod deletes the message. Mention ping: suspected. Echo only for the login pattern `^[A-Za-z0-9_]{1,25}$`, split at `char.IsWhiteSpace`. |
+| A19 | SE3 | `ChatMessageEvent.cs:49` only recognizes the badge `moderator`. Twitch's "Lead Moderator" probably carries `lead_moderator` and cannot use `!entfernen`/`!bossreset`. Fail-closed. (suspected – check the badge names against the Twitch docs) |
+| A20 | SE4, RD | The log file (debug, 14 days) keeps display name and login on renames (`TrainerService.cs:138`) and the full message text on errors (`CommandProcessor.cs:113`), even after `!entfernen`. The privacy page (`Web/Pages/Privacy.razor:10`) names neither the log nor login, badges and tokens. Log only ids, extend the page. |
+| A21 | SE7, TW11 | `release.yml`: `contents: write` for the whole job, `actions/checkout` puts the token into `.git/config`. Package code in build and tests could use it to replace the release ZIP. `persist-credentials: false`, upload in a job of its own; optionally SHA pins. |
+| A22 | TW10 | `release.yml` checks neither that tag and `<Version>` match nor that the CHANGELOG section exists (`exit 0` → generated notes). An early step should fail in both cases. |
+| A23 | TW12 | `BannedSymbols.txt` does not ban `Task.Delay`, `CancellationTokenSource(TimeSpan)`, `CancelAfter` and `Stopwatch` without `TimeProvider`. There already is one violation: `EventSubSession.cs:228`. Add them and switch over. |
+| A24 | TW13 | `global.json` `rollForward: latestFeature` plus `AnalysisLevel latest` plus warnings as errors: a new SDK on the runner can turn CI and release red without a code change. Pin `AnalysisLevel` to `10.0`. (suspected) |
+| A25 | WE4 | `SiteOutbox.EnqueueAsync` changes existing rows as tracked entities. `RegisterAsync` and `ObserveAsync` run without a transaction. If the worker deletes the row exactly in between, a `DbUpdateConcurrencyException` follows: the registration is lost, the chat gets no reply. Wrap both in `BeginTransactionAsync`. |
+| A26 | WE5 | After correcting a wrong R2 key the rows keep their backoff (up to 15 min). The card still shows „Zugangsdaten abgelehnt“, and the new key looks wrong. In addition, `SaveCredentials` disposes the publisher in the middle of an upload. On `R2Access.Changed` reset the waiting times, dispose the old publisher only after the round. |
+| A27 | WE7 | `Home.razor:12-15`, `Battles.razor:66-69`: if the first load fails, „Noch niemand dabei“ stands right next to the error hint. Empty state only when `!Failed`. |
+| A28 | WE8 | `PollingPage.cs:101-121` only catches `HttpRequestException`. An HttpClient timeout (`TaskCanceledException`) silently ends the polling or leaves the page at „Lädt …“. |
+| A29 | WE9 | `overlay.html:207`: „1 Arten“, in the first stream for all five entries. |
+| A30 | WE10 | If port 5299 is in use, only the log says so; the overlay card still gives the instructions. Show the status. |
+| A31 | WE11 | `TrainerService.DeleteAsync` does not notify `BattleService`; the „Kämpfe“ tab keeps showing the deleted name. |
+| A32 | WE12 | Every overlay request (every 2 s while OBS runs) loads all trainers with all specimens. Cache the result until `Changed`. (suspected – not measured) |
+| A33 | WE13 | `MainLayout.razor:254` only checks "data newer than app". The normal case is the reverse, though: Pages deploys on merge, the bot only with the next ZIP. On the first format change the new site then reads old files for days. Read N-1 or show a hint; record the order in the `/release` skill. → Question 6. |
+| A34 | WE14 | `Home.razor:19` „Stand 22:14 Uhr“ without a date; two days later it looks like today. |
 
-## Teil B – Struktur und Wiederverwendung
+## Part B – Structure and reuse
 
-| # | IDs | Vorschlag | Aufwand |
+| # | IDs | Proposal | Effort |
 |---|---|---|---|
-| B1 | RD1 | **Kampftexte einmal:** Überschrift und Ergebnis entstehen dreimal (Chat in Boss/Pvp/NpcService, Website in `SiteGenerator.Describe`, Desktop in `BattleService` + `BattleListPanel`) und sind schon auseinandergelaufen:<br>– NPC-Erstsieg: drei verschiedene Sätze.<br>– Gelöschte Trainer: „(gelöscht)“ gegen „[gelöscht]“.<br>– Der Desktop zeigt heutige Namen, die Website die Namen zum Zeitpunkt des Kampfs.<br>– `TierSuffix` steht doppelt (UI-Kopie, weil `internal`), der Token-Plural dreifach.<br>Vorschlag: Eine Klasse `BattleTexts` in Core, die Website und Desktop nutzen. | M |
-| B2 | RD2 | Zwei `BattleKind` (Data/Contracts) mit Mapping-Switch und eigener CLAUDE.md-Falle, zwei `BattleSummary` mit verschiedenem Inhalt. `Contracts.BattleKind` in der DB nutzen (Enum als Text, Werte gleich), Core-`BattleSummary` umbenennen. | S |
-| B3 | RD3 | Cooldown lesen/setzen zweimal identisch (`BossEncounter`, `NpcService`), „Antwort höchstens alle X“ viermal. Neu: `Cooldowns.Get/SetAsync` und `ReplyThrottle` (Grundlage für A5). | S |
-| B4 | RD4, GL6 | Deutsche Dauerformatierung viermal. `NpcService.Duration` und `HoursAndMinutes` liefern für 90 min verschiedene Texte; nach WP-09 widersprechen sich Niederlage-Meldung und Cooldown-Antwort. Eine `ChatText.Duration`, doppeltes `<summary>` in `NpcService.cs:198` streichen. | S |
-| B5 | RD5 | Teamziehung, Fighter-Erzeugung, `Rounds = (Attacks+1)/2` und Achievement-Ansage stehen doppelt oder dreifach. „Probelauf?“ wird auf drei Arten entschieden (`lobby.IsSimulated`, `message.IsSimulated`, `_database.IsSandbox`). NPC-Teamgröße aus `PvpSettings`. | S |
-| B6 | RD6 | `tools/BalancingSimulator.cs:117-125` kopiert die Defaults hart – gerade das Werkzeug für WP-09. Aus `BattleSettings.Default`/`BossSettings.Default` lesen. | S |
-| B7 | RD7 | Tot oder nur für Tests: `BattleRandom.Seed`, `SiteLinks.None`, `OverlayServer.IsRunning` (wird mit A30 genutzt), `Format.Count` (ein Aufruf mit gleichem Singular/Plural), Fallback `"daten/"` in `Web/Program.cs:11`, `PackageVersion Microsoft.Extensions.Hosting` ohne Nutzer. | S |
-| B8 | RD8 | Falsche Kommentare: `PollingPage.cs:6` (Overlay, 15 s), `site.css:1` („same palette“ – im Dunkelmodus nicht), `AppPaths.cs:4` („later backups“), Balancing-Kommentare in `PokeArenaOptions.cs:5`/`BattleSettings.cs:5` (siehe D3). | S |
-| B9 | RD9 | Web: `BattleList` und `SpeciesName` liegen in `Layout/`, gehören nach `Shared/`. Der Hinweis „Daten konnten nicht geladen werden …“ steht viermal; CTS-/Dispose-Muster in Battle- und Trainer-Seite kopiert. | S |
+| B1 | RD1 | **Fight texts once:** headline and result are produced three times (chat in Boss/Pvp/NpcService, website in `SiteGenerator.Describe`, desktop in `BattleService` + `BattleListPanel`) and have already drifted apart:<br>– NPC first win: three different sentences.<br>– Deleted trainers: „(gelöscht)“ vs „[gelöscht]“.<br>– The desktop shows today's names, the website the names at the time of the fight.<br>– `TierSuffix` exists twice (UI copy, because it is `internal`), the token plural three times.<br>Proposal: one class `BattleTexts` in Core, used by website and desktop. | M |
+| B2 | RD2 | Two `BattleKind` (Data/Contracts) with a mapping switch and a CLAUDE.md trap of its own, two `BattleSummary` with different content. Use `Contracts.BattleKind` in the DB (enum as text, same values), rename the Core `BattleSummary`. | S |
+| B3 | RD3 | Reading/setting a cooldown twice identically (`BossEncounter`, `NpcService`), "reply at most every X" four times. New: `Cooldowns.Get/SetAsync` and `ReplyThrottle` (basis for A5). | S |
+| B4 | RD4, GL6 | German duration formatting four times. `NpcService.Duration` and `HoursAndMinutes` give different texts for 90 min; after WP-09 the loss message and the cooldown reply contradict each other. One `ChatText.Duration`, drop the duplicate `<summary>` in `NpcService.cs:198`. | S |
+| B5 | RD5 | Team draw, fighter creation, `Rounds = (Attacks+1)/2` and the achievement announcement exist two or three times. "Dry run?" is decided in three ways (`lobby.IsSimulated`, `message.IsSimulated`, `_database.IsSandbox`). NPC team size from `PvpSettings`. | S |
+| B6 | RD6 | `tools/BalancingSimulator.cs:117-125` hard-copies the defaults – of all tools the one for WP-09. Read them from `BattleSettings.Default`/`BossSettings.Default`. | S |
+| B7 | RD7 | Dead or only for tests: `BattleRandom.Seed`, `SiteLinks.None`, `OverlayServer.IsRunning` (used with A30), `Format.Count` (one call with identical singular/plural), fallback `"daten/"` in `Web/Program.cs:11`, `PackageVersion Microsoft.Extensions.Hosting` without a user. | S |
+| B8 | RD8 | Wrong comments: `PollingPage.cs:6` (overlay, 15 s), `site.css:1` ("same palette" – not in dark mode), `AppPaths.cs:4` ("later backups"), balancing comments in `PokeArenaOptions.cs:5`/`BattleSettings.cs:5` (see D3). | S |
+| B9 | RD9 | Web: `BattleList` and `SpeciesName` live in `Layout/`, they belong in `Shared/`. The hint „Daten konnten nicht geladen werden …“ exists four times; the CTS/dispose pattern is copied between the battle and the trainer page. | S |
 
-## Teil C – Tests
+## Part C – Tests
 
-TE hat die Lücken per Mutation nachgewiesen: Produktionscode gezielt kaputt gemacht, die ganze Suite blieb grün. Das geschah auf einer eigenen Kopie, der Snapshot blieb unverändert.
+TE proved the gaps by mutation: production code broken on purpose, the whole suite stayed green. This happened on a copy of its own; the snapshot stayed unchanged.
 
-| # | IDs | Befund / Vorschlag |
+| # | IDs | Finding / proposal |
 |---|---|---|
-| C1 | TE1 | **M** (schützt eine S-Falle) `TwitchAuthTests.cs:217` `Concurrent_refreshes_…` kann nicht fehlschlagen: Der Fake antwortet synchron. Ohne `_refreshLock` bleibt alles grün – genau der Fehler, der laut Core-CLAUDE.md den Bot abmeldet. Den Fake mit `TaskCompletionSource` sperren, bis ein zweiter Aufruf wartet. |
-| C2 | TE2 | **M** Fällt in `TrainerRemoval.cs:45-46` `pending.TrainerId == target…` oder `pending.IsSimulated == …` weg, bleibt alles grün. Dann löscht `!entfernen @ash` gefolgt von `!entfernen @misty ja` Misty, ohne zu fragen. Zwei Fälle ergänzen. |
-| C3 | TE3 | **M** Kein Test prüft das `Access` der echten Commands. `!entfernen`/`!bossreset` auf `Everyone` → alles grün, jeder Zuschauer kann löschen. Ein `[Theory]` über alle `IChatCommand` mit erwartetem Access, dazu ein Processor-Test mit dem echten `RemoveCommand` von einem Zuschauer. (nachgeprüft: kein Test referenziert die beiden Commands) |
-| C4 | TE4 | **M** Outbox-Einträge bei PvP, NPC und Umbenennung ungetestet; nur Boss, Registrierung und Löschung prüfen die Queue. |
-| C5 | TE5 | **M** `Republishing_queues_every_file` läuft ohne Kampf; die Kampfseiten aus `EnqueueEverythingAsync` zu streichen bleibt grün. |
-| C6 | TE6 | **M** Die Reihenfolge „Live-Status erst nach den Abos“ (Core-CLAUDE.md) ist ungetestet. |
-| C7 | TE7 | **M** `BossEncounterTests.cs:189` `DoesNotContain("AV", …)` kann nicht fehlschlagen. Doppelte Achievement-Ansagen bleiben unentdeckt, auch bei PvP und NPC. |
-| C8 | TE8 | **M** `BossDraw` ist ungetestet: HP ohne `× N`, vertauschte Stufen und fehlender Cap bleiben grün. Der Boss-Test rechnet den Erwartungswert mit `BossDraw` selbst; der HP-Test nutzt noch 1,8. Damit hält kein Test die Änderung aus 1.0.1 (1,5) fest. |
-| C9 | TE9 | **M** „Boss bereit“: Die Bedingungen offene Lobby, Probelauf und `!= until` lassen sich entfernen, ohne dass ein Test rot wird. |
-| C10 | TE10 | **M** `ChatSender`: Split und Limiter im Sender ungetestet (nur die Einheiten). |
-| C11 | TE11 | **M** `SiteGenerator`: nur die PvP-Seite geprüft. Fänger aus dem Log (Fix aus WP-08), NPC-Texte und Overlay-Top-5 ungetestet. |
-| C12 | TE12 | **M** `EventSubSessionTests.cs:59-76`: echtes `Task.Delay(50)`. Der Test beweist weder die Gnadenfrist noch, dass ein Keepalive den Timer neu startet; auf einer langsamen Maschine kann er hängen (Verdacht). Mit Sperre statt Wartezeit neu schreiben. |
-| C13 | TE13 | Starter nie Beute: Der Test erwischt den Fehler nur mit Seed 6 von 8. Deterministisch machen (TeamSize 2, Verlierer hat Starter + 1). |
-| C14 | TE14, TE15 | Weitere Zweige ohne Treffer: Cache-Reset nach Löschung, Zurücksetzen von `failures`, gelöschter Lobby-Teilnehmer, `ArenaCommand`, Rundenlimit bei Gleichstand, `authorization_revoked`, 403 → `MissingPermission`, Achievement bleibt nach PvP-Verlust. |
-| C15 | TE16 | `NpcServiceTests.The_dry_run_skips_the_cooldown` schickt simulierte Nachrichten an die Live-DB und prüft den echten Probelauf nicht. |
-| C16 | TE17 | Die NPC-Tabelle der Anleitung ist hart codiert; der Test prüft nur Anzahl, ersten und letzten Eintrag. Gegen `data/npcs.json` vergleichen. |
-| C17 | TE18 | Kein Architekturtest: „Web nur → Contracts“, „keine offiziellen Assets“ (Bilddateien und Sprite-Hosts in `wwwroot`/`*.razor`). |
-| C18 | TE19 | Struktur: `RecordingSender` fünfmal, `FixedSeeds` viermal, `FakeTwitchConnection` zweimal kopiert → `Fakes/`. Testordner nicht gespiegelt (`Chat/ChatTests` testet EventSub, `TrainerListTests` enthält Shell/Settings/Backup). |
-| C19 | TE20 | `Integration.Tests/TwitchLoginTests.cs:280` gilt laut Kommentar als „nur lesend“, löscht bei ungültigem Login aber den echten `PokeArena:twitch-token`. Kommentar oder Sichern/Wiederherstellen. |
+| C1 | TE1 | **M** (guards an H trap) `TwitchAuthTests.cs:217` `Concurrent_refreshes_…` cannot fail: the fake answers synchronously. Without `_refreshLock` everything stays green – exactly the bug that, according to the Core CLAUDE.md, logs the bot out. Block the fake with a `TaskCompletionSource` until a second call waits. |
+| C2 | TE2 | **M** If `pending.TrainerId == target…` or `pending.IsSimulated == …` disappears from `TrainerRemoval.cs:45-46`, everything stays green. Then `!entfernen @ash` followed by `!entfernen @misty ja` deletes Misty without asking. Add two cases. |
+| C3 | TE3 | **M** No test checks the `Access` of the real commands. `!entfernen`/`!bossreset` set to `Everyone` → everything green, every viewer can delete. A `[Theory]` over all `IChatCommand` with the expected access, plus a processor test with the real `RemoveCommand` from a viewer. (confirmed: no test references the two commands) |
+| C4 | TE4 | **M** Outbox entries for PvP, NPC and rename untested; only boss, registration and deletion check the queue. |
+| C5 | TE5 | **M** `Republishing_queues_every_file` runs without a fight; removing the fight pages from `EnqueueEverythingAsync` stays green. |
+| C6 | TE6 | **M** The order "live status only after the subscriptions" (Core CLAUDE.md) is untested. |
+| C7 | TE7 | **M** `BossEncounterTests.cs:189` `DoesNotContain("AV", …)` cannot fail. Duplicate achievement announcements go unnoticed, also for PvP and NPC. |
+| C8 | TE8 | **M** `BossDraw` is untested: HP without `× N`, swapped tiers and a missing cap stay green. The boss test computes the expected value with `BossDraw` itself; the HP test still uses 1.8. So no test pins the change from 1.0.1 (1.5). |
+| C9 | TE9 | **M** „Boss bereit“: the conditions open lobby, dry run and `!= until` can be removed without a test turning red. |
+| C10 | TE10 | **M** `ChatSender`: split and limiter untested inside the sender (only the units). |
+| C11 | TE11 | **M** `SiteGenerator`: only the PvP page is checked. Catchers from the log (fix from WP-08), NPC texts and the overlay top 5 untested. |
+| C12 | TE12 | **M** `EventSubSessionTests.cs:59-76`: real `Task.Delay(50)`. The test proves neither the grace period nor that a keepalive restarts the timer; on a slow machine it can hang (suspected). Rewrite with a gate instead of a wait. |
+| C13 | TE13 | Starter never loot: the test catches the bug only with seed 6 of 8. Make it deterministic (TeamSize 2, loser has starter + 1). |
+| C14 | TE14, TE15 | More branches without a hit: cache reset after deletion, resetting `failures`, deleted lobby participant, `ArenaCommand`, round limit on a tie, `authorization_revoked`, 403 → `MissingPermission`, achievement stays after a PvP loss. |
+| C15 | TE16 | `NpcServiceTests.The_dry_run_skips_the_cooldown` sends simulated messages to the live DB and does not test the real dry run. |
+| C16 | TE17 | The NPC table of the guide page is hard-coded; the test only checks the count, the first and the last entry. Compare against `data/npcs.json`. |
+| C17 | TE18 | No architecture test: "Web only → Contracts", "no official assets" (image files and sprite hosts in `wwwroot`/`*.razor`). |
+| C18 | TE19 | Structure: `RecordingSender` copied five times, `FixedSeeds` four times, `FakeTwitchConnection` twice → `Fakes/`. Test folders do not mirror the code (`Chat/ChatTests` tests EventSub, `TrainerListTests` contains Shell/Settings/Backup). |
+| C19 | TE20 | `Integration.Tests/TwitchLoginTests.cs:280` counts as "read only" according to its comment, but deletes the real `PokeArena:twitch-token` on an invalid login. Fix the comment or save and restore. |
 
-**Überflüssig**
+**Redundant**
 
-| # | IDs | Test(s) | Vorschlag | Fängt den Fehler danach |
+| # | IDs | Test(s) | Proposal | Catches the failure afterwards |
 |---|---|---|---|---|
-| C20 | TE | `CommandTests.Status_command_answers_with_the_version_then_cools_down` (:41) | in den Alias-Test aufgehen lassen | `Version_runs_the_status_command_and_shares_its_cooldown` (:65) |
-| C21 | TE | `ChatTests` Split-Fälle (:45-65, drei Facts) | ein `[Theory]` | dieselben Fälle als InlineData |
-| C22 | TE | `SitePublishWorkerTests.Unexpected_errors_get_a_generic_reason` (:188) | Theory mit dem Grund-Teil von `A_failed_upload_backs_off_…` | die Theory; der Backoff-Teil bleibt eigener Test |
+| C20 | TE | `CommandTests.Status_command_answers_with_the_version_then_cools_down` (:41) | merge into the alias test | `Version_runs_the_status_command_and_shares_its_cooldown` (:65) |
+| C21 | TE | `ChatTests` split cases (:45-65, three facts) | one `[Theory]` | the same cases as InlineData |
+| C22 | TE | `SitePublishWorkerTests.Unexpected_errors_get_a_generic_reason` (:188) | theory with the reason part of `A_failed_upload_backs_off_…` | the theory; the backoff part stays a test of its own |
 
-Nicht vorgeschlagen: `The_starter_is_never_the_loot` entfernen. Er hält eine Invariante fest und wird nur ersetzt (C13).
+Not proposed: removing `The_starter_is_never_the_loot`. It pins an invariant and is only replaced (C13).
 
-## Teil D – Doku und CLAUDE.md
+## Part D – Docs and CLAUDE.md
 
-| # | IDs | Befund / Vorschlag |
+| # | IDs | Finding / proposal |
 |---|---|---|
-| D1 | RD10 | **M** Der Skill `/release` wurde nie committet: `.gitignore:25` `[Rr]elease/` trifft `.claude/skills/release/`. Commit a2fdf4f enthält nur `branch-code-review`, obwohl die Nachricht beide nennt. `CLAUDE.md` §1 verweist auf einen Skill, den kein Klon hat. `!.claude/skills/release/` eintragen und committen. (nachgeprüft) |
-| D2 | RD12 | **M** Moderator-Frage widersprüchlich:<br>– `CLAUDE.md` §8: „`channel:bot` oder Moderator nötig“.<br>– ADR-0002-Addendum: mit User-Token nicht nötig, Moderator schützt nur vor Slow Mode; der Weg ohne Moderator ist ungetestet.<br>– spec §12: Moderator „for the higher rate limit“, das der Limiter bewusst nicht nutzt.<br>– README: Der Schritt fehlt in der Installationsanleitung für den Streamer.<br>Das betrifft die anstehende Installation. README um „Bot zum Moderator machen“ ergänzen, die drei Stellen angleichen. (nachgeprüft) |
-| D3 | RD11, GL6 | **M** Fünf Stellen sagen „Balancing in der DB / Laufzeit-Editor geplant“: spec §10, `architecture.md:57-60`, ADR-0001, `PokeArenaOptions.cs:5`, `BattleSettings.cs:5`. Das widerspricht der Entscheidung vom 2026-11-04 (Code-Defaults, kein Editor, spec §13). ADR-0001 sagt außerdem, Herausforderungen lägen in der DB. Korrigieren, ADR-0001 mit Addendum. |
-| D4 | RD14 | `spec.md` veraltet:<br>– §14 Chat-Wortlaut noch OPEN.<br>– §6 „bis die Website existiert“.<br>– §7 „drafts“.<br>– §9 Overlay als Website-Seite, 15-s-Polling, „CDN, once a custom domain is used“.<br>– §5 Beispiel-Logzeilen.<br>– §8 Schaltername weicht von der UI ab („Auch ohne Stream“). |
-| D5 | RD15 | Veraltete Stände:<br>– `architecture.md:4-7` („WP-01…WP-06 built“), `:41`, `:140` (Platzhalter Shortcuts).<br>– `README.md:11` (1.0.0), README „Building“ ohne Web/Integration.Tests.<br>– `roadmap.md:30-31` (kaputte Aufzählung), `:284` (beantwortete UX-Frage), `:220` (Verbindungstest der Einstellungen nicht gebaut und nicht als Abweichung notiert – Verdacht).<br>– ADR-0002-Addendum „open setup question of WP-08“. |
-| D6 | RD13 | `CHANGELOG.md:171`: verwaistes Fragment am Ende von [0.1.0]. |
-| D7 | RD16 | `website-setup.md` §5 verspricht, dass der R2-Test läuft. Der Test liest den Bucket aber nur aus `appsettings*.json`, nicht aus `settings.json`. Schritt ergänzen oder den Test `settings.json` lesen lassen. |
-| D8 | RD17 | `chat-texts.md:62,64`: Zeile 31 kennt nur „{n} Tokens“ (der Code hat 0/1/n); Zeile 33 ohne die Probelauf-Variante. |
-| D9 | RD18 | Die Checkliste verbietet „real channel names“. Tests und Doku nutzen den eigenen Testkanal und `arena(-data).cloudfox.xyz`; jeder Reviewer meldet das neu. Regel präzisieren. → Frage 7. |
-| D10 | RD19 | Größe: `CLAUDE.md` 9,9 KB (~2,5k Tokens), alle fünf zusammen ~21 KB (~5,3k).<br>Kürzen:<br>– Versionstabelle §3 (dritte Kopie).<br>– Core:8/53 (doppelt zu Root).<br>– Core:41-42 (tools-AOT steht in den tools-Dateien).<br>– Core:52 (fällt mit B2).<br>– Desktop:8-9/24-25 zusammenlegen, Desktop:26.<br>Ergänzen: `docs/chat-texts.md` und die Review-Dokumente in §1, Web in Zeile 18. |
+| D1 | RD10 | **M** The `/release` skill was never committed: `.gitignore:25` `[Rr]elease/` matches `.claude/skills/release/`. Commit a2fdf4f only contains `branch-code-review`, although its message names both. `CLAUDE.md` §1 points to a skill no clone has. Add `!.claude/skills/release/` and commit. (confirmed) |
+| D2 | RD12 | **M** The moderator question contradicts itself:<br>– `CLAUDE.md` §8: "`channel:bot` or moderator required".<br>– ADR-0002 addendum: not required with a user token, moderator only protects against slow mode; the path without moderator is untested.<br>– spec §12: moderator "for the higher rate limit", which the limiter deliberately does not use.<br>– README: the step is missing from the streamer's installation guide.<br>This affects the upcoming installation. Add "make the bot a moderator" to the README, align the three places. (confirmed) |
+| D3 | RD11, GL6 | **M** Five places say "balancing in the DB / runtime editor planned": spec §10, `architecture.md:57-60`, ADR-0001, `PokeArenaOptions.cs:5`, `BattleSettings.cs:5`. That contradicts the decision of 2026-11-04 (code defaults, no editor, spec §13). ADR-0001 also says challenges live in the DB. Correct them, ADR-0001 with an addendum. |
+| D4 | RD14 | `spec.md` outdated:<br>– §14 chat wording still OPEN.<br>– §6 "until the website exists".<br>– §7 "drafts".<br>– §9 overlay as a website page, 15-s polling, "CDN, once a custom domain is used".<br>– §5 example log lines.<br>– §8 switch name differs from the UI („Auch ohne Stream“). |
+| D5 | RD15 | Outdated states:<br>– `architecture.md:4-7` ("WP-01…WP-06 built"), `:41`, `:140` (placeholder shortcuts).<br>– `README.md:11` (1.0.0), README "Building" without Web/Integration.Tests.<br>– `roadmap.md:30-31` (broken list), `:284` (answered UX question), `:220` (connection test of the settings not built and not noted as a deviation – suspected).<br>– ADR-0002 addendum "open setup question of WP-08". |
+| D6 | RD13 | `CHANGELOG.md:171`: orphaned fragment at the end of [0.1.0]. |
+| D7 | RD16 | `website-setup.md` §5 promises that the R2 test runs. The test however reads the bucket only from `appsettings*.json`, not from `settings.json`. Add a step or let the test read `settings.json`. |
+| D8 | RD17 | `chat-texts.md:62,64`: row 31 only knows „{n} Tokens“ (the code has 0/1/n); row 33 lacks the dry-run variant. |
+| D9 | RD18 | The checklist forbids "real channel names". Tests and docs use the own test channel and `arena(-data).cloudfox.xyz`; every reviewer reports that again. Make the rule precise. → Question 7. |
+| D10 | RD19 | Size: `CLAUDE.md` 9.9 KB (~2.5k tokens), all five together ~21 KB (~5.3k).<br>Shorten:<br>– version table §3 (third copy).<br>– Core:8/53 (duplicate of the root).<br>– Core:41-42 (tools AOT is stated in the tools files).<br>– Core:52 (goes away with B2).<br>– merge Desktop:8-9/24-25, Desktop:26.<br>Add: `docs/chat-texts.md` and the review documents in §1, Web in line 18. |
 
-## Fragen an den Nutzer
+## Questions for the user
 
-1. **Umfang und Reihenfolge.** Vorschlag:
-   - **Vor der Installation beim Streamer** als Patch 1.0.4: D1, D2, A1, A2, A4, A10, A19, A29 und die Testlücken C1–C3. Das sind Ersteinrichtung, Verbindung, Herunterfahren und Mod-Rechte.
-   - Danach ein Review-Paket 1.1.0 vor oder zusammen mit WP-09: der Rest von A, C und D, außerdem B. B1/B4/B6 berühren WP-09 direkt.
-   - Oder alles in einem Paket?
-2. **A3 Live-Status:** alle 5 min prüfen (einfach), oder Event-Vorrang plus Nachfragen nach dem Start (genauer)?
-3. **A5 Drosselung:** Damit wird der Backlog-Punkt „Throttle repeated cooldown/error replies per user“ vorgezogen. Eine Fehlerantwort pro Zuschauer und 30 s – einverstanden?
-4. **A6 Sicherung einspielen:** Bucket beim Republish auflisten und aufräumen (M) oder nur README ergänzen (Kampf-Ids bleiben dann ein Risiko)?
-5. **A8 Overlay:** nur Hinweis in der Karte, oder lokale HTML-Datei, die per CORS pollt?
-6. **A33 Formatversion:** N-1 lesen können oder Hinweis „Daten werden umgestellt“? Erst beim ersten Formatwechsel nötig – auch ins Backlog?
-7. **D9:** Testkanal und eigene Domains in Tests/Doku erlauben (Checkliste präzisieren) oder neutral ersetzen?
-8. Dieses Dokument und künftige Gesamt-Reviews: als Skill `complete-code-review` für PokeArena festhalten?
+1. **Scope and order.** Proposal:
+   - **Before the installation at the streamer's** as patch 1.0.4: D1, D2, A1, A2, A4, A10, A19, A29 and the test gaps C1–C3. That is first setup, connection, shutdown and mod rights.
+   - Afterwards a review package 1.1.0 before or together with WP-09: the rest of A, C and D, plus B. B1/B4/B6 touch WP-09 directly.
+   - Or everything in one package?
+2. **A3 live status:** check every 5 min (simple), or event precedence plus polling after the start (more accurate)?
+3. **A5 throttling:** this pulls the backlog item "Throttle repeated cooldown/error replies per user" forward. One error reply per viewer and 30 s – agreed?
+4. **A6 restoring a backup:** list and clean up the bucket on republish (M) or only extend the README (fight ids then remain a risk)?
+5. **A8 overlay:** only a hint in the card, or a local HTML file that polls via CORS?
+6. **A33 format version:** be able to read N-1, or a hint „Daten werden umgestellt“? Only needed at the first format change – into the backlog as well?
+7. **D9:** allow the test channel and the own domains in tests/docs (make the checklist precise) or replace them neutrally?
+8. This document and future whole-solution reviews: record them as a skill `complete-code-review` for PokeArena?
 
-## Entscheidungen des Nutzers (2026-11-08)
+## User decisions (2026-11-08)
 
-Antwort: „Alles in einem Paket. halte den Ablauf als Skill fest.“
+Answer: „Alles in einem Paket. halte den Ablauf als Skill fest.“
 
-1. Alles in einem Paket: R1 auf `wp/r1-review-1.0.3`.
-2.–7. Offen gelassen. Umgesetzt wird je der einfachere bzw. vorgeschlagene Weg (`CLAUDE.md` §7):
-   - **A3:** Die stündliche Abfrage überschreibt keinen Status, den ein Event in den letzten 10 min gesetzt hat. Nach dem Start bei „offline“ wird 10 min lang alle 2 min nachgefragt.
-   - **A5:** Eine Fehler- oder Hinweisantwort pro Zuschauer und 30 s. Der Backlog-Punkt entfällt damit.
-   - **A6:** Beim Republish den Bucket auflisten und aufräumen, die Kampf-Sequenz über die höchste Id im Bucket heben.
-   - **A8:** Nur der Hinweis in der Overlay-Karte. Die lokale HTML-Datei kommt ins Backlog.
-   - **A33:** Hinweis auf der Website bei älterem Datenformat. N-1 lesen kommt ins Backlog, die Reihenfolge in den `/release`-Skill.
-   - **D9:** Den eigenen Testkanal und die eigenen Domains erlauben; die Checkliste wird präzisiert.
-8. Ablauf als Skill festhalten: `.claude/skills/complete-code-review/` (`SKILL.md`, `agents.md`).
+1. Everything in one package: R1 on `wp/r1-review-1.0.3`.
+2.–7. Left open. The simpler or proposed path is implemented in each case (`CLAUDE.md` §7):
+   - **A3:** the hourly poll does not overwrite a status an event set in the last 10 min. After a start with "offline", ask every 2 min for 10 min.
+   - **A5:** one error or hint reply per viewer and 30 s. The backlog item goes away with it.
+   - **A6:** on republish list and clean up the bucket, raise the fight sequence above the highest id in the bucket.
+   - **A8:** only the hint in the overlay card. The local HTML file goes to the backlog.
+   - **A33:** a hint on the website for an older data format. Reading N-1 goes to the backlog, the order into the `/release` skill.
+   - **D9:** allow the own test channel and the own domains; the checklist is made precise.
+8. Record the process as a skill: `.claude/skills/complete-code-review/` (`SKILL.md`, `agents.md`).
