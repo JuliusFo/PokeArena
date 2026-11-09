@@ -305,6 +305,16 @@ Demo: measured win rates per NPC and boss group size, adjusted values.
 - No runtime balancing editor (spec §13): `Scaling`, `k` etc. are jargon
   for the streamer and every change should go through the simulator. At most
   the streamer-facing values (boss cooldown, countdown) may get a setting.
+- Done ahead of WP-09 (user decision 2026-11-09, `feat/boss-pick-per-species`,
+  1.3.1): the boss pick is uniform over distinct species instead of
+  specimens. Simulator part 3: group wins, catches and the share of commons
+  fielded move by at most 1–2 points at 5–100 catches — duplicates are
+  spread over all tiers (98 / 48 / 5 species), so the common share (≈ 62 %
+  at 5 catches → 73 % at 100, the rare starter gets diluted) comes from the
+  boss tier odds, not from duplicates. It only helps the unlucky single
+  trainer (3 × Digda + Arkani: Arkani 25 % → 50 %). If fielded Pokemon still
+  feel too weak, levers are the tier odds or a pick weighted by tier or
+  strength — simulator first.
 - Progression: PvP loot prefers species the winner lacks, like the NPC
   reward (E22) — a per-trainer bonus on the boss does not fit, all survivors
   catch the same species. Then watch the data again.

@@ -46,6 +46,7 @@ shows leaderboard, trainer pages and battle logs.
 | 1.1.0 | Review 1.0.3 fixes, boss lobby (2 min, late-join extension, HP left) | R1, feat/boss-lobby |
 | 1.2.0 | Fight page shows how each Pokémon ended | feat/battle-end-state |
 | 1.3.0 | Website page „Neuigkeiten“ (player-visible changes per version) | WP-10 |
+| 1.3.1 | Boss pick uniform over distinct species | feat/boss-pick-per-species |
 | 1.4.0 | Balancing with real stream data | WP-09 |
 
 **Invariants — never weaken:**

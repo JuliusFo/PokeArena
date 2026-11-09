@@ -7,6 +7,11 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+### Changed
+- In a boss fight every species a trainer owns is equally likely to be sent
+  in, however many of it they have — three Digda no longer push out the one
+  Arkani.
+
 ## [1.3.0] - 2026-11-09
 
 ### Added
