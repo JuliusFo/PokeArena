@@ -6,10 +6,13 @@ them.
 
 ## Severity
 
-- **S** wrong or lost game data (specimens, achievements, battle logs), a broken invariant, a security or privacy hole,
-  the bot hangs, answers twice or stops answering in chat
-- **M** wrong behaviour in realistic cases (a command, a fight result, a stale website), or a clear maintenance burden
-- **K** minor
+- **H** (high) wrong or lost game data (specimens, achievements, battle logs), a broken invariant, a security or
+  privacy hole, the bot hangs, answers twice or stops answering in chat
+- **M** (medium) wrong behaviour in realistic cases (a command, a fight result, a stale website), or a clear
+  maintenance burden
+- **L** (low) minor
+
+Reviews up to 1.2.0 (PR descriptions, `docs/work-packages.md`) used S/M/K for the same three levels.
 
 ## Invariants (`CLAUDE.md` §3)
 

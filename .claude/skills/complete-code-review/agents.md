@@ -5,7 +5,7 @@ what to check at least – an agent may go further within its topic. "Leave to" 
 neighbouring question, so a finding is reported once.
 
 Common to all: read the files in question, never guess from names. A finding needs a failure scenario someone could
-reproduce (input, steps, wrong result), not "could be a problem". Check the "Ohne Befund geprüft" list of the last
+reproduce (input, steps, wrong result), not "could be a problem". Check the "Checked without findings" list of the last
 review and say whether it still holds for your topic. Decisions in `docs/work-packages.md`, `docs/roadmap.md`, ADRs
 and items already in `docs/backlog.md` are not findings unless the code deviates from them.
 
@@ -93,7 +93,7 @@ pins a fix or an invariant unless another test covers exactly that failure.
 **Structure:** test folders mirror the code, one class per file, fakes and helpers in `Fakes/` instead of copies.
 
 - Leave to: RD (duplicate production code). A production bug seen on the way is reported with the prefix
-  "(Produktion)".
+  "(production)".
 
 ## RD – Reuse, dead code, structure, docs
 
@@ -109,4 +109,4 @@ pins a fix or an invariant unless another test covers exactly that failure.
   code in both directions, architecture, ADRs (numbering, status, addenda), roadmap and backlog (done items, open
   questions already answered), work-package logs, CHANGELOG sections = tags, `docs/website-setup.md` against the code,
   relative links.
-- Leave to: TE (duplicate tests); functional bugs only briefly with the prefix "(Fehler)".
+- Leave to: TE (duplicate tests); functional bugs only briefly with the prefix "(bug)".

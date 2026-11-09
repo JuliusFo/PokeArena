@@ -30,7 +30,7 @@ only runs it in order.
 - `<Version>X.Y.Z</Version>` in `Directory.Build.props`.
 - If a default of `docs/spec.md` §13 or an NPC threshold changed in this release, check that `Pages/Guide.razor` says
   the same (spec §9).
-- Update the status line and „Next“ in `CLAUDE.md` (version, what is done) and the package table in
+- Update the status line and "Next" in `CLAUDE.md` (version, what is done) and the package table in
   `docs/work-packages.md` if a package is released.
 - `git diff --stat` to check, then one commit `docs: prepare X.Y.Z`.
 

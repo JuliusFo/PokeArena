@@ -3,7 +3,8 @@ name: branch-code-review
 description: Review the changes of the current feature branch with a separate reviewer agent, present the findings sorted by severity with proposed fixes, and fix the approved ones. Use when the user asks for a code review of the branch, the PR or "the changes".
 argument-hint: "[focus, e.g. the mod commands]"
 ---
-Talk to the user in German. Do not run any of this on `main`.
+Talk to the user in German. Severity letters, status markers and everything written to the repository or a PR
+description stay in English as defined here (`CLAUDE.md`: docs in English). Do not run any of this on `main`.
 
 ## 1. Check the branch
 
@@ -22,29 +23,29 @@ Spawn **one** separate agent (`general-purpose`). Never review inline in this se
 - Read-only: no edits, no commits, no checkout, stash or reset. It may run `dotnet build PokeArena.slnx -warnaserror` and the unit and component tests (`tests/PokeArena.Core.Tests`, `tests/PokeArena.UI.Tests`, `tests/PokeArena.Web.Tests`), not the integration tests. It never starts the desktop app against the real chat or the real data directory.
 - The security pass of the checklist is mandatory: for every outside source the change touches, trace it to its sinks and name them, also when nothing is wrong.
 - Review the changed code in its context (callers, sibling code, state it touches), and also what the change is missing (tests, `SiteOutbox` entries, `docs/chat-texts.md`, the guide page, spec, CHANGELOG, the other place that does the same thing).
-- Pre-existing problems outside the change only if the change makes them reachable or worse; otherwise list them separately as "vorher schon da".
-- Answer in German, one entry per finding: severity (S/M/K, checklist), location `path:line`, finding with a concrete failure scenario (input/state → wrong result), proposed fix, certainty (sicher / Verdacht). Then a short list "Ohne Befund geprüft" of what it checked and found sound.
+- Pre-existing problems outside the change only if the change makes them reachable or worse; otherwise list them separately as "pre-existing".
+- Answer in English, one entry per finding: severity (H/M/L, checklist), location `path:line`, finding with a concrete failure scenario (input/state → wrong result), proposed fix, certainty (certain / suspected). Then a short list "Checked without findings" of what it checked and found sound.
 
 Wait for its result. Do not review in parallel yourself.
 
 ## 3. Verify
 
-Check every finding against the code yourself before presenting it. Mark it **nachgeprüft** (confirmed by reading the code), **Verdacht** (plausible, needs reproduction) or drop it as **verworfen** with a one-line reason (wrong reading, already handled, a user decision). Merge duplicates.
+Check every finding against the code yourself before presenting it. Mark it **confirmed** (by reading the code), **suspected** (plausible, needs reproduction) or drop it as **dismissed** with a one-line reason (wrong reading, already handled, a user decision). Merge duplicates.
 
 ## 4. Present
 
-As plain text in the chat (the wrap-up box is not visible on the phone), sorted S → M → K, numbered across all severities:
+As plain text in the chat (the wrap-up box is not visible on the phone), sorted H → M → L, numbered across all severities (headers and text in German, severity and status as above):
 
 | # | Schwere | Ort | Befund | Lösung | Status |
 
-Location as a clickable link. After the table: "Vorher schon da" (suggest `docs/backlog.md`), "Verworfen" (one line each), "Ohne Befund geprüft" (short), then questions where a fix needs a decision (game rules, chat wording, behaviour change). End with the question which points to fix (default: all). **Stop and wait for the approval.**
+Location as a clickable link. After the table: pre-existing findings (suggest `docs/backlog.md`), dismissed ones (one line each), what was checked without findings (short), then questions where a fix needs a decision (game rules, chat wording, behaviour change). End with the question which points to fix (default: all). **Stop and wait for the approval.**
 
 ## 5. Fix the approved points
 
-- In this session, without further agents. Order S → K.
-- A **Verdacht** is reproduced first (a test, or the dry run of the desktop app with `--PokeArena:DataDirectory=<scratch> --PokeArena:Twitch:Channel=`); if it does not reproduce, change nothing and record why.
+- In this session, without further agents. Order H → L.
+- A **suspected** finding is reproduced first (a test, or the dry run of the desktop app with `--PokeArena:DataDirectory=<scratch> --PokeArena:Twitch:Channel=`); if it does not reproduce, change nothing and record why.
 - Each bug fix with a test that fails without it, where feasible.
-- `dotnet build PokeArena.slnx -warnaserror` and all four test projects green; website changes checked in the preview (`.claude/launch.json` „web“), desktop UI changes by bUnit or named as untested (no UI automation, `CLAUDE.md` §4).
+- `dotnet build PokeArena.slnx -warnaserror` and all four test projects green; website changes checked in the preview (`.claude/launch.json` "web"), desktop UI changes by bUnit or named as untested (no UI automation, `CLAUDE.md` §4).
 - Small Conventional Commits (`fix:`, `test:`, `refactor:`, `docs:`).
 - Second pass: send the same reviewer agent (`SendMessage`, it knows the findings) the range of the fix commits. It checks only those: does each fix cover its finding, did a fix break something else, is the test meaningful. Verify its new findings as in step 3; if any remain, present them as in step 4 and wait again.
 - Protocol: in the package's entry in `docs/work-packages.md` add a bullet `- Code review (YYYY-MM-DD):` – the user's decision in their words, then one sub-bullet per finding (fixed / not reproduced / declined, with reason). A branch without a package (`feat/…`, `fix/…`) gets no protocol; mention the review in the PR description instead. Pre-existing findings the user wants kept go to `docs/backlog.md`. Adjust `CHANGELOG.md` only if a user-visible entry changes.
