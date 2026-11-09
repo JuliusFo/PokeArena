@@ -7,8 +7,8 @@ public readonly record struct Hit(int Damage, bool Critical, double TypeFactor);
 
 /// <summary>
 /// Damage of one hit (spec §5, ADR-0006):
-/// <c>max(1, round(Skalierung × Quote × Typfaktor × Streuung × Krit))</c> with
-/// <c>Quote = max((ATK_a + k) / (DEF_d + k), (SPEZ_a + k) / (SPEZ_d + k))</c>.
+/// <c>max(1, round(Scaling × Ratio × TypeFactor × Spread × Crit))</c> with
+/// <c>Ratio = max((ATK_a + k) / (DEF_d + k), (SPEZ_a + k) / (SPEZ_d + k))</c>.
 /// </summary>
 public sealed class DamageCalculator(BattleSettings settings, TypeChart types)
 {

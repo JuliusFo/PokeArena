@@ -31,11 +31,11 @@ multiple boss targets with linear HP; target difficulty ≈ 75 %.
 ## Decision
 
 - Damage ratio `max((ATK_a + k)/(DEF_d + k), (SPEZ_a + k)/(SPEZ_d + k))`,
-  `k = Daempfung` (default 50). Special is both special attack and special
+  `k = Damping` (default 50). Special is both special attack and special
   defense, as in Gen 1.
-- Boss HP = base HP × `HPFaktor` × `BossHPProSpieler` (1.8; 1.5 since the
+- Boss HP = base HP × `HpFactor` × `BossHpPerParticipant` (1.8; 1.5 since the
   addendum 2026-11-04) × `N`.
-- The boss attacks `⌈N / BossZieleTeiler⌉` (3) distinct random living
+- The boss attacks `⌈N / BossTargetDivisor⌉` (3) distinct random living
   participants per round.
 - The per-species field `bossZiele` is dropped; it was never set in the data.
 
@@ -49,7 +49,7 @@ already stronger through their stats).
   Karpador, Raupy & co. stay weak by design.
 - Boss difficulty no longer depends on how many viewers join; log length
   grows linearly with `N`.
-- Fine-tuning (`Skalierung`, `k`, first-strike advantage with 18 % one-hit
+- Fine-tuning (`Scaling`, `k`, first-strike advantage with 18 % one-hit
   KOs) is left to the balancing simulator in WP-03, which should reproduce the
   numbers above as a sanity check.
 
@@ -59,13 +59,13 @@ already stronger through their stats).
 ordered pairings × 10, 5 000 boss encounters per `N`). With the defaults it
 reproduces the table above:
 
-| `Skalierung` | Chaneira | Simsala | < 15 % / > 85 % | One-hit KOs | First strike wins | Hits avg / max | Boss group wins N=2 / 3 / 4 / 5 / 10 / 20 | Log lines per participant |
+| `Scaling` | Chaneira | Simsala | < 15 % / > 85 % | One-hit KOs | First strike wins | Hits avg / max | Boss group wins N=2 / 3 / 4 / 5 / 10 / 20 | Log lines per participant |
 |---|---|---|---|---|---|---|---|---|
 | 25 (old default) | 87 % | 60 % | 9 / 11 | 20.4 % | 58.9 % | 3.1 / 20 | 62 / 77 / 66 / 73 / 75 / 75 % | 5.2–6.7 |
 | 20 (default since 2026-10-19) | 87 % | 63 % | 10 / 11 | 13.2 % | 57.5 % | 3.8 / 24 | 60 / 76 / 64 / 71 / 74 / 75 % | 6.4–8.1 |
 | 15 | 88 % | 61 % | 9 / 11 | 7.6 % | 55.6 % | 4.9 / 32 | 58 / 74 / 62 / 70 / 71 / 74 % | 8.3–10.2 |
 
-- "One-hit KOs" = 1-vs-1 fights decided by the first hit. Lower `Skalierung`
+- "One-hit KOs" = 1-vs-1 fights decided by the first hit. Lower `Scaling`
   mainly cuts them and the first-strike advantage; type and stat balance stay
   the same; boss win rates drop slightly and logs grow.
 - `N = 4` is a dip (≈ 65 %): `⌈4/3⌉ = 2` boss targets hit half the group per
@@ -77,7 +77,7 @@ reproduces the table above:
 
 ## Addendum 2026-10-19 (WP-03)
 
-User decision: `Skalierung` default **20** (was 25), based on the simulator
+User decision: `Scaling` default **20** (was 25), based on the simulator
 table of the 2026-10-15 addendum — one-hit KOs drop from 20 % to 13 %, the
 first-strike advantage from 59 % to 57.5 %; boss group win rates fall by only
 1–2 points, logs grow by about one line per participant. `k` stays 50. The
@@ -85,7 +85,7 @@ first-strike advantage from 59 % to 57.5 %; boss group win rates fall by only
 
 ## Addendum 2026-11-04 (after 1.0.0)
 
-User decision: `BossHPProSpieler` default **1.5** (was 1.8), to raise the
+User decision: `BossHpPerParticipant` default **1.5** (was 1.8), to raise the
 catch chance. Simulator (`dotnet run tools/BalancingSimulator.cs -- --duels 1
 --bosses 3000`, fixed seeds), catch chance per participant / group wins:
 

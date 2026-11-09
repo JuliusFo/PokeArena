@@ -117,9 +117,9 @@ in [roadmap.md](roadmap.md).
   log. `tools/BalancingSimulator.cs`. Tests: 108 unit, 15 bUnit.
 - User decisions: plan agreed 2026-10-15 (boss flow as in spec §4), with it
   the four proposals: code defaults for balancing, no cooldowns in the dry run,
-  throttled cooldown reply, no battle link before WP-06. `Skalierung` 20
+  throttled cooldown reply, no battle link before WP-06. `Scaling` 20
   instead of 25 (2026-10-19).
-- Addenda: ADR-0006 (simulator results 2026-10-15; `Skalierung` 20 on
+- Addenda: ADR-0006 (simulator results 2026-10-15; `Scaling` 20 on
   2026-10-19); spec
   §4 (reply drafts, cooldown reply, dry run) and §13 (code defaults for now).
 - Pitfalls: see `src/PokeArena.Core/CLAUDE.md` (timed steps via `QueuedWork`,
@@ -355,7 +355,7 @@ in [roadmap.md](roadmap.md).
 ### Boss lobby — streamer requests (2026-11-08, branch feat/boss-lobby)
 - Built: `BossCountdownSeconds` 60 → 120, announced as „noch 2 Minuten“
   (seconds if not whole minutes); a first join with ≤ 10 s left moves the
-  lobby's end back by `BossVerlaengerungSeconds` (10) — the countdown work on
+  lobby's end back by `BossLateJoinExtensionSeconds` (10) — the countdown work on
   the queue re-schedules itself for the rest; an escaped boss reports „hatte
   noch X von Y HP“ (`BossBattleResult.BossHp`/`BossMaxHp`). Spec §4/§13,
   chat-texts rows 9, 13, 14, „So geht's“ page updated; tests.

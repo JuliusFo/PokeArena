@@ -6,7 +6,7 @@ namespace PokeArena.Core.Tests.Game;
 
 public class BattleEngineTests
 {
-    /// <summary>No spread, no crits: every hit is exactly Skalierung × Quote × Typfaktor.</summary>
+    /// <summary>No spread, no crits: every hit is exactly Scaling × Ratio × TypeFactor.</summary>
     private static readonly BattleSettings Exact = new() { SpreadMin = 1.0, SpreadMax = 1.0, CritChance = 0 };
 
     private static SpeciesCatalog Species => GameFixture.Species;
@@ -49,7 +49,7 @@ public class BattleEngineTests
     [Fact]
     public void Boss_hp_scales_with_the_participants()
     {
-        // Arkani base HP 90 × HPFaktor 1.0 × BossHPProSpieler 1.5 (1.0.1) × 4 participants = 540.
+        // Arkani base HP 90 × HpFactor 1.0 × BossHpPerParticipant 1.5 (1.0.1) × 4 participants = 540.
         var arkani = GameFixture.Species.Find("Arkani")!;
 
         Assert.Equal(540, BossDraw.Fighter(arkani, BattleSettings.Default, BossSettings.Default, 4).MaxHp);
@@ -167,7 +167,7 @@ public class BattleEngineTests
     [Fact]
     public void Log_lines_name_species_owner_and_hp()
     {
-        // Skalierung pinned so that Pikachu knocks Schiggy out with its first hit.
+        // Scaling pinned so that Pikachu knocks Schiggy out with its first hit.
         var result = new TeamBattle(Damage(Exact with { Scaling = 25 })).Fight(
             [F("Pikachu", owner: "Ash")], [F("Schiggy", owner: "Misty")], new BattleRandom(1));
 

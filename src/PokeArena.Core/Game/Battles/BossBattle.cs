@@ -1,7 +1,7 @@
 namespace PokeArena.Core.Game.Battles;
 
 /// <param name="Survived">Per participant, in input order: still standing at the end.</param>
-/// <param name="HitRoundLimit">MaxRunden reached — a bug; the caller logs a warning.</param>
+/// <param name="HitRoundLimit">MaxRounds reached — a bug; the caller logs a warning.</param>
 /// <param name="BossHp">
 /// The boss's HP left at the end: 0 if it fainted; can be above 0 with <paramref name="BossDefeated"/> when the round
 /// limit decided.
@@ -12,8 +12,8 @@ public sealed record BossBattleResult(
 
 /// <summary>
 /// The group fight against a boss (spec §4). Per round all living participants hit the boss once in random order;
-/// then the boss hits ⌈N / BossZieleTeiler⌉ distinct random living participants (all, if fewer are left). N is the
-/// participant count at the start. A fainted participant stays out.
+/// then the boss hits ⌈N / BossTargetDivisor⌉ distinct random living participants (all, if fewer are left). N is
+/// the participant count at the start. A fainted participant stays out.
 /// </summary>
 public sealed class BossBattle(DamageCalculator damage)
 {

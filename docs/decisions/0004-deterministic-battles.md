@@ -14,7 +14,7 @@ values change at runtime.
 - Every battle stores its seed **and** its full log verbatim. The log is data,
   not derived: replaying a seed after a balancing change would give a
   different outcome.
-- `MaxRunden` is only a safety net; reaching it is logged as a warning (bug).
+- `MaxRounds` is only a safety net; reaching it is logged as a warning (bug).
 
 Deliberately **not**: reconstructing battle logs from seeds.
 

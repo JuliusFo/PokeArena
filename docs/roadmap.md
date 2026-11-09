@@ -74,7 +74,7 @@ Demo: `!boss` playable end-to-end.
 - Every species has a rarity tier, so all 151 can appear as boss — the
   achievements 150/151 are reachable.
 - Build a Monte Carlo balancing simulator (≈ 0.5 day) on the real engine:
-  first reproduce the ADR-0006 numbers, then fine-tune `Skalierung`, `k` and
+  first reproduce the ADR-0006 numbers, then fine-tune `Scaling`, `k` and
   the first-strike advantage (18 % one-hit KOs in 1-vs-1).
 - Plan (agreed 2026-10-15): `typen.json` and new `npcs.json` loaded and
   validated at startup; one seed per encounter; structured battle log as JSON,
@@ -85,7 +85,7 @@ Demo: `!boss` playable end-to-end.
   gerufen werden" at most every 30 s, no battle link in chat until WP-06.
 - **Done 2026-10-19**: built 2026-10-15; dry run with simulated viewers passed,
   the user waived the separate channel test. See the log in work-packages.md.
-- User decision (2026-10-19, ADR-0006 addendum): `Skalierung` 20 instead of
+- User decision (2026-10-19, ADR-0006 addendum): `Scaling` 20 instead of
   25 (13 % one-hit KOs, first strike wins 57.5 %); `k` stays 50.
 - Open: the `N = 4` dip (≈ 64 % group wins vs. ≈ 75 % target) — watch on
   stream whether players notice it. → WP-09 (user decision 2026-11-04).
@@ -260,14 +260,14 @@ Demo: measured win rates per NPC and boss group size, adjusted values.
 
 - User decision (2026-11-04): the balancing points move here from WP-03/05;
   numbers are only set after a simulator run.
-- Done ahead of WP-09 (user decision 2026-11-04): `BossHPProSpieler` 1.8 →
+- Done ahead of WP-09 (user decision 2026-11-04): `BossHpPerParticipant` 1.8 →
   1.5 for a higher catch chance (≈ 57–70 % per participant instead of
   50–64 %), ADR-0006 addendum. Next step if still too stingy: 1.3.
 - `N = 4` dip: likely caused by the jump of `⌈N/3⌉` targets from 1 to 2 at
   N = 4 (with HP 1.5: 57 % catch chance vs. 70 / 64 % at N = 3 / 5). Watch on
   stream first; if noticeable, adjust the target formula or the HP per player
   for that step in the simulator.
-- No runtime balancing editor (spec §13): `Skalierung`, `k` etc. are jargon
+- No runtime balancing editor (spec §13): `Scaling`, `k` etc. are jargon
   for the streamer and every change should go through the simulator. At most
   the streamer-facing values (boss cooldown, countdown) may get a setting.
 - Progression: PvP loot prefers species the winner lacks, like the NPC

@@ -8,7 +8,7 @@ namespace PokeArena.Core.Game.Battles;
 public sealed record Fighter(Species Species, int MaxHp, double Atk, double Def, double Spez, string? TrainerId, string Owner)
 {
     /// <summary>
-    /// Effective values: HP = base HP × HPFaktor × <paramref name="hpMultiplier"/> (boss scaling);
+    /// Effective values: HP = base HP × HpFactor × <paramref name="hpMultiplier"/> (boss scaling);
     /// <paramref name="strength"/> scales every stat (NPC strength, spec §7).
     /// </summary>
     public static Fighter Create(

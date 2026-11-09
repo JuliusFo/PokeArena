@@ -2,10 +2,10 @@
 // Usage (from the repository root): dotnet run tools/BalancingSimulator.cs [-- options]
 //
 // Options (defaults: the code defaults, BattleSettings/BossSettings = spec §13):
-//   --scaling 20      Skalierung
-//   --damping 50      Daempfung (k)
-//   --boss-hp 1.5     BossHPProSpieler
-//   --divisor 3       BossZieleTeiler
+//   --scaling 20      Scaling
+//   --damping 50      Damping (k)
+//   --boss-hp 1.5     BossHpPerParticipant
+//   --divisor 3       BossTargetDivisor
 //   --duels 10        repetitions per ordered 1-vs-1 pairing (151 × 150 pairings)
 //   --bosses 5000     boss encounters per participant count
 //
@@ -32,8 +32,8 @@ var species = SpeciesCatalog.Load("data/pokemon.json");
 var types = TypeChart.Load("data/typen.json", species);
 var damage = new DamageCalculator(battle, types);
 
-Console.WriteLine($"Settings: Skalierung {battle.Scaling}, k {battle.Damping}, Streuung {battle.SpreadMin}–{battle.SpreadMax}, " +
-    $"Krit {battle.CritChance:P2} × {battle.CritFactor}, BossHPProSpieler {boss.HpPerParticipant}, BossZieleTeiler {boss.TargetDivisor}");
+Console.WriteLine($"Settings: Scaling {battle.Scaling}, k {battle.Damping}, Spread {battle.SpreadMin}–{battle.SpreadMax}, " +
+    $"Crit {battle.CritChance:P2} × {battle.CritFactor}, BossHpPerParticipant {boss.HpPerParticipant}, BossTargetDivisor {boss.TargetDivisor}");
 Console.WriteLine();
 
 // Part 1: every ordered pairing of two different species, 1-vs-1, challenger strikes first.

@@ -1,7 +1,7 @@
 namespace PokeArena.Core.Game.Battles;
 
 /// <param name="Attacks">Number of hits, for balancing statistics.</param>
-/// <param name="HitRoundLimit">MaxRunden reached — a bug; the caller logs a warning.</param>
+/// <param name="HitRoundLimit">MaxRounds reached — a bug; the caller logs a warning.</param>
 public sealed record TeamBattleResult(bool ChallengerWon, int Attacks, bool HitRoundLimit, BattleLog Log)
 {
     /// <summary>Rounds as stored with the fight: two hits make a round (spec §5).</summary>
@@ -28,7 +28,7 @@ public sealed class TeamBattle(DamageCalculator damage)
         int[] active = [0, 0];
         var attackerSide = 0;
 
-        // A round is one hit per side; MaxRunden caps the hits at twice that.
+        // A round is one hit per side; MaxRounds caps the hits at twice that.
         var maxAttacks = damage.Settings.MaxRounds * 2;
 
         recorder.Add(new BattleEvent(BattleEventKind.SentOut, 1, firstIndex[0]));

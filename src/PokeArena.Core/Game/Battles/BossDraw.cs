@@ -18,7 +18,7 @@ public static class BossDraw
         return random.Pick(species.All.Where(s => s.Rarity == tier).ToList());
     }
 
-    /// <summary>The boss as a fighter: HP = base HP × HPFaktor × BossHPProSpieler × N, other stats are base values.</summary>
+    /// <summary>The boss as a fighter: HP = base HP × HpFactor × BossHpPerParticipant × N, other stats are base values.</summary>
     public static Fighter Fighter(Species boss, BattleSettings battle, BossSettings settings, int participants) =>
         Battles.Fighter.Create(boss, battle, trainerId: null, owner: "Boss", hpMultiplier: settings.HpPerParticipant * participants);
 }

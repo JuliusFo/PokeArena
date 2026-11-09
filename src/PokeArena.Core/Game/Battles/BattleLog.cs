@@ -16,7 +16,7 @@ public enum BattleEventKind
     /// <summary><see cref="BattleEvent.Fighter"/> enters the fight for its side (team fights).</summary>
     SentOut,
 
-    /// <summary>MaxRunden reached; the side with the higher remaining HP sum wins (spec §5).</summary>
+    /// <summary>MaxRounds reached; the side with the higher remaining HP sum wins (spec §5).</summary>
     RoundLimit,
 }
 

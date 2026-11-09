@@ -1,34 +1,34 @@
 namespace PokeArena.Core.Game.Battles;
 
 /// <summary>
-/// Balancing values of the battle engine with the defaults of spec §13 (German key names in the comments). Code
+/// Balancing values of the battle engine with the defaults of spec §13 (key names in the comments). Code
 /// defaults that change by release, without a runtime editor (user decision 2026-11-04, WP-09).
 /// </summary>
 public sealed record BattleSettings
 {
     public static BattleSettings Default { get; } = new();
 
-    /// <summary>Skalierung: base damage of a hit with ratio 1 and type factor 1.</summary>
+    /// <summary>Scaling: base damage of a hit with ratio 1 and type factor 1.</summary>
     public double Scaling { get; init; } = 20;
 
-    /// <summary>Daempfung (k): added to both sides of the attack/defence ratio (ADR-0006).</summary>
+    /// <summary>Damping (k): added to both sides of the attack/defence ratio (ADR-0006).</summary>
     public double Damping { get; init; } = 50;
 
-    /// <summary>Streuung: each hit is multiplied by a uniform factor in [min, max).</summary>
+    /// <summary>Spread: each hit is multiplied by a uniform factor in [min, max).</summary>
     public double SpreadMin { get; init; } = 0.85;
 
     public double SpreadMax { get; init; } = 1.00;
 
-    /// <summary>KritChance.</summary>
+    /// <summary>CritChance.</summary>
     public double CritChance { get; init; } = 0.0625;
 
-    /// <summary>KritFaktor.</summary>
+    /// <summary>CritFactor.</summary>
     public double CritFactor { get; init; } = 2.0;
 
-    /// <summary>HPFaktor: effective HP = base HP × factor, in every fight.</summary>
+    /// <summary>HpFactor: effective HP = base HP × factor, in every fight.</summary>
     public double HpFactor { get; init; } = 1.0;
 
-    /// <summary>MaxRunden: pure safety net — reaching it is a bug (ADR-0004).</summary>
+    /// <summary>MaxRounds: pure safety net — reaching it is a bug (ADR-0004).</summary>
     public int MaxRounds { get; init; } = 200;
 }
 
@@ -41,24 +41,24 @@ public sealed record BossSettings
     public TimeSpan Countdown { get; init; } = TimeSpan.FromSeconds(120);
 
     /// <summary>
-    /// BossVerlaengerungSeconds: a new participant joining with at most this much countdown left extends the
+    /// BossLateJoinExtensionSeconds: a new participant joining with at most this much countdown left extends the
     /// countdown by this much, so a last-second <c>!boss</c> still makes it.
     /// </summary>
     public TimeSpan LateJoinExtension { get; init; } = TimeSpan.FromSeconds(10);
 
-    /// <summary>BossMinTeilnehmer.</summary>
+    /// <summary>BossMinParticipants.</summary>
     public int MinParticipants { get; init; } = 2;
 
     /// <summary>BossCooldownMinutes: starts when an encounter ends.</summary>
     public TimeSpan Cooldown { get; init; } = TimeSpan.FromMinutes(30);
 
-    /// <summary>BossFehlschlagCooldownMinutes: after a lobby with too few participants.</summary>
+    /// <summary>BossFailedLobbyCooldownMinutes: after a lobby with too few participants.</summary>
     public TimeSpan FailedLobbyCooldown { get; init; } = TimeSpan.FromMinutes(2);
 
-    /// <summary>BossHPProSpieler: boss HP = base HP × HPFaktor × this × participants.</summary>
+    /// <summary>BossHpPerParticipant: boss HP = base HP × HpFactor × this × participants.</summary>
     public double HpPerParticipant { get; init; } = 1.5;
 
-    /// <summary>BossZieleTeiler: the boss attacks ⌈N / this⌉ participants per round.</summary>
+    /// <summary>BossTargetDivisor: the boss attacks ⌈N / this⌉ participants per round.</summary>
     public int TargetDivisor { get; init; } = 3;
 
     /// <summary>Legendary tier: min(cap, base + per participant × N).</summary>
@@ -73,7 +73,7 @@ public sealed record PvpSettings
 {
     public static PvpSettings Default { get; } = new();
 
-    /// <summary>HerausforderungTimeoutMinutes: how long the challenged trainer has to accept.</summary>
+    /// <summary>ChallengeTimeoutMinutes: how long the challenged trainer has to accept.</summary>
     public TimeSpan ChallengeTimeout { get; init; } = TimeSpan.FromMinutes(2);
 
     /// <summary>Specimens per side; both trainers need at least this many.</summary>
@@ -85,10 +85,10 @@ public sealed record NpcSettings
 {
     public static NpcSettings Default { get; } = new();
 
-    /// <summary>NPCNiederlageCooldownHours: per trainer and NPC, after a loss.</summary>
+    /// <summary>NpcLossCooldownHours: per trainer and NPC, after a loss.</summary>
     public TimeSpan LossCooldown { get; init; } = TimeSpan.FromHours(48);
 
-    /// <summary>NPCSiegCooldownMinutes: per trainer and NPC, after a win.</summary>
+    /// <summary>NpcWinCooldownMinutes: per trainer and NPC, after a win.</summary>
     public TimeSpan WinCooldown { get; init; } = TimeSpan.FromMinutes(60);
 }
 

@@ -93,23 +93,23 @@ Trigger and lobby:
    is generic („Ein wilder Boss nähert sich!") — the boss is not yet determined.
 2. During the countdown every registered user (including the initiator,
    automatically) joins via `!boss`. Joining twice is a no-op. A trainer who
-   joins **for the first time** with at most `BossVerlaengerungSeconds`
+   joins **for the first time** with at most `BossLateJoinExtensionSeconds`
    (default 10) left extends the countdown by that much (streamer request
    2026-11-08), so a last-second `!boss` still makes it. Joining again never
    extends; the extension is not announced in chat (one message per join
    would flood it). The total is bounded by the number of trainers.
-3. If fewer than `BossMinTeilnehmer` (default 2) joined when the countdown
+3. If fewer than `BossMinParticipants` (default 2) joined when the countdown
    ends: message „Der Boss entkommt – es haben sich zu wenige Trainer
    getraut. Mindestens 2 müssen mit !boss mitmachen.", short retry
-   cooldown (`BossFehlschlagCooldownMinutes`, default 2), no full cooldown.
+   cooldown (`BossFailedLobbyCooldownMinutes`, default 2), no full cooldown.
 
 Boss draw (after the lobby closes, so participant count is known):
 
 - Tier probabilities grow with participant count `N` and are capped:
-  `p(legendär) = min(Cap3, Basis3 + ProSpieler3 × N)` (defaults 1 % + 1 %/player, cap 20 %),
-  `p(selten)   = min(Cap2, Basis2 + ProSpieler2 × N)` (defaults 10 % + 2 %/player, cap 40 %),
+  `p(legendary) = min(Cap3, Base3 + PerParticipant3 × N)` (defaults 1 % + 1 %/player, cap 20 %),
+  `p(rare)      = min(Cap2, Base2 + PerParticipant2 × N)` (defaults 10 % + 2 %/player, cap 40 %),
   remainder → common. Within a tier the species is drawn uniformly.
-- Boss HP = base HP × `HPFaktor` × `BossHPProSpieler` × `N` (default 1.5,
+- Boss HP = base HP × `HpFactor` × `BossHpPerParticipant` × `N` (default 1.5,
   was 1.8 until 1.0.0).
   Other stats are the base values. Together with the target count below this
   keeps the group's win rate near **80 %** for any `N` (ADR-0006 addendum
@@ -121,7 +121,7 @@ possible, so no artificial pacing):
 - Each participant fields **one random specimen** from their inventory. If it
   faints, that participant is out — no replacements.
 - Per round: all living participant Pokemon attack the boss once, in
-  seed-random order; then the boss attacks `⌈N / BossZieleTeiler⌉`
+  seed-random order; then the boss attacks `⌈N / BossTargetDivisor⌉`
   (default 3) different random living participant Pokemon — all of them if
   fewer are alive. `N` is the participant count at the start.
 - Boss HP reaches 0 → **every participant whose Pokemon is still alive
@@ -158,25 +158,25 @@ possible, so no artificial pacing):
 
 Used by boss, PvP and NPC fights.
 
-- **Damage:** `max(1, round(Skalierung × Quote × Typfaktor × Streuung × Krit))`
-  - `Quote` = the better of physical and special (ADR-0006):
+- **Damage:** `max(1, round(Scaling × Ratio × TypeFactor × Spread × Crit))`
+  - `Ratio` = the better of physical and special (ADR-0006):
     `max((ATK_a + k) / (DEF_d + k), (SPEZ_a + k) / (SPEZ_d + k))` with
-    `k` = `Daempfung` (default 50). As in Gen 1, Special serves as both
+    `k` = `Damping` (default 50). As in Gen 1, Special serves as both
     special attack and special defense. The damping keeps outliers (Chaneira
     DEF 5, Onix DEF 160) from deciding fights on their own.
-  - `Skalierung` default 20 (ADR-0006 addendum 2026-10-19)
-  - `Streuung` uniform in [0.85, 1.00]
-  - Crit: factor `KritFaktor` (default 2.0) with chance `KritChance`
+  - `Scaling` default 20 (ADR-0006 addendum 2026-10-19)
+  - `Spread` uniform in [0.85, 1.00]
+  - Crit: factor `CritFactor` (default 2.0) with chance `CritChance`
     (default 6.25 %)
-  - `Typfaktor` from the type chart: the better of the attacker's types,
+  - `TypeFactor` from the type chart: the better of the attacker's types,
     multiplied over the defender's types (see §2)
   - No STAB, no immunities. Minimum damage 1 makes stalemates impossible.
-- Effective HP in any fight = base HP × `HPFaktor` (default 1.0). HP exists
+- Effective HP in any fight = base HP × `HpFactor` (default 1.0). HP exists
   only inside a fight; everything is healed afterwards.
 - **1-vs-1 turn rules (PvP/NPC):** the challenger strikes first. When a
   Pokemon faints, its side sends the next random team member and that side
   attacks first.
-- `MaxRunden` (default 200) is a pure safety net — reaching it is a bug, is
+- `MaxRounds` (default 200) is a pure safety net — reaching it is a bug, is
   logged as a warning, and the side with the higher remaining HP sum wins.
 - **Determinism:** the RNG is injected; every battle stores its seed. The
   full log is still persisted verbatim (replaying a seed after a balancing
@@ -192,7 +192,7 @@ Used by boss, PvP and NPC fights.
   own **≥ 6 specimens**; neither has another open challenge (one open
   challenge per trainer, in either direction).
 - The challenged trainer accepts with `!fight @challenger` within
-  `HerausforderungTimeoutMinutes` (default 2); otherwise the challenge
+  `ChallengeTimeoutMinutes` (default 2); otherwise the challenge
   expires silently.
 - Teams: **6 random specimens per side**, drawn by the engine. The starter
   may be drawn like any other specimen.
@@ -255,8 +255,8 @@ Used by boss, PvP and NPC fights.
 - NPC side: the fixed team above; stats = base values × per-NPC strength
   multiplier (`npcs.json`, configurable per NPC).
 - Cooldowns per trainer and NPC, both configurable: after a **loss**
-  `NPCNiederlageCooldownHours` (default 48), after a **win**
-  `NPCSiegCooldownMinutes` (default 60) — the win cooldown exists to limit
+  `NpcLossCooldownHours` (default 48), after a **win**
+  `NpcWinCooldownMinutes` (default 60) — the win cooldown exists to limit
   farming.
 - Error replies (WP-08 wording): „@Name, gegen Eich kannst du in 46 Stunden
   30 Minuten wieder antreten." / „@Name, für Eich brauchst du noch 13
@@ -439,26 +439,31 @@ Display names appear permanently on a public website. Therefore:
 
 ## 13. Configuration defaults
 
-| Key                            | Default   |
-|--------------------------------|-----------|
-| Skalierung                     | 20        |
-| Daempfung (k)                  | 50        |
-| Streuung                       | 0.85–1.00 |
-| KritChance / KritFaktor        | 6.25 % / 2.0 |
-| HPFaktor                       | 1.0       |
-| MaxRunden                      | 200       |
-| BossCountdownSeconds           | 120       |
-| BossVerlaengerungSeconds       | 10        |
-| BossMinTeilnehmer              | 2         |
-| BossCooldownMinutes            | 30        |
-| BossFehlschlagCooldownMinutes  | 2         |
-| BossHPProSpieler               | 1.5       |
-| BossZieleTeiler                | 3         |
-| Seltenheit Basis/ProSpieler/Cap| s. §4     |
-| HerausforderungTimeoutMinutes  | 2         |
-| NPCNiederlageCooldownHours     | 48        |
-| NPCSiegCooldownMinutes         | 60        |
-| WebsitePollSeconds             | 15        |
+| Key                               | Default      |
+|-----------------------------------|--------------|
+| Scaling                           | 20           |
+| Damping (k)                       | 50           |
+| Spread                            | 0.85–1.00    |
+| CritChance / CritFactor           | 6.25 % / 2.0 |
+| HpFactor                          | 1.0          |
+| MaxRounds                         | 200          |
+| BossCountdownSeconds              | 120          |
+| BossLateJoinExtensionSeconds      | 10           |
+| BossMinParticipants               | 2            |
+| BossCooldownMinutes               | 30           |
+| BossFailedLobbyCooldownMinutes    | 2            |
+| BossHpPerParticipant              | 1.5          |
+| BossTargetDivisor                 | 3            |
+| Tier odds Base/PerParticipant/Cap | see §4       |
+| ChallengeTimeoutMinutes           | 2            |
+| NpcLossCooldownHours              | 48           |
+| NpcWinCooldownMinutes             | 60           |
+| WebsitePollSeconds                | 15           |
+
+Key names follow the properties of `BattleSettings`, `BossSettings`,
+`PvpSettings` and `NpcSettings` (boss and NPC keys prefixed with `Boss` /
+`Npc`, durations with their unit); `WebsitePollSeconds` is `PollingPage` on
+the website.
 
 Balancing values are code defaults in v1 and change by release, after a
 simulator run (user decision 2026-11-04, roadmap WP-09); there is no runtime
