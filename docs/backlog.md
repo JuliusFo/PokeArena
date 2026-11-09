@@ -75,3 +75,16 @@ roadmap.md first. Format: idea — date, origin.
 - Alt-account protection, e.g. minimum Twitch account age via Helix `Get
   Users` → `created_at` at `!registrieren` — 2026-10-11, user deferred it
   (small channel).
+
+## Development process
+
+From the comparison with FerretSharp (2026-11-09); not needed at the current size.
+
+- One log file per package in `docs/work-packages/` with an index that has an
+  "Areas" column (code → package) — once `docs/work-packages.md` grows past
+  about 50 KB.
+- Pitfalls as `.claude/rules/*.md` with `paths` headers instead of
+  `src/<Project>/CLAUDE.md` — once `src/PokeArena.Core/CLAUDE.md` grows well
+  past 10 KB.
+- Local coverage script (`tools/coverage/`, ReportGenerator as a local tool)
+  for the TE agent of `/complete-code-review`; no badge.
