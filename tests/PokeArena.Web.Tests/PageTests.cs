@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
 using PokeArena.Contracts;
@@ -233,11 +234,26 @@ public class PageTests : BunitContext
     }
 
     [Fact]
-    public void The_menu_links_to_the_guide()
+    public void The_menu_links_to_the_guide_and_the_news()
     {
         var cut = Render<MainLayout>(p => p.Add(l => l.Body, b => b.AddContent(0, "Inhalt")));
 
-        Assert.Contains(cut.FindAll(".site-header nav a"), a => a.GetAttribute("href") == "anleitung");
+        var links = cut.FindAll(".site-header nav a").Select(a => a.GetAttribute("href")).ToList();
+        Assert.Contains("anleitung", links);
+        Assert.Contains("neuigkeiten", links);
+    }
+
+    [Fact]
+    public void The_news_list_the_newest_version_first()
+    {
+        var cut = Render<News>();
+
+        var versions = cut.FindAll(".news h2")
+            .Select(h => Version.Parse(Regex.Match(h.TextContent, @"^Version (\d+\.\d+\.\d+)").Groups[1].Value))
+            .ToList();
+        Assert.NotEmpty(versions);
+        Assert.Equal(versions.OrderDescending(), versions);
+        Assert.Equal(versions.Count, versions.Distinct().Count());
     }
 
     [Theory]
