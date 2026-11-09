@@ -18,7 +18,7 @@ Status: 2026-11-08 · v1.2.0 released (fight page end state) · WP-09 (→ 1.3.0
 | `docs/work-packages.md` | Package overview + log per finished package | After finishing a package |
 | `CHANGELOG.md` | Release notes (Keep a Changelog, SemVer) | Before tagging a release |
 | `src/<Project>/CLAUDE.md` | Pitfalls of that project (Core, UI, Desktop, Web; loads automatically) | — |
-| `.claude/skills/` | `/branch-code-review` (one branch, separate reviewer agent, `checklist.md`), `/complete-code-review` (whole solution, six agents → `docs/review-X.Y.Z.md`), `/release` | Before a review or release; keep the checklist in line with §3 |
+| `.claude/skills/` | `/ship-wp` (one package from plan to green CI), `/branch-code-review` (one branch, separate reviewer agent, `checklist.md`), `/complete-code-review` (whole solution, six agents → `docs/review-X.Y.Z.md`), `/release` | Before a package, review or release; keep the checklist in line with §3 |
 
 ## 2. Goal and audience
 
@@ -129,8 +129,15 @@ PokeArena.slnx
 - Work in packages: branch `wp/NN-short-name` (smaller topics `feat/…`,
   `fix/…`, `docs/…`; review fixes as package R<n> on `wp/r<n>-review-X.Y.Z`),
   always from `main`. State the plan before starting, then
-  implement; finish a package before starting another. On UX uncertainty build
-  the simplest variant and note the question in roadmap.md instead of blocking.
+  implement; finish a package before starting another (`/ship-wp` runs a
+  package in this order). If it is unclear *which* element a request means, ask
+  once before building; if only *how* it should look or behave is unclear,
+  build the simplest variant and note the question in roadmap.md instead of
+  blocking.
+- **Decided is only what the user decided.** Rules, bans and choices Claude
+  proposes itself go into docs, ADRs and `CLAUDE.md` files marked "Proposal
+  (not confirmed)" until the user agrees — otherwise the next session takes
+  them as settled.
 - Done means: build with warnings as errors and tests green, ADR if needed, log
   in work-packages.md, CHANGELOG entry, then a short summary (built / open / to
   test).
