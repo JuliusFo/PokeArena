@@ -12,7 +12,8 @@ them.
   maintenance burden
 - **L** (low) minor
 
-Reviews up to 1.2.0 (PR descriptions, `docs/work-packages.md`) used S/M/K for the same three levels.
+Reviews up to 1.2.0 used S/M/K for the same three levels (PR descriptions, commit messages such as "review
+feat/boss-lobby, K1, K3", the original review 1.0.3).
 
 ## Invariants (`CLAUDE.md` §3)
 

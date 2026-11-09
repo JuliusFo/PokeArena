@@ -66,18 +66,18 @@ Wait for all six. Verify the H and M findings of each agent as its report arrive
 ## 4. Present
 
 As plain text in the chat (the wrap-up box is not visible on the phone): counts per part and severity, part A's
-medium and severe findings in full with the proposed fixes, the small ones as a selection, parts B–D compact, then the
+high and medium findings in full with the proposed fixes, the low ones as a selection, parts B–D compact, then the
 questions. **Stop and wait for the decisions.**
 
 ## 5. Implement
 
-- Record the answers as "User decisions (YYYY-MM-DD)" in the review document (the user's answer quoted verbatim). Questions the user left
-  open: take the proposal marked as default, say so in one line, and record it as such. Commit the document alone
-  (`docs: add review X.Y.Z`).
+- Record the answers as "User decisions (YYYY-MM-DD)" in the review document (the user's answer quoted verbatim).
+  Questions the user left open: take the proposal marked as default, say so in one line, and record it as such.
+  Commit the document alone (`docs: add review X.Y.Z`).
 - Implement as package R<n> on that branch, in this session without further agents. Order: docs that unblock others
   first (e.g. a missing skill), then part A with tests, B, C, D.
-- A **suspected** finding is reproduced or checked against the external docs before any change; what does not reproduce goes
-  into the log with the reason.
+- A **suspected** finding is reproduced or checked against the external docs before any change; what does not
+  reproduce goes into the log with the reason.
 - Trimming tests: before removing or merging, make sure the remaining test fails when the code under test is broken
   the same way (break it briefly, run, restore). Note the test count before and after in the log.
 - Done as in `CLAUDE.md` §7: `dotnet build PokeArena.slnx -warnaserror`, the four test projects (integration tests
