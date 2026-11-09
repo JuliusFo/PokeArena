@@ -106,8 +106,10 @@ Trigger and lobby:
 Boss draw (after the lobby closes, so participant count is known):
 
 - Tier probabilities grow with participant count `N` and are capped:
-  `p(legendary) = min(Cap3, Base3 + PerParticipant3 × N)` (defaults 1 % + 1 %/player, cap 20 %),
-  `p(rare)      = min(Cap2, Base2 + PerParticipant2 × N)` (defaults 10 % + 2 %/player, cap 40 %),
+  `p(legendary) = min(Legendary.Cap, Legendary.Base + Legendary.PerParticipant × N)`
+  (defaults 1 % + 1 %/player, cap 20 %),
+  `p(rare)      = min(Rare.Cap, Rare.Base + Rare.PerParticipant × N)`
+  (defaults 10 % + 2 %/player, cap 40 %),
   remainder → common. Within a tier the species is drawn uniformly.
 - Boss HP = base HP × `HpFactor` × `BossHpPerParticipant` × `N` (default 1.5,
   was 1.8 until 1.0.0).
@@ -454,7 +456,7 @@ Display names appear permanently on a public website. Therefore:
 | BossFailedLobbyCooldownMinutes    | 2            |
 | BossHpPerParticipant              | 1.5          |
 | BossTargetDivisor                 | 3            |
-| Tier odds Base/PerParticipant/Cap | see §4       |
+| Legendary / Rare (tier odds)      | see §4       |
 | ChallengeTimeoutMinutes           | 2            |
 | NpcLossCooldownHours              | 48           |
 | NpcWinCooldownMinutes             | 60           |
@@ -462,8 +464,8 @@ Display names appear permanently on a public website. Therefore:
 
 Key names follow the properties of `BattleSettings`, `BossSettings`,
 `PvpSettings` and `NpcSettings` (boss and NPC keys prefixed with `Boss` /
-`Npc`, durations with their unit); `WebsitePollSeconds` is `PollingPage` on
-the website.
+`Npc`, durations with their unit; the tier odds are `BossSettings.Legendary`
+and `Rare`); `WebsitePollSeconds` is `PollingPage` on the website.
 
 Balancing values are code defaults in v1 and change by release, after a
 simulator run (user decision 2026-11-04, roadmap WP-09); there is no runtime
