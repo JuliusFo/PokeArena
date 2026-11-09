@@ -333,8 +333,14 @@ noise in the code repository, and deletions are real — a public git history
 would keep deleted trainers' names forever (see §11).
 
 Pages (v1): leaderboard, list of fights, battle log per fight, trainer detail
-page, privacy note, player guide („So geht's“, `/anleitung`). The OBS overlay
-is served by the desktop app, not by the website (below).
+page, privacy note, player guide („So geht's“, `/anleitung`), news
+(„Neuigkeiten“, `/neuigkeiten`, since 1.3.0). The OBS overlay is served by the
+desktop app, not by the website (below).
+
+The news page is static text for players: per version only what they notice
+(commands, rules, durations, odds, website), newest first — not a copy of
+`CHANGELOG.md`. It deploys with the site on merge, so it can be ahead of the
+streamer's app; entries name the version and the page points to `!version`.
 
 The player guide is static text: it repeats the defaults of §13 (countdown,
 minimum team size, cooldowns) and the NPC thresholds of §7, because the site

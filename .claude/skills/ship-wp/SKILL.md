@@ -28,7 +28,9 @@ Talk to the user in German; code, docs and commits in English. The rules are `CL
      show goes into "to test" in the summary.
 5. **Docs of the package.** Row and log entry in `docs/work-packages.md` (with the user's decisions in their words),
    `CHANGELOG.md` under `[Unreleased]` in plain words for streamer and players, `README.md` if a command or visible
-   feature changed, the status line and "Next" in `CLAUDE.md`. Ideas that came up go to `docs/backlog.md`.
+   feature changed, the status line and "Next" in `CLAUDE.md`. Ideas that came up go to `docs/backlog.md`. If players
+   notice the change (commands, rules, durations, odds, website), add a line to `Pages/News.razor` under the upcoming
+   version (newest on top, simple German, no date yet — `/release` sets it).
 6. **PR.** Push the branch, `gh pr create --base main --body-file <file in the scratchpad>` (what, why, how tested,
    open questions).
 7. **Review.** Run `/branch-code-review` (separate agent, findings by severity, wait for the approval, fix, second pass).

@@ -260,30 +260,32 @@ Demo: the menu links „Neuigkeiten“; the page lists the player-visible change
 of 1.1.0–1.3.0, newest first.
 
 - User decision (2026-11-09): own work package, done before WP-09.
-- Proposal (not confirmed): a page of its own for players, not a copy of
-  `CHANGELOG.md` — that one is written for the developer and the streamer (R2
-  keys, OBS port, „Alles neu veröffentlichen“, reconnects). The page carries
-  only what players notice: commands, rules, durations, odds, website changes.
-  One to three short lines per release.
-- Proposal (not confirmed): static content in `PokeArena.Web` (Razor page
-  `Pages/News.razor`, route `neuigkeiten`, entries hand-written in the
-  component or a small list in code), menu link next to „So geht's“, bUnit
-  test that the newest entry comes first. No R2, no Contracts change, no
+- User decision (2026-11-09, plan approved with „Ja, umsetzen“): a page of
+  its own for players, not a copy of `CHANGELOG.md` — that one is written for
+  the developer and the streamer (R2 keys, OBS port, „Alles neu
+  veröffentlichen“, reconnects). The page carries only what players notice:
+  commands, rules, durations, odds, website changes. One to three short lines
+  per release.
+- User decision (2026-11-09, same plan): static Razor page
+  `Pages/News.razor` at `neuigkeiten`, menu link after „So geht's“, bUnit
+  test that the newest version comes first. No R2, no Contracts change, no
   CHANGELOG parsing.
-- Proposal (not confirmed): entries are labelled by version („ab Version
-  1.3.0“), not by date, and written in the release commit of the package
-  that brings the change. `/release` and `/ship-wp` get a step „player-visible
-  change? → entry on the Neuigkeiten page“.
-- Open question — timing: `pages.yml` deploys the site on every push to
-  `main` that touches `src/PokeArena.Web/**`, but the streamer updates the
-  desktop app later. The page can therefore announce a change that does not
-  apply on stream yet (critical for WP-09 values). Simplest variant: accept
-  it and word entries „ab Version X“; alternative: the app publishes the
-  entries as JSON to R2 so they always match the running version (Contracts,
-  publisher, more effort).
+- User decision (2026-11-09, same plan): one heading per version („Version
+  1.2.0 – 8. November 2026“); the entry is written on the package branch,
+  the date set in the release commit. `/ship-wp` and `/release` carry the
+  step.
+- User decision (2026-11-09, same plan) — timing: `pages.yml` deploys the
+  site on every push to `main` that touches `src/PokeArena.Web/**`, but the
+  streamer updates the desktop app later, so the page can announce a change
+  that does not apply on stream yet. Accepted: entries are labelled by
+  version and the page points to `!version`. Publishing the entries from the
+  app via R2 is parked in backlog.md in case it matters for WP-09.
 - Back-fill: player-visible changes of 1.1.0 (2-minute boss lobby, late-join
-  extension, boss HP left, `!challenge @Name`) and 1.2.0 (fight page shows how
-  each Pokémon ended).
+  extension, boss HP left, `!challenge @Name`, hints at most every 30 s) and
+  1.2.0 (fight page shows how each Pokémon ended); nothing older, the page
+  starts with the first update after the launch.
+- **Done 2026-11-09** (release 1.3.0 after the live test). See the log in
+  work-packages.md.
 
 ## WP-09 — Balancing after the first streams (≈ 2 days) → v1.4.0
 

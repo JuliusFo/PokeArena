@@ -7,6 +7,15 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+### Added
+- The website has a „Neuigkeiten“ page that tells players in simple words what
+  changed in the game, per version, newest first. It starts with the changes
+  of 1.1.0 and 1.2.0.
+
+### Changed
+- The website menu wraps into a second line on narrow phones instead of
+  breaking a menu item in two.
+
 ## [1.2.0] - 2026-11-08
 
 ### Added

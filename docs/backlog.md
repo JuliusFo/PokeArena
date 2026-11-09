@@ -69,6 +69,10 @@ roadmap.md first. Format: idea — date, origin.
   2026-11-04, WP-08 plan.
 - Connection test in the „Einstellungen“ card (channel exists, R2 bucket
   reachable) — planned in WP-08, not built; 2026-11-08, review 1.0.3 (D5).
+- „Neuigkeiten“ entries published by the desktop app as JSON to R2 instead
+  of static text in the website, so the page never announces a change before
+  the streamer has updated the app — 2026-11-09, WP-10 (accepted the static
+  variant; revisit if WP-09 values show up too early).
 
 ## Abuse protection
 

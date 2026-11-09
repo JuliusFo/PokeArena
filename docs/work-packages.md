@@ -17,7 +17,7 @@ in [roadmap.md](roadmap.md).
 | R1 | Review 1.0.3 fixes ([review-1.0.3.md](review-1.0.3.md)) | 1.1.0 | done 2026-11-08 |
 | – | Boss lobby (streamer requests, `feat/boss-lobby`) | 1.1.0 | done 2026-11-08 |
 | – | Battle end state (streamer request, `feat/battle-end-state`) | 1.2.0 | done 2026-11-08 |
-| WP-10 | „Neuigkeiten“ page on the website (before WP-09) | 1.3.0 | planned |
+| WP-10 | „Neuigkeiten“ page on the website (before WP-09) | 1.3.0 | done 2026-11-09 |
 | WP-09 | Balancing after the first streams | 1.4.0 | planned |
 
 ## Log
@@ -379,6 +379,22 @@ in [roadmap.md](roadmap.md).
 - User decisions: built from a spike („Ja, ausbauen“), HP bar included.
 - Deliberately not done: end state in the desktop list of fights (headline
   and result only) and in the OBS overlay.
+
+### WP-10 — „Neuigkeiten“ page on the website (2026-11-09, branch wp/10-news-page)
+- Built: static page `Pages/News.razor` at `/neuigkeiten` (one section per
+  version, newest first, points to `!version`), menu link after „So geht's“
+  and a sentence in the guide's „Die Website“ paragraph; back-filled 1.1.0
+  and 1.2.0. The menu wraps (`flex-wrap`, `nowrap` per link) — with four
+  items „So geht's“ broke in two at 375 px. bUnit: versions descending and
+  unique, menu links guide and news. Spec §9; `/ship-wp` step 5 and
+  `/release` step 2 carry the news line. Checked in the preview (light, dark,
+  phone width).
+- User decisions: „Leg das als eigenes Arbeitspaket an … schon vor wp-09“
+  (WP-10 → 1.3.0, WP-09 → 1.4.0); plan approved with „Ja, umsetzen“: a page
+  of its own instead of a CHANGELOG copy, static text, heading per version
+  with the date set at release, the page may be ahead of the streamer's app.
+- Deliberately not done (→ backlog): entries published from the app via R2
+  so they always match the running version.
 
 Template per entry:
 
