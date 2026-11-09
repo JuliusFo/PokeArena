@@ -244,14 +244,23 @@ public class PageTests : BunitContext
     }
 
     [Fact]
-    public void The_news_list_the_newest_version_first()
+    public void The_news_lists_the_newest_version_first_and_dates_every_released_one()
     {
         var cut = Render<News>();
 
-        var versions = cut.FindAll(".news h2")
-            .Select(h => Version.Parse(Regex.Match(h.TextContent, @"^Version (\d+\.\d+\.\d+)").Groups[1].Value))
-            .ToList();
-        Assert.NotEmpty(versions);
+        var headings = cut.FindAll(".news h2").Select(h => h.TextContent.Trim()).ToList();
+        Assert.NotEmpty(headings);
+
+        // Only the newest section may still lack its date — /release sets it (WP-10).
+        var dated = new Regex(@"^Version (\d+\.\d+\.\d+) – \d{1,2}\. \p{L}+ \d{4}$");
+        var undated = new Regex(@"^Version (\d+\.\d+\.\d+)$");
+        Assert.Matches(new Regex($"{undated}|{dated}"), headings[0]);
+        foreach (var heading in headings.Skip(1))
+        {
+            Assert.Matches(dated, heading);
+        }
+
+        var versions = headings.Select(h => Version.Parse(Regex.Match(h, @"^Version (\d+\.\d+\.\d+)").Groups[1].Value)).ToList();
         Assert.Equal(versions.OrderDescending(), versions);
         Assert.Equal(versions.Count, versions.Distinct().Count());
     }
