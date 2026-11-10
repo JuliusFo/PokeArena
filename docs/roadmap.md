@@ -335,7 +335,8 @@ Deine Empfehlungen passen so.“ Settled with that (ADR-0010):
 - First check 5 minutes after the start, then hourly; download at once;
   install automatically only while the bot takes no commands, no dry run and
   no boss lobby is open (checked every minute; open `!fight` challenges do not
-  block). „Jetzt aktualisieren“ installs at once, also during a stream, but not
+  block); after the code review (user decision „Alle wie empfohlen“) only
+  once the bot has been idle for 10 minutes. „Jetzt aktualisieren“ installs at once, also during a stream, but not
   while a boss lobby is open; „Nach Updates suchen“ checks at once.
 - README recommends `Setup.exe`; `Portable.zip` for a folder of one's own.
 - No switch to turn the updates off, the interval is fixed, no automatic

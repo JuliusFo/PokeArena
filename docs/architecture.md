@@ -108,8 +108,8 @@ no runtime editor (user decision 2026-11-04).
   Setup: [website-setup.md](website-setup.md).
 - **Self-update** (WP-11, ADR-0010): `UpdateCheck` (Core, hosted service)
   checks 5 min after the start and then hourly through `IAppUpdater`,
-  downloads at once and installs when `UpdateGate` allows (bot takes no
-  commands, no dry run, no boss lobby), checked every minute. Desktop plugs in
+  downloads at once and installs when `UpdateGate` allows (bot idle for 10
+  min, no dry run, no boss lobby open or resolving), checked every minute. Desktop plugs in
   `VelopackUpdater` (GitHub releases, `PokeArena:Update:Source`) for a copy
   installed by Velopack, else `GitHubReleaseHint` (hint only). The install
   starts Velopack's updater, which waits for the process to end, and closes

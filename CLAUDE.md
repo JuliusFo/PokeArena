@@ -201,7 +201,7 @@ of the whole review 1.0.3, docs/review-1.0.3.md) and the boss lobby. Next:
 merge and live-test `!bosscooldown` (1.5.0, `feat/boss-cooldown-reduced`: mods shorten
 the boss cooldown for up to 24 hours, half by default), release it and update
 the bot on the user's server; then WP-11 automatic update (1.6.0, branch
-`wp/11-auto-update`, ADR-0010: Velopack, installs once the stream is over;
+`wp/11-auto-update`, ADR-0010: Velopack, installs 10 min after the stream;
 merge only after 1.5.0 is tagged, since `[Unreleased]` holds both; 1.6.0 needs
 one `Setup.exe` install as the same Windows user); after a few streams WP-09
 balancing (1.7.0)

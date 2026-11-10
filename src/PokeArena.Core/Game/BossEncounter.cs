@@ -46,10 +46,14 @@ public sealed class BossEncounter(
 
     // Volatile: changed on the command queue, read from the update check (WP-11).
     private volatile Lobby? _lobby;
+    private volatile bool _resolving;
     private long _lobbyNumber;
 
-    /// <summary>A lobby is gathering participants; an app restart now would drop them (WP-11 update gate).</summary>
-    public bool HasOpenLobby => _lobby is not null;
+    /// <summary>
+    /// A lobby is gathering participants or its fight is still being resolved and saved; an app restart now would
+    /// drop it (WP-11 update gate, review WP-11).
+    /// </summary>
+    public bool HasOpenLobby => _lobby is not null || _resolving;
 
     /// <summary>The end of the cooldown whose ready announcement is pending; a shortened cooldown moves it along.</summary>
     private DateTimeOffset? _announcedUntil;
@@ -126,28 +130,36 @@ public sealed class BossEncounter(
             return;
         }
 
+        _resolving = true;
         _lobby = null;
-        if (lobby.IsSimulated != dryRun.Enabled)
+        try
         {
-            log.LogInformation("Boss lobby {Number} dropped: the dry run was switched", number);
-            return;
-        }
-
-        await using var db = database.Open();
-        var participants = await FieldParticipantsAsync(db, lobby, ct);
-        if (participants.Count < settings.MinParticipants)
-        {
-            chat.Send($"Der Boss entkommt – es haben sich zu wenige Trainer getraut. Mindestens {settings.MinParticipants} müssen mit !boss mitmachen.");
-            if (!lobby.IsSimulated)
+            if (lobby.IsSimulated != dryRun.Enabled)
             {
-                await SetCooldownAsync(db, now + settings.FailedLobbyCooldown, null, ct);
-                await db.SaveChangesAsync(ct);
+                log.LogInformation("Boss lobby {Number} dropped: the dry run was switched", number);
+                return;
             }
 
-            return;
-        }
+            await using var db = database.Open();
+            var participants = await FieldParticipantsAsync(db, lobby, ct);
+            if (participants.Count < settings.MinParticipants)
+            {
+                chat.Send($"Der Boss entkommt – es haben sich zu wenige Trainer getraut. Mindestens {settings.MinParticipants} müssen mit !boss mitmachen.");
+                if (!lobby.IsSimulated)
+                {
+                    await SetCooldownAsync(db, now + settings.FailedLobbyCooldown, null, ct);
+                    await db.SaveChangesAsync(ct);
+                }
 
-        await FightAsync(db, lobby, participants, now, ct);
+                return;
+            }
+
+            await FightAsync(db, lobby, participants, now, ct);
+        }
+        finally
+        {
+            _resolving = false;
+        }
     }
 
     /// <summary>Participants in join order, each with all their specimens; trainers gone meanwhile drop out.</summary>

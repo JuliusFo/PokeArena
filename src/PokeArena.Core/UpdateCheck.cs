@@ -35,7 +35,7 @@ public enum UpdateCheckResult
 
 /// <summary>
 /// Keeps the app up to date (WP-11, ADR-0010): checks <see cref="FirstCheckDelay"/> after the start and then every
-/// <see cref="CheckInterval"/>, downloads a newer version at once and installs it as soon as the bot is idle
+/// <see cref="CheckInterval"/>, downloads a newer version at once and installs it once the bot has been idle long enough
 /// (<see cref="IUpdateGate"/>), checked every <see cref="InstallPoll"/>. The install restarts the app. A copy that
 /// cannot update itself only learns that a newer version exists. Every failure is logged and retried at the next check.
 /// </summary>

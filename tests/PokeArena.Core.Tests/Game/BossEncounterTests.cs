@@ -46,7 +46,12 @@ public class BossEncounterTests : IDisposable
         Assert.Equal(["Ein wilder Boss nähert sich! Schreibt !boss, um mitzukämpfen – noch 2 Minuten."], _chat.Sent);
         Assert.True(boss.HasOpenLobby);
 
+        // The update gate must see the lobby until its fight is saved, not only until the countdown ends (review WP-11).
+        var lobbyWhileResolving = new List<bool>();
+        _chat.OnSend = _ => lobbyWhileResolving.Add(boss.HasOpenLobby);
         await EndCountdownAsync();
+        _chat.OnSend = null;
+        Assert.Equal([true, true], lobbyWhileResolving);
         Assert.False(boss.HasOpenLobby);
 
         var expectedBoss = BossDraw.Species(Species, EasyBoss, 3, new BattleRandom(Seed));

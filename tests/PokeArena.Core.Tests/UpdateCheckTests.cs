@@ -163,7 +163,8 @@ public class UpdateCheckTests : IDisposable
     {
         var stream = new StreamStatus();
         stream.Report(live);
-        var gate = new UpdateGate(stream, new DryRunMode { Enabled = dryRun }, () => lobby);
+        var gate = new UpdateGate(stream, new DryRunMode { Enabled = dryRun }, () => lobby, _time);
+        _time.Advance(UpdateGate.IdleBeforeInstall);
 
         Assert.Equal(mayInstall, gate.MayInstallAutomatically);
         Assert.Equal(lobby, gate.LobbyOpen);
@@ -172,9 +173,74 @@ public class UpdateCheckTests : IDisposable
     [Fact]
     public void Always_active_keeps_the_gate_closed_while_offline()
     {
-        var gate = new UpdateGate(new StreamStatus { AlwaysActive = true }, new DryRunMode(), () => false);
+        var gate = new UpdateGate(new StreamStatus { AlwaysActive = true }, new DryRunMode(), () => false, _time);
+        _time.Advance(UpdateGate.IdleBeforeInstall);
 
         Assert.False(gate.MayInstallAutomatically);
+    }
+
+    [Fact]
+    public void The_gate_waits_ten_minutes_after_the_stream_ends_and_a_short_drop_starts_the_wait_again()
+    {
+        var stream = new StreamStatus();
+        stream.Report(true);
+        var gate = new UpdateGate(stream, new DryRunMode(), () => false, _time);
+        _time.Advance(TimeSpan.FromHours(2));
+        Assert.False(gate.MayInstallAutomatically);
+
+        // The stream drops for three minutes and comes back: no install.
+        stream.Report(false);
+        _time.Advance(TimeSpan.FromMinutes(3));
+        Assert.False(gate.MayInstallAutomatically);
+        stream.Report(true);
+        _time.Advance(TimeSpan.FromMinutes(20));
+        Assert.False(gate.MayInstallAutomatically);
+
+        // The stream really ends: ten minutes later the gate opens.
+        stream.Report(false);
+        _time.Advance(UpdateGate.IdleBeforeInstall - TimeSpan.FromSeconds(1));
+        Assert.False(gate.MayInstallAutomatically);
+        _time.Advance(TimeSpan.FromSeconds(1));
+        Assert.True(gate.MayInstallAutomatically);
+    }
+
+    [Fact]
+    public void The_app_start_counts_as_the_start_of_the_wait()
+    {
+        var gate = new UpdateGate(new StreamStatus(), new DryRunMode(), () => false, _time);
+        Assert.False(gate.MayInstallAutomatically);
+
+        _time.Advance(UpdateGate.IdleBeforeInstall);
+        Assert.True(gate.MayInstallAutomatically);
+    }
+
+    [Fact]
+    public async Task A_failed_download_of_a_newer_version_keeps_the_one_already_downloaded()
+    {
+        _updater.Newer = "1.6.1";
+        await _check.CheckNowAsync(_ct);
+
+        _updater.Newer = "1.6.2";
+        _updater.FailDownload = true;
+        Assert.Equal(UpdateCheckResult.Failed, await _check.CheckNowAsync(_ct));
+
+        Assert.Equal(UpdateState.Ready, _check.State);
+        Assert.Equal("1.6.1", _check.NewerVersion);
+    }
+
+    [Fact]
+    public async Task A_second_check_while_one_runs_answers_busy()
+    {
+        var release = new TaskCompletionSource<string?>();
+        _updater.Pending = release.Task;
+        var first = _check.CheckNowAsync(_ct);
+        Assert.True(_check.Checking);
+
+        Assert.Equal(UpdateCheckResult.Busy, await _check.CheckNowAsync(_ct));
+
+        release.SetResult(null);
+        Assert.Equal(UpdateCheckResult.UpToDate, await first);
+        Assert.False(_check.Checking);
     }
 
     /// <summary>
@@ -209,11 +275,19 @@ public class UpdateCheckTests : IDisposable
         public int Downloads { get; private set; }
         public int Installs { get; private set; }
 
+        /// <summary>A check that answers only when the test says so.</summary>
+        public Task<string?>? Pending { get; set; }
+
         public bool CanSelfUpdate => SelfUpdate;
 
         public Task<string?> FindNewerAsync(CancellationToken ct)
         {
             Checks++;
+            if (Pending is { } pending)
+            {
+                return pending;
+            }
+
             return FailCheck ? throw new HttpRequestException("offline") : Task.FromResult(Newer);
         }
 

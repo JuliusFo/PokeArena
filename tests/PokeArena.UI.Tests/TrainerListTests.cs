@@ -59,7 +59,7 @@ public class TrainerListTests : BunitContext
         Services.AddSingleton(new SettingsFile(_paths));
         Services.AddSingleton(new TwitchOptions { Channel = "shiyofurball" });
         Services.AddSingleton(new WebsiteOptions());
-        Services.AddSingleton(new UpdateCheck(new GitHubReleaseHint(new HttpClient(), new AppInfo("0.2.0")), new UpdateGate(new StreamStatus(), _dryRun, () => false), _time, NullLogger<UpdateCheck>.Instance));
+        Services.AddSingleton(new UpdateCheck(new GitHubReleaseHint(new HttpClient(), new AppInfo("0.2.0")), new UpdateGate(new StreamStatus(), _dryRun, () => false, _time), _time, NullLogger<UpdateCheck>.Instance));
         Services.AddSingleton(new SitePublishWorker(_database, new SiteGenerator(_species, _npcs), r2, _time, NullLogger<SitePublishWorker>.Instance));
     }
 

@@ -115,7 +115,8 @@ public partial class App : Application
         builder.Services.AddSingleton<IUpdateGate>(sp => new UpdateGate(
             sp.GetRequiredService<StreamStatus>(),
             sp.GetRequiredService<DryRunMode>(),
-            () => sp.GetRequiredService<BossEncounter>().HasOpenLobby));
+            () => sp.GetRequiredService<BossEncounter>().HasOpenLobby,
+            sp.GetRequiredService<TimeProvider>()));
         builder.Services.AddSingleton<UpdateCheck>();
         builder.Services.AddHostedService(sp => sp.GetRequiredService<UpdateCheck>());
         builder.Services.AddSingleton<MainWindow>();

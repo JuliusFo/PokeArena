@@ -38,9 +38,12 @@ so“).
 - **When** (`UpdateCheck`, `UpdateGate` in Core, behind `IAppUpdater`):
   first check 5 minutes after the start (after a restart during a stream
   Twitch reports the stream live within seconds), then hourly; download at
-  once; install automatically only while the bot takes no commands (stream
-  offline and „Auch ohne Stream“ off), no dry run is active and no boss lobby
-  is open, checked every minute. „Jetzt aktualisieren“ installs at once, also
+  once; install automatically only once the bot has taken no commands (stream
+  offline and „Auch ohne Stream“ off) for 10 minutes — a short stream drop
+  must not trigger it — no dry run is active and no boss lobby is open or
+  being resolved, checked every minute (review WP-11). Velopack's own
+  install-on-next-start is switched off, so a restart mid-stream never
+  installs. „Jetzt aktualisieren“ installs at once, also
   during a stream, but not while a boss lobby is open. „Nach Updates suchen“
   checks at once.
 - The install hands the downloaded version to Velopack's updater (no dialogs,

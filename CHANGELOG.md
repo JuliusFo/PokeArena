@@ -17,7 +17,8 @@ tagged `vX.Y.Z` once its section is complete.
   not change.
 - The desktop app updates itself: it looks for a new version five minutes
   after the start and then hourly, downloads it and installs it once the
-  stream is over and no boss lobby is open, then restarts by itself. The top
+  stream has been over for ten minutes and no boss lobby is open, then
+  restarts by itself. The top
   bar shows what is going on, „Jetzt aktualisieren“ installs at once and
   „Nach Updates suchen“ looks right away. Releases now come as `Setup.exe` and
   `Portable.zip` instead of the ZIP; switching needs one install with
