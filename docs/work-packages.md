@@ -26,7 +26,8 @@ in [roadmap.md](roadmap.md).
 | – | Fighter row wrap (user report, `fix/fighter-row-wrap`) | 1.4.1 | done 2026-11-10 |
 | – | Fight card width reverted (user report, `fix/fight-card-width`) | 1.4.2 | done 2026-11-10 |
 | – | Shorter boss cooldown for a while (streamer request, `feat/boss-cooldown-reduced`) | 1.5.0 | done 2026-11-10 |
-| WP-09 | Balancing after the first streams | 1.6.0 | planned |
+| WP-11 | Automatic update of the desktop app (before WP-09) | 1.6.0 | planned |
+| WP-09 | Balancing after the first streams | 1.7.0 | planned |
 
 ## Log
 

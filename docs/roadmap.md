@@ -1,10 +1,10 @@
 # Roadmap
 
 Planned work packages up to v1.0.0, plus the packages after it (WP-10 news
-page, then WP-09 balancing) and a parked idea for version 2. Read the
-package before starting it and agree the plan with the user. Estimates: solo,
-"day" = one focused person-day;
-total ≈ 25–31 days. Every package ends in a state that could run on stream.
+page, then WP-11 automatic update, then WP-09 balancing) and a parked idea
+for version 2. Read the package before starting it and agree the plan with
+the user. Estimates: solo, "day" = one focused person-day; total ≈ 25–31
+days. Every package ends in a state that could run on stream.
 
 Order is deliberate. `data/pokemon.json` exists since 2026-10-11 (ADR-0005),
 so WP-03 is no longer blocked by base data.
@@ -311,7 +311,54 @@ Not a setting, a temporary event — so a mod command like `!bossreset`.
   failed-lobby retry cooldown stays 2 minutes; stored in the database
   (survives a restart).
 
-## WP-09 — Balancing after the first streams (≈ 2 days) → v1.6.0
+## WP-11 — Automatic update of the desktop app (≈ 1–2 days) → v1.6.0
+
+The app updates itself from the GitHub releases instead of the user
+uploading the ZIP to the server by hand. User decisions (2026-11-10): its own
+package before version 2, independent of the website rebuild, and the next
+package after `!bosscooldown` (1.5.0) — before WP-09, which moves to 1.7.0,
+so the balancing release already arrives by itself.
+Demo: tagging a release brings the running app on the server to the new
+version without anyone signing in to the server, never during a stream.
+
+Proposal (not confirmed):
+
+- Velopack (`Velopack` package, `vpk` as a dotnet tool, both on nuget.org)
+  instead of an own updater: the file swap and restart are its tested code,
+  updates are deltas. `release.yml` runs `vpk pack` after the publish and
+  attaches the packages to the same GitHub release; the app reads them through
+  `GithubSource` (public repository, no token). New dependency → ADR.
+- Alternative: extend `UpdateCheck` into an own updater (download the ZIP,
+  check the asset's SHA-256 digest, swap the program folder keeping the old one
+  for rollback, restart). No new dependency, but the risky part is own code.
+- `packId` must not be `PokeArena`: Velopack installs to
+  `%LOCALAPPDATA%\<packId>` and deletes that folder on uninstall — the data
+  directory `%LOCALAPPDATA%\PokeArena` would be inside.
+- `VelopackApp.Build().Run()` must run first in `Main`; WPF generates `Main`
+  today, so the desktop app needs its own entry point (before the
+  single-instance mutex).
+- Check periodically (e.g. hourly) instead of once per start: on the server
+  the app runs for weeks. Download right away; apply only while the stream is
+  offline (WP-07) and no boss lobby or challenge is open; plus a button
+  „Jetzt aktualisieren“. Reuse the existing shutdown path; the backup before
+  the migration stays.
+- A failed start after an update must end up in the log (the start-failure
+  message box waits for a click on an unattended server); rollback if the
+  chosen tool allows it.
+- One-time switch: install once with `Setup.exe`, delete the old ZIP folder;
+  data, settings and Credential Manager entries stay. README „Updating“ and the
+  install steps change.
+
+Open:
+
+- 1.5.0 is still installed by hand; 1.6.0 is the one-time switch above.
+- A tag then deploys the running bot within the check interval — tag only
+  after the live test (as today), and a tag set by mistake goes live.
+- If version 2 makes the website a separate Windows service, Velopack does not
+  update it (it is for apps of a signed-in user); keep the web host in the app
+  process or plan its own update path there.
+
+## WP-09 — Balancing after the first streams (≈ 2 days) → v1.7.0
 
 Tuning with real stream data and the Monte Carlo simulator instead of
 guesses. Starts after 1.0 has run on a few streams.
