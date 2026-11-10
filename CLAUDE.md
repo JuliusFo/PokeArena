@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-11-10 · v1.4.2 released (fight cards as wide as the page again) · next WP-09 (→ 1.5.0) after a few streams
+Status: 2026-11-10 · v1.4.2 released (fight cards as wide as the page again) · `!bosscooldown` (→ 1.5.0) in review · then WP-09 (→ 1.6.0) after a few streams
 
 ## 1. Where to find what
 
@@ -49,7 +49,8 @@ shows leaderboard, trainer pages and battle logs.
 | 1.4.0 | Boss pick uniform over distinct species, fight log in chat colours, log numbering and HP bar fixes | feat/boss-pick-per-species, feat/fight-log-colours, fix/battle-log-numbering, feat/hp-bar-alignment |
 | 1.4.1 | Fight log colours only the boss's name, critical hits on gold, fighter rows keep the HP bar on the right | feat/fight-log-boss-name-crit, fix/fighter-row-wrap |
 | 1.4.2 | Fight cards as wide as the page again (1.4.1 widening reverted) | fix/fight-card-width |
-| 1.5.0 | Balancing with real stream data | WP-09 |
+| 1.5.0 | Mods shorten the boss cooldown for up to 24 h (`!bosscooldown`) | feat/boss-cooldown-reduced |
+| 1.6.0 | Balancing with real stream data | WP-09 |
 | 2.0.0 | Parked: website and overlay served from the bot's server (roadmap.md) | — |
 
 **Invariants — never weaken:**
@@ -195,7 +196,9 @@ boss pick uniform over distinct species and showed trainers in their Twitch chat
 colour in the fight log; 1.3.0 brought the
 „Neuigkeiten“ page (WP-10), 1.2.0 the fight page's end state, 1.1.0 R1 (fixes
 of the whole review 1.0.3, docs/review-1.0.3.md) and the boss lobby. Next:
-update the streamer's PC; after a few streams WP-09 balancing (1.5.0)
+merge and live-test `!bosscooldown` (1.5.0, `feat/boss-cooldown-reduced`: mods shorten
+the boss cooldown for up to 24 hours, half by default), release it and update
+the bot on the user's server; after a few streams WP-09 balancing (1.6.0)
 (`N = 4` dip, PvP loot preferring missing species, NPC difficulty; no runtime
 balancing editor). Parked for version 2: website and overlay served from the
 bot's server through a Cloudflare Tunnel instead of GitHub Pages + R2. Ideas

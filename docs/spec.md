@@ -135,7 +135,8 @@ possible, so no artificial pacing):
 - All participant Pokemon faint first → the boss escapes, nobody catches.
 - Chat output: start message, result summary (who caught / boss escaped) and
   the battle-log link. The global cooldown (`BossCooldownMinutes`, default 30)
-  starts when the encounter **ends**.
+  starts when the encounter **ends**. Mods can shorten it for a while with
+  `!bosscooldown` (§8).
 - When that cooldown runs out, the bot announces „Der Boss ist wieder bereit –
   schreibt !boss, um ihn zu rufen!“ (since 1.0.3). Not after the short
   retry cooldown of a failed lobby, not after `!bossreset` (it announces
@@ -294,7 +295,21 @@ Used by boss, PvP and NPC fights.
 | `!arena`                   | anyone     | posts the website link                        |
 | `!pokearena`, `!version`   | anyone     | status check: „PokeArena-Bot ist online (Version x).“ |
 | `!bossreset`               | mods       | reset the global boss cooldown                |
+| `!bosscooldown <Min> [CD]` | mods       | shorten the boss cooldown for a while (below) |
 | `!entfernen @name`         | mods       | delete a trainer (see §11)                    |
+
+`!bosscooldown` (since 1.5.0, user decisions 2026-11-10): for `<Min>` minutes
+(1–1440, i.e. at most 24 hours, by the clock — the stream ending does not stop
+it) the boss cooldown after a fight is `[CD]` minutes (1 to
+`BossCooldownMinutes` − 1), by default half of `BossCooldownMinutes`. What
+counts is the moment the fight ends. A new call replaces the running
+reduction; `!bosscooldown aus` (or `0`) ends it early, a cooldown already
+running then keeps its length. A cooldown already running when the reduction
+starts shrinks by the same factor (20 minutes left, 30 → 15: 10 minutes left),
+never grows, and its ready announcement moves along. The reduction is stored
+in the database and survives a restart; it is a temporary event, not a config
+value — `BossCooldownMinutes` stays as it is. Its natural end is not
+announced. The failed-lobby retry cooldown is not shortened.
 
 All other management (config values, token setup, manual corrections, backup)
 lives in the WPF UI, not in chat. Pokemon names in commands are matched

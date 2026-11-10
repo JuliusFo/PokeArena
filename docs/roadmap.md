@@ -292,7 +292,26 @@ of 1.1.0–1.3.0, newest first.
 - **Done 2026-11-09** (release 1.3.0 after the live test). See the log in
   work-packages.md.
 
-## WP-09 — Balancing after the first streams (≈ 2 days) → v1.5.0
+## Shorter boss cooldown for a while (`feat/boss-cooldown-reduced`) → v1.5.0
+
+Streamer request (2026-11-10): halve the boss cooldown for a while from chat.
+Not a setting, a temporary event — so a mod command like `!bossreset`.
+
+- User decisions (2026-11-10): command `!bosscooldown <Dauer>`; a cooldown
+  already running shrinks too („Ja“); the reduction runs by the clock, the
+  stream ending does not stop it, at most 24 hours; the cooldown length is
+  selectable („Eine wählbare Dauer wäre cool“); release as 1.5.0, WP-09 moves
+  to 1.6.0.
+- Built as the simplest variant, **Proposal (not confirmed)**: durations in
+  whole minutes only (`!bosscooldown 120`, no „2h“); the chosen cooldown is an
+  optional second number, half of `BossCooldownMinutes` without it, and must be
+  shorter than `BossCooldownMinutes` (1–29) — mods cannot lengthen it; the
+  running cooldown shrinks by the factor new / old length; `!bosscooldown aus`
+  leaves a running cooldown as it is; the natural end is not announced; the
+  failed-lobby retry cooldown stays 2 minutes; stored in the database
+  (survives a restart).
+
+## WP-09 — Balancing after the first streams (≈ 2 days) → v1.6.0
 
 Tuning with real stream data and the Monte Carlo simulator instead of
 guesses. Starts after 1.0 has run on a few streams.

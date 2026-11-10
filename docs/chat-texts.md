@@ -77,3 +77,7 @@ moderator replies are never dropped.
 | 36 | `!entfernen` unknown name | @{Mod}, ich finde keinen Trainer namens {x}. ({x} only if plain as in row 18, otherwise „diesen Trainer finde ich nicht.“; several trainers with that display name: „@{Mod}, mehrere Trainer heißen {x} – bitte in der PokeArena-App löschen.“) | | |
 | 37 | `!entfernen` asks for confirmation | @{Mod}, wirklich {Name} mit allen Pokémon löschen? Das lässt sich nicht rückgängig machen. Bestätige innerhalb von 60 Sekunden mit !entfernen @{login} ja ({login}: the display name if another trainer took the login since) | | |
 | 38 | Deleted | {Name} wurde mit allen Pokémon gelöscht. | | |
+| 40 | `!bosscooldown` set | Boss-Cooldown verkürzt: Für {1 Stunde} ist der Boss schon nach {15 Minuten} wieder bereit statt nach {30 Minuten}. (a running cooldown shrank: + „Der nächste Boss kann schon in {10 Minuten} gerufen werden.“) | | |
+| 41 | `!bosscooldown aus` | Die Verkürzung ist vorbei – nach dem nächsten Kampf braucht der Boss wieder {30 Minuten}. | | |
+| 42 | `!bosscooldown aus`, nothing shortened | @{Mod}, der Boss-Cooldown ist gerade nicht verkürzt. | | |
+| 43 | `!bosscooldown` without or with wrong arguments | @{Mod}, so geht's: !bosscooldown 60 halbiert den Boss-Cooldown für 60 Minuten, !bosscooldown 60 10 setzt ihn so lange auf 10 Minuten, !bosscooldown aus beendet das. Dauer 1 bis 1440 Minuten, Cooldown 1 bis {29} Minuten. | | |

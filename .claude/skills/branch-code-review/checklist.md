@@ -63,7 +63,7 @@ Sources (untrusted):
 Sinks (never unchecked):
 - Chat output: names and arguments echoed into bot messages (no way to make the bot write `/` commands or mention
   everyone), length limits, aggregation for mass events.
-- Moderator actions (`!bossreset`, `!entfernen`): the role check uses `ChatMessage.IsModerator` (from the EventSub
+- Moderator actions (`!bossreset`, `!bosscooldown`, `!entfernen`): the role check uses `ChatMessage.IsModerator` (from the EventSub
   badges of that message), never a name or a list of names; confirmation as specified.
 - Website and overlay: no `MarkupString` or raw HTML with names or log text; R2 object keys built from the Twitch id,
   never from a name; nothing private in the JSON (tokens, internal ids beyond the documented ones, data of deleted

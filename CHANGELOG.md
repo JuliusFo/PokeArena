@@ -7,6 +7,15 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+### Added
+- `!bosscooldown <Minuten> [Cooldown]` (moderators) shortens the boss cooldown
+  for up to 24 hours: `!bosscooldown 60` halves it (15 instead of 30 minutes)
+  for an hour, `!bosscooldown 60 10` sets it to 10 minutes for an hour,
+  `!bosscooldown aus` ends it early. A cooldown already running shrinks by the
+  same factor, and the bot still announces when the boss is ready. The
+  shortened cooldown survives an app restart; `BossCooldownMinutes` itself does
+  not change.
+
 ### Changed
 - On a fight page a surviving Pokémon's HP numbers („48 / 90 HP“) sit inside
   its HP bar instead of next to it, so the end state column is narrower.

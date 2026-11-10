@@ -50,6 +50,7 @@ PvP loot columns of `Battle`; in WP-05: `Trainer.Tokens`, `Battle.NpcId` /
 | `AchievementUnlock` | TrainerId + Threshold (PK), UnlockedAt | Never deleted except with the trainer |
 | `NpcBadge` | TrainerId + NpcId (PK), WonAt, BattleId | First win against an NPC; never deleted except with the trainer |
 | `Cooldown` | Key (PK), Until | `boss` (global cooldown and failed-lobby retry share it); `npc:<trainer>:<npc>` per trainer and NPC |
+| `BossCooldownReduction` | Id (PK, always 1), Cooldown, Until | `!bosscooldown` (1.5.0): fights ending before `Until` get `Cooldown` instead of `BossCooldownMinutes`; an expired row counts as none and is replaced by the next call |
 | `PublishQueueItem` | Path (PK), Revision, QueuedAt, NextAttemptAt, Attempts, LastError | Website outbox: only the path — the file is rendered at upload time, so queuing a path twice is one upload. `Revision` keeps a row that was queued again during its upload |
 
 Species, type chart and NPC teams stay in `data/*.json`, referenced by id (NPC

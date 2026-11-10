@@ -25,7 +25,8 @@ in [roadmap.md](roadmap.md).
 | – | Fight log: boss name only, critical hits (user request, `feat/fight-log-boss-name-crit`) | 1.4.1 | done 2026-11-10 |
 | – | Fighter row wrap (user report, `fix/fighter-row-wrap`) | 1.4.1 | done 2026-11-10 |
 | – | Fight card width reverted (user report, `fix/fight-card-width`) | 1.4.2 | done 2026-11-10 |
-| WP-09 | Balancing after the first streams | 1.5.0 | planned |
+| – | Shorter boss cooldown for a while (streamer request, `feat/boss-cooldown-reduced`) | 1.5.0 | done 2026-11-10 |
+| WP-09 | Balancing after the first streams | 1.6.0 | planned |
 
 ## Log
 
@@ -549,7 +550,7 @@ in [roadmap.md](roadmap.md).
   bar plus an 11.5ch text column (≈ 70 px narrower). Fill and text colour share
   one hard gradient edge at `--hp` (set inline): text over the fill in
   `--hp-on-fill`, over the rest in `--text` (`background-clip: text`), so the
-  numbers stay one text node. CHANGELOG, „Neuigkeiten“ 1.4.3.
+  numbers stay one text node. CHANGELOG, „Neuigkeiten“ (planned as 1.4.3, now in the 1.5.0 section together with `!bosscooldown`).
 - User decisions: „die HP in den Balken mergen, dass es ineinander angezeigt
   wird“ (save space on the fight page).
 - Pitfalls: white text on `--ok`/`--accent` is ≈ 4.4 : 1 in the light theme,
@@ -557,6 +558,26 @@ in [roadmap.md](roadmap.md).
   `--ok`/`--accent` with dark text. Neither `.hp-bar` nor `.hp-text` may get
   horizontal padding/border on the bar itself, or the two gradient edges drift
   apart.
+
+### Shorter boss cooldown for a while — streamer request (2026-11-10, branch feat/boss-cooldown-reduced)
+- Built: mod command `!bosscooldown <Minuten> [Cooldown]` / `!bosscooldown
+  aus` (`BossCooldownCommand`, logic in `BossEncounter.ReduceCooldownAsync` /
+  `EndReductionAsync`); new table `BossCooldownReductions` (one row: cooldown
+  and end, migration `BossCooldownReduction`), so the reduction survives a
+  restart and the dry-run sandbox keeps its own. A fight takes the reduced
+  cooldown if it ends before the reduction's end. A running cooldown shrinks
+  by the factor new / old length and its ready announcement moves along (only
+  if it had one — not the failed-lobby retry, not in the dry run). Spec §4/§8,
+  chat texts 40–43, README, „So geht's“, „Neuigkeiten“ 1.5.0.
+- User decisions: the reduction is a temporary event, not a setting, so a chat
+  command is fine despite spec §8; a running cooldown shrinks too („Ja“); it
+  runs by the clock, „maximal ein 24h-Limit“; „Eine wählbare Dauer wäre cool“
+  → optional second number for the cooldown; release 1.5.0, WP-09 → 1.6.0.
+- Addenda: Proposal (not confirmed) — minutes only, chosen cooldown 1 to
+  `BossCooldownMinutes` − 1, `aus` keeps a running cooldown, the natural end is
+  silent (roadmap.md).
+- Deliberately not done: announcing the natural end, durations like „2h“,
+  showing the reduction in the desktop app.
 
 Template per entry:
 

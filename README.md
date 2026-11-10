@@ -10,7 +10,7 @@ trainer pages and battle logs.
 
 > **Status:** stream-ready since 1.0.0 (WP-08); see the
 > [releases](https://github.com/JuliusFo/PokeArena/releases) for the current
-> version. Balancing with data from real streams follows in 1.5.0. See the
+> version. Balancing with data from real streams follows in 1.6.0. See the
 > [roadmap](#roadmap).
 
 ## How it plays
@@ -27,6 +27,7 @@ channel.
 | `!arena` | anyone | post the website link |
 | `!pokearena`, `!version` | anyone | check that the bot is online, and which version runs |
 | `!bossreset`, `!entfernen @name` | mods | reset the boss cooldown, delete a trainer |
+| `!bosscooldown <minutes> [cooldown]`, `!bosscooldown aus` | mods | shorten the boss cooldown for up to 24 hours (half by default), or end that early |
 
 - **Boss fights:** a lobby gathers participants, then the fight resolves
   instantly. Everyone whose Pokémon survives catches the boss. The boss's
@@ -183,7 +184,8 @@ don't edit it by hand.
 | 1.2.0 | Fight page shows how each Pokémon ended | done |
 | 1.3.0 | Website page „Neuigkeiten“ with player-visible changes | done |
 | 1.4.0 | Boss pick per species, fight log in chat colours | done |
-| 1.5.0 | Balancing with real stream data | planned |
+| 1.5.0 | Mods shorten the boss cooldown for a while (`!bosscooldown`) | in progress |
+| 1.6.0 | Balancing with real stream data | planned |
 
 Details per work package: [docs/roadmap.md](docs/roadmap.md) ·
 log: [docs/work-packages.md](docs/work-packages.md) ·
