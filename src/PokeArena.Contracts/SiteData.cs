@@ -80,11 +80,15 @@ public sealed record LogLine(
 /// page.
 /// </summary>
 /// <param name="IsOwner">The owner within the label („Ash“, „Boss“).</param>
+/// <param name="IsSpecies">The species within the label („Pikachu“); false in older files.</param>
+/// <param name="IsCritical">„Volltreffer!“; false in older files.</param>
 public sealed record LogPart(
     string Text,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] int? Side = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] int? Fighter = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool IsOwner = false);
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool IsOwner = false,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool IsSpecies = false,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool IsCritical = false);
 
 /// <summary><c>trainer/&lt;twitch-id&gt;.json</c>: one trainer's collection and history.</summary>
 public sealed record TrainerPage(

@@ -88,7 +88,8 @@ public sealed record BattleLog(IReadOnlyList<LogFighter> Fighters, IReadOnlyList
 
     /// <summary>
     /// The lines of <see cref="ToLines"/> in parts, so the website can colour them: a fighter's label „Pikachu (Ash,
-    /// HP 24)“ names the fighter, and its owner („Ash“, „Boss“, an NPC's name) is a part of its own.
+    /// HP 24)“ names the fighter, and its species and its owner („Ash“, „Boss“, an NPC's name) are parts of their own;
+    /// so is „Volltreffer!“.
     /// </summary>
     public IReadOnlyList<LogText> ToText(SpeciesCatalog species)
     {
@@ -109,9 +110,7 @@ public sealed record BattleLog(IReadOnlyList<LogFighter> Fighters, IReadOnlyList
                     .. Label(species, e.Fighter, e.FighterHp),
                     new(" hat "),
                     .. Label(species, e.Target ?? 0, e.TargetHp),
-                    new($" {e.Damage} Schaden zugefügt." +
-                        (e.Critical ? " Volltreffer!" : "") +
-                        (e.TypeFactor > 1.0 ? " Sehr effektiv!" : e.TypeFactor < 1.0 ? " Nicht sehr effektiv." : "")),
+                    .. Outcome(e),
                 ],
                 BattleEventKind.Fainted => [.. Label(species, e.Fighter), new(" wurde besiegt.")],
                 BattleEventKind.SentOut =>
@@ -127,16 +126,32 @@ public sealed record BattleLog(IReadOnlyList<LogFighter> Fighters, IReadOnlyList
         return lines;
     }
 
-    /// <summary>„Pikachu (Ash, HP 24)“ in three parts that all name the fighter; the middle one is the owner.</summary>
+    /// <summary>„Pikachu (Ash, HP 24)“ in four parts that all name the fighter: species, „ (“, owner, the rest.</summary>
     private LogSpan[] Label(SpeciesCatalog species, int index, int? hp = null)
     {
         var fighter = Fighters[index];
         return
         [
-            new($"{species.Get(fighter.SpeciesId).Name} (", index),
+            new(species.Get(fighter.SpeciesId).Name, index, IsSpecies: true),
+            new(" (", index),
             new(fighter.Owner, index, IsOwner: true),
             new(hp is { } value ? $", HP {value.ToString(CultureInfo.InvariantCulture)})" : ")", index),
         ];
+    }
+
+    /// <summary>„ 20 Schaden zugefügt. Volltreffer! Sehr effektiv!“ — „Volltreffer!“ as a part of its own, so it can stand out.</summary>
+    private static LogSpan[] Outcome(BattleEvent e)
+    {
+        var damage = $" {e.Damage.ToString(CultureInfo.InvariantCulture)} Schaden zugefügt.";
+        var effect = e.TypeFactor > 1.0 ? " Sehr effektiv!" : e.TypeFactor < 1.0 ? " Nicht sehr effektiv." : "";
+        if (!e.Critical)
+        {
+            return [new(damage + effect)];
+        }
+
+        return effect.Length > 0
+            ? [new(damage), new(" Volltreffer!", IsCritical: true), new(effect)]
+            : [new(damage), new(" Volltreffer!", IsCritical: true)];
     }
 }
 
@@ -149,7 +164,9 @@ public sealed record LogText(IReadOnlyList<LogSpan> Spans, bool IsRound = false)
 
 /// <param name="Fighter">Index into <see cref="BattleLog.Fighters"/> if the text belongs to that fighter's label.</param>
 /// <param name="IsOwner">The text is the fighter's owner.</param>
-public sealed record LogSpan(string Text, int? Fighter = null, bool IsOwner = false);
+/// <param name="IsSpecies">The text is the fighter's species name.</param>
+/// <param name="IsCritical">The text is „Volltreffer!“.</param>
+public sealed record LogSpan(string Text, int? Fighter = null, bool IsOwner = false, bool IsSpecies = false, bool IsCritical = false);
 
 /// <summary>Records events and tracks HP while an engine runs a fight.</summary>
 internal sealed class BattleRecorder

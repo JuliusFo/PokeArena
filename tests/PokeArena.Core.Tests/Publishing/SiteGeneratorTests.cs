@@ -143,12 +143,12 @@ public class SiteGeneratorTests : IDisposable
         Assert.Equal([true, false, false, false], page.Log.Select(l => l.IsRound));
         Assert.Equal(
             [
-                new LogPart("Raupy (", 0, 1), new LogPart("Misty", 0, 1, IsOwner: true), new LogPart(", HP 90)", 0, 1), new LogPart(" hat "),
-                new LogPart("Arkani (", 1, 0), new LogPart("Boss", 1, 0, IsOwner: true), new LogPart(", HP 380)", 1, 0), new LogPart(" 20 Schaden zugefügt."),
+                new LogPart("Raupy", 0, 1, IsSpecies: true), new LogPart(" (", 0, 1), new LogPart("Misty", 0, 1, IsOwner: true), new LogPart(", HP 90)", 0, 1), new LogPart(" hat "),
+                new LogPart("Arkani", 1, 0, IsSpecies: true), new LogPart(" (", 1, 0), new LogPart("Boss", 1, 0, IsOwner: true), new LogPart(", HP 380)", 1, 0), new LogPart(" 20 Schaden zugefügt."),
             ],
             page.Log[1].Parts);
         Assert.Equal(
-            [new LogPart("Pikachu (", 0, 0), new LogPart("Ash", 0, 0, IsOwner: true), new LogPart(")", 0, 0), new LogPart(" wurde besiegt.")],
+            [new LogPart("Pikachu", 0, 0, IsSpecies: true), new LogPart(" (", 0, 0), new LogPart("Ash", 0, 0, IsOwner: true), new LogPart(")", 0, 0), new LogPart(" wurde besiegt.")],
             page.Log[3].Parts);
     }
 
@@ -169,7 +169,8 @@ public class SiteGeneratorTests : IDisposable
         var json = System.Text.Encoding.UTF8.GetString((await _generator.RenderAsync(db, SitePaths.Battle(battle.Id), Start, _ct))!.Content);
 
         Assert.Contains("""{"text":" hat "}""", json);
-        Assert.Contains("""{"text":"Pikachu (","side":0,"fighter":0}""", json);
+        Assert.Contains("""{"text":"Pikachu","side":0,"fighter":0,"isSpecies":true}""", json);
+        Assert.Contains("""{"text":" (","side":0,"fighter":0}""", json);
         Assert.Contains("""{"text":"Ash","side":0,"fighter":0,"isOwner":true}""", json);
         Assert.DoesNotContain("\"isRound\":false", json);
         Assert.Contains("\"hpLeft\":0", json);

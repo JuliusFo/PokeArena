@@ -42,18 +42,21 @@ public static class Tint
         ["type-drache"] = "#5b2ff0",
     };
 
+    /// <summary>„Volltreffer!“ in the log: gold, adjusted for contrast like every other tint.</summary>
+    public const string Critical = "#e0a000";
+
     /// <summary>
-    /// The colour of one part of a fighter's label in the log: a boss's whole label in the colour of its first type
-    /// (the Pokémon is the element), a trainer's name in their chat colour; null for everything else (species and HP
-    /// of trainers' Pokémon, NPCs, trainers without a known colour).
+    /// The colour of one part of a fighter's label in the log: a boss's species name in the colour of its first type
+    /// (the Pokémon is the element; „(Boss, HP …)“ stays plain), a trainer's name in their chat colour; null for
+    /// everything else (species and HP of trainers' Pokémon, NPCs, trainers without a known colour).
     /// </summary>
-    /// <param name="side">Index of the fighter's side on the page: the boss is the only fighter on side 1. Never tell the
-    /// boss by a missing trainer id — a deleted trainer's fighters have none either (review feat/fight-log-colours).</param>
-    /// <param name="isOwner">The part is the owner („Ash“, „Boss“), not the species or HP around it.</param>
-    public static string? Of(BattlePage battle, int side, BattleFighter fighter, bool isOwner) =>
-        battle.Kind == BattleKind.Boss && side == 1
-            ? fighter.Species.Types.Count > 0 ? TypeColors.GetValueOrDefault(Format.TypeClass(fighter.Species.Types[0])) : null
-            : isOwner ? fighter.Color : null;
+    /// <param name="part">The part, with <see cref="LogPart.Side"/> set: the boss is the only fighter on side 1. Never
+    /// tell the boss by a missing trainer id — a deleted trainer's fighters have none either (review
+    /// feat/fight-log-colours).</param>
+    public static string? Of(BattlePage battle, LogPart part, BattleFighter fighter) =>
+        battle.Kind == BattleKind.Boss && part.Side == 1
+            ? part.IsSpecies && fighter.Species.Types.Count > 0 ? TypeColors.GetValueOrDefault(Format.TypeClass(fighter.Species.Types[0])) : null
+            : part.IsOwner ? fighter.Color : null;
 
     /// <summary>Inline style for the <c>tinted</c> class: both theme variants of <paramref name="color"/>; null if it is not <c>#RRGGBB</c>.</summary>
     public static string? Style(string? color) =>

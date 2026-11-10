@@ -189,4 +189,26 @@ public class BattleEngineTests
         Assert.Equal("Pikachu (Ash, HP 35) hat Schiggy (Misty, HP 0) 50 Schaden zugefügt. Sehr effektiv!", lines[3]);
         Assert.Equal("Schiggy (Misty) wurde besiegt.", lines[4]);
     }
+
+    [Theory]
+    [InlineData(2.0, " Sehr effektiv!")]
+    [InlineData(1.0, null)]
+    public void A_critical_hit_is_a_part_of_its_own(double typeFactor, string? effect)
+    {
+        var log = new BattleLog(
+            [new LogFighter(0, 25, 70, "1", "Ash"), new LogFighter(1, 7, 88, null, "Boss")],
+            [new BattleEvent(BattleEventKind.Attack, 1, 0, 70, 1, 38, 50, Critical: true, TypeFactor: typeFactor)]);
+
+        var spans = log.ToText(Species)[1].Spans;
+
+        Assert.Equal(
+            [
+                new LogSpan("Pikachu", 0, IsSpecies: true), new LogSpan(" (", 0), new LogSpan("Ash", 0, IsOwner: true), new LogSpan(", HP 70)", 0),
+                new LogSpan(" hat "),
+                new LogSpan("Schiggy", 1, IsSpecies: true), new LogSpan(" (", 1), new LogSpan("Boss", 1, IsOwner: true), new LogSpan(", HP 38)", 1),
+                new LogSpan(" 50 Schaden zugefügt."), new LogSpan(" Volltreffer!", IsCritical: true),
+                .. effect is null ? Array.Empty<LogSpan>() : [new LogSpan(effect)],
+            ],
+            spans);
+    }
 }

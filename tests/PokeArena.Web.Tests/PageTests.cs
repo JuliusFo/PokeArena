@@ -166,14 +166,15 @@ public class PageTests : BunitContext
                     new BattleSide("Trainer", true, [new BattleFighter(Bisasam, "Ash", "11", 40, Color: "#FFFF00"), new BattleFighter(Raupy, "Misty", "12", 30)]),
                     new BattleSide("Arkani", false, [new BattleFighter(arkani, "Boss", null, 400)]),
                 ],
-                Lines = ["Runde 1", "Bisasam (Ash) hat Arkani (Boss) 20 Schaden zugefügt.", "Raupy (Misty) wurde besiegt."],
+                Lines = ["Runde 1", "Bisasam (Ash) hat Arkani (Boss) 20 Schaden zugefügt. Volltreffer! Sehr effektiv!", "Raupy (Misty) wurde besiegt."],
                 Log =
                 [
                     new LogLine([new LogPart("Runde 1")], IsRound: true),
                     new LogLine(
                     [
-                        new LogPart("Bisasam (", 0, 0), new LogPart("Ash", 0, 0, IsOwner: true), new LogPart(")", 0, 0), new LogPart(" hat "),
-                        new LogPart("Arkani (", 1, 0), new LogPart("Boss", 1, 0, IsOwner: true), new LogPart(")", 1, 0), new LogPart(" 20 Schaden zugefügt."),
+                        new LogPart("Bisasam", 0, 0, IsSpecies: true), new LogPart(" (", 0, 0), new LogPart("Ash", 0, 0, IsOwner: true), new LogPart(")", 0, 0), new LogPart(" hat "),
+                        new LogPart("Arkani", 1, 0, IsSpecies: true), new LogPart(" (", 1, 0), new LogPart("Boss", 1, 0, IsOwner: true), new LogPart(")", 1, 0), new LogPart(" 20 Schaden zugefügt."),
+                        new LogPart(" Volltreffer!", IsCritical: true), new LogPart(" Sehr effektiv!"),
                     ]),
                     new LogLine(
                     [
@@ -188,13 +189,14 @@ public class PageTests : BunitContext
 
         cut.WaitForAssertion(() => Assert.Equal(3, cut.FindAll(".log li").Count));
         var lines = cut.FindAll(".log li");
-        Assert.Equal(["Runde 1", "Bisasam (Ash) hat Arkani (Boss) 20 Schaden zugefügt.", "Raupy (Misty) wurde besiegt.?"], lines.Select(li => li.TextContent));
+        Assert.Equal(["Runde 1", "Bisasam (Ash) hat Arkani (Boss) 20 Schaden zugefügt. Volltreffer! Sehr effektiv!", "Raupy (Misty) wurde besiegt.?"], lines.Select(li => li.TextContent));
         Assert.Equal("round", lines[0].ClassName);
-        // A trainer's name only, the boss's whole label; Misty has no colour; an index the page lacks stays plain text.
+        // A trainer's name and the boss's species only, „Volltreffer!“ in gold; Misty has no colour; an index the page lacks stays plain text.
         var fire = Tint.Style(Tint.TypeColors["type-feuer"]);
         Assert.Equal(
-            [("Ash", Tint.Style("#FFFF00")), ("Arkani (", fire), ("Boss", fire), (")", fire)],
+            [("Ash", Tint.Style("#FFFF00")), ("Arkani", fire), (" Volltreffer!", Tint.Style(Tint.Critical))],
             cut.FindAll(".log .tinted").Select(s => (s.TextContent, s.GetAttribute("style"))));
+        Assert.Equal("STRONG", cut.Find(".log .critical").TagName);
         Assert.Equal(["tinted", null], cut.FindAll(".fighters a").Select(a => a.GetAttribute("class")));
     }
 
@@ -217,8 +219,8 @@ public class PageTests : BunitContext
                 [
                     new LogLine(
                     [
-                        new LogPart("Raupy (", 0, 0), new LogPart("[gelöscht]", 0, 0, IsOwner: true), new LogPart(")", 0, 0), new LogPart(" hat "),
-                        new LogPart("Arkani (", 1, 0), new LogPart("Boss", 1, 0, IsOwner: true), new LogPart(")", 1, 0), new LogPart(" 5 Schaden zugefügt."),
+                        new LogPart("Raupy", 0, 0, IsSpecies: true), new LogPart(" (", 0, 0), new LogPart("[gelöscht]", 0, 0, IsOwner: true), new LogPart(")", 0, 0), new LogPart(" hat "),
+                        new LogPart("Arkani", 1, 0, IsSpecies: true), new LogPart(" (", 1, 0), new LogPart("Boss", 1, 0, IsOwner: true), new LogPart(")", 1, 0), new LogPart(" 5 Schaden zugefügt."),
                     ]),
                 ],
             },
@@ -227,7 +229,7 @@ public class PageTests : BunitContext
         var cut = Render<Battle>(p => p.Add(b => b.Id, 3));
 
         cut.WaitForAssertion(() => Assert.Single(cut.FindAll(".log li")));
-        Assert.Equal(["Arkani (", "Boss", ")"], cut.FindAll(".log .tinted").Select(s => s.TextContent));
+        Assert.Equal(["Arkani"], cut.FindAll(".log .tinted").Select(s => s.TextContent));
     }
 
     [Fact]

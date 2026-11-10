@@ -66,7 +66,11 @@
                 <li class="@(line.IsRound ? "round" : null)">
                     @foreach (var part in line.Parts)
                     {
-                        if (FighterOf(battle, part) is { } fighter && Tint.Style(Tint.Of(battle, part.Side!.Value, fighter, part.IsOwner)) is { } tint)
+                        if (part.IsCritical)
+                        {
+                            <strong class="tinted critical" style="@Tint.Style(Tint.Critical)">@part.Text</strong>
+                        }
+                        else if (FighterOf(battle, part) is { } fighter && Tint.Style(Tint.Of(battle, part, fighter)) is { } tint)
                         {
                             <span class="tinted" style="@tint">@part.Text</span>
                         }

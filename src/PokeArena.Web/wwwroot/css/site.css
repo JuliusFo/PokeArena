@@ -383,6 +383,11 @@ h1:focus {
   }
 }
 
+/* „Volltreffer!“ in the log: gold (Tint.Critical) and bold. */
+.tinted.critical {
+  font-weight: 700;
+}
+
 /* Trainer page */
 
 .stats {
