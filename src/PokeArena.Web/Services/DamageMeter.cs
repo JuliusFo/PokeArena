@@ -28,14 +28,19 @@ public static class DamageMeter
     /// <param name="RankingTitle">„Trainer“ in a boss fight, otherwise „Pokémon“.</param>
     public sealed record Board(IReadOnlyList<Bar> Totals, string RankingTitle, IReadOnlyList<Bar> Ranking);
 
-    /// <summary>The box for <paramref name="battle"/>; null for files written before the damage was stored.</summary>
+    /// <summary>
+    /// The box for <paramref name="battle"/>; null for files written before the damage was stored, and for files no
+    /// bot writes (negative values). Sums are <see cref="long"/>: a checked <c>int</c> sum of absurd values would throw
+    /// while rendering and take the whole page down (review feat/damage-meter).
+    /// </summary>
     public static Board? For(BattlePage battle)
     {
         var used = battle.Sides
             .SelectMany((side, s) => side.Fighters.Select(f => (Fighter: f, Side: s)))
             .Where(x => x.Fighter.Used != false)
             .ToList();
-        if (battle.Sides.Count == 0 || used.Count == 0 || used.Any(x => x.Fighter.Damage is null))
+        if (battle.Sides.Count == 0 || used.Count == 0 || used.Any(x => x.Fighter.Damage is null or < 0) ||
+            battle.Sides.Any(side => side.Fighters.Any(f => f.MaxHp < 0)))
         {
             return null;
         }
@@ -48,11 +53,11 @@ public static class DamageMeter
                 var colors = fighters.Select(x => Fill(battle, x.Side, x.Fighter)).Distinct().ToList();
                 return (Name: side.Name,
                     Detail: boss && s == 0 ? $"({fighters.Count})" : null,
-                    Damage: fighters.Sum(x => x.Fighter.Damage!.Value),
+                    Damage: fighters.Sum(x => (long)x.Fighter.Damage!.Value),
                     Fill: colors.Count == 1 ? colors[0] : Mixed);
             })
             .ToList();
-        var bossHp = boss && battle.Sides.Count > 1 ? battle.Sides[1].Fighters.Sum(f => f.MaxHp) : 0;
+        var bossHp = boss && battle.Sides.Count > 1 ? battle.Sides[1].Fighters.Sum(f => (long)f.MaxHp) : 0;
         var ranked = used
             .Where(x => !boss || x.Side == 0)
             .OrderByDescending(x => x.Fighter.Damage)
@@ -67,7 +72,7 @@ public static class DamageMeter
                 var f = x.Fighter;
                 var damage = f.Damage!.Value;
                 var rank = $"{1 + damages.Count(d => d > damage)}.";
-                var value = bossHp > 0 ? $"{Number(damage)} · {Number((int)Math.Round(100.0 * damage / bossHp))} %" : Number(damage);
+                var value = bossHp > 0 ? $"{Number(damage)} · {Number((long)Math.Round(100.0 * damage / bossHp))} %" : Number(damage);
                 return boss
                     ? Make(rank, f.Owner, f.Species.Name, value, damage, damages[0], Fill(battle, x.Side, f))
                     : Make(rank, f.Species.Name, f.Owner, value, damage, damages[0], Fill(battle, x.Side, f));
@@ -86,10 +91,10 @@ public static class DamageMeter
         return Tint.IsColor(color) ? color!.ToLowerInvariant() : Neutral;
     }
 
-    private static Bar Make(string? rank, string name, string? detail, string value, int damage, int longest, string fill) =>
+    private static Bar Make(string? rank, string name, string? detail, string value, long damage, long longest, string fill) =>
         new(rank, name, detail, value,
             (longest > 0 ? 100.0 * damage / longest : 0).ToString("0.#", CultureInfo.InvariantCulture),
             fill, Tint.TextOn(fill));
 
-    private static string Number(int value) => value.ToString(CultureInfo.InvariantCulture);
+    private static string Number(long value) => value.ToString(CultureInfo.InvariantCulture);
 }

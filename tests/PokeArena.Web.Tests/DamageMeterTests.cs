@@ -86,6 +86,35 @@ public class DamageMeterTests
     }
 
     [Fact]
+    public void Absurd_values_neither_overflow_nor_take_the_page_down()
+    {
+        var board = DamageMeter.For(Page(
+            BattleKind.Boss,
+            new BattleSide("Trainer", true,
+            [
+                new BattleFighter(Bisasam, "Anna", "1", 90, 90, true, Damage: int.MaxValue),
+                new BattleFighter(Raupy, "Ben", "2", 45, 0, true, Damage: int.MaxValue),
+            ]),
+            new BattleSide("Relaxo", false,
+            [
+                new BattleFighter(Relaxo, "Boss", null, int.MaxValue, 0, true, Damage: 1),
+                new BattleFighter(Relaxo, "Boss", null, int.MaxValue, 0, true, Damage: 1),
+            ])))!;
+
+        Assert.Equal("4294967294", board.Totals[0].Value);
+        Assert.Equal("2147483647 · 50 %", board.Ranking[0].Value);
+    }
+
+    [Theory]
+    [InlineData(-5, 30)]
+    [InlineData(5, -30)]
+    public void Negative_values_get_no_box(int damage, int maxHp) =>
+        Assert.Null(DamageMeter.For(Page(
+            BattleKind.Pvp,
+            new BattleSide("Anna", true, [new BattleFighter(Bisasam, "Anna", "1", 90, 30, true, Damage: 10)]),
+            new BattleSide("Ben", false, [new BattleFighter(Raupy, "Ben", "2", maxHp, 0, true, Damage: damage)]))));
+
+    [Fact]
     public void Files_without_the_damage_get_no_box() =>
         Assert.Null(DamageMeter.For(Page(
             BattleKind.Pvp,
