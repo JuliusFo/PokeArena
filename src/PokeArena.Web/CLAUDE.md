@@ -24,6 +24,7 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   (feat/battle-end-state).
 - Colours nobody chose for readability (chat colours, type colours as text) go through `Tint.Style` + class `tinted`,
   never straight into `color`. `Tint.TypeColors` and the surfaces mirror site.css; `TintTests` fails if they drift
-  (feat/fight-log-colours).
+  (feat/fight-log-colours). Yellow/gold as text turns brown on white at 4.5 : 1 — use it as a background with dark
+  text (`.log .critical`, review feat/fight-log-boss-name-crit).
 - Never tell a boss or NPC by `TrainerId == null`: a deleted trainer's fighters have no id either („[gelöscht]“). The
   boss is the fighter on side 1 of a boss fight (review feat/fight-log-colours).

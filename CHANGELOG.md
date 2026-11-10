@@ -9,7 +9,7 @@ tagged `vX.Y.Z` once its section is complete.
 
 ### Added
 - A critical hit („Volltreffer!“) stands out in a fight page's
-  „Kampfverlauf“: bold and gold.
+  „Kampfverlauf“: bold on a gold background.
 
 ### Changed
 - In a boss fight's „Kampfverlauf“ only the boss's name („Relaxo“) is in its
