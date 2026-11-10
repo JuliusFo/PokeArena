@@ -63,6 +63,13 @@ jobs:
         run: |
           printf '{\n  "DataUrl": "%s"\n}\n' "$DATA_URL" > appsettings.json
           rm -f appsettings.json.br appsettings.json.gz
+          # css/site.css has no hash in its name (the SDK fingerprints only JS modules in index.html), so a browser
+          # could keep the old stylesheet next to the new markup of the hashed DLL — after 1.6.0 Firefox showed the HP
+          # numbers twice (fix/css-cache-busting). The content hash as query makes every changed stylesheet a new URL.
+          CSS_HASH=$(sha256sum css/site.css | cut -c1-12)
+          sed -i "s|href=\"css/site.css\"|href=\"css/site.css?v=$CSS_HASH\"|" index.html
+          grep -q "css/site.css?v=$CSS_HASH" index.html || { echo "::error::Stylesheet link not found in index.html."; exit 1; }
+          rm -f index.html.br index.html.gz
           # Pages knows no SPA routing: deep links (/kampf/12) get 404.html, which boots the app on that URL.
           cp index.html 404.html
           # Serve folders starting with an underscore (_framework).

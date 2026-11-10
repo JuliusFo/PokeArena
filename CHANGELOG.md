@@ -7,6 +7,12 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+### Fixed
+- After a release a browser could keep the old stylesheet from its cache next
+  to the new website code; after 1.6.0 Firefox showed the HP numbers inside the
+  HP bar twice, one above the other. The website deploy now gives the
+  stylesheet a new address whenever its content changes.
+
 ## [1.6.2] - 2026-11-10
 
 ### Changed
