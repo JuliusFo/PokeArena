@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-11-10 · v1.4.1 released (boss name colour, gold critical hits, fighter row wrap) · next WP-09 (→ 1.5.0) after a few streams
+Status: 2026-11-10 · v1.4.2 released (fight cards as wide as the page again) · next WP-09 (→ 1.5.0) after a few streams
 
 ## 1. Where to find what
 
@@ -48,6 +48,7 @@ shows leaderboard, trainer pages and battle logs.
 | 1.3.0 | Website page „Neuigkeiten“ (player-visible changes per version) | WP-10 |
 | 1.4.0 | Boss pick uniform over distinct species, fight log in chat colours, log numbering and HP bar fixes | feat/boss-pick-per-species, feat/fight-log-colours, fix/battle-log-numbering, feat/hp-bar-alignment |
 | 1.4.1 | Fight log colours only the boss's name, critical hits on gold, fighter rows keep the HP bar on the right | feat/fight-log-boss-name-crit, fix/fighter-row-wrap |
+| 1.4.2 | Fight cards as wide as the page again (1.4.1 widening reverted) | fix/fight-card-width |
 | 1.5.0 | Balancing with real stream data | WP-09 |
 
 **Invariants — never weaken:**
@@ -177,10 +178,12 @@ PokeArena.slnx
 
 ## 9. Next
 
-1.4.1 is released (installation: README, „Running it on the streamer's PC“): in
-the fight log only the boss's name is in its type colour and critical hits sit
-on gold; long names no longer push a fighter's HP bar onto its own line — after
-the update the streamer clicks „Alles neu veröffentlichen“ once. 1.4.0 made the
+1.4.2 is released (installation: README, „Running it on the streamer's PC“): the
+fight cards are as wide as the page again, the wider cards of 1.4.1 looked
+lopsided; the fighter row wrap stays. 1.4.1 coloured only the boss's name in
+the fight log, put critical hits on gold and kept long names from pushing a
+fighter's HP bar onto its own line — after updating to 1.4.1 or later the
+streamer clicks „Alles neu veröffentlichen“ once. 1.4.0 made the
 boss pick uniform over distinct species and showed trainers in their Twitch chat
 colour in the fight log; 1.3.0 brought the
 „Neuigkeiten“ page (WP-10), 1.2.0 the fight page's end state, 1.1.0 R1 (fixes

@@ -7,6 +7,8 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+## [1.4.2] - 2026-11-10
+
 ### Changed
 - A fight page's two cards (trainers and opponent) are as wide as the rest of
   the page again (868 px); the wider cards of 1.4.1 looked lopsided. Long names
