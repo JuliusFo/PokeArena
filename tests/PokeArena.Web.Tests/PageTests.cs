@@ -143,9 +143,10 @@ public class PageTests : BunitContext
         Assert.Equal(
             [("fighter-survived", "8 / 40 HP"), ("fighter-unused", "nicht eingesetzt"), ("fighter-fainted", "besiegt")],
             rows.Select(li => (li.ClassName, li.QuerySelector(".end-state")!.TextContent.Trim())));
-        // 8 of 40 HP is a fifth: the bar is short and marked low.
-        var bar = rows[0].QuerySelector(".hp-bar > span")!;
-        Assert.Equal(("low", "width: 20%"), (bar.ClassName, bar.GetAttribute("style")));
+        // 8 of 40 HP is a fifth: the bar is short and marked low; the numbers sit inside it (feat/hp-text-in-bar).
+        var bar = rows[0].QuerySelector(".end-state > .hp-bar")!;
+        Assert.Equal(("hp-bar low", "--hp: 20%"), (bar.ClassName, bar.GetAttribute("style")));
+        Assert.Equal("8 / 40 HP", bar.QuerySelector(":scope > .hp-text")!.TextContent);
         // The owner links keep the link colour: no „muted“ on the link itself (review feat/battle-end-state).
         var links = cut.FindAll(".fighters a");
         Assert.Equal(["trainer/11", "trainer/11"], links.Select(a => a.GetAttribute("href")));

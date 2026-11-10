@@ -37,10 +37,10 @@
                                 @switch (state)
                                 {
                                     case "survived":
-                                        <span class="hp-bar" aria-hidden="true">
-                                            <span class="@(fighter.HpLeft * 4 <= fighter.MaxHp ? "low" : "")" style="width: @HpPercent(fighter)%"></span>
+                                        @* The numbers sit inside the bar to save width; site.css colours them per part of the bar. *@
+                                        <span class="hp-bar@(fighter.HpLeft * 4 <= fighter.MaxHp ? " low" : "")" style="--hp: @HpPercent(fighter)%">
+                                            <span class="hp-text">@fighter.HpLeft / @fighter.MaxHp HP</span>
                                         </span>
-                                        <span class="hp-text">@fighter.HpLeft / @fighter.MaxHp HP</span>
                                         break;
                                     case "fainted":
                                         <span>besiegt</span>

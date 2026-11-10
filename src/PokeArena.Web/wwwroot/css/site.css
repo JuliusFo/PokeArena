@@ -343,28 +343,48 @@ h1:focus {
   font-style: italic;
 }
 
+/*
+  HP numbers inside the bar (feat/hp-text-in-bar). Fixed width (up to „999 / 999 HP“), so the bars of all survivors
+  line up and their fills compare. The text is coloured by the same hard edge at --hp as the fill: --hp-on-fill over
+  the fill, --text over the empty rest, so it keeps 4.5 : 1 on both. --ok and --accent are just under that with white
+  text in the light theme, hence the darker fills there.
+*/
 .hp-bar {
-  width: 64px;
-  height: 6px;
-  border-radius: 3px;
-  background: var(--border);
+  --hp-fill: #1b7f45;
+  --hp-low: #c42d0b;
+  --hp-on-fill: #ffffff;
+  --hp-color: var(--hp-fill);
+  display: block;
+  width: calc(12ch + 16px);
+  border-radius: 10px;
+  background: linear-gradient(to right, var(--hp-color) var(--hp), var(--border) var(--hp));
   overflow: hidden;
 }
 
-.hp-bar > span {
-  display: block;
-  height: 100%;
-  background: var(--ok);
+@media (prefers-color-scheme: dark) {
+  .hp-bar {
+    --hp-fill: var(--ok);
+    --hp-low: var(--accent);
+    --hp-on-fill: #17171b;
+  }
 }
 
-.hp-bar > span.low {
-  background: var(--accent);
+.hp-bar.low {
+  --hp-color: var(--hp-low);
 }
 
-/* Fixed width (up to „999 / 999 HP“), so the bars of all survivors line up whatever their numbers. */
+/* Fills the bar exactly (padding inside), so its gradient edge sits where the bar's does. */
 .hp-text {
-  min-width: 11.5ch;
-  text-align: right;
+  display: block;
+  padding: 1px 8px;
+  background: linear-gradient(to right, var(--hp-on-fill) var(--hp), var(--text) var(--hp));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+  text-align: center;
   white-space: nowrap;
 }
 
