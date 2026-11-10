@@ -64,6 +64,9 @@ Stop on any failure.
 - Check with `gh release view vX.Y.Z` that `PokeArena-vX.Y.Z-Setup.exe`, `PokeArena-vX.Y.Z-Portable.zip`,
   `PokeArena.App-X.Y.Z-full.nupkg` and `releases.win.json` are attached (from the second Velopack release on also a
   `-delta.nupkg`). Without `releases.win.json` installed copies do not see the release.
+- If the release job fails after a partial upload, use "Re-run failed jobs", never a re-run of the whole workflow: the
+  build job would download this very version as the "previous" release and `vpk pack` refuses an existing version
+  (review WP-11).
 - The tag also starts the "Website" run (`pages.yml`, user decision 2026-11-10): `gh run watch` it too until it is
   green — only now do the website changes and the „Neuigkeiten“ section go live. If its deploy job fails with "not
   allowed to deploy to github-pages", the environment lacks the tag rule `v*` (`docs/website-setup.md` §3). If
@@ -75,7 +78,7 @@ Stop on any failure.
 ## 7. Finish
 
 Short German summary: version, link to the GitHub release, what happens on the bot's machine (README "Updating": an
-installed copy finds the release within the hour and installs it once the stream is over — nothing to do; a copy from
+installed copy finds the release within the hour and installs it ten minutes after the stream — nothing to do; a copy from
 the old ZIP shows „Version … verfügbar“ and needs the one-time `Setup.exe` install, README "Switching from the ZIP"). Suggest `/branch-code-review` on the next package branch if this
 release went out without one.
 

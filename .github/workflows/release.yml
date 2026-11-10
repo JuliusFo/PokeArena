@@ -160,15 +160,21 @@ jobs:
           NAME: ${{ steps.version.outputs.name }}
         run: |
           $notes = if (Test-Path release-notes.md) { @('--releaseNotes', 'release-notes.md') } else { @() }
-          dotnet vpk pack --packId PokeArena.App --packVersion $env:VERSION --packTitle PokeArena --packAuthors PokeArena `
+          dotnet vpk pack --packId PokeArena.App --packVersion $env:VERSION --runtime win-x64 --packTitle PokeArena --packAuthors PokeArena `
             --packDir publish/PokeArena --mainExe PokeArena.exe --outputDir releases @notes
           if ($LASTEXITCODE -ne 0) { throw 'vpk pack failed.' }
 
           # Only this version's files go to its release; the downloaded packages of the previous one stay where they are.
           New-Item -ItemType Directory package | Out-Null
-          Get-ChildItem releases -File |
-            Where-Object { $_.Name -like "*-$env:VERSION-*.nupkg" -or $_.Name -like 'releases.*.json' -or $_.Name -like 'assets.*.json' -or $_.Name -eq 'RELEASES' } |
-            Copy-Item -Destination package
+          Get-ChildItem releases -File -Filter "*-$env:VERSION-*.nupkg" | Copy-Item -Destination package
+
+          # vpk pack lists every package in releases/ in its feed, the previous release's full package too. The app
+          # merges the feeds of all releases and downloads each entry from the release whose feed lists it, so this
+          # feed keeps only this version's entries — as `vpk upload github` would (review WP-11).
+          $feed = Get-Content releases/releases.win.json -Raw -Encoding utf8 | ConvertFrom-Json
+          $feed.Assets = @($feed.Assets | Where-Object { $_.Version -eq $env:VERSION })
+          if ($feed.Assets.Count -eq 0) { throw "releases.win.json has no entry for $env:VERSION." }
+          $feed | ConvertTo-Json -Depth 10 | Set-Content package/releases.win.json -Encoding utf8
           Copy-Item releases/PokeArena.App-win-Setup.exe "package/PokeArena-$env:NAME-Setup.exe"
           Copy-Item releases/PokeArena.App-win-Portable.zip "package/PokeArena-$env:NAME-Portable.zip"
           Get-ChildItem package | ForEach-Object { Write-Host $_.Name }
@@ -205,8 +211,12 @@ jobs:
           GH_REPO: ${{ github.repository }}
           TAG: ${{ github.ref_name }}
         run: |
-          $files = Get-ChildItem package -File | ForEach-Object { $_.FullName }
-          if (-not $files) { throw 'The package is empty.' }
+          # The feed goes up last and on its own: an installed app that reads it must find every package it names
+          # (review WP-11).
+          $all = Get-ChildItem package -File
+          $feed = @($all | Where-Object Name -eq 'releases.win.json' | ForEach-Object FullName)
+          $files = @($all | Where-Object Name -ne 'releases.win.json' | ForEach-Object FullName)
+          if (-not $files -or -not $feed) { throw 'The package is incomplete.' }
 
           gh release view $env:TAG 2>$null
           if ($LASTEXITCODE -eq 0) {
@@ -214,3 +224,6 @@ jobs:
           } else {
             gh release create $env:TAG $files --title $env:TAG --notes-file release-notes.md
           }
+          if ($LASTEXITCODE -ne 0) { throw 'Uploading the packages failed.' }
+          gh release upload $env:TAG $feed --clobber
+          if ($LASTEXITCODE -ne 0) { throw 'Uploading the feed failed.' }
