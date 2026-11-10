@@ -22,6 +22,7 @@ in [roadmap.md](roadmap.md).
 | – | Battle log numbering (user report, `fix/battle-log-numbering`) | 1.4.0 | done 2026-11-10 |
 | – | HP bar alignment (user request, `feat/hp-bar-alignment`) | 1.4.0 | done 2026-11-10 |
 | – | Fight log colours (user request, `feat/fight-log-colours`) | 1.4.0 | done 2026-11-10 |
+| – | Fight log: boss name only, critical hits (user request, `feat/fight-log-boss-name-crit`) | 1.4.1 | in progress |
 | WP-09 | Balancing after the first streams | 1.5.0 | planned |
 
 ## Log
@@ -469,6 +470,21 @@ in [roadmap.md](roadmap.md).
   without a Twitch colour (Twitch picks those only in its own client); fetching
   colours of existing trainers via Helix „Get User Chat Color“ — they appear
   with the trainer's next chat message.
+
+### Fight log: boss name only, critical hits — user request (2026-11-10, branch feat/fight-log-boss-name-crit)
+- Built: `BattleLog.ToText` splits a label into species (`IsSpecies`), „ (“,
+  owner, rest, and „ Volltreffer!“ into a part of its own (`IsCritical`);
+  `LogPart` carries both flags (left out of the JSON when false). Web:
+  `Tint.Of` colours only the boss's species part; „Volltreffer!“ renders as
+  `<strong class="tinted critical">` in `Tint.Critical` (gold, contrast-
+  adjusted per theme). Spec §9 ³, CHANGELOG, „Neuigkeiten“, sample fight 1.
+  Tests: log parts with and without effectiveness, generator parts and JSON,
+  page colours (boss name only, gold crit as `<strong>`).
+- User decisions: „Beim Boss … nur den Namen farbig machen, aber nicht alles
+  was dann noch kommt in den Klammern“; „Einen Volltreffer Fett/Gold markieren“.
+- Pitfalls: files written before have no `isSpecies` — their boss stays
+  uncoloured (not the whole label as before) until „Alles neu veröffentlichen“.
+  Plain text (`lines`, desktop, chat) is unchanged.
 
 Template per entry:
 

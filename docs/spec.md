@@ -379,8 +379,10 @@ same (ADR-0009).
 ³ Colours on the fight page (user decision 2026-11-10): in the „Kampfverlauf“
 a trainer's name („Anna“ in „Bisasam (Anna, HP 90)“) and the owner links in
 the fighter list show the trainer's Twitch chat colour; in a boss fight the
-boss's whole label („Relaxo (Boss, HP 541)“) shows the colour of its first type
-— the Pokémon is the element. Species and HP of trainers' Pokémon, NPCs and
+boss's name („Relaxo“ in „Relaxo (Boss, HP 541)“, not the brackets — user
+decision 2026-11-10, replacing the whole label) shows the colour of its first
+type — the Pokémon is the element. „Volltreffer!“ is bold and gold (same
+contrast rule). Species and HP of trainers' Pokémon, NPCs and
 trainers without a known colour stay in the normal text colour. The bot keeps
 the colour from the trainer's latest chat message (EventSub `color`; empty if
 the viewer never picked one). The site darkens or lightens each colour per theme

@@ -7,6 +7,16 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+### Added
+- A critical hit („Volltreffer!“) stands out in a fight page's
+  „Kampfverlauf“: bold and gold.
+
+### Changed
+- In a boss fight's „Kampfverlauf“ only the boss's name („Relaxo“) is in its
+  type colour, no longer the brackets after it („(Boss, HP 503)“).
+  Older fights change with „Alles neu veröffentlichen“; until then their boss
+  stays uncoloured.
+
 ## [1.4.0] - 2026-11-10
 
 ### Added
