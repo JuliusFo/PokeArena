@@ -23,7 +23,7 @@ Status: 2026-11-10 · v1.4.2 released (fight cards as wide as the page again) ·
 ## 2. Goal and audience
 
 A persistent Pokemon collecting and battling game played via Twitch chat on a
-small channel. A WPF app on the streamer's PC runs the bot; a static website
+small channel. A WPF app on a Windows machine (§8) runs the bot; a static website
 shows leaderboard, trainer pages and battle logs.
 
 - Developer (the user): experienced .NET developer → explain briefly and technically.
@@ -50,6 +50,7 @@ shows leaderboard, trainer pages and battle logs.
 | 1.4.1 | Fight log colours only the boss's name, critical hits on gold, fighter rows keep the HP bar on the right | feat/fight-log-boss-name-crit, fix/fighter-row-wrap |
 | 1.4.2 | Fight cards as wide as the page again (1.4.1 widening reverted) | fix/fight-card-width |
 | 1.5.0 | Balancing with real stream data | WP-09 |
+| 2.0.0 | Parked: website and overlay served from the bot's server (roadmap.md) | — |
 
 **Invariants — never weaken:**
 
@@ -169,8 +170,11 @@ PokeArena.slnx
 
 ## 8. User context
 
-- Solo project. The user builds it **for another streamer**; the app runs on
-  the streamer's Windows PC together with OBS and the overlay.
+- Solo project. The user builds it **for another streamer**. Planned was the
+  streamer's Windows PC together with OBS and the overlay; in fact the app runs
+  on the user's Windows server (apparently for good, 2026-11-10) and the
+  overlay is not used. Docs still assuming the streamer's PC: roadmap.md
+  „Version 2“.
 - The user sets up the dedicated bot account and its Twitch tokens. Neither
   `channel:bot` nor moderator status is required (ADR-0002 addendum); the
   streamer makes the bot a moderator anyway (slow mode).
@@ -193,5 +197,6 @@ colour in the fight log; 1.3.0 brought the
 of the whole review 1.0.3, docs/review-1.0.3.md) and the boss lobby. Next:
 update the streamer's PC; after a few streams WP-09 balancing (1.5.0)
 (`N = 4` dip, PvP loot preferring missing species, NPC difficulty; no runtime
-balancing editor). Ideas meanwhile go to docs/backlog.md. Details:
-docs/roadmap.md.
+balancing editor). Parked for version 2: website and overlay served from the
+bot's server through a Cloudflare Tunnel instead of GitHub Pages + R2. Ideas
+meanwhile go to docs/backlog.md. Details: docs/roadmap.md.

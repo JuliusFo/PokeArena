@@ -1,8 +1,9 @@
 # Roadmap
 
 Planned work packages up to v1.0.0, plus the packages after it (WP-10 news
-page, then WP-09 balancing). Read the package before starting it and
-agree the plan with the user. Estimates: solo, "day" = one focused person-day;
+page, then WP-09 balancing) and a parked idea for version 2. Read the
+package before starting it and agree the plan with the user. Estimates: solo,
+"day" = one focused person-day;
 total ≈ 25–31 days. Every package ends in a state that could run on stream.
 
 Order is deliberate. `data/pokemon.json` exists since 2026-10-11 (ADR-0005),
@@ -335,6 +336,48 @@ Demo: measured win rates per NPC and boss group size, adjusted values.
   text — update it with every changed value. If countdown or boss cooldown
   become a streamer setting, the page has to word them loosely („kurz“, „etwa
   eine halbe Stunde“) or the values have to be published in `meta.json`.
+
+## Version 2 — website served from the bot's server (parked) → v2.0.0
+
+User decision (2026-11-10): remember this for version 2; nothing of it is
+built before. Starting point: the bot runs on the user's Windows server —
+apparently for good — instead of on the streamer's PC, and the OBS overlay is
+not used. The user's Cloudflare zone already serves HorizonNET
+(`C:\Dev-Repos\HorizonNET`) from such a server through a Cloudflare Tunnel, so
+a tunnel is set up in principle.
+
+Proposal (not confirmed):
+
+- The website becomes an ASP.NET Core host on the server behind the Cloudflare
+  Tunnel and reads the game data directly instead of JSON files on R2; live
+  updates instead of polling become possible. Pattern from HorizonNET: Windows
+  service, `ForwardedHeaders` trusted only from loopback (`cloudflared`), rate
+  limiter.
+- The overlay becomes a page of the website (`/overlay`), so OBS can load it on
+  any PC; it replaces the loopback `OverlayServer` of the desktop app.
+- R2 bucket, publish outbox, `SitePublishWorker`, „Alles neu veröffentlichen“
+  and GitHub Pages could then go away.
+
+Open before starting:
+
+- Separate process (the site survives a bot restart or update) or part of the
+  desktop app; how a separate process reads the SQLite file safely (WAL,
+  read-only) or whether the bot hands it the data.
+- The machine that holds the Twitch and R2 secrets becomes reachable through
+  the tunnel; Cloudflare cache and rate limiting in front of it.
+- A new ADR replaces ADR-0003 and changes ADR-0009 (today Web references
+  neither Core nor EF Core).
+- Who operates the desktop app now — the streamer by remote desktop or the
+  user? That decides the audience of UI texts and setup steps (§2 of
+  `CLAUDE.md`).
+- Docs that still assume the streamer's PC: README („Running it on the
+  streamer's PC“), spec §9 (OBS overlay on the same machine),
+  `docs/website-setup.md` §4 (OBS browser source), ADR-0001/0002 context,
+  comments in `release.yml`.
+- Smaller alternative without the rebuild: keep R2 + Pages and only add
+  `/overlay` to the website, polling R2 — lags by the poll interval plus cache,
+  enough for „latest fight / top 5“, too slow for the live boss countdown in
+  backlog.md.
 
 ## Open UX questions
 
