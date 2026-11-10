@@ -7,6 +7,10 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+### Changed
+- On a fight page a surviving Pokémon's HP numbers („48 / 90 HP“) sit inside
+  its HP bar instead of next to it, so the end state column is narrower.
+
 ## [1.4.2] - 2026-11-10
 
 ### Changed
