@@ -7,6 +7,8 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+## [1.6.2] - 2026-11-10
+
 ### Changed
 - The white text inside the „Schaden“ bars on a fight page has a thin black
   outline, so it stays clear on lighter colours such as pink or red.

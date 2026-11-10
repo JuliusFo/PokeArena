@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-11-10 · v1.6.1 released (white text in the „Schaden“ bars on darkened chat colours) · next the „Statistik“ page (→ 1.7.0), then WP-09 (→ 1.8.0) after a few streams
+Status: 2026-11-10 · v1.6.2 released (thin black outline for the white „Schaden“ bar text) · next the „Statistik“ page (→ 1.7.0), then WP-09 (→ 1.8.0) after a few streams
 
 ## 1. Where to find what
 
@@ -51,7 +51,7 @@ shows leaderboard, trainer pages and battle logs.
 | 1.4.2 | Fight cards as wide as the page again (1.4.1 widening reverted) | fix/fight-card-width |
 | 1.5.0 | Mods shorten the boss cooldown for up to 24 h (`!bosscooldown`); desktop app updates itself from the GitHub releases | feat/boss-cooldown-reduced, WP-11 |
 | 1.6.0 | Fight page „Schaden“ box (damage per side and ranking in chat colours), crisp HP numbers | feat/damage-meter, fix/hp-text-crisp |
-| 1.6.1 | „Schaden“ bars in the darkened name colour with white text, names in that colour in both themes | feat/damage-text-white |
+Schaden bars in the darkened name colour with white text, names in that colour in both themes | feat/damage-text-white |„Schaden“ bars in the darkened name colour with white text, names in that colour in both themes | feat/damage-text-white |
 | 1.7.0 | Website page „Statistik“: boss participations, PvP fights, bad-luck streaks, rarities, rivals, boss record | feat/statistics-page |
 | 1.8.0 | Balancing with real stream data | WP-09 |
 | 2.0.0 | Parked: website and overlay served from the bot's server (roadmap.md) | — |
@@ -190,6 +190,7 @@ PokeArena.slnx
 
 ## 9. Next
 
+1.6.2 (`feat/damage-text-outline`): the white „Schaden“ bar text has a 1 px black outline.
 1.6.1 (`feat/damage-text-white`): the „Schaden“ bars take the darkened name colour with white text like the HP
 numbers, and names keep that colour in the dark theme too — a test with the streamer whether names stay readable on
 the dark page; if not, the lighter dark-theme variant of 1.6.0 comes back for names.
