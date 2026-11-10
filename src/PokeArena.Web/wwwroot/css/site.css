@@ -308,19 +308,16 @@ h1:focus {
   border-bottom: none;
 }
 
-/* Only name and owner wrap; the end state keeps its column on the right, so long names never push it onto a line of
-   its own and all HP bars line up (fix/fighter-row-wrap). */
-.fighters li {
-  flex-wrap: nowrap;
-}
-
+/* Name and owner wrap inside .who; the end state keeps its column on the right, so all HP bars line up. With a
+   basis of 0 the row only breaks when even the longest word of .who no longer fits next to the end state (very
+   narrow screen, large system font) — then the end state takes a line of its own instead of covering the name
+   (fix/fighter-row-wrap, review). Never min-width: 0 here: the name would run into the end state. */
 .fighters .who {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 4px 8px;
-  flex: 1 1 auto;
-  min-width: 0;
+  flex: 1 1 0;
 }
 
 .fighters .who a {
