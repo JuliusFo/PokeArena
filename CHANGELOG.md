@@ -12,6 +12,10 @@ tagged `vX.Y.Z` once its section is complete.
   in, however many of it they have — three Digda no longer push out the one
   Arkani.
 
+### Fixed
+- The numbers in a fight page's „Kampfverlauf“ no longer skip one at every
+  „Runde“ heading (the first line was 2).
+
 ## [1.3.0] - 2026-11-09
 
 ### Added

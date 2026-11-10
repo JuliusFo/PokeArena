@@ -19,6 +19,7 @@ in [roadmap.md](roadmap.md).
 | – | Battle end state (streamer request, `feat/battle-end-state`) | 1.2.0 | done 2026-11-08 |
 | WP-10 | „Neuigkeiten“ page on the website (before WP-09) | 1.3.0 | done 2026-11-09 |
 | – | Boss pick per species (user request, `feat/boss-pick-per-species`) | 1.3.1 | built 2026-11-09, live test open |
+| – | Battle log numbering (user report, `fix/battle-log-numbering`) | 1.3.1 | built 2026-11-10 |
 | WP-09 | Balancing after the first streams | 1.4.0 | planned |
 
 ## Log
@@ -421,6 +422,14 @@ in [roadmap.md](roadmap.md).
   boss tier odds, not from duplicates.
 - Deliberately not done (→ backlog): the same rule for PvP/NPC teams
   (backlog „Draw teams without duplicate species“).
+
+### Battle log numbering — user report (2026-11-10, branch fix/battle-log-numbering)
+- Built: `.log li.round` is `display: block` instead of a list item with
+  `list-style: none`, so the „Runde N“ headings no longer take a number in
+  the website's `<ol class="log">`. Checked in the preview (kampf/1: 1–4).
+  CHANGELOG, „Neuigkeiten“ 1.3.1.
+- Pitfalls: `list-style: none` only hides the marker — the element still
+  increments the `list-item` counter. The desktop log has no numbers.
 
 Template per entry:
 
