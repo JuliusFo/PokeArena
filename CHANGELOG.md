@@ -15,6 +15,8 @@ tagged `vX.Y.Z` once its section is complete.
 ### Fixed
 - The numbers in a fight page's „Kampfverlauf“ no longer skip one at every
   „Runde“ heading (the first line was 2).
+- The HP bars of the survivors on a fight page line up, however many digits
+  their „HP left / max HP“ has.
 
 ## [1.3.0] - 2026-11-09
 
