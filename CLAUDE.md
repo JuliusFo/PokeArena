@@ -51,7 +51,7 @@ shows leaderboard, trainer pages and battle logs.
 | 1.4.2 | Fight cards as wide as the page again (1.4.1 widening reverted) | fix/fight-card-width |
 | 1.5.0 | Mods shorten the boss cooldown for up to 24 h (`!bosscooldown`); desktop app updates itself from the GitHub releases | feat/boss-cooldown-reduced, WP-11 |
 | 1.6.0 | Fight page „Schaden“ box (damage per side and ranking in chat colours), crisp HP numbers | feat/damage-meter, fix/hp-text-crisp |
-| 1.6.1 | „Schaden“ bars in the darkened name colour with white text, like the HP numbers | feat/damage-text-white |
+| 1.6.1 | „Schaden“ bars in the darkened name colour with white text, names in that colour in both themes | feat/damage-text-white |
 | 1.7.0 | Balancing with real stream data | WP-09 |
 | 2.0.0 | Parked: website and overlay served from the bot's server (roadmap.md) | — |
 
@@ -189,8 +189,9 @@ PokeArena.slnx
 
 ## 9. Next
 
-1.6.1 (`feat/damage-text-white`): the „Schaden“ bars take the darkened colour the names have in the light theme,
-with white text like the HP numbers; tested together with the streamer.
+1.6.1 (`feat/damage-text-white`): the „Schaden“ bars take the darkened name colour with white text like the HP
+numbers, and names keep that colour in the dark theme too — a test with the streamer whether names stay readable on
+the dark page; if not, the lighter dark-theme variant of 1.6.0 comes back for names.
 1.6.0 is released: a „Schaden“ box on the fight page (`feat/damage-meter`: side totals and a ranking in the
 trainers' chat colours, damage that arrived from the stored log) and crisp HP numbers (`fix/hp-text-crisp`);
 after updating the streamer clicks „Alles neu veröffentlichen“ once so older fights get the box.

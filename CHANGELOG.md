@@ -12,8 +12,11 @@ tagged `vX.Y.Z` once its section is complete.
 ### Changed
 - The text inside the „Schaden“ bars on a fight page is white like the HP
   numbers instead of black or white depending on the colour. The bars take the
-  darkened colour the trainer's name has on the light page, so light chat
-  colours get darker bars (yellow turns olive).
+  darkened colour of the trainer's name, so light chat colours get darker bars
+  (yellow turns olive).
+- Names in the fight cards and the log keep that darkened colour in the dark
+  theme too, so a name and its bar always match. Dark chat colours can be
+  harder to read on the dark page than before.
 
 ## [1.6.0] - 2026-11-10
 
