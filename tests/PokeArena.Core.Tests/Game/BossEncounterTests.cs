@@ -260,10 +260,14 @@ public class BossEncounterTests : IDisposable
     {
         var boss = Boss(EasyBoss);
         await RegisterAsync("1", "Ash", "2", "Misty");
-        var digda = Species.Find("Digda")!;
+        var starter = Species.Starters[0].Id;
+        var digda = Species.Find("Digda")!.Id;
+        int[] ash = [starter, .. Enumerable.Repeat(digda, 30)];
+        int[] misty = [starter, .. Enumerable.Repeat(digda, 20), Species.Find("Arkani")!.Id, Species.Find("Lapras")!.Id];
         await using (var db = _game.Database.Open())
         {
-            db.Specimens.AddRange(Enumerable.Range(0, 30).Select(_ => new Specimen { TrainerId = "1", SpeciesId = digda.Id, Origin = SpecimenOrigin.Boss }));
+            db.Specimens.AddRange(ash.Skip(1).Select(id => new Specimen { TrainerId = "1", SpeciesId = id, Origin = SpecimenOrigin.Boss }));
+            db.Specimens.AddRange(misty.Skip(1).Select(id => new Specimen { TrainerId = "2", SpeciesId = id, Origin = SpecimenOrigin.Boss }));
             await db.SaveChangesAsync(_ct);
         }
 
@@ -272,11 +276,11 @@ public class BossEncounterTests : IDisposable
         // Same seed, same order as the encounter: boss first, then one pick per participant in join order.
         var random = new BattleRandom(Seed);
         BossDraw.Species(Species, EasyBoss, 2, random);
-        int[] expected =
-        [
-            BossDraw.FieldedSpecies([Species.Starters[0].Id, .. Enumerable.Repeat(digda.Id, 30)], random),
-            BossDraw.FieldedSpecies([Species.Starters[0].Id], random),
-        ];
+        int[] expected = [BossDraw.FieldedSpecies(ash, random), BossDraw.FieldedSpecies(misty, random)];
+        // Guard: with this seed Misty's pick is neither her lowest id nor a duplicate, so a rule like "lowest id" or
+        // "random specimen" fails here too (review of feat/boss-pick-per-species).
+        Assert.NotEqual(misty.Min(), expected[1]);
+        Assert.NotEqual(digda, expected[1]);
         await using var check = _game.OpenLive();
         var log = BattleLog.FromJson((await check.Battles.SingleAsync(_ct)).LogJson);
         Assert.Equal(expected, log.Fighters.Where(f => f.TrainerId is "1" or "2").OrderBy(f => f.TrainerId).Select(f => f.SpeciesId));
