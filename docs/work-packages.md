@@ -26,8 +26,8 @@ in [roadmap.md](roadmap.md).
 | – | Fighter row wrap (user report, `fix/fighter-row-wrap`) | 1.4.1 | done 2026-11-10 |
 | – | Fight card width reverted (user report, `fix/fight-card-width`) | 1.4.2 | done 2026-11-10 |
 | – | Shorter boss cooldown for a while (streamer request, `feat/boss-cooldown-reduced`) | 1.5.0 | done 2026-11-10 |
-| WP-11 | Automatic update of the desktop app (before WP-09) | 1.6.0 | done 2026-11-10 |
-| WP-09 | Balancing after the first streams | 1.7.0 | planned |
+| WP-11 | Automatic update of the desktop app (before WP-09) | 1.5.0 | done 2026-11-10 |
+| WP-09 | Balancing after the first streams | 1.6.0 | planned |
 
 ## Log
 
@@ -607,7 +607,9 @@ in [roadmap.md](roadmap.md).
   skill, architecture, Desktop pitfalls. No „Neuigkeiten“ line (players do not
   notice).
 - User decisions: own package before version 2 and right after
-  `!bosscooldown`, WP-09 → 1.7.0; „Ja, mit Velopack, manuellem Update-Check
+  `!bosscooldown`, first as 1.6.0; at the merge „Jetzt mergen, beides 1.5.0“
+  (WP-11 ships in 1.5.0 with `!bosscooldown`, WP-09 stays 1.6.0); „Ja, mit
+  Velopack, manuellem Update-Check
   zusätzlich zum automatischen. Deine Empfehlungen passen so.“ (Setup.exe
   recommended, Portable.zip as well, no off switch, no rollback, hourly).
 - Addenda: checked locally with two packed test versions (packId
@@ -638,7 +640,7 @@ in [roadmap.md](roadmap.md).
   - L stale comments → fixed. L missing tests (busy, failed newer download) → added.
   - Found while fixing: `vpk pack` defaulted to x86 → `--runtime win-x64`.
   - Second pass L tooltip and README out of date → fixed.
-  - Not on this branch: the ≤ 1.5.0 tooltip „Lade das ZIP herunter …“ on `main` (user decides before tagging 1.5.0).
+  - The old tooltip „Lade das ZIP herunter …“ is gone with the merge into 1.5.0; a 1.4.2 copy still shows it, so the switch follows README „Switching from the ZIP“.
 
 Template per entry:
 

@@ -141,7 +141,7 @@ jobs:
         run: dotnet tool restore
 
       # The packages of the latest release come first, so this one also gets a small delta package and its feed
-      # lists the earlier versions. The very first Velopack release (1.6.0) finds none and has a full package only.
+      # lists the earlier versions. The very first Velopack release (1.5.0) finds none and has a full package only.
       - name: Previous release for the delta package
         if: github.ref_type == 'tag'
         shell: pwsh

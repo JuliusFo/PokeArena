@@ -12,8 +12,9 @@ survive an update outside the program folder: database, backups, logs and
 `settings.json` in `%LOCALAPPDATA%\PokeArena`, secrets in the Credential
 Manager.
 
-User decisions (2026-11-10): an own package WP-11 right after `!bosscooldown`
-(1.5.0), before WP-09; Velopack („Ja, mit Velopack“); in addition to the
+User decisions (2026-11-10): an own package WP-11 right after `!bosscooldown`,
+before WP-09, shipped together with it in 1.5.0 („Jetzt mergen, beides
+1.5.0“); Velopack („Ja, mit Velopack“); in addition to the
 automatic check a check by hand („manuellem Update-Check zusätzlich zum
 automatischen“); the proposals below as planned („Deine Empfehlungen passen
 so“).
@@ -70,7 +71,7 @@ so“).
 - Tagging a release updates the running bot within about an hour after the
   next stream ends — tag only after the live test, as before. A tag set by
   mistake goes live the same way.
-- One manual step for 1.6.0: install it once with `Setup.exe` (or unpack
+- One manual step for 1.5.0: install it once with `Setup.exe` (or unpack
   `Portable.zip`) **as the same Windows user** — `%LOCALAPPDATA%` and the
   Credential Manager belong to one user — and delete the old ZIP folder.
 - Nothing in the program folder may be edited by hand: every update replaces

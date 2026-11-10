@@ -311,13 +311,15 @@ Not a setting, a temporary event — so a mod command like `!bossreset`.
   failed-lobby retry cooldown stays 2 minutes; stored in the database
   (survives a restart).
 
-## WP-11 — Automatic update of the desktop app (≈ 1–2 days) → v1.6.0
+## WP-11 — Automatic update of the desktop app (≈ 1–2 days) → v1.5.0
 
 The app updates itself from the GitHub releases instead of the user
 uploading the ZIP to the server by hand. User decisions (2026-11-10): its own
 package before version 2, independent of the website rebuild, and the next
-package after `!bosscooldown` (1.5.0) — before WP-09, which moves to 1.7.0,
-so the balancing release already arrives by itself.
+package after `!bosscooldown` (1.5.0) — before WP-09, so the balancing release
+already arrives by itself. Planned first as 1.6.0; at the merge the user
+decided „Jetzt mergen, beides 1.5.0“: WP-11 ships with `!bosscooldown` in
+1.5.0, WP-09 stays 1.6.0.
 Demo: tagging a release brings the running app on the server to the new
 version without anyone signing in to the server, never during a stream.
 
@@ -344,19 +346,19 @@ Deine Empfehlungen passen so.“ Settled with that (ADR-0010):
 
 Open:
 
-- 1.5.0 is still installed by hand; 1.6.0 is the one-time switch (`Setup.exe`
-  as the same Windows user, then delete the old folder).
+- 1.5.0 is the one-time switch (`Setup.exe` as the same Windows user, then
+  delete the old folder).
 - A tag deploys the running bot within the check interval after the next
   stream — tag only after the live test (as today); a tag set by mistake goes
   live.
-- The very first Velopack release (1.6.0) has no delta package; only from
-  1.6.1 on does the real GitHub path (feed of an earlier release, delta) run —
+- The very first Velopack release (1.5.0) has no delta package; only from
+  1.5.1 on does the real GitHub path (feed of an earlier release, delta) run —
   watch the first automatic update on the server.
 - If version 2 makes the website a separate Windows service, Velopack does not
   update it (it is for apps of a signed-in user); keep the web host in the app
   process or plan its own update path there.
 
-## WP-09 — Balancing after the first streams (≈ 2 days) → v1.7.0
+## WP-09 — Balancing after the first streams (≈ 2 days) → v1.6.0
 
 Tuning with real stream data and the Monte Carlo simulator instead of
 guesses. Starts after 1.0 has run on a few streams.

@@ -10,8 +10,8 @@ trainer pages and battle logs.
 
 > **Status:** stream-ready since 1.0.0 (WP-08); see the
 > [releases](https://github.com/JuliusFo/PokeArena/releases) for the current
-> version. Automatic updates follow in 1.6.0, balancing with data from real
-> streams in 1.7.0. See the
+> version. Automatic updates come with 1.5.0, balancing with data from real
+> streams in 1.6.0. See the
 > [roadmap](#roadmap).
 
 ## How it plays
@@ -77,7 +77,7 @@ xUnit v3 on Microsoft Testing Platform.
 ## Installing and running
 
 The bot runs on a Windows machine that is on during the streams — today the
-developer's Windows server (1.6.0 and later update themselves, ADR-0010).
+developer's Windows server (1.5.0 and later update themselves, ADR-0010).
 
 1. Download `PokeArena-vX.Y.Z-Setup.exe` from the
    [latest release](https://github.com/JuliusFo/PokeArena/releases/latest)
@@ -115,8 +115,8 @@ touched; the database is backed up before the new version upgrades it. Never
 edit files in the program folder — every update replaces it; settings belong
 in the „Einstellungen“ card.
 
-**Switching from the ZIP (versions up to 1.5.0):** close PokeArena, install
-1.6.0 with `Setup.exe` as above (same Windows user), start it and check that
+**Switching from the ZIP (versions up to 1.4.2):** close PokeArena, install
+1.5.0 with `Setup.exe` as above (same Windows user), start it and check that
 trainers and settings are there, then delete the old program folder (e.g.
 `C:\PokeArena`). If the old copy still runs, the top bar says „Version …
 verfügbar“ and links the download.
@@ -218,9 +218,8 @@ don't edit it by hand.
 | 1.2.0 | Fight page shows how each Pokémon ended | done |
 | 1.3.0 | Website page „Neuigkeiten“ with player-visible changes | done |
 | 1.4.0 | Boss pick per species, fight log in chat colours | done |
-| 1.5.0 | Mods shorten the boss cooldown for a while (`!bosscooldown`) | in progress |
-| 1.6.0 | Desktop app updates itself | in progress |
-| 1.7.0 | Balancing with real stream data | planned |
+| 1.5.0 | Mods shorten the boss cooldown for a while (`!bosscooldown`); the desktop app updates itself | in progress |
+| 1.6.0 | Balancing with real stream data | planned |
 
 Details per work package: [docs/roadmap.md](docs/roadmap.md) ·
 log: [docs/work-packages.md](docs/work-packages.md) ·
