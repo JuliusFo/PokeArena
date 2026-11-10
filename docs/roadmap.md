@@ -287,7 +287,7 @@ of 1.1.0–1.3.0, newest first.
 - **Done 2026-11-09** (release 1.3.0 after the live test). See the log in
   work-packages.md.
 
-## WP-09 — Balancing after the first streams (≈ 2 days) → v1.4.0
+## WP-09 — Balancing after the first streams (≈ 2 days) → v1.5.0
 
 Tuning with real stream data and the Monte Carlo simulator instead of
 guesses. Starts after 1.0 has run on a few streams.
@@ -306,7 +306,7 @@ Demo: measured win rates per NPC and boss group size, adjusted values.
   for the streamer and every change should go through the simulator. At most
   the streamer-facing values (boss cooldown, countdown) may get a setting.
 - Done ahead of WP-09 (user decision 2026-11-09, `feat/boss-pick-per-species`,
-  1.3.1): the boss pick is uniform over distinct species instead of
+  1.4.0): the boss pick is uniform over distinct species instead of
   specimens. Simulator part 3 (`dotnet run tools/BalancingSimulator.cs --
   --duels 1`, defaults otherwise; part 3 does not depend on `--duels`):
   group wins and catches move by at most 1–2 points at 5–100 catches. Per

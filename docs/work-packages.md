@@ -18,9 +18,11 @@ in [roadmap.md](roadmap.md).
 | – | Boss lobby (streamer requests, `feat/boss-lobby`) | 1.1.0 | done 2026-11-08 |
 | – | Battle end state (streamer request, `feat/battle-end-state`) | 1.2.0 | done 2026-11-08 |
 | WP-10 | „Neuigkeiten“ page on the website (before WP-09) | 1.3.0 | done 2026-11-09 |
-| – | Boss pick per species (user request, `feat/boss-pick-per-species`) | 1.3.1 | built 2026-11-09, live test open |
-| – | Battle log numbering (user report, `fix/battle-log-numbering`) | 1.3.1 | built 2026-11-10 |
-| WP-09 | Balancing after the first streams | 1.4.0 | planned |
+| – | Boss pick per species (user request, `feat/boss-pick-per-species`) | 1.4.0 | done 2026-11-10 |
+| – | Battle log numbering (user report, `fix/battle-log-numbering`) | 1.4.0 | done 2026-11-10 |
+| – | HP bar alignment (user request, `feat/hp-bar-alignment`) | 1.4.0 | done 2026-11-10 |
+| – | Fight log colours (user request, `feat/fight-log-colours`) | 1.4.0 | done 2026-11-10 |
+| WP-09 | Balancing after the first streams | 1.5.0 | planned |
 
 ## Log
 

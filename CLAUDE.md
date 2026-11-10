@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-11-09 · v1.3.0 released (WP-10 „Neuigkeiten“ page) · next WP-09 (→ 1.4.0) after a few streams
+Status: 2026-11-10 · v1.4.0 released (boss pick per species, fight log colours) · next WP-09 (→ 1.5.0) after a few streams
 
 ## 1. Where to find what
 
@@ -46,8 +46,8 @@ shows leaderboard, trainer pages and battle logs.
 | 1.1.0 | Review 1.0.3 fixes, boss lobby (2 min, late-join extension, HP left) | R1, feat/boss-lobby |
 | 1.2.0 | Fight page shows how each Pokémon ended | feat/battle-end-state |
 | 1.3.0 | Website page „Neuigkeiten“ (player-visible changes per version) | WP-10 |
-| 1.3.1 | Boss pick uniform over distinct species | feat/boss-pick-per-species |
-| 1.4.0 | Balancing with real stream data | WP-09 |
+| 1.4.0 | Boss pick uniform over distinct species, fight log in chat colours, log numbering and HP bar fixes | feat/boss-pick-per-species, feat/fight-log-colours, fix/battle-log-numbering, feat/hp-bar-alignment |
+| 1.5.0 | Balancing with real stream data | WP-09 |
 
 **Invariants — never weaken:**
 
@@ -176,10 +176,12 @@ PokeArena.slnx
 
 ## 9. Next
 
-1.3.0 is released (installation: README, „Running it on the streamer's PC“): the
-website has the „Neuigkeiten“ page (WP-10); 1.2.0 brought the fight page's end
-state, 1.1.0 R1 (fixes of the whole review 1.0.3, docs/review-1.0.3.md) and the
-boss lobby. Next: update the streamer's PC; after a few streams WP-09 balancing (1.4.0)
+1.4.0 is released (installation: README, „Running it on the streamer's PC“): the
+boss pick is uniform over distinct species, the fight log shows trainers in
+their Twitch chat colour and the boss in its type colour; 1.3.0 brought the
+„Neuigkeiten“ page (WP-10), 1.2.0 the fight page's end state, 1.1.0 R1 (fixes
+of the whole review 1.0.3, docs/review-1.0.3.md) and the boss lobby. Next:
+update the streamer's PC; after a few streams WP-09 balancing (1.5.0)
 (`N = 4` dip, PvP loot preferring missing species, NPC difficulty; no runtime
 balancing editor). Ideas meanwhile go to docs/backlog.md. Details:
 docs/roadmap.md.

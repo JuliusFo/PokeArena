@@ -123,7 +123,7 @@ possible, so no artificial pacing):
 - Each participant fields **one random Pokemon** from their inventory. If it
   faints, that participant is out — no replacements. The draw is uniform over
   the **distinct species** they own, so duplicates do not raise a species'
-  chance (since 1.3.1, user decision 2026-11-09; until then one random
+  chance (since 1.4.0, user decision 2026-11-09; until then one random
   specimen).
 - Per round: all living participant Pokemon attack the boss once, in
   seed-random order; then the boss attacks `⌈N / BossTargetDivisor⌉`

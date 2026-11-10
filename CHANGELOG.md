@@ -7,6 +7,8 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-11-10
+
 ### Added
 - A fight page's „Kampfverlauf“ shows each trainer's name in their Twitch chat
   colour, and in a boss fight the boss in the colour of its type. The owner
