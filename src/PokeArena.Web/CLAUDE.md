@@ -35,6 +35,8 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   `--hp`. No horizontal padding or border on `.hp-bar` itself, or the edges drift apart; the fills are darker
   than `--ok`/`--accent` because white text on those is under 4.5 : 1 (feat/hp-text-in-bar). Both themes use the
   same dark fills with white text: bright `--ok` with dark text glared in the dark theme despite 8 : 1, user
-  decision variant „B“ (fix/hp-bar-dark-mode).
+  decision variant „B“ (fix/hp-bar-dark-mode). The numbers are two stacked copies, each clipped to its part
+  (`clip-path`, not overlapping, or the dark copy fringes the white one); never `background-clip: text` — it loses
+  subpixel antialiasing and the numbers looked thin and grey (fix/hp-text-crisp).
 - Never tell a boss or NPC by `TrainerId == null`: a deleted trainer's fighters have no id either („[gelöscht]“). The
   boss is the fighter on side 1 of a boss fight (review feat/fight-log-colours).

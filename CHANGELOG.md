@@ -7,6 +7,12 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+### Fixed
+- The HP numbers inside a fight page's HP bar look crisp again instead of thin
+  and grey: they are drawn as two stacked texts (white over the fill, dark
+  over the rest) instead of one text with a colour gradient, which browsers
+  render without subpixel smoothing.
+
 ## [1.5.0] - 2026-11-10
 
 ### Added

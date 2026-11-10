@@ -27,6 +27,7 @@ in [roadmap.md](roadmap.md).
 | – | Fight card width reverted (user report, `fix/fight-card-width`) | 1.4.2 | done 2026-11-10 |
 | – | Shorter boss cooldown for a while (streamer request, `feat/boss-cooldown-reduced`) | 1.5.0 | done 2026-11-10 |
 | WP-11 | Automatic update of the desktop app (before WP-09) | 1.5.0 | done 2026-11-10 |
+| – | Crisp HP numbers (user report, `fix/hp-text-crisp`) | 1.5.1 | done 2026-11-10 |
 | WP-09 | Balancing after the first streams | 1.6.0 | planned |
 
 ## Log
@@ -641,6 +642,21 @@ in [roadmap.md](roadmap.md).
   - Found while fixing: `vpk pack` defaulted to x86 → `--runtime win-x64`.
   - Second pass L tooltip and README out of date → fixed.
   - The old tooltip „Lade das ZIP herunter …“ is gone with the merge into 1.5.0; a 1.4.2 copy still shows it, so the switch follows README „Switching from the ZIP“.
+
+### Crisp HP numbers — user report (2026-11-10, branch fix/hp-text-crisp)
+- Built: the HP numbers inside the bar are two stacked copies instead of one
+  text with `background-clip: text`: `.hp-text` in `--text`, clipped to the
+  empty part (`clip-path: inset(0 0 0 var(--hp))`), and `.hp-text.on-fill` in
+  `--hp-on-fill` on top, clipped to the fill, `aria-hidden` and
+  `user-select: none`. Same hard edge at `--hp`, same colours in both themes.
+  bUnit test checks both copies. CHANGELOG, „Neuigkeiten“ 1.5.1.
+- User decisions: a friend's screenshot comparison showed the numbers thin and
+  grey with `-webkit-text-fill-color: transparent` and crisp with `white`;
+  plain `white` would be unreadable over the light theme's empty part (≈ 1.2 : 1),
+  so „Zwei Textebenen“.
+- Pitfalls: `background-clip: text` loses subpixel antialiasing in Chromium.
+  The two copies must not overlap: the dark copy's antialiased edges would
+  show as a dark fringe around the white glyphs over the fill.
 
 Template per entry:
 
