@@ -142,11 +142,15 @@ public class PageTests : BunitContext
         var rows = cut.FindAll(".fighters li");
         Assert.Equal(
             [("fighter-survived", "8 / 40 HP"), ("fighter-unused", "nicht eingesetzt"), ("fighter-fainted", "besiegt")],
-            rows.Select(li => (li.ClassName, li.QuerySelector(".end-state")!.TextContent.Trim())));
+            rows.Select(li => (li.ClassName,
+                (li.QuerySelector(".end-state .hp-text:not(.on-fill)") ?? li.QuerySelector(".end-state")!).TextContent.Trim())));
         // 8 of 40 HP is a fifth: the bar is short and marked low; the numbers sit inside it (feat/hp-text-in-bar).
+        // Two copies of the numbers, the white one over the fill hidden from screen readers (fix/hp-text-crisp).
         var bar = rows[0].QuerySelector(".end-state > .hp-bar")!;
         Assert.Equal(("hp-bar low", "--hp: 20%"), (bar.ClassName, bar.GetAttribute("style")));
-        Assert.Equal("8 / 40 HP", bar.QuerySelector(":scope > .hp-text")!.TextContent);
+        Assert.Equal(
+            [("hp-text", "8 / 40 HP", null), ("hp-text on-fill", "8 / 40 HP", "true")],
+            bar.Children.Select(e => (e.ClassName, e.TextContent, e.GetAttribute("aria-hidden"))));
         // The owner links keep the link colour: no „muted“ on the link itself (review feat/battle-end-state).
         var links = cut.FindAll(".fighters a");
         Assert.Equal(["trainer/11", "trainer/11"], links.Select(a => a.GetAttribute("href")));

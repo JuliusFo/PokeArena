@@ -37,9 +37,12 @@
                                 @switch (state)
                                 {
                                     case "survived":
-                                        @* The numbers sit inside the bar to save width; site.css colours them per part of the bar. *@
+                                        @* The numbers sit inside the bar to save width. Two copies, each clipped to its part of the
+                                           bar (site.css): dark over the empty rest, white over the fill. *@
+                                        var hpText = $"{fighter.HpLeft} / {fighter.MaxHp} HP";
                                         <span class="hp-bar@(fighter.HpLeft * 4 <= fighter.MaxHp ? " low" : "")" style="--hp: @HpPercent(fighter)%">
-                                            <span class="hp-text">@fighter.HpLeft / @fighter.MaxHp HP</span>
+                                            <span class="hp-text">@hpText</span>
+                                            <span class="hp-text on-fill" aria-hidden="true">@hpText</span>
                                         </span>
                                         break;
                                     case "fainted":

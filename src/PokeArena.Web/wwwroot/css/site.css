@@ -346,7 +346,9 @@ h1:focus {
 /*
   HP numbers inside the bar (feat/hp-text-in-bar). Fixed width (up to „999 / 999 HP“), so the bars of all survivors
   line up and their fills compare. The text is coloured by the same hard edge at --hp as the fill: --hp-on-fill over
-  the fill, --text over the empty rest, so it keeps 4.5 : 1 on both. --ok and --accent are just under that with white
+  the fill, --text over the empty rest, so it keeps 4.5 : 1 on both. Two stacked copies of the text, each clipped to
+  its part, instead of one with background-clip: text — that renders without subpixel antialiasing and the numbers
+  looked thin and grey (fix/hp-text-crisp). --ok and --accent are just under that with white
   text in the light theme, hence the darker fills. The dark theme keeps them on purpose: the bright --ok with dark
   text had 8 : 1 but glared on the dark page and was reported as hard to read (fix/hp-bar-dark-mode).
 */
@@ -355,6 +357,7 @@ h1:focus {
   --hp-low: #c42d0b;
   --hp-on-fill: #ffffff;
   --hp-color: var(--hp-fill);
+  position: relative;
   display: block;
   width: calc(12ch + 16px);
   border-radius: 10px;
@@ -366,19 +369,29 @@ h1:focus {
   --hp-color: var(--hp-low);
 }
 
-/* Fills the bar exactly (padding inside), so its gradient edge sits where the bar's does. */
+/*
+  Both copies fill the bar exactly (padding inside), so their clip edge sits where the fill's does. Each is clipped
+  to its own part: overlapping, the dark copy's antialiased edges would show as a dark fringe around the white one.
+*/
 .hp-text {
   display: block;
   padding: 1px 8px;
-  background: linear-gradient(to right, var(--hp-on-fill) var(--hp), var(--text) var(--hp));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--text);
+  clip-path: inset(0 0 0 var(--hp));
   font-size: 13px;
   font-weight: 600;
   line-height: 18px;
   text-align: center;
   white-space: nowrap;
+}
+
+/* The copy is decoration only: hidden from screen readers (Battle.razor) and left out of selections. */
+.hp-text.on-fill {
+  position: absolute;
+  inset: 0;
+  color: var(--hp-on-fill);
+  clip-path: inset(0 calc(100% - var(--hp)) 0 0);
+  user-select: none;
 }
 
 .log {
