@@ -1,21 +1,21 @@
 # Builds the public website (src/PokeArena.Web) and deploys it to GitHub Pages. Only the app is deployed — the data
-# lives in R2 and is uploaded by the desktop app (ADR-0003). Runs on code changes to main, or by hand.
+# lives in R2 and is uploaded by the desktop app (ADR-0003). Runs on each release tag v*, so the site and its
+# „Neuigkeiten“ go live together with the desktop release, not when a branch is merged into main (user decision
+# 2026-11-10). By hand: "Run workflow" with the release tag selected under "Use workflow from" — run from main it
+# would publish changes that are not released yet.
 #
 # Setup (once, repository settings):
 #   - Pages → Source: "GitHub Actions"; custom domain e.g. arena.<domain> (DNS: CNAME to juliusfo.github.io, DNS only).
 #   - Variables → Actions → DATA_URL: the data host, e.g. https://arena-daten.<domain>/
+#   - Environments → github-pages → Deployment branches and tags: add the tag rule `v*` (Pages allows only main by
+#     default, and a tag run fails with "not allowed to deploy to github-pages").
 name: Website
 
 on:
+  # Every release redeploys, website changed or not: GitHub ignores path filters on tag pushes.
   push:
-    branches: [main]
-    paths:
-      - src/PokeArena.Web/**
-      - src/PokeArena.Contracts/**
-      - .github/workflows/pages.yml
-      - Directory.Build.props
-      - Directory.Packages.props
-      - global.json
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 permissions:
