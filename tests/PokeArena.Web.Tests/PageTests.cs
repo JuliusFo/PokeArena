@@ -150,6 +150,10 @@ public class PageTests : BunitContext
         var links = cut.FindAll(".fighters a");
         Assert.Equal(["trainer/11", "trainer/11"], links.Select(a => a.GetAttribute("href")));
         Assert.All(links, a => Assert.False(a.ClassList.Contains("muted")));
+        // Species and owner wrap in their own box; anything else straight in the row pushes the HP bar onto a line of
+        // its own again (fix/fighter-row-wrap).
+        Assert.All(rows, li => Assert.Equal(["who", "end-state"], li.Children.Select(c => c.ClassName)));
+        Assert.All(links, a => Assert.Equal("who", a.ParentElement!.ClassName));
     }
 
     [Fact]
