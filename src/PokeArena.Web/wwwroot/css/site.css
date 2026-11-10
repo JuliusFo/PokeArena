@@ -347,7 +347,8 @@ h1:focus {
   HP numbers inside the bar (feat/hp-text-in-bar). Fixed width (up to „999 / 999 HP“), so the bars of all survivors
   line up and their fills compare. The text is coloured by the same hard edge at --hp as the fill: --hp-on-fill over
   the fill, --text over the empty rest, so it keeps 4.5 : 1 on both. --ok and --accent are just under that with white
-  text in the light theme, hence the darker fills there.
+  text in the light theme, hence the darker fills. The dark theme keeps them on purpose: the bright --ok with dark
+  text had 8 : 1 but glared on the dark page and was reported as hard to read (fix/hp-bar-dark-mode).
 */
 .hp-bar {
   --hp-fill: #1b7f45;
@@ -359,14 +360,6 @@ h1:focus {
   border-radius: 10px;
   background: linear-gradient(to right, var(--hp-color) var(--hp), var(--border) var(--hp));
   overflow: hidden;
-}
-
-@media (prefers-color-scheme: dark) {
-  .hp-bar {
-    --hp-fill: var(--ok);
-    --hp-low: var(--accent);
-    --hp-on-fill: #17171b;
-  }
 }
 
 .hp-bar.low {
