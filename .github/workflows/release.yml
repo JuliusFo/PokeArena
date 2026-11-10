@@ -1,7 +1,8 @@
 name: Release
 
-# Builds the desktop app for the streamer's PC and attaches it to the GitHub release of the tag (WP-08). Run by
-# hand, it builds the package as a workflow artifact without touching any release.
+# Builds the desktop app (WP-08) and packs it with Velopack: Setup.exe, Portable.zip and the update packages that an
+# installed app finds by itself in the GitHub release of the tag (WP-11). Run by hand, it builds the package as a
+# workflow artifact without touching any release.
 on:
   push:
     tags:
@@ -83,14 +84,11 @@ jobs:
           -p:DebugType=none
           -o publish/PokeArena
 
-      - name: Package
+      - name: Check the program folder
         shell: pwsh
-        env:
-          NAME: ${{ steps.version.outputs.name }}
         run: |
           if (Test-Path publish/PokeArena/appsettings.local.json) { throw 'Developer settings must not be shipped.' }
           if (-not (Test-Path publish/PokeArena/data/pokemon.json)) { throw 'Base data missing from the package.' }
-          Compress-Archive -Path publish/PokeArena -DestinationPath "PokeArena-$env:NAME-win-x64.zip"
 
       # Everything goes through local fast-forward merges, so generated notes would be a bare compare link; the
       # changelog section says what changed.
@@ -134,13 +132,54 @@ jobs:
           Set-Content release-notes.md -Value $body -Encoding utf8
           Write-Host $body
 
+      # Velopack (WP-11, ADR-0010): Setup.exe, Portable.zip and the update packages an installed app downloads by
+      # itself. vpk runs here, in the read-only job, like everything else from NuGet. Its version is pinned in
+      # dotnet-tools.json and must match the Velopack package in Directory.Packages.props.
+      - name: Restore tools
+        run: dotnet tool restore
+
+      # The packages of the latest release come first, so this one also gets a small delta package and its feed
+      # lists the earlier versions. The very first Velopack release (1.6.0) finds none and has a full package only.
+      - name: Previous release for the delta package
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          dotnet vpk download github --repoUrl $env:REPO_URL --token $env:GH_TOKEN --outputDir releases
+          if ($LASTEXITCODE -ne 0) { Write-Host '::warning::No earlier Velopack release found; this one has a full package only.' }
+          exit 0
+
+      # packId is not "PokeArena": Velopack installs to %LOCALAPPDATA%\<packId> and deletes that folder on
+      # uninstall, and %LOCALAPPDATA%\PokeArena holds the game data.
+      - name: Pack
+        shell: pwsh
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          NAME: ${{ steps.version.outputs.name }}
+        run: |
+          $notes = if (Test-Path release-notes.md) { @('--releaseNotes', 'release-notes.md') } else { @() }
+          dotnet vpk pack --packId PokeArena.App --packVersion $env:VERSION --packTitle PokeArena --packAuthors PokeArena `
+            --packDir publish/PokeArena --mainExe PokeArena.exe --outputDir releases @notes
+          if ($LASTEXITCODE -ne 0) { throw 'vpk pack failed.' }
+
+          # Only this version's files go to its release; the downloaded packages of the previous one stay where they are.
+          New-Item -ItemType Directory package | Out-Null
+          Get-ChildItem releases -File |
+            Where-Object { $_.Name -like "*-$env:VERSION-*.nupkg" -or $_.Name -like 'releases.*.json' -or $_.Name -like 'assets.*.json' -or $_.Name -eq 'RELEASES' } |
+            Copy-Item -Destination package
+          Copy-Item releases/PokeArena.App-win-Setup.exe "package/PokeArena-$env:NAME-Setup.exe"
+          Copy-Item releases/PokeArena.App-win-Portable.zip "package/PokeArena-$env:NAME-Portable.zip"
+          Get-ChildItem package | ForEach-Object { Write-Host $_.Name }
+
       # Run by hand: the package is the result. For a tag: handed to the release job.
       - name: Upload package
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: package
           path: |
-            *.zip
+            package/
             release-notes.md
           if-no-files-found: error
 
@@ -166,7 +205,8 @@ jobs:
           GH_REPO: ${{ github.repository }}
           TAG: ${{ github.ref_name }}
         run: |
-          $files = Get-ChildItem *.zip | ForEach-Object { $_.Name }
+          $files = Get-ChildItem package -File | ForEach-Object { $_.FullName }
+          if (-not $files) { throw 'The package is empty.' }
 
           gh release view $env:TAG 2>$null
           if ($LASTEXITCODE -eq 0) {
