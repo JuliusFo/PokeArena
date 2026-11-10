@@ -42,7 +42,7 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   chat colour as picked, not the `Tint` text variant (yellow would turn brown); the text inside is black or white by
   `Tint.TextOn` over the fill and `--text` over the rest, two clipped copies like the HP numbers. A raw chat colour can
   equal the track or the card (white, black), so a bar that stops short ends in a 2 px `--text` edge (review
-  feat/damage-meter). Only colours that
-  pass `Tint.IsColor` go into the inline style. No box when any fighter lacks `Damage` (older files).
+  feat/damage-meter). Only colours that pass `Tint.IsColor` go into the inline style. No box when any fighter lacks
+  `Damage` (older files).
 - Never tell a boss or NPC by `TrainerId == null`: a deleted trainer's fighters have no id either („[gelöscht]“). The
   boss is the fighter on side 1 of a boss fight (review feat/fight-log-colours).
