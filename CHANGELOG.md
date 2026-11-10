@@ -7,6 +7,16 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+### Added
+- A fight page shows a „Schaden“ box between the fight cards and the log: what
+  each side dealt in total, then a ranking of who dealt how much — the
+  trainers in a boss fight (with their share of the boss's HP), every Pokémon
+  sent in for PvP and NPC fights. Bars run in the trainer's Twitch chat colour
+  (the boss and NPC Pokémon in their type's colour) with name and number
+  inside. Only damage that arrived counts. Fight files carry the damage per
+  fighter as a new optional field; older fights show the box after „Alles neu
+  veröffentlichen“.
+
 ### Fixed
 - The HP numbers inside a fight page's HP bar look crisp again instead of thin
   and grey: they are drawn as two stacked texts (white over the fill, dark

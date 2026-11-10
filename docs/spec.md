@@ -375,7 +375,7 @@ Data files (all derived — fully regenerable from the DB; the UI has a
 |----------------------------|------------------------------------------------------|
 | `rangliste.json`           | rank, display name, distinct count, total count, player count, timestamp. Sort: distinct desc, then total desc, then earliest attainment¹ |
 | `trainer/<twitch-id>.json` | pokedex (species + count), achievements, recent fights, stats |
-| `kampf/<id>.json`          | participants, teams, log lines, result, loot, seed; per fighter its HP left and whether it was sent in², its owner's chat colour³; the log lines also in parts that name their fighter³ |
+| `kampf/<id>.json`          | participants, teams, log lines, result, loot, seed; per fighter its HP left and whether it was sent in², its owner's chat colour³ and the damage it dealt⁴; the log lines also in parts that name their fighter³ |
 | `kaempfe.json`             | last N fights for an index page                      |
 | `meta.json`                | data format version, timestamp                       |
 
@@ -407,6 +407,19 @@ the viewer never picked one). The site darkens or lightens each colour per theme
 until it reaches 4.5 : 1 on the page surface, so a yellow name stays readable
 on white. Like the end state, older files show the log uncoloured until „Alles
 neu veröffentlichen“, and a colour change shows on older fights only after it.
+
+⁴ „Schaden“ box on the fight page (user request 2026-11-10), between the fight
+cards and the „Kampfverlauf“, as wide as both cards: „Gesamt“ compares what each
+side dealt, then a ranking from most to least damage — the trainers in a boss
+fight (with their share of the boss's HP, „148 · 26 %“), every Pokémon sent in
+of both sides in PvP and NPC fights. Equal damage shares a rank. Damage counts
+only what arrived: a last hit counts the target's HP left, so one side's damage
+adds up to the HP the other side lost. Bars run from the left in the trainer's
+chat colour as picked; the boss and NPC Pokémon take the colour of their first
+type, trainers without a colour grey, a side of several colours the HP bar's
+green. Name and number sit inside the bar like the HP numbers: black or white
+over the fill, whichever reads better, normal text over the rest. Older files
+show no box until „Alles neu veröffentlichen“.
 
 - Files are uploaded **directly per change** via the publish queue.
 - Uploads normally land within seconds, but the queue may lag (network

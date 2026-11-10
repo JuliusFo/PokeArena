@@ -27,7 +27,8 @@ in [roadmap.md](roadmap.md).
 | – | Fight card width reverted (user report, `fix/fight-card-width`) | 1.4.2 | done 2026-11-10 |
 | – | Shorter boss cooldown for a while (streamer request, `feat/boss-cooldown-reduced`) | 1.5.0 | done 2026-11-10 |
 | WP-11 | Automatic update of the desktop app (before WP-09) | 1.5.0 | done 2026-11-10 |
-| – | Crisp HP numbers (user report, `fix/hp-text-crisp`) | 1.5.1 | done 2026-11-10 |
+| – | Crisp HP numbers (user report, `fix/hp-text-crisp`) | 1.6.0? | done 2026-11-10 |
+| – | „Schaden“ box on the fight page (user request, `feat/damage-meter`) | 1.6.0? | done 2026-11-10 |
 | WP-09 | Balancing after the first streams | 1.6.0 | planned |
 
 ## Log
@@ -649,7 +650,7 @@ in [roadmap.md](roadmap.md).
   empty part (`clip-path: inset(0 0 0 var(--hp))`), and `.hp-text.on-fill` in
   `--hp-on-fill` on top, clipped to the fill, `aria-hidden` and
   `user-select: none`. Same hard edge at `--hp`, same colours in both themes.
-  bUnit test checks both copies. CHANGELOG, „Neuigkeiten“ 1.5.1.
+  bUnit test checks both copies. CHANGELOG, „Neuigkeiten“ (next release, 1.6.0 since feat/damage-meter).
 - User decisions: a friend's screenshot comparison showed the numbers thin and
   grey with `-webkit-text-fill-color: transparent` and crisp with `white`;
   plain `white` would be unreadable over the light theme's empty part (≈ 1.2 : 1),
@@ -657,6 +658,28 @@ in [roadmap.md](roadmap.md).
 - Pitfalls: `background-clip: text` loses subpixel antialiasing in Chromium.
   The two copies must not overlap: the dark copy's antialiased edges would
   show as a dark fringe around the white glyphs over the fill.
+
+### „Schaden“ box on the fight page — user request (2026-11-10, branch feat/damage-meter)
+- Built: Core `BattleLog.DamageDealt()` (damage that arrived per fighter: a
+  hit counts the target's HP before it minus after it), written by
+  `SiteGenerator` into the new optional `BattleFighter.Damage` (Contracts; no
+  format version bump, ADR-0009). Web: `Services/DamageMeter` builds the board
+  (side totals; ranking of the trainers in a boss fight with their share of
+  the boss's HP, of every Pokémon sent in otherwise; equal damage shares a
+  rank), `Shared/DamageBox.razor` renders it between `.sides` and
+  „Kampfverlauf“; `Tint.IsColor` / `Tint.TextOn` (black or white on a bar).
+  Sample data carries damage and chat colours. Tests: Core (overkill, sides
+  add up), DamageMeter, Tint, bUnit page. Spec §9 note ⁴, roadmap,
+  CHANGELOG, „Neuigkeiten“ 1.6.0.
+- User decisions: mockup 1 (totals + ranking) accepted with two changes —
+  „Balken in der Farbe des Twitch-Users“ and „den Text vor den Balken machen,
+  wie bei den HP“; „Ja, so bauen“.
+- Addenda: Proposal (not confirmed) — see roadmap.md (colour fallbacks, raw
+  colour in the dark theme, ranking per kind, version).
+- Pitfalls: text inside the bars needs `Tint.TextOn`, not white: the raw chat
+  colour may be yellow. Never derive damage from the German log text — it is
+  in the stored events.
+- Deliberately not done: damage taken, healing, per-round chart.
 
 Template per entry:
 

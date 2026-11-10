@@ -38,5 +38,9 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   decision variant „B“ (fix/hp-bar-dark-mode). The numbers are two stacked copies, each clipped to its part
   (`clip-path`, not overlapping, or the dark copy fringes the white one); never `background-clip: text` — it loses
   subpixel antialiasing and the numbers looked thin and grey (fix/hp-text-crisp).
+- „Schaden“ box (`Shared/DamageBox.razor`, logic in `Services/DamageMeter.cs`, feat/damage-meter): bars take the
+  chat colour as picked, not the `Tint` text variant (yellow would turn brown); the text inside is black or white by
+  `Tint.TextOn` over the fill and `--text` over the rest, two clipped copies like the HP numbers. Only colours that
+  pass `Tint.IsColor` go into the inline style. No box when any fighter lacks `Damage` (older files).
 - Never tell a boss or NPC by `TrainerId == null`: a deleted trainer's fighters have no id either („[gelöscht]“). The
   boss is the fighter on side 1 of a boss fight (review feat/fight-log-colours).

@@ -311,6 +311,25 @@ Not a setting, a temporary event — so a mod command like `!bossreset`.
   failed-lobby retry cooldown stays 2 minutes; stored in the database
   (survives a restart).
 
+## „Schaden“ box on the fight page (`feat/damage-meter`) → next release
+
+User request (2026-11-10): under the two fight cards a box as wide as both
+with a damage meter — who dealt how much, bars from the left, ranked; maybe
+the boss too, with the trainers summed.
+
+- User decisions (2026-11-10): mockup accepted — „Gesamt“ (sides summed, the
+  boss as its own bar) plus a ranking; bars in the Twitch chat colour, name
+  and number inside the bar like the HP numbers („Ja, so bauen“).
+- Built as the simplest variant, **Proposal (not confirmed)**: only damage
+  that arrived counts; boss fight ranks the trainers with their share of the
+  boss's HP, PvP/NPC rank every Pokémon sent in; equal damage shares a rank;
+  the boss and NPC Pokémon in their first type's colour, no colour → grey,
+  a side of several colours → the HP bar's green; the raw chat colour also in
+  the dark theme (bright colours like yellow stand out there).
+- Open: version — a feature makes the next release 1.6.0, so WP-09 would
+  become 1.7.0 or ship together with it; „Neuigkeiten“ lists it under 1.6.0
+  for now.
+
 ## WP-11 — Automatic update of the desktop app (≈ 1–2 days) → v1.5.0
 
 The app updates itself from the GitHub releases instead of the user
