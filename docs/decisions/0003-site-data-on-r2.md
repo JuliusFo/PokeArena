@@ -68,3 +68,12 @@ bot can write. The user already has a domain whose DNS is on Cloudflare
   certificate covers `*.<domain>` only, not `*.arena.<domain>`.
 
 This supersedes "a custom domain in v1 (backlog)" above; the rest stands.
+
+## Addendum 2026-11-10: site deployed with the release tag
+
+User decision: the Pages workflow (`pages.yml`) runs on release tags `v*`
+(and by hand) instead of on pushes to `main`. "Deployed only on code changes"
+above becomes "deployed with each release": `main` may hold website changes
+and „Neuigkeiten“ lines that are not released yet, and they go live together
+with the desktop release. The `github-pages` environment needs the tag rule
+`v*` (`docs/website-setup.md` §3).

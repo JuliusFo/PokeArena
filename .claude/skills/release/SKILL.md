@@ -62,8 +62,10 @@ Stop on any failure.
   matches `<Version>` and that the CHANGELOG section exists, builds and tests the self-contained ZIP; the release job
   then attaches it to the GitHub release with the CHANGELOG section as notes.
 - Check with `gh release view vX.Y.Z` that the ZIP `PokeArena-vX.Y.Z-win-x64.zip` is attached.
-- If the website changed (`src/PokeArena.Web`, `src/PokeArena.Contracts`), check that the "Website" run on `main` is
-  green too. If `SiteMeta.CurrentFormatVersion` was raised, tell the user: the site is already live with the new
+- The tag also starts the "Website" run (`pages.yml`, user decision 2026-11-10): `gh run watch` it too until it is
+  green — only now do the website changes and the „Neuigkeiten“ section go live. If its deploy job fails with "not
+  allowed to deploy to github-pages", the environment lacks the tag rule `v*` (`docs/website-setup.md` §3). If
+  `SiteMeta.CurrentFormatVersion` was raised, tell the user: the site is now live with the new
   format, the streamer's bot writes the old one until they update — until then the site shows „Die Daten werden
   gerade umgestellt“; after the update the streamer clicks „Alles neu veröffentlichen“.
 - List merged local branches and worktrees that could go; delete them only after the user confirms the list.

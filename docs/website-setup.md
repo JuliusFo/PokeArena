@@ -74,7 +74,13 @@ labels are from memory and may differ slightly.
    `arena.<domain>`; once the certificate exists, **Enforce HTTPS**.
 4. Repository → Settings → Secrets and variables → Actions → **Variables**:
    `DATA_URL = https://arena-daten.<domain>/`.
-5. Run the workflow "Website" once by hand (Actions tab) or push to `main`.
+5. Repository → Settings → Environments → `github-pages` → **Deployment
+   branches and tags**: add a rule of type *Tag* with the pattern `v*`.
+   The workflow "Website" runs on release tags (`vX.Y.Z`), and Pages allows
+   only `main` by default.
+6. Run the workflow "Website" once by hand (Actions tab → "Run workflow",
+   under "Use workflow from" pick the latest release tag) or push a release
+   tag. Merging into `main` does not publish the site.
 
 ## 4. Desktop app
 

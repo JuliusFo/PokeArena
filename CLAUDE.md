@@ -158,6 +158,9 @@ PokeArena.slnx
 - Release: after the live test, add the `[X.Y.Z] - date` section to the
   CHANGELOG and set `<Version>` in `Directory.Build.props` on the package
   branch; after the merge tag `vX.Y.Z` on `main` and push the tag.
+  The tag also deploys the website (`pages.yml`, user decision 2026-11-10):
+  `main` collects website changes and „Neuigkeiten“ lines unpublished until
+  the release, so merging a branch never puts them live early.
 - Core logic first with tests, then UI. Unit tests without external
   dependencies; integration tests (Twitch, R2) separate and skip cleanly when
   the infrastructure is missing.

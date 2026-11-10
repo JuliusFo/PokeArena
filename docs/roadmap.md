@@ -280,6 +280,10 @@ of 1.1.0–1.3.0, newest first.
   that does not apply on stream yet. Accepted: entries are labelled by
   version and the page points to `!version`. Publishing the entries from the
   app via R2 is parked in backlog.md in case it matters for WP-09.
+  Superseded in part (user decision 2026-11-10, branch
+  feat/pages-on-release-tag): `pages.yml` deploys on the release tag, so a
+  merge into `main` no longer announces anything early; the gap until the
+  streamer updates the app remains.
 - Back-fill: player-visible changes of 1.1.0 (2-minute boss lobby, late-join
   extension, boss HP left, `!challenge @Name`, hints at most every 30 s) and
   1.2.0 (fight page shows how each Pokémon ended); nothing older, the page
