@@ -47,9 +47,11 @@ public static class Tint
     /// (the Pokémon is the element), a trainer's name in their chat colour; null for everything else (species and HP
     /// of trainers' Pokémon, NPCs, trainers without a known colour).
     /// </summary>
+    /// <param name="side">Index of the fighter's side on the page: the boss is the only fighter on side 1. Never tell the
+    /// boss by a missing trainer id — a deleted trainer's fighters have none either (review feat/fight-log-colours).</param>
     /// <param name="isOwner">The part is the owner („Ash“, „Boss“), not the species or HP around it.</param>
-    public static string? Of(BattlePage battle, BattleFighter fighter, bool isOwner) =>
-        battle.Kind == BattleKind.Boss && fighter.TrainerId is null
+    public static string? Of(BattlePage battle, int side, BattleFighter fighter, bool isOwner) =>
+        battle.Kind == BattleKind.Boss && side == 1
             ? fighter.Species.Types.Count > 0 ? TypeColors.GetValueOrDefault(Format.TypeClass(fighter.Species.Types[0])) : null
             : isOwner ? fighter.Color : null;
 

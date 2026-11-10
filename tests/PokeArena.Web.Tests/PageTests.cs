@@ -199,6 +199,38 @@ public class PageTests : BunitContext
     }
 
     [Fact]
+    public void A_deleted_trainer_in_a_boss_fight_is_not_coloured_like_the_boss()
+    {
+        var arkani = new SpeciesInfo(59, "Arkani", ["Feuer"]);
+        Put(
+            SitePaths.Battle(3),
+            BattlePage(3) with
+            {
+                Kind = BattleKind.Boss,
+                Sides =
+                [
+                    new BattleSide("Trainer", true, [new BattleFighter(Raupy, "[gelöscht]", null, 30)]),
+                    new BattleSide("Arkani", false, [new BattleFighter(arkani, "Boss", null, 400)]),
+                ],
+                Lines = ["Raupy ([gelöscht]) hat Arkani (Boss) 5 Schaden zugefügt."],
+                Log =
+                [
+                    new LogLine(
+                    [
+                        new LogPart("Raupy (", 0, 0), new LogPart("[gelöscht]", 0, 0, IsOwner: true), new LogPart(")", 0, 0), new LogPart(" hat "),
+                        new LogPart("Arkani (", 1, 0), new LogPart("Boss", 1, 0, IsOwner: true), new LogPart(")", 1, 0), new LogPart(" 5 Schaden zugefügt."),
+                    ]),
+                ],
+            },
+            SiteJson.Default.BattlePage);
+
+        var cut = Render<Battle>(p => p.Add(b => b.Id, 3));
+
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll(".log li")));
+        Assert.Equal(["Arkani (", "Boss", ")"], cut.FindAll(".log .tinted").Select(s => s.TextContent));
+    }
+
+    [Fact]
     public void A_battle_file_from_before_the_end_state_shows_the_start_hp()
     {
         _host.Files[SitePaths.Battle(6)] = """
