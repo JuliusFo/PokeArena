@@ -59,9 +59,11 @@ Stop on any failure.
 ## 6. Release workflow
 
 - `gh run watch` on the "Release" run of the tag until it finishes. Its build job (read-only token) checks that the tag
-  matches `<Version>` and that the CHANGELOG section exists, builds and tests the self-contained ZIP; the release job
-  then attaches it to the GitHub release with the CHANGELOG section as notes.
-- Check with `gh release view vX.Y.Z` that the ZIP `PokeArena-vX.Y.Z-win-x64.zip` is attached.
+  matches `<Version>` and that the CHANGELOG section exists, builds and tests, and packs the app with Velopack (WP-11,
+  ADR-0010); the release job then attaches the packages to the GitHub release with the CHANGELOG section as notes.
+- Check with `gh release view vX.Y.Z` that `PokeArena-vX.Y.Z-Setup.exe`, `PokeArena-vX.Y.Z-Portable.zip`,
+  `PokeArena.App-X.Y.Z-full.nupkg` and `releases.win.json` are attached (from the second Velopack release on also a
+  `-delta.nupkg`). Without `releases.win.json` installed copies do not see the release.
 - The tag also starts the "Website" run (`pages.yml`, user decision 2026-11-10): `gh run watch` it too until it is
   green — only now do the website changes and the „Neuigkeiten“ section go live. If its deploy job fails with "not
   allowed to deploy to github-pages", the environment lacks the tag rule `v*` (`docs/website-setup.md` §3). If
@@ -72,8 +74,9 @@ Stop on any failure.
 
 ## 7. Finish
 
-Short German summary: version, link to the GitHub release, what the streamer has to do (README "Updating": close the
-app, replace the program folder with the new ZIP; the top bar shows „Version … verfügbar“ by itself). Suggest `/branch-code-review` on the next package branch if this
+Short German summary: version, link to the GitHub release, what happens on the bot's machine (README "Updating": an
+installed copy finds the release within the hour and installs it once the stream is over — nothing to do; a copy from
+the old ZIP shows „Version … verfügbar“ and needs the one-time `Setup.exe` install, README "Switching from the ZIP"). Suggest `/branch-code-review` on the next package branch if this
 release went out without one.
 
 Then check whether a whole review is due (as in FerretSharp): count the rows of the table in `docs/work-packages.md`

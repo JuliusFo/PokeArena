@@ -321,39 +321,36 @@ so the balancing release already arrives by itself.
 Demo: tagging a release brings the running app on the server to the new
 version without anyone signing in to the server, never during a stream.
 
-Proposal (not confirmed):
+User decisions at the start (2026-11-10, plan of `wp/11-auto-update`):
+„Ja, mit Velopack, manuellem Update-Check zusätzlich zum automatischen.
+Deine Empfehlungen passen so.“ Settled with that (ADR-0010):
 
-- Velopack (`Velopack` package, `vpk` as a dotnet tool, both on nuget.org)
-  instead of an own updater: the file swap and restart are its tested code,
-  updates are deltas. `release.yml` runs `vpk pack` after the publish and
-  attaches the packages to the same GitHub release; the app reads them through
-  `GithubSource` (public repository, no token). New dependency → ADR.
-- Alternative: extend `UpdateCheck` into an own updater (download the ZIP,
-  check the asset's SHA-256 digest, swap the program folder keeping the old one
-  for rollback, restart). No new dependency, but the risky part is own code.
-- `packId` must not be `PokeArena`: Velopack installs to
-  `%LOCALAPPDATA%\<packId>` and deletes that folder on uninstall — the data
-  directory `%LOCALAPPDATA%\PokeArena` would be inside.
-- `VelopackApp.Build().Run()` must run first in `Main`; WPF generates `Main`
-  today, so the desktop app needs its own entry point (before the
-  single-instance mutex).
-- Check periodically (e.g. hourly) instead of once per start: on the server
-  the app runs for weeks. Download right away; apply only while the stream is
-  offline (WP-07) and no boss lobby or challenge is open; plus a button
-  „Jetzt aktualisieren“. Reuse the existing shutdown path; the backup before
-  the migration stays.
-- A failed start after an update must end up in the log (the start-failure
-  message box waits for a click on an unattended server); rollback if the
-  chosen tool allows it.
-- One-time switch: install once with `Setup.exe`, delete the old ZIP folder;
-  data, settings and Credential Manager entries stay. README „Updating“ and the
-  install steps change.
+- Velopack (`Velopack` package, `vpk` as a local dotnet tool, same version);
+  `release.yml` packs `Setup.exe`, `Portable.zip`, full and delta packages and
+  `releases.win.json` onto the GitHub release, the app reads them through
+  `GithubSource`. The old ZIP goes away.
+- packId `PokeArena.App` (the data directory `%LOCALAPPDATA%\PokeArena` must
+  never be the install folder); own `Main` with `VelopackApp.Build().Run()`
+  first.
+- First check 5 minutes after the start, then hourly; download at once;
+  install automatically only while the bot takes no commands, no dry run and
+  no boss lobby is open (checked every minute; open `!fight` challenges do not
+  block). „Jetzt aktualisieren“ installs at once, also during a stream, but not
+  while a boss lobby is open; „Nach Updates suchen“ checks at once.
+- README recommends `Setup.exe`; `Portable.zip` for a folder of one's own.
+- No switch to turn the updates off, the interval is fixed, no automatic
+  rollback (backlog) — a failed start is logged.
 
 Open:
 
-- 1.5.0 is still installed by hand; 1.6.0 is the one-time switch above.
-- A tag then deploys the running bot within the check interval — tag only
-  after the live test (as today), and a tag set by mistake goes live.
+- 1.5.0 is still installed by hand; 1.6.0 is the one-time switch (`Setup.exe`
+  as the same Windows user, then delete the old folder).
+- A tag deploys the running bot within the check interval after the next
+  stream — tag only after the live test (as today); a tag set by mistake goes
+  live.
+- The very first Velopack release (1.6.0) has no delta package; only from
+  1.6.1 on does the real GitHub path (feed of an earlier release, delta) run —
+  watch the first automatic update on the server.
 - If version 2 makes the website a separate Windows service, Velopack does not
   update it (it is for apps of a signed-in user); keep the web host in the app
   process or plan its own update path there.
@@ -436,10 +433,9 @@ Open before starting:
 - Who operates the desktop app now — the streamer by remote desktop or the
   user? That decides the audience of UI texts and setup steps (§2 of
   `CLAUDE.md`).
-- Docs that still assume the streamer's PC: README („Running it on the
-  streamer's PC“), spec §9 (OBS overlay on the same machine),
-  `docs/website-setup.md` §4 (OBS browser source), ADR-0001/0002 context,
-  comments in `release.yml`.
+- Docs that still assume the streamer's PC: spec §9 (OBS overlay on the same
+  machine), `docs/website-setup.md` §4 (OBS browser source), ADR-0001/0002
+  context (README and `release.yml` were brought in line in WP-11).
 - Smaller alternative without the rebuild: keep R2 + Pages and only add
   `/overlay` to the website, polling R2 — lags by the poll interval plus cache,
   enough for „latest fight / top 5“, too slow for the live boss countdown in

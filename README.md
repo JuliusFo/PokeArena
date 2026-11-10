@@ -74,13 +74,21 @@ Twitch chat ──EventSub──▶ Desktop app (bot, SQLite) ──Helix──�
 EventSub WebSocket + Helix API, Blazor WebAssembly, Cloudflare R2,
 xUnit v3 on Microsoft Testing Platform.
 
-## Running it on the streamer's PC
+## Installing and running
 
-1. Download `PokeArena-vX.Y.Z-win-x64.zip` from the
+The bot runs on a Windows machine that is on during the streams — today the
+developer's Windows server (1.6.0 and later update themselves, ADR-0010).
+
+1. Download `PokeArena-vX.Y.Z-Setup.exe` from the
    [latest release](https://github.com/JuliusFo/PokeArena/releases/latest)
-   and unpack it, e.g. to `C:\PokeArena`. No installer and no .NET runtime are
-   needed (Windows 10/11 with WebView2, which ships with Windows 11).
-2. Start `PokeArena.exe` (a desktop shortcut helps). On the first start:
+   and run it **as the Windows user who runs the bot** (data and sign-ins
+   belong to that user). It installs to `%LOCALAPPDATA%\PokeArena.App` and
+   adds a desktop and start-menu shortcut; Windows SmartScreen may ask once
+   („Weitere Informationen“ → „Trotzdem ausführen“), the file is not signed.
+   No .NET runtime is needed (Windows 10/11 or Server with WebView2).
+   Prefer a folder of your own? Unpack `PokeArena-vX.Y.Z-Portable.zip`
+   instead, e.g. to `C:\PokeArena` — it updates itself the same way.
+2. Start PokeArena. On the first start:
    Bot → **Einstellungen** (Twitch channel, website addresses) → restart the
    app → **Twitch-Verbindung** → sign in the **bot account** (not the
    streamer's own: a browser logged in to twitch.tv as the streamer confirms
@@ -90,13 +98,26 @@ xUnit v3 on Microsoft Testing Platform.
 3. In the Twitch chat of the channel, the streamer makes the bot a moderator:
    `/mod <botname>`. Not required for chatting, but it protects the bot's
    replies against slow mode and follow-only chat (ADR-0002 addendum).
-4. OBS: browser source `http://localhost:5299/overlay` — start PokeArena
-   before OBS, or refresh the source once.
+4. OBS (only if OBS runs on the same machine): browser source
+   `http://localhost:5299/overlay` — start PokeArena before OBS, or refresh
+   the source once.
 
-**Updating:** when the top bar shows „Version … verfügbar“, close PokeArena,
-download the new ZIP and replace the program folder with its contents. Game
+**Updating:** nothing to do. PokeArena looks for a new version five minutes
+after it starts and then every hour, downloads it and installs it as soon as
+the stream is over (not while „Auch ohne Stream“, the dry run or a boss lobby
+is on); it restarts by itself within a minute or so. The top bar shows
+„Version … bereit“ meanwhile; „Jetzt aktualisieren“ installs at once (not
+while a boss lobby is open), „Nach Updates suchen“ looks right away. Game
 data, settings and backups live in `%LOCALAPPDATA%\PokeArena` and are not
-touched; the database is backed up before the new version upgrades it.
+touched; the database is backed up before the new version upgrades it. Never
+edit files in the program folder — every update replaces it; settings belong
+in the „Einstellungen“ card.
+
+**Switching from the ZIP (versions up to 1.5.0):** close PokeArena, install
+1.6.0 with `Setup.exe` as above (same Windows user), start it and check that
+trainers and settings are there, then delete the old program folder (e.g.
+`C:\PokeArena`). If the old copy still runs, the top bar says „Version …
+verfügbar“ and links the download.
 
 **Restoring a backup:** close PokeArena, copy the wanted file from
 `%LOCALAPPDATA%\PokeArena\backups` (the „Sicherung“ card shows the folder)
@@ -110,8 +131,17 @@ delete them again.
 
 **Releasing (developer):** set `<Version>` and the CHANGELOG section on the
 package branch, merge, then tag `vX.Y.Z` on `main` and push the tag. The
-[release workflow](.github/workflows/release.yml) builds the ZIP and attaches
-it to the GitHub release, with the changelog section as notes.
+[release workflow](.github/workflows/release.yml) packs it with Velopack
+(`Setup.exe`, `Portable.zip`, update packages) and attaches everything to the
+GitHub release, with the changelog section as notes; installed copies pick it
+up within the hour after the next stream. Tag only after the live test.
+
+**Trying an update without a release (developer):** `dotnet vpk pack` two
+versions into one folder (`--packId PokeArena.AppTest`, so the real install
+stays apart), unpack the first one's `Portable.zip` and start
+`current\PokeArena.exe --PokeArena:DataDirectory=<scratch> --PokeArena:Twitch:Channel=
+--PokeArena:Update:Source=<folder>`; about six minutes later it restarts as the
+second version.
 
 ## Building
 
@@ -186,7 +216,7 @@ don't edit it by hand.
 | 1.3.0 | Website page „Neuigkeiten“ with player-visible changes | done |
 | 1.4.0 | Boss pick per species, fight log in chat colours | done |
 | 1.5.0 | Mods shorten the boss cooldown for a while (`!bosscooldown`) | in progress |
-| 1.6.0 | Desktop app updates itself | planned |
+| 1.6.0 | Desktop app updates itself | in progress |
 | 1.7.0 | Balancing with real stream data | planned |
 
 Details per work package: [docs/roadmap.md](docs/roadmap.md) ·

@@ -31,6 +31,13 @@ Thin WPF host around a `BlazorWebView` (ADR-0007). UI belongs in PokeArena.UI, l
 - Streamer settings (WP-08): `settings.json` in the data directory (written by the „Einstellungen“ card via
   `SettingsFile`) is inserted as a configuration source between `appsettings.json` and `appsettings.local.json`
   (`App.AddStreamerSettings`); it is read once at start, so changes apply after a restart.
+- Self-update (WP-11, ADR-0010): `Program.Main` runs `VelopackApp.Build().Run()` before anything else (Velopack starts
+  the exe with hook arguments during install/update/uninstall) — keep it first, before the mutex. App.xaml is a
+  `Page`, not an `ApplicationDefinition`, so WPF generates no second `Main`. The packId is `PokeArena.App`: with
+  `PokeArena` the install folder would be the data directory, and uninstalling would delete the game data. Nothing in
+  the program folder survives an update — settings go to `settings.json`. Try an update locally with
+  `--PokeArena:Update:Source=<folder with vpk pack output>` (README); `VelopackUpdater.TryCreate` returns null for a
+  copy Velopack did not install, then `GitHubReleaseHint` only shows the hint.
 - Shutdown: the main window's `Closing` cancels once, awaits `IHost.StopAsync`, closes the window, awaits the host's
   `DisposeAsync` (at most 5 s) and only then calls `Shutdown()`. `OnExit` neither awaits nor disposes the host: the
   dispatcher is already shutting down, and a synchronous `Dispose` could deadlock on async disposal (review 1.0.3).

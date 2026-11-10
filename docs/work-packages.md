@@ -26,7 +26,7 @@ in [roadmap.md](roadmap.md).
 | – | Fighter row wrap (user report, `fix/fighter-row-wrap`) | 1.4.1 | done 2026-11-10 |
 | – | Fight card width reverted (user report, `fix/fight-card-width`) | 1.4.2 | done 2026-11-10 |
 | – | Shorter boss cooldown for a while (streamer request, `feat/boss-cooldown-reduced`) | 1.5.0 | done 2026-11-10 |
-| WP-11 | Automatic update of the desktop app (before WP-09) | 1.6.0 | planned |
+| WP-11 | Automatic update of the desktop app (before WP-09) | 1.6.0 | done 2026-11-10 |
 | WP-09 | Balancing after the first streams | 1.7.0 | planned |
 
 ## Log
@@ -588,6 +588,38 @@ in [roadmap.md](roadmap.md).
   silent (roadmap.md).
 - Deliberately not done: announcing the natural end, durations like „2h“,
   showing the reduction in the desktop app.
+
+### WP-11 — Automatic update of the desktop app (2026-11-10, branch wp/11-auto-update)
+- Built: Velopack self-update (ADR-0010). Core: `IAppUpdater`,
+  `GitHubReleaseHint` (the WP-08 hint, now behind the interface),
+  `UpdateGate` (bot takes no commands, no dry run, no boss lobby —
+  `BossEncounter.HasOpenLobby`), `UpdateCheck` rebuilt as a loop: first check
+  after 5 min, then hourly, download at once, install when the gate allows
+  (checked every minute), `CheckNowAsync` / `InstallNow` for the buttons, a
+  failed check keeps an earlier download. Desktop: own `Program.Main`
+  (`VelopackApp.Build().Run()` first, App.xaml as `Page`), `VelopackUpdater`
+  (`GithubSource` or a local folder via `PokeArena:Update:Source`, install =
+  `WaitExitThenApplyUpdates` silent with the same arguments + closing the main
+  window). UI: `UpdateStatus` in the top bar. `release.yml`: `vpk pack`
+  (packId `PokeArena.App`) after the publish, `vpk download github` before it
+  for the delta, only this version's files on the release, Setup and Portable
+  renamed to `PokeArena-vX.Y.Z-…`. README „Installing and running“, release
+  skill, architecture, Desktop pitfalls. No „Neuigkeiten“ line (players do not
+  notice).
+- User decisions: own package before version 2 and right after
+  `!bosscooldown`, WP-09 → 1.7.0; „Ja, mit Velopack, manuellem Update-Check
+  zusätzlich zum automatischen. Deine Empfehlungen passen so.“ (Setup.exe
+  recommended, Portable.zip as well, no off switch, no rollback, hourly).
+- Addenda: checked locally with two packed test versions (packId
+  `PokeArena.AppTest`, Portable, local source, scratch data, no channel): the
+  9.0.0 copy restarted as 9.0.1 by itself after the first check.
+- Pitfalls: the packId must not be `PokeArena` (the uninstall deletes
+  `%LOCALAPPDATA%\<packId>`); the updater waits only 60 s for the process to
+  end; .NET 10's `BackgroundService` starts `ExecuteAsync` on the thread pool,
+  so timer tests advance the `FakeTimeProvider` a minute at a time until the
+  loop has reached the state (`PumpUntilAsync`).
+- Deliberately not done (→ backlog): automatic rollback after a failed start,
+  a switch to turn updates off, signing `Setup.exe`.
 
 Template per entry:
 

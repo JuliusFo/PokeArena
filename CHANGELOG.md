@@ -15,6 +15,14 @@ tagged `vX.Y.Z` once its section is complete.
   same factor, and the bot still announces when the boss is ready. The
   shortened cooldown survives an app restart; `BossCooldownMinutes` itself does
   not change.
+- The desktop app updates itself: it looks for a new version five minutes
+  after the start and then hourly, downloads it and installs it once the
+  stream is over and no boss lobby is open, then restarts by itself. The top
+  bar shows what is going on, „Jetzt aktualisieren“ installs at once and
+  „Nach Updates suchen“ looks right away. Releases now come as `Setup.exe` and
+  `Portable.zip` instead of the ZIP; switching needs one install with
+  `Setup.exe` as the same Windows user (README „Installing and running“).
+  Game data, settings and sign-ins stay where they are.
 
 ### Changed
 - On a fight page a surviving Pokémon's HP numbers („48 / 90 HP“) sit inside

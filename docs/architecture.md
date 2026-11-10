@@ -106,6 +106,15 @@ no runtime editor (user decision 2026-11-04).
   (ADR-0009). Leaderboard and battle index poll every 15 s; a battle page
   retries a 404 every 3 s for 2 min (links can be faster than the upload).
   Setup: [website-setup.md](website-setup.md).
+- **Self-update** (WP-11, ADR-0010): `UpdateCheck` (Core, hosted service)
+  checks 5 min after the start and then hourly through `IAppUpdater`,
+  downloads at once and installs when `UpdateGate` allows (bot takes no
+  commands, no dry run, no boss lobby), checked every minute. Desktop plugs in
+  `VelopackUpdater` (GitHub releases, `PokeArena:Update:Source`) for a copy
+  installed by Velopack, else `GitHubReleaseHint` (hint only). The install
+  starts Velopack's updater, which waits for the process to end, and closes
+  the main window through the normal shutdown; `Program.Main` runs
+  `VelopackApp.Build().Run()` first.
 
 ## Desktop UI concept (`PokeArena.Desktop` + `PokeArena.UI`)
 
@@ -135,5 +144,9 @@ knowledge. Areas:
   „Jetzt sichern“); „Einstellungen“ card (channel, website addresses →
   `settings.json`, applied after a restart); „Version … verfügbar“ hint in the
   top bar.
+- Built (WP-11): `UpdateStatus` right of the version in the top bar — „Version
+  … wird geladen …“, „Version … bereit“ with „Jetzt aktualisieren“ (disabled
+  while a boss lobby is open), „Update fehlgeschlagen“, the old hint for a
+  copy that cannot update itself, and „Nach Updates suchen“.
 - Not planned for v1: manual corrections of trainers (backlog), a balancing
   editor (spec §13, WP-09).

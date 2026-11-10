@@ -63,6 +63,15 @@ roadmap.md first. Format: idea — date, origin.
 
 ## Operations
 
+- Automatic rollback when a new version fails to start (today: start message
+  box, error in the log, backup from before the migration) — 2026-11-10,
+  WP-11 plan.
+- Switch to turn the automatic updates off, or to install only by hand —
+  2026-11-10, WP-11 plan (not needed while the developer runs the server).
+- Sign `Setup.exe`, so SmartScreen stops asking — 2026-11-10, WP-11 plan.
+- „Jetzt aktualisieren“ re-renders only on update events, so its
+  disabled-while-lobby state can lag until the next one (the click itself
+  checks the lobby again) — 2026-11-10, WP-11.
 - Manual corrections of a trainer in the desktop app (give or take a
   specimen, tokens) — 2026-11-04, WP-08 plan (architecture sketch).
 - Backups to a second location (e.g. a cloud folder the streamer picks) —

@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-11-10 · v1.4.2 released (fight cards as wide as the page again) · `!bosscooldown` (→ 1.5.0) in review · then WP-11 automatic update (→ 1.6.0) · then WP-09 (→ 1.7.0) after a few streams
+Status: 2026-11-10 · v1.4.2 released (fight cards as wide as the page again) · `!bosscooldown` (→ 1.5.0) in review · WP-11 automatic update (→ 1.6.0) in review on `wp/11-auto-update` · then WP-09 (→ 1.7.0) after a few streams
 
 ## 1. Where to find what
 
@@ -9,7 +9,7 @@ Status: 2026-11-10 · v1.4.2 released (fight cards as wide as the page again) ·
 |---|---|---|
 | `docs/spec.md` | Game rules, commands, config defaults (source of truth for gameplay) | Before any game-logic or chat-text work |
 | `docs/architecture.md` | Data model, game flows, publishing outbox, desktop UI concept | Before touching Core or Desktop structure |
-| `docs/decisions/` | ADRs (stack, Twitch, site data, determinism, base data/types, balancing, desktop UI, no official assets, site contracts) | Before changing stack or architecture |
+| `docs/decisions/` | ADRs (stack, Twitch, site data, determinism, base data/types, balancing, desktop UI, no official assets, site contracts, self-update) | Before changing stack or architecture |
 | `docs/roadmap.md` | Planned work packages WP-NN, user decisions, open questions | At the start of every package |
 | `docs/website-setup.md` | One-time setup of Cloudflare (R2, cache, rate limit, CORS), GitHub Pages and the desktop app | When bringing the website online or moving it |
 | `docs/backlog.md` | Unplanned ideas, grouped by topic | When an idea comes up — park it there |
@@ -85,6 +85,7 @@ Changes only via ADR.
 | Website | Blazor WebAssembly on GitHub Pages | App only, no data (ADR-0003) |
 | Site data | Cloudflare R2 behind a custom domain with cache (no `r2.dev`), `AWSSDK.S3` | Base URL is config (ADR-0003 + addendum) |
 | Secrets | Windows Credential Manager via `Meziantou.Framework.Win32.CredentialManager` | Behind `ISecretStore` (ADR-0002) |
+| Updates | Velopack (`Setup.exe`, `Portable.zip`, delta packages on the GitHub release; `vpk` local tool, same version) | Behind `IAppUpdater`, installs only while the bot is idle (ADR-0010) |
 | Tests | xUnit v3 on Microsoft Testing Platform; bUnit for components | ADR-0001 addendum |
 
 **Do not use:** IRC chat · GitHub (Contents API, Pages, commits) for player
@@ -187,7 +188,7 @@ PokeArena.slnx
 
 ## 9. Next
 
-1.4.2 is released (installation: README, „Running it on the streamer's PC“): the
+1.4.2 is released (installation: README, „Installing and running“): the
 fight cards are as wide as the page again, the wider cards of 1.4.1 looked
 lopsided; the fighter row wrap stays. 1.4.1 coloured only the boss's name in
 the fight log, put critical hits on gold and kept long names from pushing a
@@ -199,8 +200,11 @@ colour in the fight log; 1.3.0 brought the
 of the whole review 1.0.3, docs/review-1.0.3.md) and the boss lobby. Next:
 merge and live-test `!bosscooldown` (1.5.0, `feat/boss-cooldown-reduced`: mods shorten
 the boss cooldown for up to 24 hours, half by default), release it and update
-the bot on the user's server; then WP-11 automatic update (1.6.0, no more ZIP
-upload to the server); after a few streams WP-09 balancing (1.7.0)
+the bot on the user's server; then WP-11 automatic update (1.6.0, branch
+`wp/11-auto-update`, ADR-0010: Velopack, installs once the stream is over;
+merge only after 1.5.0 is tagged, since `[Unreleased]` holds both; 1.6.0 needs
+one `Setup.exe` install as the same Windows user); after a few streams WP-09
+balancing (1.7.0)
 (`N = 4` dip, PvP loot preferring missing species, NPC difficulty; no runtime
 balancing editor). Parked for version 2: website and overlay served from the
 bot's server through a Cloudflare Tunnel instead of GitHub Pages + R2. Ideas
