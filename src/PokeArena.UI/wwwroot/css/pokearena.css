@@ -130,10 +130,12 @@ body {
   border: 1px solid var(--error);
 }
 
-.btn-small {
+/* Two classes: .btn comes later in this file and would win over a single class. */
+.btn.btn-small {
   padding: 3px 10px;
   font-size: 12px;
 }
+
 .content {
   flex: 1;
   min-height: 0;

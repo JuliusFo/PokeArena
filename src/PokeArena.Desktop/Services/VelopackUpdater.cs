@@ -1,3 +1,4 @@
+using System.IO;
 using System.Windows;
 using PokeArena.Core;
 using Serilog;
@@ -28,9 +29,23 @@ public sealed class VelopackUpdater : IAppUpdater
     {
         try
         {
-            var manager = options.Source.StartsWith(AppUpdateOptions.GitHubRepository, StringComparison.OrdinalIgnoreCase)
-                ? new UpdateManager(new GithubSource(options.Source, accessToken: null, prerelease: false))
-                : new UpdateManager(options.Source);
+            // Only this repository, or an existing local folder for a test (review WP-11): no other site, no plain HTTP.
+            var source = options.Source.Trim().TrimEnd('/');
+            UpdateManager manager;
+            if (string.Equals(source, AppUpdateOptions.GitHubRepository, StringComparison.OrdinalIgnoreCase))
+            {
+                manager = new UpdateManager(new GithubSource(AppUpdateOptions.GitHubRepository, accessToken: null, prerelease: false));
+            }
+            else if (Path.IsPathFullyQualified(source) && !source.StartsWith(@"\\", StringComparison.Ordinal) && Directory.Exists(source))
+            {
+                manager = new UpdateManager(new SimpleFileSource(new DirectoryInfo(source)));
+            }
+            else
+            {
+                Log.Warning("Updates: source {Source} is neither the PokeArena repository nor a local folder", options.Source);
+                return null;
+            }
+
             return manager.IsInstalled ? new VelopackUpdater(manager) : null;
         }
         catch (Exception ex)
