@@ -2,7 +2,6 @@
 @implements IDisposable
 @inject AppInfo App
 @inject DryRunMode DryRun
-@inject UpdateCheck Updates
 
 <div class="shell">
     <header class="topbar">
@@ -16,11 +15,8 @@
         {
             <span class="tag tag-dry-run">Probelauf aktiv</span>
         }
-        @if (Updates.NewerVersion is { } newer)
-        {
-            <a class="tag tag-update" href="@UpdateCheck.ReleasesPage" target="_blank" title="Lade das ZIP herunter und ersetze den Programmordner – deine Daten bleiben erhalten.">Version @newer verfügbar</a>
-        }
         <span class="version">Version @App.Version</span>
+        <UpdateStatus />
     </header>
 
     <main class="content">
@@ -64,7 +60,6 @@
     protected override void OnInitialized()
     {
         DryRun.Changed += OnChanged;
-        Updates.Changed += OnChanged;
     }
 
     private void OnChanged() => _ = InvokeAsync(StateHasChanged);
@@ -72,6 +67,5 @@
     public void Dispose()
     {
         DryRun.Changed -= OnChanged;
-        Updates.Changed -= OnChanged;
     }
 }

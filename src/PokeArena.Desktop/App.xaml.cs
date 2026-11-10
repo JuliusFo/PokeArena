@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.IO;
+using System.Net.Http;
 using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Extensions.Configuration;
@@ -77,6 +78,7 @@ public partial class App : Application
         var twitchOptions = builder.Configuration.GetSection(TwitchOptions.SectionName).Get<TwitchOptions>() ?? new();
         var websiteOptions = builder.Configuration.GetSection(WebsiteOptions.SectionName).Get<WebsiteOptions>() ?? new();
         var overlayOptions = builder.Configuration.GetSection(OverlayOptions.SectionName).Get<OverlayOptions>() ?? new();
+        var updateOptions = builder.Configuration.GetSection(AppUpdateOptions.SectionName).Get<AppUpdateOptions>() ?? new();
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
             .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
@@ -107,6 +109,13 @@ public partial class App : Application
         builder.Services.AddSingleton(overlayOptions);
         builder.Services.AddSingleton<OverlayStatus>();
         builder.Services.AddHostedService<OverlayServer>();
+        var updater = VelopackUpdater.TryCreate(updateOptions);
+        builder.Services.AddSingleton<IAppUpdater>(sp =>
+            (IAppUpdater?)updater ?? new GitHubReleaseHint(sp.GetRequiredService<HttpClient>(), sp.GetRequiredService<AppInfo>()));
+        builder.Services.AddSingleton<IUpdateGate>(sp => new UpdateGate(
+            sp.GetRequiredService<StreamStatus>(),
+            sp.GetRequiredService<DryRunMode>(),
+            () => sp.GetRequiredService<BossEncounter>().HasOpenLobby));
         builder.Services.AddSingleton<UpdateCheck>();
         builder.Services.AddHostedService(sp => sp.GetRequiredService<UpdateCheck>());
         builder.Services.AddSingleton<MainWindow>();
@@ -118,6 +127,11 @@ public partial class App : Application
             version,
             paths.Root,
             string.IsNullOrWhiteSpace(twitchOptions.Channel) ? "(none)" : twitchOptions.Channel);
+        Log.Information(
+            updater is null
+                ? "Updates: this copy cannot update itself (not installed with Setup.exe or Portable.zip)"
+                : "Updates: installs new versions by itself from {Source}",
+            updateOptions.Source);
 
         var window = _host.Services.GetRequiredService<MainWindow>();
         window.Closing += OnMainWindowClosing;

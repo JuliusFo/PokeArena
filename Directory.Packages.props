@@ -24,6 +24,8 @@
 
   <ItemGroup Label="Windows">
     <PackageVersion Include="Meziantou.Framework.Win32.CredentialManager" Version="3.0.5" />
+    <!-- Self-update from the GitHub releases (WP-11, ADR-0010); keep in step with the vpk tool in .config/dotnet-tools.json. -->
+    <PackageVersion Include="Velopack" Version="1.2.161" />
   </ItemGroup>
 
   <ItemGroup Label="Hosting">

@@ -1,0 +1,79 @@
+@* Top bar: what the app knows about updates (WP-11), the install button and the check by hand. *@
+@implements IDisposable
+@inject UpdateCheck Updates
+
+<span class="update-status">
+    @if (Updates.Installing)
+    {
+        <span class="tag tag-update">Update wird installiert – PokeArena startet gleich neu</span>
+    }
+    else
+    {
+        @switch (Updates.State)
+        {
+            case UpdateState.Downloading:
+                <span class="tag tag-update">Version @Updates.NewerVersion wird geladen …</span>
+                break;
+            case UpdateState.Ready:
+                <span class="tag tag-update" title="Wird automatisch installiert, sobald der Stream vorbei ist. PokeArena startet dabei kurz neu – deine Daten bleiben erhalten.">Version @Updates.NewerVersion bereit</span>
+                <button class="btn btn-primary btn-small" disabled="@Updates.LobbyOpen"
+                        title="@(Updates.LobbyOpen ? "Erst wenn die Boss-Lobby vorbei ist." : "PokeArena startet kurz neu – deine Daten bleiben erhalten.")"
+                        @onclick="Install">Jetzt aktualisieren</button>
+                break;
+            case UpdateState.Available:
+                <a class="tag tag-update" href="@UpdateCheck.ReleasesPage" target="_blank" title="Diese Installation aktualisiert sich nicht selbst. Lade „Setup.exe“ herunter und installiere PokeArena einmal neu – deine Daten bleiben erhalten.">Version @Updates.NewerVersion verfügbar</a>
+                break;
+            case UpdateState.Failed:
+                <span class="tag tag-update-failed" title="PokeArena versucht es in einer Stunde wieder. Genaueres steht in der Log-Datei.">Update fehlgeschlagen</span>
+                break;
+        }
+
+        @if (_answer is { } answer)
+        {
+            <span class="update-answer">@answer</span>
+        }
+
+        @if (Updates.State is not (UpdateState.Downloading or UpdateState.Ready))
+        {
+            <button class="btn btn-quiet btn-small" disabled="@Updates.Checking" @onclick="CheckAsync">
+                @(Updates.Checking ? "Suche …" : "Nach Updates suchen")
+            </button>
+        }
+    }
+</span>
+
+@code {
+    /// <summary>The answer to the last check by hand, until the state changes.</summary>
+    private string? _answer;
+
+    private UpdateState _answeredState;
+
+    protected override void OnInitialized() => Updates.Changed += OnChanged;
+
+    private async Task CheckAsync()
+    {
+        _answer = null;
+        var result = await Updates.CheckNowAsync(CancellationToken.None);
+        _answeredState = Updates.State;
+        _answer = result switch
+        {
+            UpdateCheckResult.UpToDate => "Du hast die neueste Version.",
+            UpdateCheckResult.Failed when Updates.State != UpdateState.Failed => "Suche fehlgeschlagen – später noch mal versuchen.",
+            _ => null,
+        };
+    }
+
+    private void Install() => Updates.InstallNow();
+
+    private void OnChanged() => _ = InvokeAsync(() =>
+    {
+        if (_answer is not null && Updates.State != _answeredState)
+        {
+            _answer = null;
+        }
+
+        StateHasChanged();
+    });
+
+    public void Dispose() => Updates.Changed -= OnChanged;
+}

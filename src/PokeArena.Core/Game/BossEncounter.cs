@@ -44,8 +44,12 @@ public sealed class BossEncounter(
     /// <summary>The longest a reduced boss cooldown may last (<c>!bosscooldown</c>, user decision 2026-11-10).</summary>
     public static readonly TimeSpan MaxReductionDuration = TimeSpan.FromHours(24);
 
-    private Lobby? _lobby;
+    // Volatile: changed on the command queue, read from the update check (WP-11).
+    private volatile Lobby? _lobby;
     private long _lobbyNumber;
+
+    /// <summary>A lobby is gathering participants; an app restart now would drop them (WP-11 update gate).</summary>
+    public bool HasOpenLobby => _lobby is not null;
 
     /// <summary>The end of the cooldown whose ready announcement is pending; a shortened cooldown moves it along.</summary>
     private DateTimeOffset? _announcedUntil;

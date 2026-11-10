@@ -12,7 +12,15 @@
     <AssemblyName>PokeArena</AssemblyName>
     <!-- Per-monitor DPI awareness, see the comment in the manifest. -->
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- Own Main (Program.cs): Velopack must run before anything else (WP-11, ADR-0010). -->
+    <StartupObject>PokeArena.Desktop.Program</StartupObject>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- App.xaml as a page, so WPF does not generate a second Main. -->
+    <ApplicationDefinition Remove="App.xaml" />
+    <Page Include="App.xaml" />
+  </ItemGroup>
 
   <ItemGroup>
     <!-- Kestrel for the local OBS overlay (spec §9). -->
@@ -28,6 +36,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" />
     <PackageReference Include="Serilog.Extensions.Hosting" />
     <PackageReference Include="Serilog.Sinks.File" />
+    <PackageReference Include="Velopack" />
   </ItemGroup>
 
   <ItemGroup>

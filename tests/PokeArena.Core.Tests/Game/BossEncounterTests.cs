@@ -44,8 +44,10 @@ public class BossEncounterTests : IDisposable
         await boss.JoinAsync(Boss("2", "Misty"), _ct);
         await boss.JoinAsync(Boss("3", "Rocko"), _ct);
         Assert.Equal(["Ein wilder Boss nähert sich! Schreibt !boss, um mitzukämpfen – noch 2 Minuten."], _chat.Sent);
+        Assert.True(boss.HasOpenLobby);
 
         await EndCountdownAsync();
+        Assert.False(boss.HasOpenLobby);
 
         var expectedBoss = BossDraw.Species(Species, EasyBoss, 3, new BattleRandom(Seed));
         Assert.Equal($"Ein wildes {expectedBoss.Name}{BattleTexts.TierSuffix(expectedBoss)} erscheint! 3 Trainer kämpfen mit.", _chat.Sent[1]);
