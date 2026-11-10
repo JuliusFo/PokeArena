@@ -403,10 +403,9 @@ type — the Pokémon is the element. „Volltreffer!“ is bold on a gold backg
 text, the same in both themes). Species and HP of trainers' Pokémon, NPCs and
 trainers without a known colour stay in the normal text colour. The bot keeps
 the colour from the trainer's latest chat message (EventSub `color`; empty if
-the viewer never picked one). The site shows each colour exactly as picked, in
-both themes, even where it is hard to read (yellow on white, dark blue on the
-dark page) — user decision 2026-11-10, until 1.6.0 it was darkened or lightened
-to 4.5 : 1. Like the end state, older files show the log uncoloured until „Alles
+the viewer never picked one). The site darkens or lightens each colour per theme
+until it reaches 4.5 : 1 on the page surface, so a yellow name stays readable
+on white. Like the end state, older files show the log uncoloured until „Alles
 neu veröffentlichen“, and a colour change shows on older fights only after it.
 
 ⁴ „Schaden“ box on the fight page (user request 2026-11-10), between the fight
@@ -418,10 +417,11 @@ only what arrived: a last hit counts the target's HP left, so one side's damage
 adds up to the HP the other side lost. Bars run from the left in the trainer's
 chat colour; the boss and NPC Pokémon take the colour of their first type,
 trainers without a colour grey, a side of several colours the HP bar's green.
-A bar has exactly the colour of the trainer's name in the fight cards and the
-log. Name and number sit inside the bar like the HP numbers: white over the
-fill in both themes (on yellow knowingly hard to read, user decision
-2026-11-10), normal text over the rest. A bar that stops short ends in a thin
+A bar has the darkened colour the trainer's name has in the light theme
+(yellow turns olive), in both themes. Name and number sit inside the bar like
+the HP numbers: white over the fill, normal text over the rest (user decision
+2026-11-10). In the dark theme the names are lightened and so lighter than
+their bar. A bar that stops short ends in a thin
 dark edge (light in the dark theme), so a colour close to the track still shows
 its length. Older files show no box until „Alles
 neu veröffentlichen“.

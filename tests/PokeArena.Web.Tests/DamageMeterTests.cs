@@ -29,14 +29,14 @@ public class DamageMeterTests
         Assert.Equal(
             [
                 new DamageMeter.Bar(null, "Trainer", "(3)", "400", "100", DamageMeter.Mixed),
-                new DamageMeter.Bar(null, "Relaxo", null, "200", "50", Tint.TypeColors["type-normal"]),
+                new DamageMeter.Bar(null, "Relaxo", null, "200", "50", Tint.Darkened(Tint.TypeColors["type-normal"])),
             ],
             board.Totals);
         Assert.Equal("Trainer", board.RankingTitle);
         Assert.Equal(
             [
                 new DamageMeter.Bar("1.", "Clara", "Glumanda", "300 · 75 %", "100", "#0000ff"),
-                new DamageMeter.Bar("2.", "Anna", "Bisasam", "100 · 25 %", "33.3", "#ffff00"),
+                new DamageMeter.Bar("2.", "Anna", "Bisasam", "100 · 25 %", "33.3", "#737300"),
                 new DamageMeter.Bar("3.", "Ben", "Raupy", "0 · 0 %", "0", DamageMeter.Neutral),
             ],
             board.Ranking);
@@ -58,9 +58,9 @@ public class DamageMeterTests
                 new BattleFighter(Raupy, "Ben", "2", 30, 0, true, "#FF4500", Damage: 0),
             ])))!;
 
-        // One trainer per side: the side takes the trainer's colour as picked, the colour of the name in the log.
-        Assert.Equal([("Anna", "60", "#ffff00"), ("Ben", "60", "#ff4500")], board.Totals.Select(b => (b.Name, b.Value, b.Fill)));
-        Assert.Equal($"--tint: {board.Totals[0].Fill}", Tint.Style("#FFFF00"));
+        // One trainer per side: the side takes the trainer's colour, darkened like the name in the light theme.
+        Assert.Equal([("Anna", "60", "#737300"), ("Ben", "60", "#d93b00")], board.Totals.Select(b => (b.Name, b.Value, b.Fill)));
+        Assert.StartsWith($"--tint-light: {board.Totals[0].Fill};", Tint.Style("#FFFF00"));
         Assert.Equal("Pokémon", board.RankingTitle);
         Assert.Equal(
             [("1.", "Bisasam", "Anna", "60"), ("1.", "Glumanda", "Ben", "60"), ("3.", "Raupy", "Ben", "0")],
@@ -82,7 +82,7 @@ public class DamageMeterTests
         // An invalid chat colour falls back to grey; two type colours on one side make it the mixed green.
         Assert.Equal([DamageMeter.Neutral, DamageMeter.Mixed], board.Totals.Select(b => b.Fill));
         Assert.Equal(
-            [Tint.TypeColors["type-feuer"], Tint.TypeColors["type-normal"], DamageMeter.Neutral],
+            [Tint.Darkened(Tint.TypeColors["type-feuer"]), Tint.Darkened(Tint.TypeColors["type-normal"]), DamageMeter.Neutral],
             board.Ranking.Select(b => b.Fill));
     }
 

@@ -6,8 +6,8 @@ namespace PokeArena.Web.Services;
 /// <summary>
 /// The „Schaden“ box of a fight page (feat/damage-meter): what each side dealt in total, then a ranking — the
 /// trainers in a boss fight, every Pokémon of both sides otherwise. Bars are in the trainer's chat colour (the boss
-/// and NPC Pokémon in the colour of their first type, like the boss's name in the log), as picked like the names; the
-/// numbers sit inside the bar in white, like the HP numbers (feat/damage-text-white).
+/// and NPC Pokémon in the colour of their first type, like the boss's name in the log), darkened like the names in the
+/// light theme; the numbers sit inside the bar in white, like the HP numbers (feat/damage-text-white).
 /// </summary>
 public static class DamageMeter
 {
@@ -22,7 +22,7 @@ public static class DamageMeter
     /// <param name="Detail">Plain part after the name: the Pokémon, its owner, or the number of trainers.</param>
     /// <param name="Value">„148“, in a boss fight's ranking with the share of the boss's HP: „148 · 26 %“.</param>
     /// <param name="Share">Bar length in percent of the longest bar of the list, invariant „0.#“.</param>
-    /// <param name="Fill">Bar colour, <c>#RRGGBB</c> as picked — the colour of the name in the cards and the log.</param>
+    /// <param name="Fill">Bar colour, <c>#RRGGBB</c>: <see cref="Tint.Darkened"/>, the light theme's name colour.</param>
     public sealed record Bar(string? Rank, string Name, string? Detail, string Value, string Share, string Fill);
 
     /// <param name="RankingTitle">„Trainer“ in a boss fight, otherwise „Pokémon“.</param>
@@ -94,7 +94,7 @@ public static class DamageMeter
     private static Bar Make(string? rank, string name, string? detail, string value, long damage, long longest, string fill) =>
         new(rank, name, detail, value,
             (longest > 0 ? 100.0 * damage / longest : 0).ToString("0.#", CultureInfo.InvariantCulture),
-            fill);
+            Tint.Darkened(fill));
 
     private static string Number(long value) => value.ToString(CultureInfo.InvariantCulture);
 }
