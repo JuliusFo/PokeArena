@@ -26,8 +26,9 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   never straight into `color`. `Tint.TypeColors` and the surfaces mirror site.css; `TintTests` fails if they drift
   (feat/fight-log-colours). Yellow/gold as text turns brown on white at 4.5 : 1 — use it as a background with dark
   text (`.log .critical`, review feat/fight-log-boss-name-crit).
-- A fighter row is `.who` (species + owner, wraps) next to `.end-state` (never shrinks): never put a new element
-  straight into `.fighters li`, or long names push the HP bar onto its own line again. Only `.sides` is wider
+- A fighter row is `.who` (species + owner, wraps, `flex: 1 1 0`, never `min-width: 0` — the name would cover the
+  HP text) next to `.end-state` (never shrinks): never put a new element straight into `.fighters li`, or long
+  names push the HP bar onto its own line again (a bUnit test checks the children). Only `.sides` is wider
   than the page's 868 px content (1008 px from 1100 px viewport; `box-sizing: border-box`), so the header doesn't jump (fix/fighter-row-wrap).
 - Never tell a boss or NPC by `TrainerId == null`: a deleted trainer's fighters have no id either („[gelöscht]“). The
   boss is the fighter on side 1 of a boss fight (review feat/fight-log-colours).
