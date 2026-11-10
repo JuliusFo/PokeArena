@@ -88,6 +88,7 @@ public class SiteGeneratorTests : IDisposable
         Assert.Equal(
             [("Pikachu", (int?)52, (bool?)true), ("Raupy", 90, false), ("Karpador", 0, true)],
             page.Sides.SelectMany(s => s.Fighters).Select(f => (f.Species.Name, f.HpLeft, f.Used)));
+        Assert.Equal([new LogPart("Misty", 1, 0, IsOwner: true), new LogPart(" schickt Karpador in den Kampf.")], page.Log![2].Parts);
     }
 
     [Fact]
@@ -109,6 +110,46 @@ public class SiteGeneratorTests : IDisposable
         Assert.Equal(
             [("Pikachu", (int?)0, (bool?)true), ("Raupy", 90, true), ("Arkani", 380, true)],
             page.Sides.SelectMany(s => s.Fighters).Select(f => (f.Species.Name, f.HpLeft, f.Used)));
+    }
+
+    [Fact]
+    public async Task A_fight_page_names_each_fighter_in_the_log_and_carries_the_chat_colours()
+    {
+        await AddTrainerAsync("1", "Ash");
+        await AddTrainerAsync("2", "Misty");
+        await using (var db = _game.OpenLive())
+        {
+            (await db.Trainers.FindAsync(["2"], _ct))!.ChatColor = "#1E90FF";
+            await db.SaveChangesAsync(_ct);
+        }
+
+        // Fighters out of side order: the boss is log index 1, but the second side on the page.
+        var log = new BattleLog(
+            [new LogFighter(0, 25, 70, "1", "Ash"), new LogFighter(1, 59, 400, null, "Boss"), new LogFighter(0, 10, 90, "2", "Misty")],
+            [
+                new BattleEvent(BattleEventKind.Attack, 1, Fighter: 2, FighterHp: 90, Target: 1, TargetHp: 380, Damage: 20),
+                new BattleEvent(BattleEventKind.Attack, 1, Fighter: 1, FighterHp: 380, Target: 0, TargetHp: 0, Damage: 90),
+                new BattleEvent(BattleEventKind.Fainted, 1, Fighter: 0),
+            ]);
+
+        var page = await BattlePageAsync(new Battle
+        {
+            Kind = BattleKind.Boss, FoughtAt = Start, BossSpeciesId = 59, Outcome = BattleOutcome.BossEscaped, LogJson = log.ToJson(),
+        });
+
+        Assert.Equal([null, "#1E90FF", null], page.Sides.SelectMany(s => s.Fighters).Select(f => f.Color));
+        Assert.NotNull(page.Log);
+        Assert.Equal(page.Lines, page.Log.Select(l => string.Concat(l.Parts.Select(p => p.Text))));
+        Assert.Equal([true, false, false, false], page.Log.Select(l => l.IsRound));
+        Assert.Equal(
+            [
+                new LogPart("Raupy (", 0, 1), new LogPart("Misty", 0, 1, IsOwner: true), new LogPart(", HP 90)", 0, 1), new LogPart(" hat "),
+                new LogPart("Arkani (", 1, 0), new LogPart("Boss", 1, 0, IsOwner: true), new LogPart(", HP 380)", 1, 0), new LogPart(" 20 Schaden zugefügt."),
+            ],
+            page.Log[1].Parts);
+        Assert.Equal(
+            [new LogPart("Pikachu (", 0, 0), new LogPart("Ash", 0, 0, IsOwner: true), new LogPart(")", 0, 0), new LogPart(" wurde besiegt.")],
+            page.Log[3].Parts);
     }
 
     [Fact]

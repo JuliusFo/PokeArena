@@ -22,3 +22,6 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
 - Contrast (WCAG AA 4.5 : 1): never fade text that carries information with `opacity`, and `--accent` on white is
   only ≈ 4.4 : 1 — fine for links, not for small status text. Measure light and dark in the preview
   (feat/battle-end-state).
+- Colours nobody chose for readability (chat colours, type colours as text) go through `Tint.Style` + class `tinted`,
+  never straight into `color`. `Tint.TypeColors` and the surfaces mirror site.css; `TintTests` fails if they drift
+  (feat/fight-log-colours).

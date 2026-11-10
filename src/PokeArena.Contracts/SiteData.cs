@@ -41,7 +41,8 @@ public sealed record BattleIndex(DateTimeOffset UpdatedAt, IReadOnlyList<BattleS
 /// when a trainer in it is deleted or on „Alles neu veröffentlichen“.
 /// </summary>
 /// <param name="Sides">The trainers' side first, then the boss, NPC or challenged trainer.</param>
-/// <param name="Lines">German log lines (spec §5).</param>
+/// <param name="Lines">German log lines (spec §5) as plain text.</param>
+/// <param name="Log">The same lines in parts that name their fighter, so the site can colour them; null in older files.</param>
 public sealed record BattlePage(
     long Id,
     BattleKind Kind,
@@ -50,14 +51,28 @@ public sealed record BattlePage(
     string Headline,
     string Result,
     IReadOnlyList<BattleSide> Sides,
-    IReadOnlyList<string> Lines);
+    IReadOnlyList<string> Lines,
+    IReadOnlyList<LogLine>? Log = null);
 
 public sealed record BattleSide(string Name, bool Won, IReadOnlyList<BattleFighter> Fighters);
 
 /// <param name="TrainerId">Owner's Twitch user id; null for bosses and NPCs.</param>
 /// <param name="HpLeft">HP at the end of the fight (0 = fainted); null in files written before it existed.</param>
 /// <param name="Used">False if a team fight ended before this one was sent in; null in older files.</param>
-public sealed record BattleFighter(SpeciesInfo Species, string Owner, string? TrainerId, int MaxHp, int? HpLeft = null, bool? Used = null);
+/// <param name="Color">The owner's Twitch chat colour (<c>#RRGGBB</c>) as picked, not adjusted for contrast; null if unknown.</param>
+public sealed record BattleFighter(
+    SpeciesInfo Species, string Owner, string? TrainerId, int MaxHp, int? HpLeft = null, bool? Used = null, string? Color = null);
+
+/// <summary>One line of the log; its parts joined give the matching entry of <see cref="BattlePage.Lines"/>.</summary>
+/// <param name="IsRound">A „Runde N“ heading.</param>
+public sealed record LogLine(IReadOnlyList<LogPart> Parts, bool IsRound = false);
+
+/// <summary>
+/// Text, optionally part of one fighter's label („Pikachu (Ash, HP 24)“): <c>Sides[Side].Fighters[Fighter]</c> of the
+/// page.
+/// </summary>
+/// <param name="IsOwner">The owner within the label („Ash“, „Boss“).</param>
+public sealed record LogPart(string Text, int? Side = null, int? Fighter = null, bool IsOwner = false);
 
 /// <summary><c>trainer/&lt;twitch-id&gt;.json</c>: one trainer's collection and history.</summary>
 public sealed record TrainerPage(

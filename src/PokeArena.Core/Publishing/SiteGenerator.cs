@@ -161,17 +161,39 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
 
         var log = BattleLog.FromJson(battle.LogJson);
         var texts = _texts.Describe(battle, log);
-        var sides = log.Fighters
+        var trainerIds = log.Fighters.Select(f => f.TrainerId).OfType<string>().Distinct().ToList();
+        var colors = await db.Trainers.AsNoTracking()
+            .Where(t => trainerIds.Contains(t.TwitchUserId) && t.ChatColor != null)
+            .ToDictionaryAsync(t => t.TwitchUserId, t => t.ChatColor!, ct);
+        var groups = log.Fighters
             .Select((f, i) => (Fighter: f, Index: i))
             .GroupBy(x => x.Fighter.Side)
             .OrderBy(g => g.Key)
-            .Select(g => new BattleSide(
-                g.Key == 0 ? texts.TrainerSide : texts.OpponentSide,
-                g.Key == 0 ? texts.TrainerSideWon : !texts.TrainerSideWon,
-                [.. g.Select(x => new BattleFighter(
-                    Info(x.Fighter.SpeciesId), x.Fighter.Owner, x.Fighter.TrainerId, x.Fighter.MaxHp, log.HpLeft(x.Index), log.WasUsed(x.Index)))]))
+            .Select(g => g.ToList())
             .ToList();
-        return new BattlePage(battle.Id, battle.Kind, battle.FoughtAt, battle.Seed, texts.Headline, texts.Result, sides, log.ToLines(species));
+        var sides = groups
+            .Select(g => new BattleSide(
+                g[0].Fighter.Side == 0 ? texts.TrainerSide : texts.OpponentSide,
+                g[0].Fighter.Side == 0 ? texts.TrainerSideWon : !texts.TrainerSideWon,
+                [.. g.Select(x => new BattleFighter(
+                    Info(x.Fighter.SpeciesId), x.Fighter.Owner, x.Fighter.TrainerId, x.Fighter.MaxHp, log.HpLeft(x.Index), log.WasUsed(x.Index),
+                    x.Fighter.TrainerId is { } id ? colors.GetValueOrDefault(id) : null))]))
+            .ToList();
+
+        // Log index → position on the page (side, fighter within the side).
+        var position = groups
+            .SelectMany((g, side) => g.Select((x, fighter) => (x.Index, Side: side, Fighter: fighter)))
+            .ToDictionary(x => x.Index, x => (x.Side, x.Fighter));
+        var text = log.ToText(species);
+        var parts = text
+            .Select(line => new LogLine(
+                [.. line.Spans.Select(s => s.Fighter is { } index
+                    ? new LogPart(s.Text, position[index].Side, position[index].Fighter, s.IsOwner)
+                    : new LogPart(s.Text))],
+                line.IsRound))
+            .ToList();
+        return new BattlePage(
+            battle.Id, battle.Kind, battle.FoughtAt, battle.Seed, texts.Headline, texts.Result, sides, [.. text.Select(l => l.Text)], parts);
     }
 
     private async Task<IReadOnlyList<BattleSummary>> LatestBattlesAsync(

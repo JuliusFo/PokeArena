@@ -371,6 +371,18 @@ h1:focus {
   margin-top: 0;
 }
 
+/* A trainer's chat colour or a boss's type colour, adjusted for contrast per theme in C# (Services/Tint.cs). */
+.tinted {
+  color: var(--tint-light);
+  font-weight: 600;
+}
+
+@media (prefers-color-scheme: dark) {
+  .tinted {
+    color: var(--tint-dark);
+  }
+}
+
 /* Trainer page */
 
 .stats {

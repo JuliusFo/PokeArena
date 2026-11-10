@@ -84,43 +84,72 @@ public sealed record BattleLog(IReadOnlyList<LogFighter> Fighters, IReadOnlyList
         JsonSerializer.Deserialize<BattleLog>(json, Json) ?? throw new JsonException("Empty battle log");
 
     /// <summary>German log lines (spec §5), with a „Runde N“ header whenever the round changes.</summary>
-    public IReadOnlyList<string> ToLines(SpeciesCatalog species)
+    public IReadOnlyList<string> ToLines(SpeciesCatalog species) => [.. ToText(species).Select(line => line.Text)];
+
+    /// <summary>
+    /// The lines of <see cref="ToLines"/> in parts, so the website can colour them: a fighter's label „Pikachu (Ash,
+    /// HP 24)“ names the fighter, and its owner („Ash“, „Boss“, an NPC's name) is a part of its own.
+    /// </summary>
+    public IReadOnlyList<LogText> ToText(SpeciesCatalog species)
     {
-        var lines = new List<string>();
+        var lines = new List<LogText>();
         var round = 0;
         foreach (var e in Events)
         {
             if (e.Round != round && e.Kind != BattleEventKind.RoundLimit)
             {
                 round = e.Round;
-                lines.Add($"Runde {round}");
+                lines.Add(new LogText([new LogSpan($"Runde {round}")], IsRound: true));
             }
 
-            lines.Add(e.Kind switch
+            lines.Add(new LogText(e.Kind switch
             {
                 BattleEventKind.Attack =>
-                    $"{Label(species, e.Fighter, e.FighterHp)} hat {Label(species, e.Target ?? 0, e.TargetHp)} {e.Damage} Schaden zugefügt." +
-                    (e.Critical ? " Volltreffer!" : "") +
-                    (e.TypeFactor > 1.0 ? " Sehr effektiv!" : e.TypeFactor < 1.0 ? " Nicht sehr effektiv." : ""),
-                BattleEventKind.Fainted => $"{Label(species, e.Fighter)} wurde besiegt.",
-                BattleEventKind.SentOut => $"{Fighters[e.Fighter].Owner} schickt {species.Get(Fighters[e.Fighter].SpeciesId).Name} in den Kampf.",
-                BattleEventKind.RoundLimit => "Rundenlimit erreicht – die Seite mit mehr verbleibenden HP gewinnt.",
+                [
+                    .. Label(species, e.Fighter, e.FighterHp),
+                    new(" hat "),
+                    .. Label(species, e.Target ?? 0, e.TargetHp),
+                    new($" {e.Damage} Schaden zugefügt." +
+                        (e.Critical ? " Volltreffer!" : "") +
+                        (e.TypeFactor > 1.0 ? " Sehr effektiv!" : e.TypeFactor < 1.0 ? " Nicht sehr effektiv." : "")),
+                ],
+                BattleEventKind.Fainted => [.. Label(species, e.Fighter), new(" wurde besiegt.")],
+                BattleEventKind.SentOut =>
+                [
+                    new(Fighters[e.Fighter].Owner, e.Fighter, IsOwner: true),
+                    new($" schickt {species.Get(Fighters[e.Fighter].SpeciesId).Name} in den Kampf."),
+                ],
+                BattleEventKind.RoundLimit => [new("Rundenlimit erreicht – die Seite mit mehr verbleibenden HP gewinnt.")],
                 _ => throw new InvalidOperationException($"Unknown event {e.Kind}"),
-            });
+            }));
         }
 
         return lines;
     }
 
-    private string Label(SpeciesCatalog species, int index, int? hp = null)
+    /// <summary>„Pikachu (Ash, HP 24)“ in three parts that all name the fighter; the middle one is the owner.</summary>
+    private LogSpan[] Label(SpeciesCatalog species, int index, int? hp = null)
     {
         var fighter = Fighters[index];
-        var name = species.Get(fighter.SpeciesId).Name;
-        return hp is { } value
-            ? $"{name} ({fighter.Owner}, HP {value.ToString(CultureInfo.InvariantCulture)})"
-            : $"{name} ({fighter.Owner})";
+        return
+        [
+            new($"{species.Get(fighter.SpeciesId).Name} (", index),
+            new(fighter.Owner, index, IsOwner: true),
+            new(hp is { } value ? $", HP {value.ToString(CultureInfo.InvariantCulture)})" : ")", index),
+        ];
     }
 }
+
+/// <summary>One rendered log line in parts (see <see cref="BattleLog.ToText"/>).</summary>
+/// <param name="IsRound">A „Runde N“ heading.</param>
+public sealed record LogText(IReadOnlyList<LogSpan> Spans, bool IsRound = false)
+{
+    public string Text => string.Concat(Spans.Select(s => s.Text));
+}
+
+/// <param name="Fighter">Index into <see cref="BattleLog.Fighters"/> if the text belongs to that fighter's label.</param>
+/// <param name="IsOwner">The text is the fighter's owner.</param>
+public sealed record LogSpan(string Text, int? Fighter = null, bool IsOwner = false);
 
 /// <summary>Records events and tracks HP while an engine runs a fight.</summary>
 internal sealed class BattleRecorder

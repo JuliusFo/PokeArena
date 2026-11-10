@@ -27,7 +27,8 @@
                             <SpeciesName Species="fighter.Species" />
                             @if (fighter.TrainerId is { } trainerId && fighter.Owner != side.Name)
                             {
-                                <a href="trainer/@trainerId">@fighter.Owner</a>
+                                var tint = Tint.Style(fighter.Color);
+                                <a href="trainer/@trainerId" class="@(tint is null ? null : "tinted")" style="@tint">@fighter.Owner</a>
                             }
                             <span class="end-state">
                                 @switch (state)
@@ -58,9 +59,32 @@
 
     <h2>Kampfverlauf</h2>
     <ol class="log">
-        @foreach (var line in battle.Lines)
+        @if (battle.Log is { } log)
         {
-            <li class="@(line.StartsWith("Runde ", StringComparison.Ordinal) ? "round" : "")">@line</li>
+            @foreach (var line in log)
+            {
+                <li class="@(line.IsRound ? "round" : null)">
+                    @foreach (var part in line.Parts)
+                    {
+                        if (FighterOf(battle, part) is { } fighter && Tint.Style(Tint.Of(battle, fighter, part.IsOwner)) is { } tint)
+                        {
+                            <span class="tinted" style="@tint">@part.Text</span>
+                        }
+                        else
+                        {
+                            @part.Text
+                        }
+                    }
+                </li>
+            }
+        }
+        else
+        {
+            @* Files written before the log had parts. *@
+            @foreach (var line in battle.Lines)
+            {
+                <li class="@(line.StartsWith("Runde ", StringComparison.Ordinal) ? "round" : null)">@line</li>
+            }
         }
     </ol>
     <p class="muted">Seed @battle.Seed.ToString(CultureInfo.InvariantCulture)</p>
@@ -112,6 +136,13 @@ else
         { HpLeft: > 0 } => "survived",
         _ => "unknown",
     };
+
+    /// <summary>The fighter a log part names, or null (plain text, or an index the page does not have).</summary>
+    private static BattleFighter? FighterOf(BattlePage battle, LogPart part) =>
+        part is { Side: { } side, Fighter: { } index } && side >= 0 && side < battle.Sides.Count &&
+        index >= 0 && index < battle.Sides[side].Fighters.Count
+            ? battle.Sides[side].Fighters[index]
+            : null;
 
     private static string HpPercent(BattleFighter fighter) =>
         (100.0 * (fighter.HpLeft ?? 0) / Math.Max(1, fighter.MaxHp)).ToString("0.#", CultureInfo.InvariantCulture);

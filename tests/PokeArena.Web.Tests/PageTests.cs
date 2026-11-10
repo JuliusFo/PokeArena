@@ -153,6 +153,52 @@ public class PageTests : BunitContext
     }
 
     [Fact]
+    public void The_log_shows_trainers_in_their_chat_colour_and_the_boss_in_its_type_colour()
+    {
+        var arkani = new SpeciesInfo(59, "Arkani", ["Feuer"]);
+        Put(
+            SitePaths.Battle(4),
+            BattlePage(4) with
+            {
+                Kind = BattleKind.Boss,
+                Sides =
+                [
+                    new BattleSide("Trainer", true, [new BattleFighter(Bisasam, "Ash", "11", 40, Color: "#FFFF00"), new BattleFighter(Raupy, "Misty", "12", 30)]),
+                    new BattleSide("Arkani", false, [new BattleFighter(arkani, "Boss", null, 400)]),
+                ],
+                Lines = ["Runde 1", "Bisasam (Ash) hat Arkani (Boss) 20 Schaden zugefügt.", "Raupy (Misty) wurde besiegt."],
+                Log =
+                [
+                    new LogLine([new LogPart("Runde 1")], IsRound: true),
+                    new LogLine(
+                    [
+                        new LogPart("Bisasam (", 0, 0), new LogPart("Ash", 0, 0, IsOwner: true), new LogPart(")", 0, 0), new LogPart(" hat "),
+                        new LogPart("Arkani (", 1, 0), new LogPart("Boss", 1, 0, IsOwner: true), new LogPart(")", 1, 0), new LogPart(" 20 Schaden zugefügt."),
+                    ]),
+                    new LogLine(
+                    [
+                        new LogPart("Raupy (", 0, 1), new LogPart("Misty", 0, 1, IsOwner: true), new LogPart(")", 0, 1), new LogPart(" wurde besiegt."),
+                        new LogPart("?", 5, 0, IsOwner: true),
+                    ]),
+                ],
+            },
+            SiteJson.Default.BattlePage);
+
+        var cut = Render<Battle>(p => p.Add(b => b.Id, 4));
+
+        cut.WaitForAssertion(() => Assert.Equal(3, cut.FindAll(".log li").Count));
+        var lines = cut.FindAll(".log li");
+        Assert.Equal(["Runde 1", "Bisasam (Ash) hat Arkani (Boss) 20 Schaden zugefügt.", "Raupy (Misty) wurde besiegt.?"], lines.Select(li => li.TextContent));
+        Assert.Equal("round", lines[0].ClassName);
+        // A trainer's name only, the boss's whole label; Misty has no colour; an index the page lacks stays plain text.
+        var fire = Tint.Style(Tint.TypeColors["type-feuer"]);
+        Assert.Equal(
+            [("Ash", Tint.Style("#FFFF00")), ("Arkani (", fire), ("Boss", fire), (")", fire)],
+            cut.FindAll(".log .tinted").Select(s => (s.TextContent, s.GetAttribute("style"))));
+        Assert.Equal(["tinted", null], cut.FindAll(".fighters a").Select(a => a.GetAttribute("class")));
+    }
+
+    [Fact]
     public void A_battle_file_from_before_the_end_state_shows_the_start_hp()
     {
         _host.Files[SitePaths.Battle(6)] = """
