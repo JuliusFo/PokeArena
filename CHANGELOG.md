@@ -7,6 +7,13 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+### Added
+- A fight page's „Kampfverlauf“ shows each trainer's name in their Twitch chat
+  colour, and in a boss fight the boss in the colour of its type. The owner
+  links above the log use the chat colour too. Colours are darkened or
+  lightened where needed so they stay readable in the light and dark theme.
+  Older fights get the colours with „Alles neu veröffentlichen“.
+
 ### Changed
 - In a boss fight every species a trainer owns is equally likely to be sent
   in, however many of it they have — three Digda no longer push out the one

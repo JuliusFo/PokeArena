@@ -43,7 +43,7 @@ PvP loot columns of `Battle`; in WP-05: `Trainer.Tokens`, `Battle.NpcId` /
 
 | Entity | Fields | Notes |
 |---|---|---|
-| `Trainer` | TwitchUserId (PK), DisplayName, Login, RegisteredAt, Tokens | Display name and login refreshed when seen; `@name` mentions resolve by login, then display name. Tokens: plain balance, the first win against an NPC adds its tokens |
+| `Trainer` | TwitchUserId (PK), DisplayName, Login, ChatColor, RegisteredAt, Tokens | Display name and login refreshed when seen, the chat colour (`#RRGGBB`, null until seen with one) too — only fight pages show it; `@name` mentions resolve by login, then display name. Tokens: plain balance, the first win against an NPC adds its tokens |
 | `Specimen` | Id, TrainerId, SpeciesId, CaughtAt, AcquiredAt, Origin (Starter, Boss, Npc), IsStarter | PvP loot changes `TrainerId`; unique filtered index: one starter per trainer; `AcquiredAt` = when the current owner got it (leaderboard ties) |
 | `Battle` | Id, Kind, FoughtAt, Seed, BossSpeciesId?, NpcId?, LootSpecimenId?, LootSpeciesId?, Tokens?, Outcome, Rounds, LogJson | Log stored verbatim (ADR-0004); fighters, owners and HP are in the log. PvP: outcome `ChallengerWon` / `OpponentWon`, loot without foreign key. NPC: the trainer is the challenger, loot = reward specimen of a first win, `Tokens` = tokens of a first win |
 | `BattleParticipant` | Id, BattleId, TrainerId, Won | Boss: `Won` = caught the boss; PvP and NPC: `Won` = winner. Bosses and NPCs need no row, they are in the log |

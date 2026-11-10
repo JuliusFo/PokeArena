@@ -357,7 +357,7 @@ Data files (all derived — fully regenerable from the DB; the UI has a
 |----------------------------|------------------------------------------------------|
 | `rangliste.json`           | rank, display name, distinct count, total count, player count, timestamp. Sort: distinct desc, then total desc, then earliest attainment¹ |
 | `trainer/<twitch-id>.json` | pokedex (species + count), achievements, recent fights, stats |
-| `kampf/<id>.json`          | participants, teams, log lines, result, loot, seed; per fighter its HP left and whether it was sent in² |
+| `kampf/<id>.json`          | participants, teams, log lines, result, loot, seed; per fighter its HP left and whether it was sent in², its owner's chat colour³; the log lines also in parts that name their fighter³ |
 | `kaempfe.json`             | last N fights for an index page                      |
 | `meta.json`                | data format version, timestamp                       |
 
@@ -375,6 +375,18 @@ Files written before this change lack them and show the start HP as before, unti
 (`max-age=86400`), browsers and Cloudflare may serve the old file for up to a
 day after that. The fields are optional, so the data format version stays the
 same (ADR-0009).
+
+³ Colours on the fight page (user decision 2026-11-10): in the „Kampfverlauf“
+a trainer's name („Anna“ in „Bisasam (Anna, HP 90)“) and the owner links in
+the fighter list show the trainer's Twitch chat colour; in a boss fight the
+boss's whole label („Relaxo (Boss, HP 541)“) shows the colour of its first type
+— the Pokémon is the element. Species and HP of trainers' Pokémon, NPCs and
+trainers without a known colour stay in the normal text colour. The bot keeps
+the colour from the trainer's latest chat message (EventSub `color`; empty if
+the viewer never picked one). The site darkens or lightens each colour per theme
+until it reaches 4.5 : 1 on the page surface, so a yellow name stays readable
+on white. Like the end state, older files show the log uncoloured until „Alles
+neu veröffentlichen“, and a colour change shows on older fights only after it.
 
 - Files are uploaded **directly per change** via the publish queue.
 - Uploads normally land within seconds, but the queue may lag (network
