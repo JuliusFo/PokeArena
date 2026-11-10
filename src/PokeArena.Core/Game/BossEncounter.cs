@@ -41,8 +41,14 @@ public sealed class BossEncounter(
     /// <summary>Cooldown replies go out at most this often, so a spamming chat does not fill the send queue.</summary>
     public static readonly TimeSpan CooldownReplyInterval = TimeSpan.FromSeconds(30);
 
+    /// <summary>The longest a reduced boss cooldown may last (<c>!bosscooldown</c>, user decision 2026-11-10).</summary>
+    public static readonly TimeSpan MaxReductionDuration = TimeSpan.FromHours(24);
+
     private Lobby? _lobby;
     private long _lobbyNumber;
+
+    /// <summary>The end of the cooldown whose ready announcement is pending; a shortened cooldown moves it along.</summary>
+    private DateTimeOffset? _announcedUntil;
     private readonly ReplyThrottle _cooldownReplies = new(CooldownReplyInterval, time);
 
     /// <summary><c>!boss</c> from a registered trainer: opens a lobby or joins the open one.</summary>
@@ -209,7 +215,7 @@ public sealed class BossEncounter(
 
         var achievements = await Achievements.UnlockNewAsync(db, [.. catchers.Select(c => c.UserId)], npcs, now, ct);
         await SiteOutbox.EnqueueAsync(db, SiteOutbox.ForBattle(battle.Id, participants.Select(p => p.Member.UserId)), now, ct);
-        var cooldownUntil = now + settings.Cooldown;
+        var cooldownUntil = now + await CooldownLengthAsync(db, now, ct);
         if (!lobby.IsSimulated)
         {
             await SetCooldownAsync(db, cooldownUntil, ct);
@@ -219,7 +225,7 @@ public sealed class BossEncounter(
         await transaction.CommitAsync(ct);
         if (!lobby.IsSimulated)
         {
-            _ = AnnounceReadyAfterCooldownAsync(cooldownUntil, ct);
+            ScheduleReadyAnnouncement(cooldownUntil, ct);
         }
         log.LogInformation(
             "Boss fight: {Boss} vs {Count} participants, {Outcome}, {Catches} catches, seed {Seed}",
@@ -243,6 +249,12 @@ public sealed class BossEncounter(
         {
             trainers.NotifyChanged();
         }
+    }
+
+    private void ScheduleReadyAnnouncement(DateTimeOffset until, CancellationToken ct)
+    {
+        _announcedUntil = until;
+        _ = AnnounceReadyAfterCooldownAsync(until, ct);
     }
 
     private async Task AnnounceReadyAfterCooldownAsync(DateTimeOffset until, CancellationToken ct)
@@ -285,6 +297,84 @@ public sealed class BossEncounter(
         await db.Cooldowns.Where(c => c.Key == CooldownKey).ExecuteDeleteAsync(ct);
         log.LogInformation("Boss cooldown reset");
         chat.Send("Der Boss-Cooldown ist zurückgesetzt – mit !boss geht es sofort weiter.");
+    }
+
+    /// <summary>
+    /// <c>!bosscooldown</c> (mods): fights that end within <paramref name="duration"/> get <paramref name="cooldown"/>
+    /// instead of BossCooldownMinutes; a new call replaces the running reduction. A cooldown already running shrinks by
+    /// the same factor (user decision 2026-11-10), never grows, and its ready announcement moves along.
+    /// </summary>
+    public async Task ReduceCooldownAsync(TimeSpan duration, TimeSpan cooldown, CancellationToken ct)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(duration, TimeSpan.Zero);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(duration, MaxReductionDuration);
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(cooldown, TimeSpan.Zero);
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(cooldown, settings.Cooldown);
+
+        var now = time.GetUtcNow();
+        await using var db = database.Open();
+        var before = await CooldownLengthAsync(db, now, ct);
+        if (await db.BossCooldownReductions.FindAsync([BossCooldownReduction.SingleId], ct) is { } reduction)
+        {
+            reduction.Cooldown = cooldown;
+            reduction.Until = now + duration;
+        }
+        else
+        {
+            db.BossCooldownReductions.Add(new BossCooldownReduction { Cooldown = cooldown, Until = now + duration });
+        }
+
+        var running = await db.CooldownUntilAsync(CooldownKey, ct);
+        DateTimeOffset? shortened = null;
+        if (running is { } until && until > now && cooldown < before)
+        {
+            shortened = now + (until - now) * (cooldown / before);
+            await SetCooldownAsync(db, shortened.Value, ct);
+        }
+
+        await db.SaveChangesAsync(ct);
+        log.LogInformation("Boss cooldown reduced to {Cooldown} for {Duration}", cooldown, duration);
+
+        var text = $"Boss-Cooldown verkürzt: Für {ChatText.Duration(duration)} ist der Boss schon nach {ChatText.Duration(cooldown)} wieder bereit statt nach {ChatText.Duration(settings.Cooldown)}.";
+        if (shortened is { } end)
+        {
+            text += $" Der nächste Boss kann schon in {ChatText.Duration(end - now)} gerufen werden.";
+            // The dry run's sandbox copy of a live cooldown never gets an announcement.
+            if (!dryRun.Enabled && _announcedUntil == running)
+            {
+                ScheduleReadyAnnouncement(end, ct);
+            }
+        }
+
+        chat.Send(text);
+    }
+
+    /// <summary>
+    /// <c>!bosscooldown aus</c> (mods): ends a running reduction early. False if none runs. A cooldown already running
+    /// keeps its length.
+    /// </summary>
+    public async Task<bool> EndReductionAsync(CancellationToken ct)
+    {
+        await using var db = database.Open();
+        var deleted = await db.BossCooldownReductions.Where(r => r.Until > time.GetUtcNow()).ExecuteDeleteAsync(ct);
+        if (deleted == 0)
+        {
+            return false;
+        }
+
+        log.LogInformation("Boss cooldown reduction ended");
+        chat.Send($"Die Verkürzung ist vorbei – nach dem nächsten Kampf braucht der Boss wieder {ChatText.Duration(settings.Cooldown)}.");
+        return true;
+    }
+
+    /// <summary>How long the boss cools down after a fight that ends at <paramref name="now"/>.</summary>
+    private async Task<TimeSpan> CooldownLengthAsync(PokeArenaDb db, DateTimeOffset now, CancellationToken ct)
+    {
+        var reduced = await db.BossCooldownReductions.AsNoTracking()
+            .Where(r => r.Until > now)
+            .Select(r => (TimeSpan?)r.Cooldown)
+            .FirstOrDefaultAsync(ct);
+        return reduced ?? settings.Cooldown;
     }
 
     private async Task<DateTimeOffset?> CooldownUntilAsync(CancellationToken ct)

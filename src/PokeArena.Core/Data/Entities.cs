@@ -196,3 +196,20 @@ public sealed class Cooldown
 
     public DateTimeOffset Until { get; set; }
 }
+
+/// <summary>
+/// A boss cooldown shorter than BossCooldownMinutes for a while (<c>!bosscooldown</c>, spec §8). At most one row, so it
+/// survives a restart like the cooldown itself; once <see cref="Until"/> has passed it no longer counts.
+/// </summary>
+public sealed class BossCooldownReduction
+{
+    /// <summary>The key of the one row.</summary>
+    public const int SingleId = 1;
+
+    public int Id { get; init; } = SingleId;
+
+    /// <summary>The boss cooldown after a fight that ends before <see cref="Until"/>.</summary>
+    public TimeSpan Cooldown { get; set; }
+
+    public DateTimeOffset Until { get; set; }
+}

@@ -93,6 +93,7 @@ public class CommandTests : IDisposable
             [
                 "arena: Everyone",
                 "boss: Registered",
+                "bosscooldown: Moderators",
                 "bossreset: Moderators",
                 "challenge: Registered",
                 "entfernen: Moderators",

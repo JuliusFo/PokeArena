@@ -21,6 +21,8 @@ public sealed class PokeArenaDb(DbContextOptions<PokeArenaDb> options) : DbConte
 
     public DbSet<Cooldown> Cooldowns => Set<Cooldown>();
 
+    public DbSet<BossCooldownReduction> BossCooldownReductions => Set<BossCooldownReduction>();
+
     public DbSet<PublishQueueItem> PublishQueue => Set<PublishQueueItem>();
 
     public static DbContextOptions<PokeArenaDb> Options(string connectionString) =>
@@ -86,6 +88,12 @@ public sealed class PokeArenaDb(DbContextOptions<PokeArenaDb> options) : DbConte
         {
             cooldown.HasKey(c => c.Key);
             cooldown.Property(c => c.Key).HasMaxLength(64);
+        });
+
+        modelBuilder.Entity<BossCooldownReduction>(reduction =>
+        {
+            reduction.HasKey(r => r.Id);
+            reduction.Property(r => r.Id).ValueGeneratedNever();
         });
 
         modelBuilder.Entity<PublishQueueItem>(item =>

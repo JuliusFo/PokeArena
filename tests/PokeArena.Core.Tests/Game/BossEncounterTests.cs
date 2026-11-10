@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using PokeArena.Contracts;
 using PokeArena.Core.Chat;
+using PokeArena.Core.Commands;
 using PokeArena.Core.Data;
 using PokeArena.Core.Game;
 using PokeArena.Core.Game.Battles;
@@ -256,6 +257,125 @@ public class BossEncounterTests : IDisposable
     }
 
     [Fact]
+    public async Task A_reduced_cooldown_counts_for_fights_within_its_time_and_survives_a_restart()
+    {
+        var boss = Boss(EasyBoss);
+        await RegisterAsync("1", "Ash", "2", "Misty");
+
+        await BossCooldownAsync(boss, "60");
+        Assert.Equal("Boss-Cooldown verkürzt: Für 1 Stunde ist der Boss schon nach 15 Minuten wieder bereit statt nach 30 Minuten.", _chat.Sent[^1]);
+
+        await RunEncounterAsync(boss, ("1", "Ash"), ("2", "Misty"));
+        var sentAfterFight = _chat.Sent.Count;
+        _game.Time.Advance(TimeSpan.FromMinutes(15));
+        await RunQueuedWorkUntilAsync("Boss bereit");
+        Assert.Equal([BossEncounter.ReadyAnnouncement], _chat.Sent.Skip(sentAfterFight));
+
+        // After a restart the reduction still counts: the fight ends at minute 19 of 60.
+        var restarted = Boss(EasyBoss);
+        await RunEncounterAsync(restarted, ("1", "Ash"), ("2", "Misty"));
+        _game.Time.Advance(TimeSpan.FromMinutes(14));
+        await restarted.JoinAsync(Boss("1", "Ash"), _ct);
+        Assert.Equal("@Ash, der nächste Boss kann in 1 Minute gerufen werden.", _chat.Sent[^1]);
+
+        // Once the hour is over, the normal cooldown is back.
+        _game.Time.Advance(TimeSpan.FromMinutes(31));
+        await RunEncounterAsync(restarted, ("1", "Ash"), ("2", "Misty"));
+        _game.Time.Advance(TimeSpan.FromMinutes(29));
+        await restarted.JoinAsync(Boss("1", "Ash"), _ct);
+        Assert.Equal("@Ash, der nächste Boss kann in 1 Minute gerufen werden.", _chat.Sent[^1]);
+    }
+
+    [Fact]
+    public async Task A_reduction_shrinks_the_running_cooldown_and_moves_its_announcement()
+    {
+        var boss = Boss(EasyBoss);
+        await RegisterAsync("1", "Ash", "2", "Misty");
+        await RunEncounterAsync(boss, ("1", "Ash"), ("2", "Misty"));
+        _game.Time.Advance(TimeSpan.FromMinutes(10));
+
+        await BossCooldownAsync(boss, "60");
+        Assert.EndsWith("statt nach 30 Minuten. Der nächste Boss kann schon in 10 Minuten gerufen werden.", _chat.Sent[^1]);
+
+        _game.Time.Advance(TimeSpan.FromMinutes(10));
+        await RunQueuedWorkUntilAsync("Boss bereit");
+        Assert.Equal(BossEncounter.ReadyAnnouncement, _chat.Sent[^1]);
+
+        // The timer of the original cooldown stays silent.
+        _game.Time.Advance(TimeSpan.FromMinutes(10));
+        await RunQueuedWorkUntilAsync("Boss bereit");
+        Assert.Single(_chat.Sent, BossEncounter.ReadyAnnouncement);
+    }
+
+    [Fact]
+    public async Task A_chosen_cooldown_replaces_the_reduction_without_growing_and_aus_ends_it()
+    {
+        var boss = Boss(EasyBoss);
+        await RegisterAsync("1", "Ash", "2", "Misty");
+
+        await BossCooldownAsync(boss, "90 10");
+        Assert.Equal("Boss-Cooldown verkürzt: Für 1 Stunde 30 Minuten ist der Boss schon nach 10 Minuten wieder bereit statt nach 30 Minuten.", _chat.Sent[^1]);
+        await RunEncounterAsync(boss, ("1", "Ash"), ("2", "Misty"));
+
+        // A longer reduced cooldown does not lengthen the running one.
+        _game.Time.Advance(TimeSpan.FromMinutes(5));
+        await BossCooldownAsync(boss, "60 20");
+        Assert.Equal("Boss-Cooldown verkürzt: Für 1 Stunde ist der Boss schon nach 20 Minuten wieder bereit statt nach 30 Minuten.", _chat.Sent[^1]);
+
+        // Ending it early keeps the running cooldown; the next fight gets the normal one.
+        await BossCooldownAsync(boss, "AUS");
+        Assert.Equal("Die Verkürzung ist vorbei – nach dem nächsten Kampf braucht der Boss wieder 30 Minuten.", _chat.Sent[^1]);
+        _game.Time.Advance(TimeSpan.FromMinutes(5));
+        await RunEncounterAsync(boss, ("1", "Ash"), ("2", "Misty"));
+        _game.Time.Advance(TimeSpan.FromMinutes(29));
+        await boss.JoinAsync(Boss("1", "Ash"), _ct);
+        Assert.Equal("@Ash, der nächste Boss kann in 1 Minute gerufen werden.", _chat.Sent[^1]);
+
+        await BossCooldownAsync(boss, "0");
+        Assert.Equal(("9", "bosscooldown", "@Mod, der Boss-Cooldown ist gerade nicht verkürzt."), _chat.Hints.Single());
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("eine Stunde")]
+    [InlineData("0 10")]
+    [InlineData("-5")]
+    [InlineData("1441")]
+    [InlineData("60 0")]
+    [InlineData("60 30")]
+    [InlineData("60 10 5")]
+    public async Task Invalid_boss_cooldown_arguments_get_the_usage_hint(string arguments)
+    {
+        var boss = Boss(EasyBoss);
+
+        await BossCooldownAsync(boss, arguments);
+
+        var hint = Assert.Single(_chat.Hints);
+        Assert.Equal(
+            "@Mod, so geht's: !bosscooldown 60 halbiert den Boss-Cooldown für 60 Minuten, !bosscooldown 60 10 setzt ihn so lange auf 10 Minuten, "
+            + "!bosscooldown aus beendet das. Dauer 1 bis 1440 Minuten, Cooldown 1 bis 29 Minuten.",
+            hint.Text);
+        await using var db = _game.OpenLive();
+        Assert.Empty(db.BossCooldownReductions);
+    }
+
+    [Fact]
+    public async Task The_longest_reduction_is_24_hours_and_the_dry_run_keeps_its_own()
+    {
+        var boss = Boss(EasyBoss);
+
+        await BossCooldownAsync(boss, "1440 29");
+        Assert.Equal("Boss-Cooldown verkürzt: Für 24 Stunden ist der Boss schon nach 29 Minuten wieder bereit statt nach 30 Minuten.", _chat.Sent[^1]);
+
+        // The dry run's fresh sandbox has no reduction to end; the live one stays.
+        _game.DryRun.Enabled = true;
+        await BossCooldownAsync(boss, "aus", simulated: true);
+        Assert.Equal("@Mod, der Boss-Cooldown ist gerade nicht verkürzt.", Assert.Single(_chat.Hints).Text);
+        await using var db = _game.OpenLive();
+        Assert.Equal(TimeSpan.FromMinutes(29), (await db.BossCooldownReductions.SingleAsync(_ct)).Cooldown);
+    }
+
+    [Fact]
     public async Task Each_participant_fields_a_species_drawn_from_their_distinct_species()
     {
         var boss = Boss(EasyBoss);
@@ -400,6 +520,13 @@ public class BossEncounterTests : IDisposable
         _stream,
         _game.Time,
         NullLogger<BossEncounter>.Instance);
+
+    /// <summary><c>!bosscooldown</c> from a moderator, through the command as the processor would run it.</summary>
+    private Task BossCooldownAsync(BossEncounter boss, string arguments, bool simulated = false)
+    {
+        var message = new ChatMessage(Guid.NewGuid().ToString(), "9", "mod", "Mod", $"!bosscooldown {arguments}", ChatRole.Moderator, simulated);
+        return new BossCooldownCommand(boss, BossSettings.Default).ExecuteAsync(new CommandContext(message, arguments, _chat), _ct);
+    }
 
     private async Task RunEncounterAsync(BossEncounter boss, (string Id, string Name) first, (string Id, string Name) second, bool simulated = false)
     {
