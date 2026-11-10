@@ -558,6 +558,14 @@ in [roadmap.md](roadmap.md).
   `--ok`/`--accent` with dark text. Neither `.hp-bar` nor `.hp-text` may get
   horizontal padding/border on the bar itself, or the two gradient edges drift
   apart.
+- Addenda (2026-11-10, branch fix/hp-bar-dark-mode): feedback said the dark
+  text on bright green was hard to read in the dark theme (8 : 1 by WCAG, but
+  the bright fill glares). Seven variants compared on a throwaway page (shadow,
+  outline, bold black, muted fill with coloured edge, darker fills); user
+  decision „B ist gut“: the dark theme drops its override and uses the light
+  theme's `#1b7f45`/`#c42d0b` with white text (5.0 / 5.6 : 1). No new
+  „Neuigkeiten“ line: the next version (now 1.5.0) is unreleased and its bar line
+  covers it.
 
 ### Shorter boss cooldown for a while — streamer request (2026-11-10, branch feat/boss-cooldown-reduced)
 - Built: mod command `!bosscooldown <Minuten> [Cooldown]` / `!bosscooldown

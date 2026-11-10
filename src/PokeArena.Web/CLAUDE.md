@@ -32,7 +32,9 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   The fight cards stay inside the page's 868 px content: `.sides` reaching past it looked lopsided next to the
   narrower header and log, user decision „Breitenänderung wieder Rückgängig“ (fix/fight-card-width).
 - The HP numbers sit inside `.hp-bar` (fixed width): bar fill and `.hp-text` colour share one hard gradient edge at
-  `--hp`. No horizontal padding or border on `.hp-bar` itself, or the edges drift apart; light-theme fills are darker
-  than `--ok`/`--accent` because white text on those is under 4.5 : 1 (feat/hp-text-in-bar).
+  `--hp`. No horizontal padding or border on `.hp-bar` itself, or the edges drift apart; the fills are darker
+  than `--ok`/`--accent` because white text on those is under 4.5 : 1 (feat/hp-text-in-bar). Both themes use the
+  same dark fills with white text: bright `--ok` with dark text glared in the dark theme despite 8 : 1, user
+  decision variant „B“ (fix/hp-bar-dark-mode).
 - Never tell a boss or NPC by `TrainerId == null`: a deleted trainer's fighters have no id either („[gelöscht]“). The
   boss is the fighter on side 1 of a boss fight (review feat/fight-log-colours).

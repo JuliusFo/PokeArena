@@ -19,6 +19,8 @@ tagged `vX.Y.Z` once its section is complete.
 ### Changed
 - On a fight page a surviving Pokémon's HP numbers („48 / 90 HP“) sit inside
   its HP bar instead of next to it, so the end state column is narrower.
+  In the dark theme the bar uses the same dark green and red with white
+  numbers as in the light theme; the bright green was hard to read.
 
 ## [1.4.2] - 2026-11-10
 
