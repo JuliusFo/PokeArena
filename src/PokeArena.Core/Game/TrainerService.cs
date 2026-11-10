@@ -71,10 +71,22 @@ public sealed class TrainerService
     public void NotifyChanged() => Changed?.Invoke();
 
     /// <summary>
+    /// Registers the author of <paramref name="message"/> (<c>!registrieren</c>) with names and chat colour from it:
+    /// <see cref="ObserveAsync"/> ran before, while they were not a trainer yet, and kept nothing.
+    /// </summary>
+    public Task<RegistrationResult> RegisterAsync(ChatMessage message, Species starter, CancellationToken ct) =>
+        RegisterAsync(message.UserId, message.Login, message.DisplayName, starter, message.Color, ct);
+
+    /// <inheritdoc cref="RegisterAsync(string, string, string, Species, string?, CancellationToken)"/>
+    public Task<RegistrationResult> RegisterAsync(string twitchUserId, string login, string displayName, Species starter, CancellationToken ct) =>
+        RegisterAsync(twitchUserId, login, displayName, starter, null, ct);
+
+    /// <summary>
     /// Registers a viewer with their starter (spec §3): creates the trainer and the protected starter specimen in
     /// one transaction. The choice is final — a second call reports the existing starter.
     /// </summary>
-    public async Task<RegistrationResult> RegisterAsync(string twitchUserId, string login, string displayName, Species starter, CancellationToken ct)
+    private async Task<RegistrationResult> RegisterAsync(
+        string twitchUserId, string login, string displayName, Species starter, string? chatColor, CancellationToken ct)
     {
         await using var db = _database.Open();
         // BEGIN IMMEDIATE: the publish worker must not delete an outbox row between our read and our update of it
@@ -95,6 +107,7 @@ public sealed class TrainerService
             TwitchUserId = twitchUserId,
             DisplayName = displayName,
             Login = login,
+            ChatColor = chatColor,
             RegisteredAt = now,
             Specimens =
             [
@@ -114,7 +127,7 @@ public sealed class TrainerService
         await db.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
 
-        _known[twitchUserId] = new KnownNames(displayName, login, null);
+        _known[twitchUserId] = new KnownNames(displayName, login, chatColor);
         _log.LogInformation("Trainer {UserId} registered with {Starter}", twitchUserId, starter.Slug);
         Changed?.Invoke();
         return new RegistrationResult(RegistrationStatus.Registered, starter);

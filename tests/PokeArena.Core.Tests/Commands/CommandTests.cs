@@ -236,6 +236,17 @@ public class CommandTests : IDisposable
             _chat.Sent);
     }
 
+    [Fact]
+    public async Task Registration_keeps_the_chat_colour_of_the_registering_message()
+    {
+        var processor = Processor(new RegisterCommand(_game.Trainers, GameFixture.Species));
+
+        await processor.ProcessAsync(Message("!registrieren pikachu") with { Color = "#FF4500" }, _ct);
+
+        await using var db = _game.OpenLive();
+        Assert.Equal("#FF4500", (await db.Trainers.FindAsync(["1001"], _ct))?.ChatColor);
+    }
+
     [Theory]
     [InlineData("")]
     [InlineData("Mewtu")]

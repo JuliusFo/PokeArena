@@ -28,7 +28,7 @@ public sealed class RegisterCommand(TrainerService trainers, SpeciesCatalog spec
             return;
         }
 
-        var result = await trainers.RegisterAsync(context.Message.UserId, context.Message.Login, context.Message.DisplayName, starter, ct);
+        var result = await trainers.RegisterAsync(context.Message, starter, ct);
         if (result.Status == RegistrationStatus.Registered)
         {
             context.Chat.Send($"{mention}, willkommen bei PokeArena! Dein Starter ist {result.Starter.Name}. Mit !boss kämpfst du mit, sobald ein Boss erscheint.");
