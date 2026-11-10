@@ -64,7 +64,7 @@ no runtime editor (user decision 2026-11-04).
   then re-schedules itself for the rest) → `QueuedWork` closes it on the
   command queue → participant check
   → one seed per encounter draws tier, boss species, each participant's
-  specimen and all hits → `BossBattle` → battle, catches, achievements and
+  fielded species (uniform over the distinct species they own) and all hits → `BossBattle` → battle, catches, achievements and
   cooldown in one transaction → site paths queued → chat messages with the battle link.
 - **PvP** (spec §6, built): `!fight @x` resolves `@x` by login or display name and
   opens a challenge in memory (expires lazily, dropped on a database switch);

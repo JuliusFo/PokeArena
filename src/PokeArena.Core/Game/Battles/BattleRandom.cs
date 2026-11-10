@@ -16,7 +16,7 @@ public sealed class SystemSeedSource : ISeedSource
 }
 
 /// <summary>
-/// The only randomness of a battle: everything drawn for one encounter (boss, specimens, hits) comes from this
+/// The only randomness of a battle: everything drawn for one encounter (boss, fielded species or team specimens, hits) comes from this
 /// seeded generator, so the stored seed explains the outcome under the settings of that time.
 /// </summary>
 public sealed class BattleRandom(int seed)

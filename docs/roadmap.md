@@ -307,14 +307,19 @@ Demo: measured win rates per NPC and boss group size, adjusted values.
   the streamer-facing values (boss cooldown, countdown) may get a setting.
 - Done ahead of WP-09 (user decision 2026-11-09, `feat/boss-pick-per-species`,
   1.3.1): the boss pick is uniform over distinct species instead of
-  specimens. Simulator part 3: group wins, catches and the share of commons
-  fielded move by at most 1–2 points at 5–100 catches — duplicates are
-  spread over all tiers (98 / 48 / 5 species), so the common share (≈ 62 %
-  at 5 catches → 73 % at 100, the rare starter gets diluted) comes from the
-  boss tier odds, not from duplicates. It only helps the unlucky single
-  trainer (3 × Digda + Arkani: Arkani 25 % → 50 %). If fielded Pokemon still
-  feel too weak, levers are the tier odds or a pick weighted by tier or
-  strength — simulator first.
+  specimens. Simulator part 3 (`dotnet run tools/BalancingSimulator.cs --
+  --duels 1`, defaults otherwise; part 3 does not depend on `--duels`):
+  group wins and catches move by at most 1–2 points at 5–100 catches. Per
+  species, legendaries duplicate most (5 species), rares least (48), commons
+  in between (98), so the pick fields legendaries less and rares more — at
+  100 catches common / rare / legendary ≈ 73 / 21 / 5.9 % → 72 / 23 / 4.9 %
+  (review of the branch). The common share (≈ 62 % at 5 catches → 73 % at
+  100, the rare starter gets diluted) comes from the boss tier odds, not from
+  duplicates. For a single trainer it is noticeable both ways: 3 × Digda +
+  Arkani fields Arkani 50 % instead of 25 %, starter + 3 × Arktos + Digda
+  fields Arktos 33 % instead of 60 %. If fielded Pokemon still feel too weak,
+  levers are the tier odds or a pick weighted by tier or strength —
+  simulator first.
 - Progression: PvP loot prefers species the winner lacks, like the NPC
   reward (E22) — a per-trainer bonus on the boss does not fit, all survivors
   catch the same species. Then watch the data again.

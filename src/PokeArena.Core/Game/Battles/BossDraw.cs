@@ -19,9 +19,10 @@ public static class BossDraw
     }
 
     /// <summary>
-    /// The species a participant fields: uniform over the distinct species they own, so duplicates (early, mostly
-    /// common catches) do not crowd out the few rare ones. Specimens of one species fight identically, so the
-    /// species is all the fight needs. Sorted by id, so a seed always means the same pick.
+    /// The species a participant fields: uniform over the distinct species they own, so duplicates do not raise a
+    /// species' chance (spec §4). On average this fields rares a little more and legendaries a little less (only 5
+    /// legendary species, so they duplicate most — simulator part 3). Specimens of one species fight identically,
+    /// so the species is all the fight needs. Sorted by id, so a seed always means the same pick.
     /// </summary>
     public static int FieldedSpecies(IEnumerable<int> ownedSpeciesIds, BattleRandom random) =>
         random.Pick(ownedSpeciesIds.Distinct().Order().ToList());
