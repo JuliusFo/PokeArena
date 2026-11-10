@@ -61,11 +61,13 @@ jobs:
           dotnet test tests/PokeArena.Web.Tests -c Release --no-build
           dotnet test tests/PokeArena.Integration.Tests -c Release --no-build
 
+      # A run by hand builds 0.0.1: vpk pack refuses 0.0.0 ("must be >= 0.0.1"). An installed copy never sees it, the
+      # package only becomes a workflow artifact.
       - name: Determine version
         id: version
         shell: pwsh
         run: |
-          $version = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME.TrimStart('v') } else { '0.0.0' }
+          $version = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME.TrimStart('v') } else { '0.0.1' }
           $name = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME } else { 'dev' }
           "version=$version" >> $env:GITHUB_OUTPUT
           "name=$name" >> $env:GITHUB_OUTPUT
