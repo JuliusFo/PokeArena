@@ -16,6 +16,13 @@ tagged `vX.Y.Z` once its section is complete.
   type colour, no longer the brackets after it („(Boss, HP 503)“).
   Older fights change with „Alles neu veröffentlichen“; until then their boss
   stays uncoloured.
+- On wide screens a fight page's two cards (trainers and opponent) are wider
+  (1040 px instead of 900 px); header and text keep their width.
+
+### Fixed
+- A long Pokémon or trainer name on a fight page no longer pushes the HP bar
+  onto a line of its own: only the name wraps, all bars stay lined up on the
+  right.
 
 ## [1.4.0] - 2026-11-10
 

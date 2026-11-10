@@ -492,6 +492,24 @@ in [roadmap.md](roadmap.md).
   uncoloured (not the whole label as before) until „Alles neu veröffentlichen“.
   Plain text (`lines`, desktop, chat) is unchanged.
 
+### Fighter row wrap — user report (2026-11-10, branch fix/fighter-row-wrap)
+- Built: on the fight page species and owner sit in `<span class="who">`, a
+  wrapping flex box that may shrink; `.fighters li` no longer wraps and
+  `.end-state` does not shrink — a long name wraps inside `.who`, the HP bar
+  keeps its column on the right. From 1100 px viewport `.sides` reaches 70 px
+  past the 900 px page on each side (1040 px). CHANGELOG, „Neuigkeiten“ 1.4.1.
+  Checked in the preview (kampf/1 with injected owners „ShiyoFurball“ and a
+  25-character name; 1200 px dark, 375 px light: bars at the same x, no
+  horizontal scroll).
+- User decisions: fix the wrap and widen only the fight page („Fix +
+  Kampfseite breiter“), not every page.
+- Pitfalls: `.fighters li` and `.pokedex li` share the row rule — the
+  `nowrap` override is for `.fighters` only. Widening `.page` itself would move
+  the header when switching pages, hence only `.sides` reaches out.
+- Deliberately not done: at 375 px a 25-character name without spaces breaks
+  inside the word (`overflow-wrap: anywhere`) and a second type chip can drop
+  under the name — both stay inside the card.
+
 Template per entry:
 
 ```
