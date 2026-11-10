@@ -32,7 +32,7 @@
     private static RenderFragment Row(DamageMeter.Bar bar) =>
         @<text>
             <span class="rank">@bar.Rank</span>
-            <span class="damage-bar" style="--share: @(bar.Share)%; --fill: @bar.Fill; --on-fill: @bar.OnFill">
+            <span class="damage-bar@(bar.Share == "100" ? " full" : "")" style="--share: @(bar.Share)%; --fill: @bar.Fill; --on-fill: @bar.OnFill">
                 <span class="damage-text">@Text(bar)</span>
                 <span class="damage-text on-fill" aria-hidden="true">@Text(bar)</span>
             </span>

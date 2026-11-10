@@ -438,14 +438,27 @@ h1:focus {
   text-align: right;
 }
 
+/*
+  The fill ends in a 2 px edge in --text: a chat colour close to the track or the card (white, light grey, black in the
+  dark theme) would otherwise hide where the bar ends (review feat/damage-meter). A full bar has nothing to mark.
+*/
 .damage-bar {
+  --edge: var(--text);
   position: relative;
   display: block;
   flex: 1 1 0;
   min-width: 0;
   border-radius: 12px;
-  background: linear-gradient(to right, var(--fill) var(--share), var(--border) var(--share));
+  background: linear-gradient(
+    to right,
+    var(--fill) calc(var(--share) - 2px),
+    var(--edge) calc(var(--share) - 2px) var(--share),
+    var(--border) var(--share));
   overflow: hidden;
+}
+
+.damage-bar.full {
+  --edge: var(--fill);
 }
 
 .damage-text {
