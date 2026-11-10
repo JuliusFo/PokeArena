@@ -195,6 +195,27 @@ public class BattleEngineTests
     }
 
     [Fact]
+    public void In_a_team_fight_each_side_deals_the_hp_the_other_lost_and_the_unused_deal_nothing()
+    {
+        // Real spread and crits; Mewtu clears Gary's team before Ash's last two are needed (review feat/damage-meter).
+        var settings = BattleSettings.Default;
+        var result = new TeamBattle(Damage(settings)).Fight(
+            [F("Pikachu", settings, "Ash"), F("Mewtu", settings, "Ash"), F("Raupy", settings, "Ash"), F("Karpador", settings, "Ash")],
+            [F("Schiggy", settings, "Gary"), F("Onix", settings, "Gary"), F("Taubsi", settings, "Gary")],
+            new BattleRandom(3));
+        var log = result.Log;
+        var dealt = log.DamageDealt();
+
+        int Lost(int side) => Enumerable.Range(0, log.Fighters.Count).Where(i => log.Fighters[i].Side == side).Sum(i => log.Fighters[i].MaxHp - log.HpLeft(i));
+        int Dealt(int side) => Enumerable.Range(0, log.Fighters.Count).Where(i => log.Fighters[i].Side == side).Sum(i => dealt[i]);
+        Assert.Equal((Lost(1), Lost(0)), (Dealt(0), Dealt(1)));
+        var unused = Enumerable.Range(0, log.Fighters.Count).Where(i => !log.WasUsed(i)).ToList();
+        Assert.NotEmpty(unused);
+        Assert.All(unused, i => Assert.Equal(0, dealt[i]));
+        Assert.True(Enumerable.Range(0, log.Fighters.Count).Count(i => dealt[i] > 0) >= 3);
+    }
+
+    [Fact]
     public void Log_lines_name_species_owner_and_hp()
     {
         // Scaling pinned so that Pikachu knocks Schiggy out with its first hit.

@@ -29,7 +29,7 @@ public partial class TintTests
     [InlineData("#FF4500", "#000000")]
     [InlineData("#8A2BE2", "#ffffff")]
     [InlineData("#00FF7F", "#000000")]
-    [InlineData("#757575", "#ffffff")] // the worst case: both reach just about 4.56 : 1
+    [InlineData("#757575", "#ffffff")] // near the worst case: white 4.61, black 4.56 : 1
     [InlineData("#767676", "#000000")]
     public void Text_on_a_bar_is_black_or_white_and_always_readable(string background, string expected)
     {
@@ -67,6 +67,8 @@ public partial class TintTests
         Assert.Equal(chips.OrderBy(c => c.Key), Tint.TypeColors.OrderBy(c => c.Key));
         // Light theme first, then the dark one under prefers-color-scheme.
         Assert.Equal([Tint.LightSurface, Tint.DarkSurface], Regex.Matches(css, @"--surface: (#[0-9a-f]{6});").Select(m => m.Groups[1].Value));
+        // A damage box side of several colours takes the HP bar's green (review feat/damage-meter).
+        Assert.Equal(DamageMeter.Mixed, Regex.Match(css, @"--hp-fill: (#[0-9a-f]{6});").Groups[1].Value);
     }
 
     [Fact]
