@@ -28,16 +28,16 @@ public class DamageMeterTests
 
         Assert.Equal(
             [
-                new DamageMeter.Bar(null, "Trainer", "(3)", "400", "100", DamageMeter.Mixed, "#ffffff"),
-                new DamageMeter.Bar(null, "Relaxo", null, "200", "50", Tint.TypeColors["type-normal"], "#000000"),
+                new DamageMeter.Bar(null, "Trainer", "(3)", "400", "100", DamageMeter.Mixed),
+                new DamageMeter.Bar(null, "Relaxo", null, "200", "50", Tint.TypeColors["type-normal"]),
             ],
             board.Totals);
         Assert.Equal("Trainer", board.RankingTitle);
         Assert.Equal(
             [
-                new DamageMeter.Bar("1.", "Clara", "Glumanda", "300 · 75 %", "100", "#0000ff", "#ffffff"),
-                new DamageMeter.Bar("2.", "Anna", "Bisasam", "100 · 25 %", "33.3", "#ffff00", "#000000"),
-                new DamageMeter.Bar("3.", "Ben", "Raupy", "0 · 0 %", "0", DamageMeter.Neutral, "#ffffff"),
+                new DamageMeter.Bar("1.", "Clara", "Glumanda", "300 · 75 %", "100", "#0000ff"),
+                new DamageMeter.Bar("2.", "Anna", "Bisasam", "100 · 25 %", "33.3", "#ffff00"),
+                new DamageMeter.Bar("3.", "Ben", "Raupy", "0 · 0 %", "0", DamageMeter.Neutral),
             ],
             board.Ranking);
     }
@@ -58,8 +58,9 @@ public class DamageMeterTests
                 new BattleFighter(Raupy, "Ben", "2", 30, 0, true, "#FF4500", Damage: 0),
             ])))!;
 
-        // One trainer per side: the side takes the trainer's colour.
+        // One trainer per side: the side takes the trainer's colour as picked, the colour of the name in the log.
         Assert.Equal([("Anna", "60", "#ffff00"), ("Ben", "60", "#ff4500")], board.Totals.Select(b => (b.Name, b.Value, b.Fill)));
+        Assert.Equal($"--tint: {board.Totals[0].Fill}", Tint.Style("#FFFF00"));
         Assert.Equal("Pokémon", board.RankingTitle);
         Assert.Equal(
             [("1.", "Bisasam", "Anna", "60"), ("1.", "Glumanda", "Ben", "60"), ("3.", "Raupy", "Ben", "0")],

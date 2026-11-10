@@ -403,9 +403,10 @@ type — the Pokémon is the element. „Volltreffer!“ is bold on a gold backg
 text, the same in both themes). Species and HP of trainers' Pokémon, NPCs and
 trainers without a known colour stay in the normal text colour. The bot keeps
 the colour from the trainer's latest chat message (EventSub `color`; empty if
-the viewer never picked one). The site darkens or lightens each colour per theme
-until it reaches 4.5 : 1 on the page surface, so a yellow name stays readable
-on white. Like the end state, older files show the log uncoloured until „Alles
+the viewer never picked one). The site shows each colour exactly as picked, in
+both themes, even where it is hard to read (yellow on white, dark blue on the
+dark page) — user decision 2026-11-10, until 1.6.0 it was darkened or lightened
+to 4.5 : 1. Like the end state, older files show the log uncoloured until „Alles
 neu veröffentlichen“, and a colour change shows on older fights only after it.
 
 ⁴ „Schaden“ box on the fight page (user request 2026-11-10), between the fight
@@ -415,13 +416,15 @@ fight (with their share of the boss's HP, „148 · 26 %“), every Pokémon sen
 of both sides in PvP and NPC fights. Equal damage shares a rank. Damage counts
 only what arrived: a last hit counts the target's HP left, so one side's damage
 adds up to the HP the other side lost. Bars run from the left in the trainer's
-chat colour as picked; the boss and NPC Pokémon take the colour of their first
-type, trainers without a colour grey, a side of several colours the HP bar's
-green. A bar that stops short ends in a thin dark edge (light in the dark
-theme), so a chat colour like white still shows its length. Name and number
-sit inside the bar like the HP numbers: black or white over the fill,
-whichever reads better, normal text over the rest. Older files show no box
-until „Alles neu veröffentlichen“.
+chat colour; the boss and NPC Pokémon take the colour of their first type,
+trainers without a colour grey, a side of several colours the HP bar's green.
+A bar has exactly the colour of the trainer's name in the fight cards and the
+log. Name and number sit inside the bar like the HP numbers: white over the
+fill in both themes (on yellow knowingly hard to read, user decision
+2026-11-10), normal text over the rest. A bar that stops short ends in a thin
+dark edge (light in the dark theme), so a colour close to the track still shows
+its length. Older files show no box until „Alles
+neu veröffentlichen“.
 
 - Files are uploaded **directly per change** via the publish queue.
 - Uploads normally land within seconds, but the queue may lag (network

@@ -6,36 +6,10 @@ namespace PokeArena.Web.Tests;
 public partial class TintTests
 {
     [Theory]
-    [InlineData("#FFFF00")] // yellow: unreadable on white
-    [InlineData("#0000FF")] // blue: unreadable on the dark surface
-    [InlineData("#FFFFFF")]
-    [InlineData("#000000")]
-    [InlineData("#808080")]
-    [InlineData("#00FF7F")]
-    public void Every_tint_reaches_aa_contrast_in_both_themes(string color) => AssertReadable(color);
-
-    [Fact]
-    public void Every_type_colour_reaches_aa_contrast_in_both_themes()
-    {
-        foreach (var color in Tint.TypeColors.Values)
-        {
-            AssertReadable(color);
-        }
-    }
-
-    [Theory]
-    [InlineData("#FFFF00", "#000000")]
-    [InlineData("#0000FF", "#ffffff")]
-    [InlineData("#FF4500", "#000000")]
-    [InlineData("#8A2BE2", "#ffffff")]
-    [InlineData("#00FF7F", "#000000")]
-    [InlineData("#757575", "#ffffff")] // near the worst case: white 4.61, black 4.56 : 1
-    [InlineData("#767676", "#000000")]
-    public void Text_on_a_bar_is_black_or_white_and_always_readable(string background, string expected)
-    {
-        Assert.Equal(expected, Tint.TextOn(background));
-        Assert.True(Tint.Contrast(background, Tint.TextOn(background)) >= Tint.MinContrast);
-    }
+    [InlineData("#FFFF00", "--tint: #ffff00")] // yellow stays yellow, also on white (user decision, feat/damage-text-white)
+    [InlineData("#0000FF", "--tint: #0000ff")] // blue stays blue, also on the dark page
+    [InlineData("#1A2b3C", "--tint: #1a2b3c")]
+    public void A_tint_is_the_colour_as_picked(string color, string expected) => Assert.Equal(expected, Tint.Style(color));
 
     [Theory]
     [InlineData("#1A2b3C", true)]
@@ -44,10 +18,6 @@ public partial class TintTests
     [InlineData("#12345G", false)]
     [InlineData("#fff;x", false)]
     public void Only_hex_colours_count_as_colours(string? value, bool expected) => Assert.Equal(expected, Tint.IsColor(value));
-
-    [Fact]
-    public void A_colour_that_already_passes_stays_as_picked() =>
-        Assert.Equal("--tint-light: #0000ff; --tint-dark: #8080ff", Tint.Style("#0000FF"));
 
     [Theory]
     [InlineData(null)]
@@ -65,8 +35,6 @@ public partial class TintTests
         var chips = TypeRule().Matches(css).ToDictionary(m => m.Groups[1].Value, m => m.Groups[2].Value);
 
         Assert.Equal(chips.OrderBy(c => c.Key), Tint.TypeColors.OrderBy(c => c.Key));
-        // Light theme first, then the dark one under prefers-color-scheme.
-        Assert.Equal([Tint.LightSurface, Tint.DarkSurface], Regex.Matches(css, @"--surface: (#[0-9a-f]{6});").Select(m => m.Groups[1].Value));
         // A damage box side of several colours takes the HP bar's green (review feat/damage-meter).
         Assert.Equal(DamageMeter.Mixed, Regex.Match(css, @"--hp-fill: (#[0-9a-f]{6});").Groups[1].Value);
     }
@@ -79,15 +47,6 @@ public partial class TintTests
 
         Assert.True(rule.Success, ".log .critical with background and color not found in site.css");
         Assert.True(Tint.Contrast(rule.Groups[2].Value, rule.Groups[1].Value) >= Tint.MinContrast);
-    }
-
-    private static void AssertReadable(string color)
-    {
-        var style = Tint.Style(color)!;
-        var light = Regex.Match(style, "--tint-light: (#[0-9a-f]{6})").Groups[1].Value;
-        var dark = Regex.Match(style, "--tint-dark: (#[0-9a-f]{6})").Groups[1].Value;
-        Assert.True(Tint.Contrast(light, Tint.LightSurface) >= Tint.MinContrast, $"{color} → {light} on {Tint.LightSurface}");
-        Assert.True(Tint.Contrast(dark, Tint.DarkSurface) >= Tint.MinContrast, $"{color} → {dark} on {Tint.DarkSurface}");
     }
 
     private static string RepositoryRoot()

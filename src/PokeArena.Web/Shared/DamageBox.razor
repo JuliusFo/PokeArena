@@ -27,12 +27,12 @@
 
     /// <summary>
     /// One bar with its text twice, each copy clipped to its part like the HP numbers: --text over the empty rest,
-    /// black or white over the fill (site.css). Fill and share are checked values (DamageMeter), safe in the style.
+    /// white over the fill (site.css). Fill and share are checked values (DamageMeter), safe in the style.
     /// </summary>
     private static RenderFragment Row(DamageMeter.Bar bar) =>
         @<text>
             <span class="rank">@bar.Rank</span>
-            <span class="damage-bar@(bar.Share == "100" ? " full" : "")" style="--share: @(bar.Share)%; --fill: @bar.Fill; --on-fill: @bar.OnFill">
+            <span class="damage-bar@(bar.Share == "100" ? " full" : "")" style="--share: @(bar.Share)%; --fill: @bar.Fill">
                 <span class="damage-text">@Text(bar)</span>
                 <span class="damage-text on-fill" aria-hidden="true">@Text(bar)</span>
             </span>

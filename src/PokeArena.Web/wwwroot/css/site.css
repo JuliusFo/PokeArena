@@ -395,9 +395,10 @@ h1:focus {
 }
 
 /*
-  „Schaden“ box under the fight cards (feat/damage-meter), as wide as both together. Bars in the trainer's chat colour,
-  as picked: the numbers inside are black or white by contrast (--on-fill, at least 4.58 : 1 on any colour) over the
-  fill and --text over the empty rest — two clipped copies like the HP numbers, never background-clip: text.
+  „Schaden“ box under the fight cards (feat/damage-meter), as wide as both together. Bars in the trainer's chat colour
+  as picked, the same as the names in the cards and the log, in both themes. The numbers inside are white over the fill
+  like the HP numbers — on light colours such as yellow knowingly hard to read, user decision (feat/damage-text-white)
+  — and --text over the empty rest: two clipped copies like the HP numbers, never background-clip: text.
 */
 .damage {
   margin-top: 12px;
@@ -476,7 +477,7 @@ h1:focus {
 .damage-text.on-fill {
   position: absolute;
   inset: 0;
-  color: var(--on-fill);
+  color: #ffffff;
   clip-path: inset(0 calc(100% - var(--share)) 0 0);
   user-select: none;
 }
@@ -512,16 +513,13 @@ h1:focus {
   margin-top: 0;
 }
 
-/* A trainer's chat colour or a boss's type colour, adjusted for contrast per theme in C# (Services/Tint.cs). */
+/*
+  A trainer's chat colour or a boss's type colour as picked, in both themes (Services/Tint.cs): user decision
+  feat/damage-text-white, though yellow on white or blue on the dark page fall below 4.5 : 1.
+*/
 .tinted {
-  color: var(--tint-light);
+  color: var(--tint);
   font-weight: 600;
-}
-
-@media (prefers-color-scheme: dark) {
-  .tinted {
-    color: var(--tint-dark);
-  }
 }
 
 /*

@@ -189,13 +189,14 @@ public class PageTests : BunitContext
         Assert.Equal(["1.", "2."], ranking.Select(li => li.QuerySelector(".rank")!.TextContent));
         // Text twice, each copy clipped to its part of the bar; the copy over the fill is hidden from screen readers.
         var bar = ranking[0].QuerySelector(".damage-bar")!;
-        Assert.Equal("--share: 100%; --fill: #0000ff; --on-fill: #ffffff", bar.GetAttribute("style"));
+        Assert.Equal("--share: 100%; --fill: #0000ff", bar.GetAttribute("style"));
         // Only a bar that stops short gets the dark edge at its end (review feat/damage-meter).
         Assert.Equal(["damage-bar full", "damage-bar"], ranking.Select(li => li.QuerySelector(".damage-bar")!.ClassName));
         Assert.Equal(
             [("damage-text", "Raupy Misty", "32", null), ("damage-text on-fill", "Raupy Misty", "32", "true")],
             bar.Children.Select(e => (e.ClassName, e.QuerySelector(".who")!.TextContent, e.QuerySelector(".value")!.TextContent, e.GetAttribute("aria-hidden"))));
-        Assert.Equal("--share: 93.8%; --fill: #ffff00; --on-fill: #000000", ranking[1].QuerySelector(".damage-bar")!.GetAttribute("style"));
+        // The bar takes the chat colour as picked, like the names (feat/damage-text-white).
+        Assert.Equal("--share: 93.8%; --fill: #ffff00", ranking[1].QuerySelector(".damage-bar")!.GetAttribute("style"));
     }
 
     [Fact]

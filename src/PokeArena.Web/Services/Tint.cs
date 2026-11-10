@@ -4,20 +4,15 @@ using PokeArena.Contracts;
 namespace PokeArena.Web.Services;
 
 /// <summary>
-/// Text colours from colours nobody chose for readability — a trainer's Twitch chat colour, a boss's type colour.
-/// Each is darkened for the light theme and lightened for the dark theme until it reaches WCAG AA (4.5 : 1) on the
-/// page surface; a colour that already passes stays as it is.
+/// Colours of the fight page that come from the data — a trainer's Twitch chat colour, a boss's type colour. They are
+/// shown exactly as picked, for names in the fight cards and the log as for the „Schaden“ bars, in both themes: user
+/// decision „alles auf die tatsächliche Farbe“ (feat/damage-text-white), knowing that e.g. yellow on white and blue on
+/// the dark page fall below WCAG AA. Until 1.6.0 names were darkened or lightened per theme until they reached it.
 /// </summary>
 public static class Tint
 {
-    /// <summary>Contrast every tinted text reaches on <see cref="LightSurface"/> and <see cref="DarkSurface"/>.</summary>
+    /// <summary>WCAG AA for text the page chooses itself (critical hits on gold, site.css).</summary>
     public const double MinContrast = 4.5;
-
-    /// <summary><c>--surface</c> of the light theme in site.css (fight sides and log).</summary>
-    public const string LightSurface = "#ffffff";
-
-    /// <summary><c>--surface</c> of the dark theme in site.css.</summary>
-    public const string DarkSurface = "#222228";
 
     /// <summary>
     /// Chip colours of the types (<c>.type-*</c> in site.css; a test keeps both in line), keyed by
@@ -55,42 +50,17 @@ public static class Tint
             ? part.IsSpecies && fighter.Species.Types.Count > 0 ? TypeColors.GetValueOrDefault(Format.TypeClass(fighter.Species.Types[0])) : null
             : part.IsOwner ? fighter.Color : null;
 
-    /// <summary>Inline style for the <c>tinted</c> class: both theme variants of <paramref name="color"/>; null if it is not <c>#RRGGBB</c>.</summary>
-    public static string? Style(string? color) =>
-        color is not null && TryParse(color, out var rgb)
-            ? $"--tint-light: {ToHex(Readable(rgb, Parse(LightSurface), towards: 0))}; --tint-dark: {ToHex(Readable(rgb, Parse(DarkSurface), towards: 255))}"
-            : null;
+    /// <summary>
+    /// Inline style for the <c>tinted</c> class: <paramref name="color"/> as picked (lower case); null if it is not
+    /// <c>#RRGGBB</c>, so nothing else ever reaches the style attribute.
+    /// </summary>
+    public static string? Style(string? color) => IsColor(color) ? $"--tint: {color!.ToLowerInvariant()}" : null;
 
     /// <summary>WCAG contrast ratio of two <c>#RRGGBB</c> colours (1 … 21).</summary>
     public static double Contrast(string a, string b) => Contrast(Parse(a), Parse(b));
 
     /// <summary>Whether <paramref name="value"/> is a <c>#RRGGBB</c> colour — safe to put into an inline style.</summary>
     public static bool IsColor(string? value) => value is not null && TryParse(value, out _);
-
-    /// <summary>
-    /// Black or white, whichever has more contrast on the <c>#RRGGBB</c> <paramref name="background"/>; one of them
-    /// always reaches at least 4.58 : 1 (feat/damage-meter).
-    /// </summary>
-    public static string TextOn(string background) =>
-        Contrast(background, "#000000") >= Contrast(background, "#ffffff") ? "#000000" : "#ffffff";
-
-    /// <summary><paramref name="color"/> mixed towards black or white in 5 % steps until it passes on <paramref name="surface"/>.</summary>
-    private static (int R, int G, int B) Readable((int R, int G, int B) color, (int R, int G, int B) surface, int towards)
-    {
-        for (var step = 0; step <= 20; step++)
-        {
-            var t = step / 20.0;
-            var mixed = (Mix(color.R, towards, t), Mix(color.G, towards, t), Mix(color.B, towards, t));
-            if (Contrast(mixed, surface) >= MinContrast)
-            {
-                return mixed;
-            }
-        }
-
-        return (towards, towards, towards);
-    }
-
-    private static int Mix(int from, int to, double t) => (int)Math.Round(from + ((to - from) * t));
 
     private static double Contrast((int R, int G, int B) a, (int R, int G, int B) b)
     {
@@ -121,6 +91,4 @@ public static class Tint
 
     private static (int R, int G, int B) Parse(string hex) =>
         TryParse(hex, out var rgb) ? rgb : throw new FormatException($"Not a #RRGGBB colour: {hex}");
-
-    private static string ToHex((int R, int G, int B) c) => FormattableString.Invariant($"#{c.R:x2}{c.G:x2}{c.B:x2}");
 }

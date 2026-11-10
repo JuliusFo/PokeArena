@@ -22,10 +22,13 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
 - Contrast (WCAG AA 4.5 : 1): never fade text that carries information with `opacity`, and `--accent` on white is
   only ≈ 4.4 : 1 — fine for links, not for small status text. Measure light and dark in the preview
   (feat/battle-end-state).
-- Colours nobody chose for readability (chat colours, type colours as text) go through `Tint.Style` + class `tinted`,
-  never straight into `color`. `Tint.TypeColors` and the surfaces mirror site.css; `TintTests` fails if they drift
-  (feat/fight-log-colours). Yellow/gold as text turns brown on white at 4.5 : 1 — use it as a background with dark
-  text (`.log .critical`, review feat/fight-log-boss-name-crit).
+- Chat colours and type colours as text go through `Tint.Style` + class `tinted` (only `#RRGGBB` reaches the style),
+  never straight into `color`. They show as picked in both themes, below 4.5 : 1 where they are (yellow on white,
+  blue on the dark page): user decision „alles auf die tatsächliche Farbe“, tested with the streamer
+  (feat/damage-text-white; until 1.6.0 `Tint` darkened or lightened them per theme). `Tint.TypeColors` mirrors
+  site.css; `TintTests` fails if they drift (feat/fight-log-colours). Yellow/gold as text the page chooses itself turns
+  brown on white at 4.5 : 1 — use it as a background with dark text (`.log .critical`, review
+  feat/fight-log-boss-name-crit).
 - A fighter row is `.who` (species + owner, wraps, `flex: 1 1 0`, never `min-width: 0` — the name would cover the
   HP text) next to `.end-state` (never shrinks): never put a new element straight into `.fighters li`, or long
   names push the HP bar onto its own line again (a bUnit test checks the children) (fix/fighter-row-wrap).
@@ -38,11 +41,11 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   decision variant „B“ (fix/hp-bar-dark-mode). The numbers are two stacked copies, each clipped to its part
   (`clip-path`, not overlapping, or the dark copy fringes the white one); never `background-clip: text` — it loses
   subpixel antialiasing and the numbers looked thin and grey (fix/hp-text-crisp).
-- „Schaden“ box (`Shared/DamageBox.razor`, logic in `Services/DamageMeter.cs`, feat/damage-meter): bars take the
-  chat colour as picked, not the `Tint` text variant (yellow would turn brown); the text inside is black or white by
-  `Tint.TextOn` over the fill and `--text` over the rest, two clipped copies like the HP numbers. A raw chat colour can
-  equal the track or the card (white, black), so a bar that stops short ends in a 2 px `--text` edge (review
-  feat/damage-meter). Only colours that pass `Tint.IsColor` go into the inline style. No box when any fighter lacks
-  `Damage` (older files).
+- „Schaden“ box (`Shared/DamageBox.razor`, logic in `Services/DamageMeter.cs`, feat/damage-meter): a bar has the
+  colour of the trainer's name in the cards and the log, as picked, and white text over the fill like the HP numbers,
+  in both themes — user requests „Text-Farbe wie bei den HP“, „die selben Farben“ and „trotzdem weiße Schrift“
+  (feat/damage-text-white; on yellow the white text is knowingly hard to read). `--text` over the rest, two clipped
+  copies. A bar that stops short ends in a 2 px `--text` edge (review feat/damage-meter). Only colours that pass
+  `Tint.IsColor` go into the inline style. No box when any fighter lacks `Damage` (older files).
 - Never tell a boss or NPC by `TrainerId == null`: a deleted trainer's fighters have no id either („[gelöscht]“). The
   boss is the fighter on side 1 of a boss fight (review feat/fight-log-colours).
