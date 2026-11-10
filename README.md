@@ -117,9 +117,14 @@ in the „Einstellungen“ card.
 
 **Switching from the ZIP (versions up to 1.4.2):** close PokeArena, install
 1.5.0 with `Setup.exe` as above (same Windows user), start it and check that
-trainers and settings are there, then delete the old program folder (e.g.
-`C:\PokeArena`). If the old copy still runs, the top bar says „Version …
-verfügbar“ and links the download.
+trainers and settings are there. Trainers, the Twitch login and the Cloudflare
+key carry over by themselves. Channel, website address, Cloudflare endpoint
+and bucket carry over only if they were saved in the „Einstellungen“ card
+(`%LOCALAPPDATA%\PokeArena\settings.json`); if they were typed into the
+`appsettings.json` of the old program folder instead, the card is empty — copy
+the four values from that file into the card, save, and restart PokeArena. Only
+then delete the old program folder (e.g. `C:\PokeArena`). If the old copy
+still runs, the top bar says „Version … verfügbar“ and links the download.
 
 **Restoring a backup:** close PokeArena, copy the wanted file from
 `%LOCALAPPDATA%\PokeArena\backups` (the „Sicherung“ card shows the folder)
