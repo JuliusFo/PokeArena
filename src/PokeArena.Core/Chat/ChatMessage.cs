@@ -10,6 +10,7 @@ public enum ChatRole
 /// <summary>An incoming chat message, from Twitch or typed into the dry run.</summary>
 /// <param name="UserId">Twitch user id — the only identity of a trainer (spec §1).</param>
 /// <param name="IsSimulated">Typed into the dry run by the streamer, not sent by a real viewer.</param>
+/// <param name="Color">Name colour in chat as <c>#RRGGBB</c>; null if the viewer never picked one (or in the dry run).</param>
 public sealed record ChatMessage(
     string MessageId,
     string UserId,
@@ -17,7 +18,8 @@ public sealed record ChatMessage(
     string DisplayName,
     string Text,
     ChatRole Role,
-    bool IsSimulated = false) : InboxItem
+    bool IsSimulated = false,
+    string? Color = null) : InboxItem
 {
     public bool IsModerator => Role is ChatRole.Moderator or ChatRole.Broadcaster;
 }

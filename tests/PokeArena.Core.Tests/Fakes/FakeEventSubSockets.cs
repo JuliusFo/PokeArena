@@ -117,7 +117,8 @@ public static class EventSubFrames
         string broadcasterId = "42",
         string badgesJson = "[]",
         string? sourceBroadcasterId = null,
-        string? messageId = null)
+        string? messageId = null,
+        string color = "#00FF7F")
     {
         var source = sourceBroadcasterId is null ? "null" : $"\"{sourceBroadcasterId}\"";
         return $$$"""
@@ -125,7 +126,7 @@ public static class EventSubFrames
              "payload":{"subscription":{"id":"sub-1","type":"channel.chat.message","version":"1"},
               "event":{"broadcaster_user_id":"{{{broadcasterId}}}","broadcaster_user_login":"shiyofurball","broadcaster_user_name":"ShiyoFurball",
                 "chatter_user_id":"{{{chatterId}}}","chatter_user_login":"{{{chatterLogin}}}","chatter_user_name":"{{{chatterName}}}",
-                "message_id":"msg-{{{Id()}}}","message":{"text":"{{{text}}}","fragments":[]},"color":"#00FF7F","badges":{{{badgesJson}}},
+                "message_id":"msg-{{{Id()}}}","message":{"text":"{{{text}}}","fragments":[]},"color":"{{{color}}}","badges":{{{badgesJson}}},
                 "message_type":"text","cheer":null,"reply":null,"channel_points_custom_reward_id":null,
                 "source_broadcaster_user_id":{{{source}}},"source_message_id":null,"source_badges":null} } }
             """;

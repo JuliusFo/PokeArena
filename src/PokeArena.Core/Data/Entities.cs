@@ -16,6 +16,12 @@ public sealed class Trainer
     /// </summary>
     public required string Login { get; set; }
 
+    /// <summary>
+    /// Name colour in Twitch chat (<c>#RRGGBB</c>), refreshed like the names; null until the trainer is seen with one.
+    /// The website shows the trainer's fighters in it.
+    /// </summary>
+    public string? ChatColor { get; set; }
+
     public DateTimeOffset RegisteredAt { get; init; }
 
     /// <summary>Token balance: the first win against an NPC adds its tokens (spec §7); spending them comes later.</summary>

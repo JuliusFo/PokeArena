@@ -42,6 +42,7 @@ public sealed class PokeArenaDb(DbContextOptions<PokeArenaDb> options) : DbConte
             trainer.Property(t => t.DisplayName).HasMaxLength(64);
             trainer.Property(t => t.Login).HasMaxLength(64);
             trainer.HasIndex(t => t.Login);
+            trainer.Property(t => t.ChatColor).HasMaxLength(7);
             trainer.HasMany(t => t.Specimens).WithOne(s => s.Trainer).HasForeignKey(s => s.TrainerId);
         });
 

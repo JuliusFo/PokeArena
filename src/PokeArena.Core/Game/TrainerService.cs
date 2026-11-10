@@ -114,7 +114,7 @@ public sealed class TrainerService
         await db.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
 
-        _known[twitchUserId] = new KnownNames(displayName, login);
+        _known[twitchUserId] = new KnownNames(displayName, login, null);
         _log.LogInformation("Trainer {UserId} registered with {Starter}", twitchUserId, starter.Slug);
         Changed?.Invoke();
         return new RegistrationResult(RegistrationStatus.Registered, starter);
@@ -122,12 +122,11 @@ public sealed class TrainerService
 
     /// <summary>
     /// Called for every processed chat message: refreshes the stored display name and login if they changed
-    /// (spec §1).
+    /// (spec §1), and the chat colour if the message has one.
     /// </summary>
     /// <returns>Whether the author is a registered trainer.</returns>
     public async Task<bool> ObserveAsync(ChatMessage message, CancellationToken ct)
     {
-        var names = new KnownNames(message.DisplayName, message.Login);
         if (_known.TryGetValue(message.UserId, out var known))
         {
             if (known is null)
@@ -135,7 +134,7 @@ public sealed class TrainerService
                 return false;
             }
 
-            if (known == names)
+            if (known.DisplayName == message.DisplayName && known.Login == message.Login && (message.Color is null || known.Color == message.Color))
             {
                 return true;
             }
@@ -156,14 +155,21 @@ public sealed class TrainerService
             await using var transaction = await db.Database.BeginTransactionAsync(ct);
             trainer.DisplayName = message.DisplayName;
             trainer.Login = message.Login;
+            trainer.ChatColor = message.Color ?? trainer.ChatColor;
             await ReleaseLoginAsync(db, message.Login, trainer.TwitchUserId, ct);
             await SiteOutbox.EnqueueAsync(db, SiteOutbox.ForTrainers([trainer.TwitchUserId]), _time.GetUtcNow(), ct);
             await db.SaveChangesAsync(ct);
             await transaction.CommitAsync(ct);
             Changed?.Invoke();
         }
+        else if (message.Color is { } color && trainer.ChatColor != color)
+        {
+            // Only fight pages show the colour; they pick it up with the next fight or „Alles neu veröffentlichen“.
+            trainer.ChatColor = color;
+            await db.SaveChangesAsync(ct);
+        }
 
-        _known[message.UserId] = names;
+        _known[message.UserId] = new KnownNames(trainer.DisplayName, trainer.Login, trainer.ChatColor);
         return true;
     }
 
@@ -283,5 +289,5 @@ public sealed class TrainerService
             r.TwitchUserId, r.DisplayName, _species.Get(r.StarterId), r.Count, r.RegisteredAt, r.Tokens, r.Badges))];
     }
 
-    private sealed record KnownNames(string DisplayName, string Login);
+    private sealed record KnownNames(string DisplayName, string Login, string? Color);
 }

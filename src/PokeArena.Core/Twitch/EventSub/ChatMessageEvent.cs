@@ -32,8 +32,21 @@ public static class ChatMessageEvent
             RequiredString(ev, "chatter_user_login"),
             RequiredString(ev, "chatter_user_name"),
             RequiredString(ev.GetProperty("message"), "text"),
-            ReadRole(ev, userId, target));
+            ReadRole(ev, userId, target),
+            Color: ReadColor(ev));
     }
+
+    /// <summary>
+    /// <c>color</c> is the chatter's name colour (<c>#RRGGBB</c>) and empty if they never picked one; anything else is
+    /// ignored, because the website writes it into a style attribute.
+    /// </summary>
+    private static string? ReadColor(JsonElement ev) =>
+        OptionalString(ev, "color") is { Length: 7 } color && color[0] == '#' && !color.AsSpan(1).ContainsAnyExcept(HexDigits)
+            ? color.ToUpperInvariant()
+            : null;
+
+    private static readonly System.Buffers.SearchValues<char> HexDigits =
+        System.Buffers.SearchValues.Create("0123456789abcdefABCDEF");
 
     private static ChatRole ReadRole(JsonElement ev, string userId, ChatTarget target)
     {

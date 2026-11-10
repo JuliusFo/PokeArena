@@ -29,6 +29,31 @@ public class TrainerServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task The_chat_colour_follows_the_latest_message_and_a_message_without_one_keeps_it()
+    {
+        await _game.Trainers.RegisterAsync("1", "bob", "Bob", Pikachu, _ct);
+
+        await _game.Trainers.ObserveAsync(new ChatMessage("m-1", "1", "bob", "Bob", "hallo", ChatRole.Viewer, Color: "#FF0000"), _ct);
+        Assert.Equal("#FF0000", await ColorAsync("1"));
+
+        await _game.Trainers.ObserveAsync(new ChatMessage("m-2", "1", "bob", "Bob", "hallo", ChatRole.Viewer, Color: "#00FF00"), _ct);
+        Assert.Equal("#00FF00", await ColorAsync("1"));
+
+        // The dry run and viewers who never picked a colour send none.
+        await _game.Trainers.ObserveAsync(new ChatMessage("m-3", "1", "bob", "Bob", "hallo", ChatRole.Viewer, IsSimulated: true), _ct);
+        Assert.Equal("#00FF00", await ColorAsync("1"));
+
+        await _game.Trainers.ObserveAsync(new ChatMessage("m-4", "1", "bob", "Bobby", "hallo", ChatRole.Viewer, Color: "#0000FF"), _ct);
+        Assert.Equal("#0000FF", await ColorAsync("1"));
+    }
+
+    private async Task<string?> ColorAsync(string trainerId)
+    {
+        await using var db = _game.OpenLive();
+        return (await db.Trainers.SingleAsync(t => t.TwitchUserId == trainerId, _ct)).ChatColor;
+    }
+
+    [Fact]
     public async Task Two_trainers_with_the_same_display_name_are_never_guessed_between()
     {
         await _game.Trainers.RegisterAsync("1", "ash_one", "Ash", Pikachu, _ct);

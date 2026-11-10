@@ -219,6 +219,10 @@ namespace PokeArena.Core.Data.Migrations
                         .HasMaxLength(32)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("ChatColor")
+                        .HasMaxLength(7)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("DisplayName")
                         .IsRequired()
                         .HasMaxLength(64)

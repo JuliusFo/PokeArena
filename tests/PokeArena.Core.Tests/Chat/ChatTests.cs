@@ -24,6 +24,15 @@ public class ChatTests
     }
 
     [Theory]
+    [InlineData("#00ff7f", "#00FF7F")]
+    [InlineData("", null)]
+    [InlineData("#00FF7", null)]
+    [InlineData("red;x:y", null)]
+    [InlineData("#00FF7G", null)]
+    public void Chat_colour_is_kept_only_as_a_plain_hex_colour(string color, string? expected) =>
+        Assert.Equal(expected, Read(EventSubFrames.ChatMessage("hi", color: color))?.Color);
+
+    [Theory]
     [InlineData("1001", """[{"set_id":"moderator","id":"1","info":""}]""", ChatRole.Moderator)]
     [InlineData("1001", """[{"set_id":"lead_moderator","id":"1","info":""}]""", ChatRole.Moderator)]
     [InlineData("42", """[{"set_id":"broadcaster","id":"1","info":""}]""", ChatRole.Broadcaster)]
