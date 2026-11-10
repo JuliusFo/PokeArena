@@ -417,7 +417,8 @@ only what arrived: a last hit counts the target's HP left, so one side's damage
 adds up to the HP the other side lost. Bars run from the left in the trainer's
 chat colour as picked; the boss and NPC Pokémon take the colour of their first
 type, trainers without a colour grey, a side of several colours the HP bar's
-green. Name and number sit inside the bar like the HP numbers: black or white
+green. A bar that stops short ends in a thin dark edge (light in the dark
+theme), so a chat colour like white still shows its length. Name and number sit inside the bar like the HP numbers: black or white
 over the fill, whichever reads better, normal text over the rest. Older files
 show no box until „Alles neu veröffentlichen“.
 
