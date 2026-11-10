@@ -262,7 +262,7 @@ h1:focus {
   gap: 12px;
 }
 
-/* On wide screens the fighter cards reach past the 900 px page (to 1040 px); header and text keep their width, so
+/* On wide screens the fighter cards reach past the page's 868 px content (to 1008 px); header and text keep their width, so
    nothing jumps when switching pages (fix/fighter-row-wrap). */
 @media (min-width: 1100px) {
   .sides {

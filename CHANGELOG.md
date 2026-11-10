@@ -17,7 +17,7 @@ tagged `vX.Y.Z` once its section is complete.
   Older fights change with „Alles neu veröffentlichen“; until then their boss
   stays uncoloured.
 - On wide screens a fight page's two cards (trainers and opponent) are wider
-  (1040 px instead of 900 px); header and text keep their width.
+  (1008 px instead of 868 px); header and text keep their width.
 
 ### Fixed
 - A long Pokémon or trainer name on a fight page no longer pushes the HP bar

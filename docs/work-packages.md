@@ -497,7 +497,8 @@ in [roadmap.md](roadmap.md).
   wrapping flex box that may shrink; `.fighters li` no longer wraps and
   `.end-state` does not shrink — a long name wraps inside `.who`, the HP bar
   keeps its column on the right. From 1100 px viewport `.sides` reaches 70 px
-  past the 900 px page on each side (1040 px). CHANGELOG, „Neuigkeiten“ 1.4.1.
+  past the page's content on each side (868 → 1008 px; `.page` is 900 px
+  including its 16 px padding). CHANGELOG, „Neuigkeiten“ 1.4.1.
   Checked in the preview (kampf/1 with injected owners „ShiyoFurball“ and a
   25-character name; 1200 px dark, 375 px light: bars at the same x, no
   horizontal scroll).
