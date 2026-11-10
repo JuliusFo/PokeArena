@@ -344,6 +344,13 @@ h1:focus {
   background: var(--accent);
 }
 
+/* Fixed width (up to „999 / 999 HP“), so the bars of all survivors line up whatever their numbers. */
+.hp-text {
+  min-width: 11.5ch;
+  text-align: right;
+  white-space: nowrap;
+}
+
 .log {
   margin: 0;
   padding: 12px 16px 12px 36px;

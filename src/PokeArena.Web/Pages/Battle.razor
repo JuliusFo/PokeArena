@@ -36,7 +36,7 @@
                                         <span class="hp-bar" aria-hidden="true">
                                             <span class="@(fighter.HpLeft * 4 <= fighter.MaxHp ? "low" : "")" style="width: @HpPercent(fighter)%"></span>
                                         </span>
-                                        <span>@fighter.HpLeft / @fighter.MaxHp HP</span>
+                                        <span class="hp-text">@fighter.HpLeft / @fighter.MaxHp HP</span>
                                         break;
                                     case "fainted":
                                         <span>besiegt</span>
