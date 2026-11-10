@@ -27,9 +27,9 @@ in [roadmap.md](roadmap.md).
 | – | Fight card width reverted (user report, `fix/fight-card-width`) | 1.4.2 | done 2026-11-10 |
 | – | Shorter boss cooldown for a while (streamer request, `feat/boss-cooldown-reduced`) | 1.5.0 | done 2026-11-10 |
 | WP-11 | Automatic update of the desktop app (before WP-09) | 1.5.0 | done 2026-11-10 |
-| – | Crisp HP numbers (user report, `fix/hp-text-crisp`) | 1.6.0? | done 2026-11-10 |
-| – | „Schaden“ box on the fight page (user request, `feat/damage-meter`) | 1.6.0? | done 2026-11-10 |
-| WP-09 | Balancing after the first streams | 1.6.0 | planned |
+| – | Crisp HP numbers (user report, `fix/hp-text-crisp`) | 1.6.0 | done 2026-11-10 |
+| – | „Schaden“ box on the fight page (user request, `feat/damage-meter`) | 1.6.0 | done 2026-11-10 |
+| WP-09 | Balancing after the first streams | 1.7.0 | planned |
 
 ## Log
 

@@ -10,8 +10,8 @@ trainer pages and battle logs.
 
 > **Status:** stream-ready since 1.0.0 (WP-08); see the
 > [releases](https://github.com/JuliusFo/PokeArena/releases) for the current
-> version. Automatic updates come with 1.5.0, balancing with data from real
-> streams in 1.6.0. See the
+> version. Automatic updates came with 1.5.0, balancing with data from real
+> streams follows in 1.7.0. See the
 > [roadmap](#roadmap).
 
 ## How it plays
@@ -223,8 +223,9 @@ don't edit it by hand.
 | 1.2.0 | Fight page shows how each Pokémon ended | done |
 | 1.3.0 | Website page „Neuigkeiten“ with player-visible changes | done |
 | 1.4.0 | Boss pick per species, fight log in chat colours | done |
-| 1.5.0 | Mods shorten the boss cooldown for a while (`!bosscooldown`); the desktop app updates itself | in progress |
-| 1.6.0 | Balancing with real stream data | planned |
+| 1.5.0 | Mods shorten the boss cooldown for a while (`!bosscooldown`); the desktop app updates itself | done |
+| 1.6.0 | Fight page shows who dealt how much damage | done |
+| 1.7.0 | Balancing with real stream data | planned |
 
 Details per work package: [docs/roadmap.md](docs/roadmap.md) ·
 log: [docs/work-packages.md](docs/work-packages.md) ·

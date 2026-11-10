@@ -311,7 +311,7 @@ Not a setting, a temporary event — so a mod command like `!bossreset`.
   failed-lobby retry cooldown stays 2 minutes; stored in the database
   (survives a restart).
 
-## „Schaden“ box on the fight page (`feat/damage-meter`) → next release
+## „Schaden“ box on the fight page (`feat/damage-meter`) → v1.6.0
 
 User request (2026-11-10): under the two fight cards a box as wide as both
 with a damage meter — who dealt how much, bars from the left, ranked; maybe
@@ -326,9 +326,8 @@ the boss too, with the trainers summed.
   the boss and NPC Pokémon in their first type's colour, no colour → grey,
   a side of several colours → the HP bar's green; the raw chat colour also in
   the dark theme (bright colours like yellow stand out there).
-- Open: version — a feature makes the next release 1.6.0, so WP-09 would
-  become 1.7.0 or ship together with it; „Neuigkeiten“ lists it under 1.6.0
-  for now.
+- User decision (2026-11-10, release): released as 1.6.0 together with the
+  crisp HP numbers („1.6.0, Test ok“); WP-09 moves to 1.7.0.
 
 ## WP-11 — Automatic update of the desktop app (≈ 1–2 days) → v1.5.0
 
@@ -377,7 +376,7 @@ Open:
   update it (it is for apps of a signed-in user); keep the web host in the app
   process or plan its own update path there.
 
-## WP-09 — Balancing after the first streams (≈ 2 days) → v1.6.0
+## WP-09 — Balancing after the first streams (≈ 2 days) → v1.7.0
 
 Tuning with real stream data and the Monte Carlo simulator instead of
 guesses. Starts after 1.0 has run on a few streams.

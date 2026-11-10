@@ -7,6 +7,8 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-11-10
+
 ### Added
 - A fight page shows a „Schaden“ box between the fight cards and the log: what
   each side dealt in total, then a ranking of who dealt how much — the

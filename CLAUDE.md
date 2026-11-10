@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-11-10 · v1.5.0 released (`!bosscooldown`, WP-11 automatic update, HP numbers in the HP bar) · then WP-09 (→ 1.6.0) after a few streams
+Status: 2026-11-10 · v1.6.0 released („Schaden“ box on the fight page, crisp HP numbers) · then WP-09 (→ 1.7.0) after a few streams
 
 ## 1. Where to find what
 
@@ -50,7 +50,8 @@ shows leaderboard, trainer pages and battle logs.
 | 1.4.1 | Fight log colours only the boss's name, critical hits on gold, fighter rows keep the HP bar on the right | feat/fight-log-boss-name-crit, fix/fighter-row-wrap |
 | 1.4.2 | Fight cards as wide as the page again (1.4.1 widening reverted) | fix/fight-card-width |
 | 1.5.0 | Mods shorten the boss cooldown for up to 24 h (`!bosscooldown`); desktop app updates itself from the GitHub releases | feat/boss-cooldown-reduced, WP-11 |
-| 1.6.0 | Balancing with real stream data | WP-09 |
+| 1.6.0 | Fight page „Schaden“ box (damage per side and ranking in chat colours), crisp HP numbers | feat/damage-meter, fix/hp-text-crisp |
+| 1.7.0 | Balancing with real stream data | WP-09 |
 | 2.0.0 | Parked: website and overlay served from the bot's server (roadmap.md) | — |
 
 **Invariants — never weaken:**
@@ -187,7 +188,10 @@ PokeArena.slnx
 
 ## 9. Next
 
-1.5.0 is released (installation: README, „Installing and running“):
+1.6.0 is released: a „Schaden“ box on the fight page (`feat/damage-meter`: side totals and a ranking in the
+trainers' chat colours, damage that arrived from the stored log) and crisp HP numbers (`fix/hp-text-crisp`);
+after updating the streamer clicks „Alles neu veröffentlichen“ once so older fights get the box.
+1.5.0 (installation: README, „Installing and running“):
 `!bosscooldown` (`feat/boss-cooldown-reduced`: mods shorten the boss cooldown
 for up to 24 hours, half by default), WP-11 automatic update (ADR-0010:
 Velopack, installs 10 min after the stream) and HP numbers inside the fight
@@ -201,7 +205,7 @@ boss pick uniform over distinct species and showed trainers in their Twitch chat
 colour in the fight log; 1.3.0 brought the
 „Neuigkeiten“ page (WP-10), 1.2.0 the fight page's end state, 1.1.0 R1 (fixes
 of the whole review 1.0.3, docs/review-1.0.3.md) and the boss lobby. Next:
-after a few streams WP-09 balancing (1.6.0)
+after a few streams WP-09 balancing (1.7.0)
 (`N = 4` dip, PvP loot preferring missing species, NPC difficulty; no runtime
 balancing editor). Parked for version 2: website and overlay served from the
 bot's server through a Cloudflare Tunnel instead of GitHub Pages + R2. Ideas
