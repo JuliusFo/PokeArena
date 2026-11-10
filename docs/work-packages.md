@@ -30,7 +30,8 @@ in [roadmap.md](roadmap.md).
 | – | Crisp HP numbers (user report, `fix/hp-text-crisp`) | 1.6.0 | done 2026-11-10 |
 | – | „Schaden“ box on the fight page (user request, `feat/damage-meter`) | 1.6.0 | done 2026-11-10 |
 | – | White text in the „Schaden“ bars (user request, `feat/damage-text-white`) | 1.6.1 | done 2026-11-10 |
-| WP-09 | Balancing after the first streams | 1.7.0 | planned |
+| – | „Statistik“ page on the website (user idea, `feat/statistics-page`, before WP-09) | 1.7.0 | planned |
+| WP-09 | Balancing after the first streams | 1.8.0 | planned |
 
 ## Log
 

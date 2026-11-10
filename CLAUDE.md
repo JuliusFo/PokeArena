@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-11-10 · v1.6.1 released (white text in the „Schaden“ bars on darkened chat colours) · then WP-09 (→ 1.7.0) after a few streams
+Status: 2026-11-10 · v1.6.1 released (white text in the „Schaden“ bars on darkened chat colours) · next the „Statistik“ page (→ 1.7.0), then WP-09 (→ 1.8.0) after a few streams
 
 ## 1. Where to find what
 
@@ -52,7 +52,8 @@ shows leaderboard, trainer pages and battle logs.
 | 1.5.0 | Mods shorten the boss cooldown for up to 24 h (`!bosscooldown`); desktop app updates itself from the GitHub releases | feat/boss-cooldown-reduced, WP-11 |
 | 1.6.0 | Fight page „Schaden“ box (damage per side and ranking in chat colours), crisp HP numbers | feat/damage-meter, fix/hp-text-crisp |
 | 1.6.1 | „Schaden“ bars in the darkened name colour with white text, names in that colour in both themes | feat/damage-text-white |
-| 1.7.0 | Balancing with real stream data | WP-09 |
+| 1.7.0 | Website page „Statistik“: boss participations, PvP fights, bad-luck streaks, rarities, rivals, boss record | feat/statistics-page |
+| 1.8.0 | Balancing with real stream data | WP-09 |
 | 2.0.0 | Parked: website and overlay served from the bot's server (roadmap.md) | — |
 
 **Invariants — never weaken:**
@@ -209,7 +210,7 @@ boss pick uniform over distinct species and showed trainers in their Twitch chat
 colour in the fight log; 1.3.0 brought the
 „Neuigkeiten“ page (WP-10), 1.2.0 the fight page's end state, 1.1.0 R1 (fixes
 of the whole review 1.0.3, docs/review-1.0.3.md) and the boss lobby. Next:
-after a few streams WP-09 balancing (1.7.0)
+the „Statistik“ page (1.7.0, roadmap.md), then after a few streams WP-09 balancing (1.8.0)
 (`N = 4` dip, PvP loot preferring missing species, NPC difficulty; no runtime
 balancing editor). Parked for version 2: website and overlay served from the
 bot's server through a Cloudflare Tunnel instead of GitHub Pages + R2. Ideas

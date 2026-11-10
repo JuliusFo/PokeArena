@@ -54,6 +54,24 @@ roadmap.md first. Format: idea — date, origin.
 - Fight page: cancel the retry loop when the fight id in the address changes, and
   reset the error flag — 2026-11-08, R1 second review (pre-existing).
 
+## Continuation of the statistics page
+
+Not chosen for the first version of the „Statistik“ page (roadmap.md);
+2026-11-10, evaluation of the idea. All from data the database already holds.
+
+- Lifetime damage per trainer — dropped for now: reads every fight log on
+  every publish; if it returns, a `BattleParticipant.Damage` column filled at
+  fight time avoids that. Teams of 6 in PvP collect damage faster than one
+  Pokémon per boss fight — maybe split boss and fight damage.
+- „Pioniere“: who reached each achievement threshold first
+  (`AchievementUnlock.UnlockedAt`; never revoked, so the list is stable).
+- „Erstbesieger“: who beat each NPC first (`NpcBadge.WonAt`).
+- Longest and shortest fight in rounds (`Battle.Rounds`).
+- Longest PvP win streak — the counterpart of the „Unglücksraben“ streak.
+- Most PvP loot taken (`Battle.LootSpecimenId` and the winner).
+- Not recommended: most tokens (punishes redeeming once tokens can be spent),
+  oldest trainers (says nothing, never changes).
+
 ## Battle system
 
 - Attacks per Pokemon with per-attack types — 2026-09-03, spec §14.

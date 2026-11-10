@@ -1,8 +1,8 @@
 # Roadmap
 
 Planned work packages up to v1.0.0, plus the packages after it (WP-10 news
-page, then WP-11 automatic update, then WP-09 balancing) and a parked idea
-for version 2. Read the package before starting it and agree the plan with
+page, then WP-11 automatic update, then the statistics page, then WP-09
+with its version still open) and a parked idea for version 2. Read the package before starting it and agree the plan with
 the user. Estimates: solo, "day" = one focused person-day; total ≈ 25–31
 days. Every package ends in a state that could run on stream.
 
@@ -376,7 +376,49 @@ Open:
   update it (it is for apps of a signed-in user); keep the web host in the app
   process or plan its own update path there.
 
-## WP-09 — Balancing after the first streams (≈ 2 days) → v1.7.0
+## „Statistik“ page on the website (`feat/statistics-page`) → v1.7.0
+
+User idea (2026-11-10): a website page with rankings beyond the leaderboard.
+Every list is derived from data the database already holds (`BattleParticipant`,
+`Battle`, `Specimen`) — no migration and no reading of fight logs; deleted
+trainers drop out by themselves (their participant rows and specimens go, their
+id leaves the logs).
+
+User decisions (2026-11-10, evaluation of the idea):
+
+- Lists: most boss participations; most fights — **PvP only** (boss
+  participations have their own list, NPC fights do not count);
+  „Unglücksraben“ as the **longest streak of boss participations without a
+  catch** instead of the plain count of missed catches, which would only
+  repeat the participation list.
+- Added after the evaluation: a community Pokédex as the page's head
+  (distinct species the community owns of 151, plus totals of fights, catches
+  and trainers), „Einzelstücke“ (species only one trainer owns, with the
+  owner), „Erzrivalen“ (the pairs with the most PvP fights against each other,
+  with their record) and a boss record (which boss appeared most often, which
+  escaped most often).
+- Lifetime damage is left out for now („erstmal weg“, backlog): it would
+  read every fight log on every publish, and teams of 6 in PvP collect damage
+  faster than one fielded Pokémon per boss fight.
+- Before WP-09, released as 1.7.0; WP-09 moves to 1.8.0 („Vor wp-09“).
+- „Einzelstücke“ as a capped list, not every species with one owner („Eine
+  begrenzte Liste“).
+
+Simplest variant, **Proposal (not confirmed)**:
+
+- One new site file `statistik.json` (`SitePaths`, records in Contracts) and a
+  page `/statistik` in the navigation; it polls every 15 s like the
+  leaderboard. New file only, so the data format version stays the same.
+- Top 10 per list; names link to the trainer page. Equal values share a rank.
+  The streak counts the longest run ever and marks one that is still running.
+- Queued with every fight (`SiteOutbox.ForBattle`) and with registration,
+  rename and deletion (`ForTrainers`); „Alles neu veröffentlichen“ includes
+  it. Mutable cache like the leaderboard.
+- „Einzelstücke“: the number of them in the heading, then 10 — rarest tier
+  first (legendary, rare, common), then by dex number.
+- A line on the „Neuigkeiten“ page, the file in the table of spec §9.
+
+## WP-09 — Balancing after the first streams (≈ 2 days) → v1.8.0
 
 Tuning with real stream data and the Monte Carlo simulator instead of
 guesses. Starts after 1.0 has run on a few streams.
