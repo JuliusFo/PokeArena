@@ -159,6 +159,41 @@ public class PageTests : BunitContext
         // its own again (fix/fighter-row-wrap).
         Assert.All(rows, li => Assert.Equal(["who", "end-state"], li.Children.Select(c => c.ClassName)));
         Assert.All(links, a => Assert.Equal("who", a.ParentElement!.ClassName));
+        // Written before the damage was stored: no „Schaden“ box (feat/damage-meter).
+        Assert.Empty(cut.FindAll(".damage"));
+    }
+
+    [Fact]
+    public void A_battle_shows_who_dealt_how_much_damage_between_the_cards_and_the_log()
+    {
+        Put(
+            SitePaths.Battle(6),
+            BattlePage(6) with
+            {
+                Sides =
+                [
+                    new BattleSide("Ash", true, [new BattleFighter(Bisasam, "Ash", "11", 40, HpLeft: 8, Used: true, Color: "#FFFF00", Damage: 30)]),
+                    new BattleSide("Misty", false, [new BattleFighter(Raupy, "Misty", "12", 30, HpLeft: 0, Used: true, Color: "#0000FF", Damage: 32)]),
+                ],
+            },
+            SiteJson.Default.BattlePage);
+
+        var cut = Render<Battle>(p => p.Add(b => b.Id, 6));
+
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll(".damage")));
+        var box = cut.Find(".damage");
+        Assert.Equal("sides", box.PreviousElementSibling!.ClassName);
+        Assert.Equal("Kampfverlauf", box.NextElementSibling!.TextContent);
+        Assert.Equal(["Schaden", "Gesamt", "Pokémon"], box.QuerySelectorAll("h2, h3").Select(h => h.TextContent));
+        var ranking = box.QuerySelectorAll("ol > li");
+        Assert.Equal(["1.", "2."], ranking.Select(li => li.QuerySelector(".rank")!.TextContent));
+        // Text twice, each copy clipped to its part of the bar; the copy over the fill is hidden from screen readers.
+        var bar = ranking[0].QuerySelector(".damage-bar")!;
+        Assert.Equal("--share: 100%; --fill: #0000ff; --on-fill: #ffffff", bar.GetAttribute("style"));
+        Assert.Equal(
+            [("damage-text", "Raupy Misty", "32", null), ("damage-text on-fill", "Raupy Misty", "32", "true")],
+            bar.Children.Select(e => (e.ClassName, e.QuerySelector(".who")!.TextContent, e.QuerySelector(".value")!.TextContent, e.GetAttribute("aria-hidden"))));
+        Assert.Equal("--share: 93.8%; --fill: #ffff00; --on-fill: #000000", ranking[1].QuerySelector(".damage-bar")!.GetAttribute("style"));
     }
 
     [Fact]

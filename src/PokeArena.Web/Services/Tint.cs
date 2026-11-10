@@ -64,6 +64,16 @@ public static class Tint
     /// <summary>WCAG contrast ratio of two <c>#RRGGBB</c> colours (1 … 21).</summary>
     public static double Contrast(string a, string b) => Contrast(Parse(a), Parse(b));
 
+    /// <summary>Whether <paramref name="value"/> is a <c>#RRGGBB</c> colour — safe to put into an inline style.</summary>
+    public static bool IsColor(string? value) => value is not null && TryParse(value, out _);
+
+    /// <summary>
+    /// Black or white, whichever has more contrast on the <c>#RRGGBB</c> <paramref name="background"/>; one of them
+    /// always reaches at least 4.58 : 1 (feat/damage-meter).
+    /// </summary>
+    public static string TextOn(string background) =>
+        Contrast(background, "#000000") >= Contrast(background, "#ffffff") ? "#000000" : "#ffffff";
+
     /// <summary><paramref name="color"/> mixed towards black or white in 5 % steps until it passes on <paramref name="surface"/>.</summary>
     private static (int R, int G, int B) Readable((int R, int G, int B) color, (int R, int G, int B) surface, int towards)
     {

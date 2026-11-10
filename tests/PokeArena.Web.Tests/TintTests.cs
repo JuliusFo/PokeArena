@@ -23,6 +23,28 @@ public partial class TintTests
         }
     }
 
+    [Theory]
+    [InlineData("#FFFF00", "#000000")]
+    [InlineData("#0000FF", "#ffffff")]
+    [InlineData("#FF4500", "#000000")]
+    [InlineData("#8A2BE2", "#ffffff")]
+    [InlineData("#00FF7F", "#000000")]
+    [InlineData("#757575", "#ffffff")] // the worst case: both reach just about 4.56 : 1
+    [InlineData("#767676", "#000000")]
+    public void Text_on_a_bar_is_black_or_white_and_always_readable(string background, string expected)
+    {
+        Assert.Equal(expected, Tint.TextOn(background));
+        Assert.True(Tint.Contrast(background, Tint.TextOn(background)) >= Tint.MinContrast);
+    }
+
+    [Theory]
+    [InlineData("#1A2b3C", true)]
+    [InlineData(null, false)]
+    [InlineData("red", false)]
+    [InlineData("#12345G", false)]
+    [InlineData("#fff;x", false)]
+    public void Only_hex_colours_count_as_colours(string? value, bool expected) => Assert.Equal(expected, Tint.IsColor(value));
+
     [Fact]
     public void A_colour_that_already_passes_stays_as_picked() =>
         Assert.Equal("--tint-light: #0000ff; --tint-dark: #8080ff", Tint.Style("#0000FF"));

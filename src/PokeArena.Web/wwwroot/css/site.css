@@ -394,6 +394,91 @@ h1:focus {
   user-select: none;
 }
 
+/*
+  „Schaden“ box under the fight cards (feat/damage-meter), as wide as both together. Bars in the trainer's chat colour,
+  as picked: the numbers inside are black or white by contrast (--on-fill, at least 4.58 : 1 on any colour) over the
+  fill and --text over the empty rest — two clipped copies like the HP numbers, never background-clip: text.
+*/
+.damage {
+  margin-top: 12px;
+  padding: 4px 16px 12px;
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.damage h2 {
+  margin: 10px 0 2px;
+  font-size: 17px;
+}
+
+.damage h3 {
+  margin: 10px 0 4px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.damage-bars {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.damage-bars li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0;
+}
+
+.damage-bars .rank {
+  flex: 0 0 3ch;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: right;
+}
+
+.damage-bar {
+  position: relative;
+  display: block;
+  flex: 1 1 0;
+  min-width: 0;
+  border-radius: 12px;
+  background: linear-gradient(to right, var(--fill) var(--share), var(--border) var(--share));
+  overflow: hidden;
+}
+
+.damage-text {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 10px;
+  color: var(--text);
+  clip-path: inset(0 0 0 var(--share));
+  font-size: 13px;
+  line-height: 24px;
+  white-space: nowrap;
+}
+
+.damage-text.on-fill {
+  position: absolute;
+  inset: 0;
+  color: var(--on-fill);
+  clip-path: inset(0 calc(100% - var(--share)) 0 0);
+  user-select: none;
+}
+
+.damage-text .who {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.damage-text .value {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
 .log {
   margin: 0;
   padding: 12px 16px 12px 36px;
