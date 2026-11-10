@@ -23,6 +23,7 @@ in [roadmap.md](roadmap.md).
 | – | HP bar alignment (user request, `feat/hp-bar-alignment`) | 1.4.0 | done 2026-11-10 |
 | – | Fight log colours (user request, `feat/fight-log-colours`) | 1.4.0 | done 2026-11-10 |
 | – | Fight log: boss name only, critical hits (user request, `feat/fight-log-boss-name-crit`) | 1.4.1 | done 2026-11-10 |
+| – | Fighter row wrap (user report, `fix/fighter-row-wrap`) | 1.4.1 | done 2026-11-10 |
 | WP-09 | Balancing after the first streams | 1.5.0 | planned |
 
 ## Log

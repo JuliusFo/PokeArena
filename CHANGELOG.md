@@ -7,6 +7,8 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+## [1.4.1] - 2026-11-10
+
 ### Added
 - A critical hit („Volltreffer!“) stands out in a fight page's
   „Kampfverlauf“: bold on a gold background.
