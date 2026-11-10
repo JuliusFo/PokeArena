@@ -153,6 +153,30 @@ public class SiteGeneratorTests : IDisposable
     }
 
     [Fact]
+    public async Task Log_parts_leave_their_defaults_out_but_meaningful_zeros_stay()
+    {
+        var log = new BattleLog(
+            [new LogFighter(0, 25, 70, "1", "Ash"), new LogFighter(1, 59, 400, null, "Boss")],
+            [
+                new BattleEvent(BattleEventKind.Attack, 1, Fighter: 1, FighterHp: 400, Target: 0, TargetHp: 0, Damage: 90),
+                new BattleEvent(BattleEventKind.Fainted, 1, Fighter: 0),
+            ]);
+        await using var db = _game.OpenLive();
+        var battle = new Battle { Kind = BattleKind.Boss, FoughtAt = Start, BossSpeciesId = 59, Outcome = BattleOutcome.BossEscaped, LogJson = log.ToJson() };
+        db.Battles.Add(battle);
+        await db.SaveChangesAsync(_ct);
+
+        var json = System.Text.Encoding.UTF8.GetString((await _generator.RenderAsync(db, SitePaths.Battle(battle.Id), Start, _ct))!.Content);
+
+        Assert.Contains("""{"text":" hat "}""", json);
+        Assert.Contains("""{"text":"Pikachu (","side":0,"fighter":0}""", json);
+        Assert.Contains("""{"text":"Ash","side":0,"fighter":0,"isOwner":true}""", json);
+        Assert.DoesNotContain("\"isRound\":false", json);
+        Assert.Contains("\"hpLeft\":0", json);
+        Assert.Contains("\"won\":false", json);
+    }
+
+    [Fact]
     public async Task Unknown_paths_are_rejected() =>
         await Assert.ThrowsAsync<ArgumentException>(async () =>
         {

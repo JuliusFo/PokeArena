@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace PokeArena.Contracts;
 
 /// <summary><c>meta.json</c>: the data format the files were written in.</summary>
@@ -65,14 +67,24 @@ public sealed record BattleFighter(
 
 /// <summary>One line of the log; its parts joined give the matching entry of <see cref="BattlePage.Lines"/>.</summary>
 /// <param name="IsRound">A „Runde N“ heading.</param>
-public sealed record LogLine(IReadOnlyList<LogPart> Parts, bool IsRound = false);
+/// <remarks>
+/// Defaults are left out of the JSON: a big boss fight has hundreds of parts (review feat/fight-log-colours). Only
+/// here — site-wide, „Ignore defaults“ would also drop meaningful zeros such as <c>hpLeft: 0</c>.
+/// </remarks>
+public sealed record LogLine(
+    IReadOnlyList<LogPart> Parts,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool IsRound = false);
 
 /// <summary>
 /// Text, optionally part of one fighter's label („Pikachu (Ash, HP 24)“): <c>Sides[Side].Fighters[Fighter]</c> of the
 /// page.
 /// </summary>
 /// <param name="IsOwner">The owner within the label („Ash“, „Boss“).</param>
-public sealed record LogPart(string Text, int? Side = null, int? Fighter = null, bool IsOwner = false);
+public sealed record LogPart(
+    string Text,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] int? Side = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] int? Fighter = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool IsOwner = false);
 
 /// <summary><c>trainer/&lt;twitch-id&gt;.json</c>: one trainer's collection and history.</summary>
 public sealed record TrainerPage(
