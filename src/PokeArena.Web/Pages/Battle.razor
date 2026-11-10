@@ -68,7 +68,11 @@
                     {
                         if (part.IsCritical)
                         {
-                            <strong class="tinted critical" style="@Tint.Style(Tint.Critical)">@part.Text</strong>
+                            // The leading space stays outside the gold background.
+                            var word = part.Text.TrimStart();
+                            var space = part.Text[..^word.Length];
+                            @space
+                            <strong class="critical">@word</strong>
                         }
                         else if (FighterOf(battle, part) is { } fighter && Tint.Style(Tint.Of(battle, part, fighter)) is { } tint)
                         {

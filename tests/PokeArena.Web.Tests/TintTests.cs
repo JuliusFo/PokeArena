@@ -47,6 +47,16 @@ public partial class TintTests
         Assert.Equal([Tint.LightSurface, Tint.DarkSurface], Regex.Matches(css, @"--surface: (#[0-9a-f]{6});").Select(m => m.Groups[1].Value));
     }
 
+    [Fact]
+    public void The_critical_hit_text_is_readable_on_its_gold_background()
+    {
+        var css = File.ReadAllText(Path.Combine(RepositoryRoot(), "src", "PokeArena.Web", "wwwroot", "css", "site.css"));
+        var rule = Regex.Match(css, @"\.log \.critical \{[^}]*background: (#[0-9a-f]{6});[^}]*color: (#[0-9a-f]{6});");
+
+        Assert.True(rule.Success, ".log .critical with background and color not found in site.css");
+        Assert.True(Tint.Contrast(rule.Groups[2].Value, rule.Groups[1].Value) >= Tint.MinContrast);
+    }
+
     private static void AssertReadable(string color)
     {
         var style = Tint.Style(color)!;

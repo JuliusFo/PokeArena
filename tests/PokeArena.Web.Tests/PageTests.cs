@@ -191,12 +191,14 @@ public class PageTests : BunitContext
         var lines = cut.FindAll(".log li");
         Assert.Equal(["Runde 1", "Bisasam (Ash) hat Arkani (Boss) 20 Schaden zugefügt. Volltreffer! Sehr effektiv!", "Raupy (Misty) wurde besiegt.?"], lines.Select(li => li.TextContent));
         Assert.Equal("round", lines[0].ClassName);
-        // A trainer's name and the boss's species only, „Volltreffer!“ in gold; Misty has no colour; an index the page lacks stays plain text.
+        // A trainer's name and the boss's species only, „Volltreffer!“ highlighted below; Misty has no colour; an index the page lacks stays plain text.
         var fire = Tint.Style(Tint.TypeColors["type-feuer"]);
         Assert.Equal(
-            [("Ash", Tint.Style("#FFFF00")), ("Arkani", fire), (" Volltreffer!", Tint.Style(Tint.Critical))],
+            [("Ash", Tint.Style("#FFFF00")), ("Arkani", fire)],
             cut.FindAll(".log .tinted").Select(s => (s.TextContent, s.GetAttribute("style"))));
-        Assert.Equal("STRONG", cut.Find(".log .critical").TagName);
+        // „Volltreffer!“ bold on gold; its leading space stays outside the highlight.
+        var critical = cut.Find(".log .critical");
+        Assert.Equal(("STRONG", "Volltreffer!"), (critical.TagName, critical.TextContent));
         Assert.Equal(["tinted", null], cut.FindAll(".fighters a").Select(a => a.GetAttribute("class")));
     }
 

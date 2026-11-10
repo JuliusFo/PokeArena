@@ -42,9 +42,6 @@ public static class Tint
         ["type-drache"] = "#5b2ff0",
     };
 
-    /// <summary>„Volltreffer!“ in the log: gold, adjusted for contrast like every other tint.</summary>
-    public const string Critical = "#e0a000";
-
     /// <summary>
     /// The colour of one part of a fighter's label in the log: a boss's species name in the colour of its first type
     /// (the Pokémon is the element; „(Boss, HP …)“ stays plain), a trainer's name in their chat colour; null for

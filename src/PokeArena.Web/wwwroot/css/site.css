@@ -383,8 +383,15 @@ h1:focus {
   }
 }
 
-/* „Volltreffer!“ in the log: gold (Tint.Critical) and bold. */
-.tinted.critical {
+/*
+  „Volltreffer!“ in the log: bold on gold, the same in both themes. Gold as text colour turns brown on white once it
+  reaches 4.5 : 1 (and looks like an Elektro boss), so it is the background; TintTests measures the text on it.
+*/
+.log .critical {
+  padding: 0 4px;
+  border-radius: 4px;
+  background: #f2b500;
+  color: #1d1d21;
   font-weight: 700;
 }
 
