@@ -24,12 +24,15 @@
                     {
                         var state = EndState(fighter);
                         <li class="fighter-@state">
-                            <SpeciesName Species="fighter.Species" />
-                            @if (fighter.TrainerId is { } trainerId && fighter.Owner != side.Name)
-                            {
-                                var tint = Tint.Style(fighter.Color);
-                                <a href="trainer/@trainerId" class="@(tint is null ? null : "tinted")" style="@tint">@fighter.Owner</a>
-                            }
+                            @* Name and owner wrap inside their own box, so the end state keeps its column on the right. *@
+                            <span class="who">
+                                <SpeciesName Species="fighter.Species" />
+                                @if (fighter.TrainerId is { } trainerId && fighter.Owner != side.Name)
+                                {
+                                    var tint = Tint.Style(fighter.Color);
+                                    <a href="trainer/@trainerId" class="@(tint is null ? null : "tinted")" style="@tint">@fighter.Owner</a>
+                                }
+                            </span>
                             <span class="end-state">
                                 @switch (state)
                                 {

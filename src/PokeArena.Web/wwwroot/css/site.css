@@ -262,6 +262,14 @@ h1:focus {
   gap: 12px;
 }
 
+/* On wide screens the fighter cards reach past the 900 px page (to 1040 px); header and text keep their width, so
+   nothing jumps when switching pages (fix/fighter-row-wrap). */
+@media (min-width: 1100px) {
+  .sides {
+    margin-inline: -70px;
+  }
+}
+
 .side {
   padding: 4px 16px 12px;
   border-radius: var(--radius);
@@ -300,7 +308,27 @@ h1:focus {
   border-bottom: none;
 }
 
+/* Only name and owner wrap; the end state keeps its column on the right, so long names never push it onto a line of
+   its own and all HP bars line up (fix/fighter-row-wrap). */
+.fighters li {
+  flex-wrap: nowrap;
+}
+
+.fighters .who {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.fighters .who a {
+  overflow-wrap: anywhere;
+}
+
 .fighters .end-state {
+  flex: none;
   display: inline-flex;
   align-items: center;
   gap: 8px;
