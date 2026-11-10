@@ -474,10 +474,18 @@ h1:focus {
   white-space: nowrap;
 }
 
+/*
+  A thin black outline (1 px in eight directions) keeps the white text clear on lighter fills such as pink or red,
+  in both themes — user pick „1B“ from the mockups (feat/damage-text-outline). The clip-path cuts it at the fill's
+  edge, so the copy over the empty rest stays plain.
+*/
 .damage-text.on-fill {
   position: absolute;
   inset: 0;
   color: #ffffff;
+  text-shadow:
+    -1px 0 #000000, 1px 0 #000000, 0 -1px #000000, 0 1px #000000,
+    -1px -1px #000000, 1px -1px #000000, -1px 1px #000000, 1px 1px #000000;
   clip-path: inset(0 calc(100% - var(--share)) 0 0);
   user-select: none;
 }

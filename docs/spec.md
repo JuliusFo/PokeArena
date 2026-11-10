@@ -420,8 +420,9 @@ adds up to the HP the other side lost. Bars run from the left in the trainer's
 chat colour; the boss and NPC Pokémon take the colour of their first type,
 trainers without a colour grey, a side of several colours the HP bar's green.
 A bar has the darkened colour of the trainer's name (yellow turns olive), in
-both themes. Name and number sit inside the bar like the HP numbers: white over
-the fill, normal text over the rest (user decision 2026-11-10). A bar that stops short ends in a thin
+both themes. Name and number sit inside the bar like the HP numbers: white with
+a thin black outline over the fill, normal text over the rest (user decisions
+2026-11-10). A bar that stops short ends in a thin
 dark edge (light in the dark theme), so a colour close to the track still shows
 its length. Older files show no box until „Alles
 neu veröffentlichen“.

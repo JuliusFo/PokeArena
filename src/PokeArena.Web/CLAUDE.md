@@ -45,7 +45,10 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   colour of the trainer's name (`Tint.Darkened`, the colour of `Tint.Style`; a test keeps them equal; yellow turns
   olive) and white text over the fill like the HP numbers, in both themes like the HP bar's dark fills — user requests
   „Text-Farbe wie bei den HP“, „die abgedunkelte Version, wie vorher die Namen“, „die Balken-Farbe zum Standard“
-  (feat/damage-text-white; tried and dropped: raw colours everywhere). `--text` over the rest, two clipped copies. A bar that stops short ends in a 2 px `--text` edge (review feat/damage-meter). Only colours that pass
-  `Tint.IsColor` go into the inline style. No box when any fighter lacks `Damage` (older files).
+  (feat/damage-text-white; tried and dropped: raw colours everywhere). The white copy has a 1 px black outline
+  (`text-shadow` in eight directions; user pick „1B“ over 1.5 px, 2 px and `-webkit-text-stroke`, which closes the
+  counters at 13 px — feat/damage-text-outline). `--text` over the rest, two clipped copies. A bar that stops short
+  ends in a 2 px `--text` edge (review feat/damage-meter). Only colours that pass `Tint.IsColor` go into the inline
+  style. No box when any fighter lacks `Damage` (older files).
 - Never tell a boss or NPC by `TrainerId == null`: a deleted trainer's fighters have no id either („[gelöscht]“). The
   boss is the fighter on side 1 of a boss fight (review feat/fight-log-colours).
