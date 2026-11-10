@@ -256,6 +256,33 @@ public class BossEncounterTests : IDisposable
     }
 
     [Fact]
+    public async Task Each_participant_fields_a_species_drawn_from_their_distinct_species()
+    {
+        var boss = Boss(EasyBoss);
+        await RegisterAsync("1", "Ash", "2", "Misty");
+        var digda = Species.Find("Digda")!;
+        await using (var db = _game.Database.Open())
+        {
+            db.Specimens.AddRange(Enumerable.Range(0, 30).Select(_ => new Specimen { TrainerId = "1", SpeciesId = digda.Id, Origin = SpecimenOrigin.Boss }));
+            await db.SaveChangesAsync(_ct);
+        }
+
+        await RunEncounterAsync(boss, ("1", "Ash"), ("2", "Misty"));
+
+        // Same seed, same order as the encounter: boss first, then one pick per participant in join order.
+        var random = new BattleRandom(Seed);
+        BossDraw.Species(Species, EasyBoss, 2, random);
+        int[] expected =
+        [
+            BossDraw.FieldedSpecies([Species.Starters[0].Id, .. Enumerable.Repeat(digda.Id, 30)], random),
+            BossDraw.FieldedSpecies([Species.Starters[0].Id], random),
+        ];
+        await using var check = _game.OpenLive();
+        var log = BattleLog.FromJson((await check.Battles.SingleAsync(_ct)).LogJson);
+        Assert.Equal(expected, log.Fighters.Where(f => f.TrainerId is "1" or "2").OrderBy(f => f.TrainerId).Select(f => f.SpeciesId));
+    }
+
+    [Fact]
     public async Task Nobody_catches_when_all_participants_faint()
     {
         var boss = Boss(HopelessBoss);
