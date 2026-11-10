@@ -23,7 +23,7 @@ public sealed class BossCooldownCommand(BossEncounter boss, BossSettings setting
         {
             if (!await boss.EndReductionAsync(ct))
             {
-                context.Chat.SendHint(message.UserId, Name, $"@{message.DisplayName}, der Boss-Cooldown ist gerade nicht verkürzt.");
+                context.Chat.Send($"@{message.DisplayName}, der Boss-Cooldown ist gerade nicht verkürzt.");
             }
 
             return;
@@ -39,9 +39,8 @@ public sealed class BossCooldownCommand(BossEncounter boss, BossSettings setting
             return;
         }
 
-        context.Chat.SendHint(
-            message.UserId,
-            Name,
+        // Moderator replies are never throttled (docs/chat-texts.md), like those of !entfernen.
+        context.Chat.Send(
             $"@{message.DisplayName}, so geht's: !bosscooldown 60 halbiert den Boss-Cooldown für 60 Minuten, "
             + "!bosscooldown 60 10 setzt ihn so lange auf 10 Minuten, !bosscooldown aus beendet das. "
             + $"Dauer 1 bis {maxDuration} Minuten, Cooldown 1 bis {maxCooldown} Minuten.");
