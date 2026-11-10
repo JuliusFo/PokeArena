@@ -36,8 +36,9 @@ public sealed class VelopackUpdater : IAppUpdater
             {
                 manager = new UpdateManager(new GithubSource(AppUpdateOptions.GitHubRepository, accessToken: null, prerelease: false));
             }
-            else if (Path.IsPathFullyQualified(source) && !source.StartsWith(@"\\", StringComparison.Ordinal) && Directory.Exists(source))
+            else if (Path.IsPathFullyQualified(source) && !new Uri(Path.GetFullPath(source)).IsUnc && Directory.Exists(source))
             {
+                // IsUnc on the full path: "//server/share" is a network path too, not only "\\server\share".
                 manager = new UpdateManager(new SimpleFileSource(new DirectoryInfo(source)));
             }
             else

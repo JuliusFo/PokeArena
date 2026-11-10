@@ -15,7 +15,7 @@
                 <span class="tag tag-update">Version @Updates.NewerVersion wird geladen …</span>
                 break;
             case UpdateState.Ready:
-                <span class="tag tag-update" title="Wird automatisch installiert, sobald der Stream vorbei ist. PokeArena startet dabei kurz neu – deine Daten bleiben erhalten.">Version @Updates.NewerVersion bereit</span>
+                <span class="tag tag-update" title="Wird automatisch installiert, etwa zehn Minuten nach dem Stream. PokeArena startet dabei kurz neu – deine Daten bleiben erhalten.">Version @Updates.NewerVersion bereit</span>
                 <button class="btn btn-primary btn-small" disabled="@Updates.LobbyOpen"
                         title="@(Updates.LobbyOpen ? "Erst wenn die Boss-Lobby vorbei ist." : "PokeArena startet kurz neu – deine Daten bleiben erhalten.")"
                         @onclick="Install">Jetzt aktualisieren</button>

@@ -15,7 +15,8 @@ public interface IUpdateGate
 /// <summary>
 /// WP-11 rule (ADR-0010): install automatically only once the bot has taken no commands (stream offline and „Auch ohne
 /// Stream“ off, WP-07) for <see cref="IdleBeforeInstall"/>, no dry run is active and no boss lobby is open. The wait
-/// keeps a short stream drop from turning into a restart while the streamer comes back (review WP-11). Open
+/// keeps a short stream drop from turning into a restart while the streamer comes back, and switching the dry run on
+/// or off starts it again — someone is at the app (review WP-11). Open
 /// <c>!fight</c> challenges do not block — nobody can accept them while the bot is idle, and they expire anyway.
 /// </summary>
 public sealed class UpdateGate : IUpdateGate
@@ -39,6 +40,7 @@ public sealed class UpdateGate : IUpdateGate
         _time = time;
         _idleSince = stream.AcceptsCommands ? null : time.GetUtcNow();
         stream.Changed += OnStreamChanged;
+        dryRun.Changed += OnDryRunChanged;
     }
 
     public bool LobbyOpen => _lobbyOpen();
@@ -73,6 +75,14 @@ public sealed class UpdateGate : IUpdateGate
             {
                 _idleSince ??= _time.GetUtcNow();
             }
+        }
+    }
+
+    private void OnDryRunChanged()
+    {
+        lock (_lock)
+        {
+            _idleSince = _stream.AcceptsCommands ? null : _time.GetUtcNow();
         }
     }
 }

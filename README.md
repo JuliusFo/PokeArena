@@ -106,7 +106,8 @@ developer's Windows server (1.6.0 and later update themselves, ADR-0010).
 after it starts and then every hour, downloads it and installs it once the
 stream has been over for ten minutes (not while „Auch ohne Stream“, the dry
 run or a boss lobby is on; the ten minutes keep a short stream drop from
-triggering it); it restarts by itself within seconds. The top bar shows
+triggering it and start again when the dry run is switched); it restarts by
+itself within seconds. The top bar shows
 „Version … bereit“ meanwhile; „Jetzt aktualisieren“ installs at once (not
 while a boss lobby is open), „Nach Updates suchen“ looks right away. Game
 data, settings and backups live in `%LOCALAPPDATA%\PokeArena` and are not
@@ -141,8 +142,9 @@ up within the hour after the next stream. Tag only after the live test.
 versions into one folder (`--packId PokeArena.AppTest --runtime win-x64`, so
 the real install stays apart), unpack the first one's `Portable.zip` and start
 `current\PokeArena.exe --PokeArena:DataDirectory=<scratch> --PokeArena:Twitch:Channel=
---PokeArena:Update:Source=<folder>`; about ten minutes later it restarts as the
-second version.
+--PokeArena:Update:Source=<full path of the folder>` (a relative path or a
+network share is refused); about ten minutes later it restarts as the second
+version.
 
 ## Building
 

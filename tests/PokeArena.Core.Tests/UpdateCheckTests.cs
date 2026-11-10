@@ -205,6 +205,22 @@ public class UpdateCheckTests : IDisposable
     }
 
     [Fact]
+    public void Switching_the_dry_run_off_starts_the_wait_again()
+    {
+        var dryRun = new DryRunMode();
+        var gate = new UpdateGate(new StreamStatus(), dryRun, () => false, _time);
+        _time.Advance(TimeSpan.FromHours(1));
+        dryRun.Enabled = true;
+        _time.Advance(TimeSpan.FromMinutes(30));
+
+        // The streamer has just tested at the app: no restart right away.
+        dryRun.Enabled = false;
+        Assert.False(gate.MayInstallAutomatically);
+        _time.Advance(UpdateGate.IdleBeforeInstall);
+        Assert.True(gate.MayInstallAutomatically);
+    }
+
+    [Fact]
     public void The_app_start_counts_as_the_start_of_the_wait()
     {
         var gate = new UpdateGate(new StreamStatus(), new DryRunMode(), () => false, _time);
