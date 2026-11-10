@@ -110,6 +110,8 @@ public class SiteGeneratorTests : IDisposable
         Assert.Equal(
             [("Pikachu", (int?)0, (bool?)true), ("Raupy", 90, true), ("Arkani", 380, true)],
             page.Sides.SelectMany(s => s.Fighters).Select(f => (f.Species.Name, f.HpLeft, f.Used)));
+        // The boss's 90 on Pikachu's 70 HP counts as 70 (feat/damage-meter).
+        Assert.Equal([20, 0, 70], page.Sides.SelectMany(s => s.Fighters).Select(f => f.Damage));
     }
 
     [Fact]

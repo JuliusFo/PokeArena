@@ -148,6 +148,24 @@ public class BattleEngineTests
     }
 
     [Fact]
+    public void Damage_dealt_counts_only_what_arrived_so_each_side_adds_up_to_the_hp_the_other_lost()
+    {
+        // Mewtu overkills Karpador with its one hit; that hit counts as Karpador's HP, not as the full damage.
+        var karpador = F("Karpador", owner: "Boss");
+        var weakBoss = new BossBattle(Damage()).Fight(karpador, [F("Mewtu", owner: "A"), F("Pikachu", owner: "B")], 3, new BattleRandom(1));
+        var dealt = weakBoss.Log.DamageDealt();
+        Assert.Equal(karpador.MaxHp, dealt[0] + dealt[1]);
+        Assert.True(weakBoss.Log.Events.Where(e => e is { Kind: BattleEventKind.Attack, Target: 2 }).Sum(e => e.Damage) > karpador.MaxHp);
+
+        var mewtu = F("Mewtu", owner: "Boss", hpMultiplier: 50);
+        var trainers = new[] { F("Karpador", owner: "A"), F("Raupy", owner: "B") };
+        var strongBoss = new BossBattle(Damage()).Fight(mewtu, trainers, 3, new BattleRandom(1));
+        dealt = strongBoss.Log.DamageDealt();
+        Assert.Equal(mewtu.MaxHp - strongBoss.BossHp, dealt[0] + dealt[1]);
+        Assert.Equal(trainers.Sum(t => t.MaxHp), dealt[2]);
+    }
+
+    [Fact]
     public void Round_limit_ends_the_fight_by_remaining_hp()
     {
         var settings = Exact with { MaxRounds = 1 };

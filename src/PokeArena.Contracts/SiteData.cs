@@ -62,8 +62,17 @@ public sealed record BattleSide(string Name, bool Won, IReadOnlyList<BattleFight
 /// <param name="HpLeft">HP at the end of the fight (0 = fainted); null in files written before it existed.</param>
 /// <param name="Used">False if a team fight ended before this one was sent in; null in older files.</param>
 /// <param name="Color">The owner's Twitch chat colour (<c>#RRGGBB</c>) as picked, not adjusted for contrast; null if unknown.</param>
+/// <param name="Damage">Damage this fighter dealt, counting only what arrived (a last hit up to the target's HP left);
+/// null in files written before it existed.</param>
 public sealed record BattleFighter(
-    SpeciesInfo Species, string Owner, string? TrainerId, int MaxHp, int? HpLeft = null, bool? Used = null, string? Color = null);
+    SpeciesInfo Species,
+    string Owner,
+    string? TrainerId,
+    int MaxHp,
+    int? HpLeft = null,
+    bool? Used = null,
+    string? Color = null,
+    int? Damage = null);
 
 /// <summary>One line of the log; its parts joined give the matching entry of <see cref="BattlePage.Lines"/>.</summary>
 /// <param name="IsRound">A „Runde N“ heading.</param>

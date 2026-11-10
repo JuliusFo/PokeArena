@@ -72,6 +72,27 @@ public sealed record BattleLog(IReadOnlyList<LogFighter> Fighters, IReadOnlyList
             : Fighters[index].MaxHp;
 
     /// <summary>
+    /// Damage each fighter dealt, indexed like <see cref="Fighters"/>: only what arrived, so a last hit counts the
+    /// target's HP left before it, not the full <see cref="BattleEvent.Damage"/>. Everything one side dealt therefore
+    /// adds up to the HP the other side lost (feat/damage-meter).
+    /// </summary>
+    public IReadOnlyList<int> DamageDealt()
+    {
+        var hp = Fighters.Select(f => f.MaxHp).ToArray();
+        var dealt = new int[Fighters.Count];
+        foreach (var e in Events)
+        {
+            if (e is { Kind: BattleEventKind.Attack, Target: { } target })
+            {
+                dealt[e.Fighter] += hp[target] - e.TargetHp;
+                hp[target] = e.TargetHp;
+            }
+        }
+
+        return dealt;
+    }
+
+    /// <summary>
     /// Whether fighter <paramref name="index"/> took part: in a team fight only once sent in; in a boss fight (no
     /// send-in events) everyone fights from the start.
     /// </summary>

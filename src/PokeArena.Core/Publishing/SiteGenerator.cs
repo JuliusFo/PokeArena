@@ -171,13 +171,14 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
             .OrderBy(g => g.Key)
             .Select(g => g.ToList())
             .ToList();
+        var damage = log.DamageDealt();
         var sides = groups
             .Select(g => new BattleSide(
                 g[0].Fighter.Side == 0 ? texts.TrainerSide : texts.OpponentSide,
                 g[0].Fighter.Side == 0 ? texts.TrainerSideWon : !texts.TrainerSideWon,
                 [.. g.Select(x => new BattleFighter(
                     Info(x.Fighter.SpeciesId), x.Fighter.Owner, x.Fighter.TrainerId, x.Fighter.MaxHp, log.HpLeft(x.Index), log.WasUsed(x.Index),
-                    x.Fighter.TrainerId is { } id ? colors.GetValueOrDefault(id) : null))]))
+                    x.Fighter.TrainerId is { } id ? colors.GetValueOrDefault(id) : null, damage[x.Index]))]))
             .ToList();
 
         // Log index → position on the page (side, fighter within the side).
