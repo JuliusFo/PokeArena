@@ -6,7 +6,7 @@ namespace PokeArena.Web.Services;
 /// <summary>
 /// The „Schaden“ box of a fight page (feat/damage-meter): what each side dealt in total, then a ranking — the
 /// trainers in a boss fight, every Pokémon of both sides otherwise. Bars are in the trainer's chat colour (the boss
-/// and NPC Pokémon in the colour of their first type, as in the log); the numbers sit inside the bar.
+/// and NPC Pokémon in the colour of their first type, like the boss's name in the log); the numbers sit inside the bar.
 /// </summary>
 public static class DamageMeter
 {
