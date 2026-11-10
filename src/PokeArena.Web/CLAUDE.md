@@ -15,7 +15,10 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   invented files in `wwwroot/beispieldaten/` — never put real player data there (ADR-0003).
 - GitHub Pages has no SPA routing: the workflow copies `index.html` to `404.html` and adds `.nojekyll`
   (`_framework`). Links in markup are relative (`kampf/12`, not `/kampf/12`) so they follow `<base href>`.
-- `index.html` uses the .NET 10 asset placeholders (`#[.{fingerprint}]`, `OverrideHtmlAssetPlaceholders`).
+- `index.html` uses the .NET 10 asset placeholders (`#[.{fingerprint}]`, `OverrideHtmlAssetPlaceholders`) — they
+  resolve only for JS. `css/site.css` keeps its name; `pages.yml` appends its content hash as `?v=`, or a browser
+  pairs a cached old stylesheet with new markup (HP numbers twice in Firefox after 1.6.0, fix/css-cache-busting).
+  Keep the link exactly `href="css/site.css"` — the workflow fails if it cannot find it.
 - `Pages/News.razor` („Neuigkeiten“) is hand-written for players, not the CHANGELOG: a new section goes on top as
   `<h2>Version X.Y.Z…</h2>` inside `.news` — the bUnit test parses that heading. At 375 px the menu already wraps to
   a second line with four items; links never break inside (`nowrap`, WP-10).
