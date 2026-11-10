@@ -352,8 +352,9 @@ h1:focus {
   font-size: 14px;
 }
 
+/* Block, not list-item: a hidden marker would still count, so line numbers would skip one per round. */
 .log li.round {
-  list-style: none;
+  display: block;
   margin: 10px 0 2px -20px;
   color: var(--muted);
   font-weight: 700;
