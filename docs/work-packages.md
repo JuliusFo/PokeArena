@@ -30,6 +30,7 @@ in [roadmap.md](roadmap.md).
 | – | Crisp HP numbers (user report, `fix/hp-text-crisp`) | 1.6.0 | done 2026-11-10 |
 | – | „Schaden“ box on the fight page (user request, `feat/damage-meter`) | 1.6.0 | done 2026-11-10 |
 | – | White text in the „Schaden“ bars (user request, `feat/damage-text-white`) | 1.6.1 | done 2026-11-10 |
+| – | Black outline for the „Schaden“ bar text (user request, `feat/damage-text-outline`) | 1.6.2 | done 2026-11-10 |
 | – | „Statistik“ page on the website (user idea, `feat/statistics-page`, before WP-09) | 1.7.0 | planned |
 | WP-09 | Balancing after the first streams | 1.8.0 | planned |
 
@@ -704,6 +705,18 @@ in [roadmap.md](roadmap.md).
   hard to read in the dark theme — that is what the streamer test checks.
   Going back for names means restoring the `--tint-dark` variant of 1.6.0.
 - Pitfalls: yellow turns olive (`#737300`), white grey (`#737373`).
+
+### Black outline for the „Schaden“ bar text — user request (2026-11-10, branch feat/damage-text-outline)
+- Built: `.damage-text.on-fill` gets a 1 px black outline (`text-shadow` in
+  eight directions), both themes; the clip-path cuts it at the fill's edge.
+  Spec §9 note ⁴, Web pitfalls, CHANGELOG, „Neuigkeiten“ (next release).
+- User decisions: after looking at a screenshot of 1.6.1 „weiße Schrift (wie
+  jetzt) und schwarzem dünnen Rand“; mockups B (1 px), C (`text-stroke`),
+  then D (1.5 px), E (2 px), F (3 px stroke) — picked „1B (1 px)“.
+- Pitfalls: `-webkit-text-stroke` closes the counters of „a“/„e“ at 13 px;
+  `text-shadow` keeps the glyphs as they are.
+- Deliberately not done: no outline on the copy over the empty rest (normal
+  text on the track needs none).
 
 Template per entry:
 
