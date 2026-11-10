@@ -134,6 +134,9 @@ namespace PokeArena.Core.Data.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("TEXT");
 
+                    b.Property<TimeSpan?>("Length")
+                        .HasColumnType("TEXT");
+
                     b.Property<long>("Until")
                         .HasColumnType("INTEGER");
 

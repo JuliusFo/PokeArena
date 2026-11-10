@@ -136,7 +136,7 @@ public sealed class BossEncounter(
             chat.Send($"Der Boss entkommt – es haben sich zu wenige Trainer getraut. Mindestens {settings.MinParticipants} müssen mit !boss mitmachen.");
             if (!lobby.IsSimulated)
             {
-                await SetCooldownAsync(db, now + settings.FailedLobbyCooldown, ct);
+                await SetCooldownAsync(db, now + settings.FailedLobbyCooldown, null, ct);
                 await db.SaveChangesAsync(ct);
             }
 
@@ -215,10 +215,11 @@ public sealed class BossEncounter(
 
         var achievements = await Achievements.UnlockNewAsync(db, [.. catchers.Select(c => c.UserId)], npcs, now, ct);
         await SiteOutbox.EnqueueAsync(db, SiteOutbox.ForBattle(battle.Id, participants.Select(p => p.Member.UserId)), now, ct);
-        var cooldownUntil = now + await CooldownLengthAsync(db, now, ct);
+        var cooldown = await CooldownLengthAsync(db, now, ct);
+        var cooldownUntil = now + cooldown;
         if (!lobby.IsSimulated)
         {
-            await SetCooldownAsync(db, cooldownUntil, ct);
+            await SetCooldownAsync(db, cooldownUntil, cooldown, ct);
         }
 
         await db.SaveChangesAsync(ct);
@@ -301,8 +302,9 @@ public sealed class BossEncounter(
 
     /// <summary>
     /// <c>!bosscooldown</c> (mods): fights that end within <paramref name="duration"/> get <paramref name="cooldown"/>
-    /// instead of BossCooldownMinutes; a new call replaces the running reduction. A cooldown already running shrinks by
-    /// the same factor (user decision 2026-11-10), never grows, and its ready announcement moves along.
+    /// instead of BossCooldownMinutes; a new call replaces the running reduction. A fight's cooldown already running
+    /// shrinks by the factor new / its own length (user decision 2026-11-10), never grows, and its ready announcement
+    /// moves along; the failed-lobby retry stays as it is (review feat/boss-cooldown-reduced).
     /// </summary>
     public async Task ReduceCooldownAsync(TimeSpan duration, TimeSpan cooldown, CancellationToken ct)
     {
@@ -313,7 +315,6 @@ public sealed class BossEncounter(
 
         var now = time.GetUtcNow();
         await using var db = database.Open();
-        var before = await CooldownLengthAsync(db, now, ct);
         if (await db.BossCooldownReductions.FindAsync([BossCooldownReduction.SingleId], ct) is { } reduction)
         {
             reduction.Cooldown = cooldown;
@@ -324,12 +325,15 @@ public sealed class BossEncounter(
             db.BossCooldownReductions.Add(new BossCooldownReduction { Cooldown = cooldown, Until = now + duration });
         }
 
-        var running = await db.CooldownUntilAsync(CooldownKey, ct);
+        // Only a fight's cooldown knows its length; the failed-lobby retry (no length) is never shortened.
         DateTimeOffset? shortened = null;
-        if (running is { } until && until > now && cooldown < before)
+        var running = await db.Cooldowns.FindAsync([CooldownKey], ct);
+        var runningUntil = running?.Until;
+        if (running is { Length: { } length } && running.Until > now && cooldown < length)
         {
-            shortened = now + (until - now) * (cooldown / before);
-            await SetCooldownAsync(db, shortened.Value, ct);
+            shortened = now + (running.Until - now) * (cooldown / length);
+            running.Until = shortened.Value;
+            running.Length = cooldown;
         }
 
         await db.SaveChangesAsync(ct);
@@ -339,8 +343,7 @@ public sealed class BossEncounter(
         if (shortened is { } end)
         {
             text += $" Der nächste Boss kann schon in {ChatText.Duration(end - now)} gerufen werden.";
-            // The dry run's sandbox copy of a live cooldown never gets an announcement.
-            if (!dryRun.Enabled && _announcedUntil == running)
+            if (_announcedUntil == runningUntil)
             {
                 ScheduleReadyAnnouncement(end, ct);
             }
@@ -383,8 +386,9 @@ public sealed class BossEncounter(
         return await db.CooldownUntilAsync(CooldownKey, ct);
     }
 
-    private static Task SetCooldownAsync(PokeArenaDb db, DateTimeOffset until, CancellationToken ct) =>
-        db.SetCooldownAsync(CooldownKey, until, ct);
+    /// <param name="length">A fight's cooldown length, so <c>!bosscooldown</c> can shrink it; null for the retry.</param>
+    private static Task SetCooldownAsync(PokeArenaDb db, DateTimeOffset until, TimeSpan? length, CancellationToken ct) =>
+        db.SetCooldownAsync(CooldownKey, until, length, ct);
 
     private void ReplyCooldown(ChatMessage message, TimeSpan remaining)
     {

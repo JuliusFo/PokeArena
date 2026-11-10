@@ -11,7 +11,7 @@ using PokeArena.Core.Data;
 namespace PokeArena.Core.Data.Migrations
 {
     [DbContext(typeof(PokeArenaDb))]
-    [Migration("20261110172312_BossCooldownReduction")]
+    [Migration("20261110173924_BossCooldownReduction")]
     partial class BossCooldownReduction
     {
         /// <inheritdoc />
@@ -135,6 +135,9 @@ namespace PokeArena.Core.Data.Migrations
                 {
                     b.Property<string>("Key")
                         .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.Property<TimeSpan?>("Length")
                         .HasColumnType("TEXT");
 
                     b.Property<long>("Until")

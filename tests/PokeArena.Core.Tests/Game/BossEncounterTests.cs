@@ -332,7 +332,66 @@ public class BossEncounterTests : IDisposable
         Assert.Equal("@Ash, der nächste Boss kann in 1 Minute gerufen werden.", _chat.Sent[^1]);
 
         await BossCooldownAsync(boss, "0");
-        Assert.Equal(("9", "bosscooldown", "@Mod, der Boss-Cooldown ist gerade nicht verkürzt."), _chat.Hints.Single());
+        Assert.Equal("@Mod, der Boss-Cooldown ist gerade nicht verkürzt.", _chat.Sent[^1]);
+        Assert.Empty(_chat.Hints);
+    }
+
+    [Fact]
+    public async Task Renewing_the_reduction_does_not_shrink_an_already_short_cooldown_again()
+    {
+        var boss = Boss(EasyBoss);
+        await RegisterAsync("1", "Ash", "2", "Misty");
+        await BossCooldownAsync(boss, "60");
+        _game.Time.Advance(TimeSpan.FromMinutes(48));
+        await RunEncounterAsync(boss, ("1", "Ash"), ("2", "Misty"));
+
+        // The fight at minute 50 got 15 minutes; the reduction ran out at minute 60, the mod renews it at minute 61.
+        _game.Time.Advance(TimeSpan.FromMinutes(11));
+        await BossCooldownAsync(boss, "60");
+        Assert.EndsWith("statt nach 30 Minuten.", _chat.Sent[^1]);
+        await BossCooldownAsync(boss, "aus");
+        await BossCooldownAsync(boss, "60");
+        Assert.EndsWith("statt nach 30 Minuten.", _chat.Sent[^1]);
+
+        _game.Time.Advance(TimeSpan.FromMinutes(3));
+        await boss.JoinAsync(Boss("1", "Ash"), _ct);
+        Assert.Equal("@Ash, der nächste Boss kann in 1 Minute gerufen werden.", _chat.Sent[^1]);
+    }
+
+    [Fact]
+    public async Task A_running_cooldown_shrinks_by_its_own_length()
+    {
+        var boss = Boss(EasyBoss);
+        await RegisterAsync("1", "Ash", "2", "Misty");
+        await BossCooldownAsync(boss, "60 10");
+        await RunEncounterAsync(boss, ("1", "Ash"), ("2", "Misty"));
+
+        // Running: 10 minutes. 20 and 15 are longer and leave it; 5 halves it, 4 then takes four fifths of the rest.
+        await BossCooldownAsync(boss, "60 20");
+        await BossCooldownAsync(boss, "60 15");
+        Assert.DoesNotContain(_chat.Sent, t => t.Contains("Der nächste Boss kann schon"));
+        await BossCooldownAsync(boss, "60 5");
+        Assert.EndsWith("Der nächste Boss kann schon in 5 Minuten gerufen werden.", _chat.Sent[^1]);
+        await BossCooldownAsync(boss, "60 4");
+        Assert.EndsWith("Der nächste Boss kann schon in 4 Minuten gerufen werden.", _chat.Sent[^1]);
+
+        _game.Time.Advance(TimeSpan.FromMinutes(4));
+        await RunQueuedWorkUntilAsync("Boss bereit");
+        Assert.Single(_chat.Sent, BossEncounter.ReadyAnnouncement);
+    }
+
+    [Fact]
+    public async Task The_failed_lobby_retry_is_not_shortened()
+    {
+        var boss = Boss(EasyBoss);
+        await RegisterAsync("1", "Ash");
+        await boss.JoinAsync(Boss("1", "Ash"), _ct);
+        await EndCountdownAsync();
+
+        await BossCooldownAsync(boss, "60 1");
+        Assert.EndsWith("statt nach 30 Minuten.", _chat.Sent[^1]);
+        await boss.JoinAsync(Boss("1", "Ash"), _ct);
+        Assert.Equal("@Ash, der nächste Boss kann in 2 Minuten gerufen werden.", _chat.Sent[^1]);
     }
 
     [Theory]
@@ -344,17 +403,20 @@ public class BossEncounterTests : IDisposable
     [InlineData("60 0")]
     [InlineData("60 30")]
     [InlineData("60 10 5")]
-    public async Task Invalid_boss_cooldown_arguments_get_the_usage_hint(string arguments)
+    public async Task Invalid_boss_cooldown_arguments_get_the_usage_hint_every_time(string arguments)
     {
         var boss = Boss(EasyBoss);
 
         await BossCooldownAsync(boss, arguments);
+        await BossCooldownAsync(boss, arguments);
 
-        var hint = Assert.Single(_chat.Hints);
-        Assert.Equal(
+        // Sent, not as a throttled hint: a mod who mistypes twice still gets an answer.
+        Assert.Empty(_chat.Hints);
+        Assert.Equal(2, _chat.Sent.Count);
+        Assert.All(_chat.Sent, text => Assert.Equal(
             "@Mod, so geht's: !bosscooldown 60 halbiert den Boss-Cooldown für 60 Minuten, !bosscooldown 60 10 setzt ihn so lange auf 10 Minuten, "
             + "!bosscooldown aus beendet das. Dauer 1 bis 1440 Minuten, Cooldown 1 bis 29 Minuten.",
-            hint.Text);
+            text));
         await using var db = _game.OpenLive();
         Assert.Empty(db.BossCooldownReductions);
     }
@@ -370,7 +432,7 @@ public class BossEncounterTests : IDisposable
         // The dry run's fresh sandbox has no reduction to end; the live one stays.
         _game.DryRun.Enabled = true;
         await BossCooldownAsync(boss, "aus", simulated: true);
-        Assert.Equal("@Mod, der Boss-Cooldown ist gerade nicht verkürzt.", Assert.Single(_chat.Hints).Text);
+        Assert.Equal("@Mod, der Boss-Cooldown ist gerade nicht verkürzt.", _chat.Sent[^1]);
         await using var db = _game.OpenLive();
         Assert.Equal(TimeSpan.FromMinutes(29), (await db.BossCooldownReductions.SingleAsync(_ct)).Cooldown);
     }

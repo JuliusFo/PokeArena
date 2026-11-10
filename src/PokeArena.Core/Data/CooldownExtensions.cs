@@ -10,15 +10,20 @@ public static class CooldownExtensions
         db.Cooldowns.Where(c => c.Key == key).Select(c => (DateTimeOffset?)c.Until).FirstOrDefaultAsync(ct);
 
     /// <summary>Adds or moves the cooldown of <paramref name="key"/>; the caller saves.</summary>
-    public static async Task SetCooldownAsync(this PokeArenaDb db, string key, DateTimeOffset until, CancellationToken ct)
+    public static Task SetCooldownAsync(this PokeArenaDb db, string key, DateTimeOffset until, CancellationToken ct) =>
+        db.SetCooldownAsync(key, until, null, ct);
+
+    /// <summary>Adds or moves the cooldown of <paramref name="key"/> and records its length (or none); the caller saves.</summary>
+    public static async Task SetCooldownAsync(this PokeArenaDb db, string key, DateTimeOffset until, TimeSpan? length, CancellationToken ct)
     {
         if (await db.Cooldowns.FindAsync([key], ct) is { } cooldown)
         {
             cooldown.Until = until;
+            cooldown.Length = length;
         }
         else
         {
-            db.Cooldowns.Add(new Cooldown { Key = key, Until = until });
+            db.Cooldowns.Add(new Cooldown { Key = key, Until = until, Length = length });
         }
     }
 }

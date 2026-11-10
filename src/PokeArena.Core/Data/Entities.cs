@@ -195,6 +195,12 @@ public sealed class Cooldown
     public required string Key { get; init; }
 
     public DateTimeOffset Until { get; set; }
+
+    /// <summary>
+    /// How long the boss cooldown after a fight lasts (after a shortening: the new length), so <c>!bosscooldown</c>
+    /// shrinks it by the right factor. Null for the failed-lobby retry, NPC cooldowns and rows from before 1.5.0.
+    /// </summary>
+    public TimeSpan? Length { get; set; }
 }
 
 /// <summary>

@@ -11,6 +11,12 @@ namespace PokeArena.Core.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AddColumn<TimeSpan>(
+                name: "Length",
+                table: "Cooldowns",
+                type: "TEXT",
+                nullable: true);
+
             migrationBuilder.CreateTable(
                 name: "BossCooldownReductions",
                 columns: table => new
@@ -30,6 +36,10 @@ namespace PokeArena.Core.Data.Migrations
         {
             migrationBuilder.DropTable(
                 name: "BossCooldownReductions");
+
+            migrationBuilder.DropColumn(
+                name: "Length",
+                table: "Cooldowns");
         }
     }
 }
