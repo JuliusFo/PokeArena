@@ -306,7 +306,7 @@ Not a setting, a temporary event — so a mod command like `!bossreset`.
   whole minutes only (`!bosscooldown 120`, no „2h“); the chosen cooldown is an
   optional second number, half of `BossCooldownMinutes` without it, and must be
   shorter than `BossCooldownMinutes` (1–29) — mods cannot lengthen it; the
-  running cooldown shrinks by the factor new / old length; `!bosscooldown aus`
+  running fight cooldown shrinks by the factor new / its own length; `!bosscooldown aus`
   leaves a running cooldown as it is; the natural end is not announced; the
   failed-lobby retry cooldown stays 2 minutes; stored in the database
   (survives a restart).

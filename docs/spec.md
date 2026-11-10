@@ -304,9 +304,12 @@ it) the boss cooldown after a fight is `[CD]` minutes (1 to
 `BossCooldownMinutes` − 1), by default half of `BossCooldownMinutes`. What
 counts is the moment the fight ends. A new call replaces the running
 reduction; `!bosscooldown aus` (or `0`) ends it early, a cooldown already
-running then keeps its length. A cooldown already running when the reduction
-starts shrinks by the same factor (20 minutes left, 30 → 15: 10 minutes left),
-never grows, and its ready announcement moves along. The reduction is stored
+running then keeps its length. A fight's cooldown already running when the
+reduction starts shrinks by the factor new length / its own length (20 minutes
+left, 30 → 15: 10 minutes left; an already shortened 15-minute cooldown stays
+as it is when 15 is set again), never grows, and its ready announcement moves
+along. Fight cooldowns from before 1.5.0 do not know their length and are not
+shortened. The reduction is stored
 in the database and survives a restart; it is a temporary event, not a config
 value — `BossCooldownMinutes` stays as it is. Its natural end is not
 announced. The failed-lobby retry cooldown is not shortened.

@@ -565,9 +565,10 @@ in [roadmap.md](roadmap.md).
   `EndReductionAsync`); new table `BossCooldownReductions` (one row: cooldown
   and end, migration `BossCooldownReduction`), so the reduction survives a
   restart and the dry-run sandbox keeps its own. A fight takes the reduced
-  cooldown if it ends before the reduction's end. A running cooldown shrinks
-  by the factor new / old length and its ready announcement moves along (only
-  if it had one — not the failed-lobby retry, not in the dry run). Spec §4/§8,
+  cooldown if it ends before the reduction's end. A running fight cooldown
+  shrinks by the factor new / its own length (`Cooldown.Length`, null for the
+  failed-lobby retry, which is never shortened) and its ready announcement
+  moves along (only if it had one). Spec §4/§8,
   chat texts 40–43, README, „So geht's“, „Neuigkeiten“ 1.5.0.
 - User decisions: the reduction is a temporary event, not a setting, so a chat
   command is fine despite spec §8; a running cooldown shrinks too („Ja“); it

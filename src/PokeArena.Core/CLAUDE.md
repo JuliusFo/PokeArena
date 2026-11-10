@@ -22,6 +22,9 @@
   (and `Stopwatch`, `CancelAfter`) break the build since review 1.0.3.
 - SQLite (WP-02/08): copying the database file while it is open loses the WAL content — back up with
   `VACUUM INTO` or the SQLite backup API.
+- The `boss` cooldown row is shared by a fight's cooldown and the failed-lobby retry; only `Cooldown.Length` (null for the
+  retry) tells them apart and gives the length to shrink from — never derive it from `Until` or the current settings
+  (review feat/boss-cooldown-reduced).
 - Database access only through `GameDatabase.Open()` (one short-lived context per unit of work, `await using`):
   it picks the live database or the dry-run sandbox. Never cache a `PokeArenaDb` or a connection string.
 - `DateTimeOffset` is stored as UTC ticks (`ConfigureConventions`); SQLite cannot compare or sort it otherwise.
