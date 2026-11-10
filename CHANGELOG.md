@@ -7,6 +7,8 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-11-10
+
 ### Added
 - `!bosscooldown <Minuten> [Cooldown]` (moderators) shortens the boss cooldown
   for up to 24 hours: `!bosscooldown 60` halves it (15 instead of 30 minutes)

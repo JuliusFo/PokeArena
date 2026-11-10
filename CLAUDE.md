@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-11-10 · v1.4.2 released (fight cards as wide as the page again) · `!bosscooldown` and WP-11 automatic update merged (→ 1.5.0, live test pending) · then WP-09 (→ 1.6.0) after a few streams
+Status: 2026-11-10 · v1.5.0 released (`!bosscooldown`, WP-11 automatic update, HP numbers in the HP bar) · then WP-09 (→ 1.6.0) after a few streams
 
 ## 1. Where to find what
 
@@ -187,23 +187,21 @@ PokeArena.slnx
 
 ## 9. Next
 
-1.4.2 is released (installation: README, „Installing and running“): the
-fight cards are as wide as the page again, the wider cards of 1.4.1 looked
-lopsided; the fighter row wrap stays. 1.4.1 coloured only the boss's name in
-the fight log, put critical hits on gold and kept long names from pushing a
-fighter's HP bar onto its own line — after updating to 1.4.1 or later the
-streamer clicks „Alles neu veröffentlichen“ once. 1.4.0 made the
+1.5.0 is released (installation: README, „Installing and running“):
+`!bosscooldown` (`feat/boss-cooldown-reduced`: mods shorten the boss cooldown
+for up to 24 hours, half by default), WP-11 automatic update (ADR-0010:
+Velopack, installs 10 min after the stream) and HP numbers inside the fight
+page's HP bar. 1.5.0 is the one-time switch: install it with `Setup.exe` as the
+same Windows user on the server; from 1.5.1 on releases arrive by themselves.
+1.4.2 made the fight cards as wide as the page again; 1.4.1 coloured only the
+boss's name in the fight log, put critical hits on gold and kept long names
+from pushing a fighter's HP bar onto its own line — after updating to 1.4.1 or
+later the streamer clicks „Alles neu veröffentlichen“ once. 1.4.0 made the
 boss pick uniform over distinct species and showed trainers in their Twitch chat
 colour in the fight log; 1.3.0 brought the
 „Neuigkeiten“ page (WP-10), 1.2.0 the fight page's end state, 1.1.0 R1 (fixes
 of the whole review 1.0.3, docs/review-1.0.3.md) and the boss lobby. Next:
-live-test and release 1.5.0 — `!bosscooldown` (`feat/boss-cooldown-reduced`:
-mods shorten the boss cooldown for up to 24 hours, half by default) and WP-11
-automatic update (ADR-0010: Velopack, installs 10 min after the stream; user
-decision 2026-11-10 „Jetzt mergen, beides 1.5.0“). 1.5.0 is the one-time
-switch: install it with `Setup.exe` as the same Windows user on the server;
-from 1.5.1 on releases arrive by themselves. After a few streams WP-09
-balancing (1.6.0)
+after a few streams WP-09 balancing (1.6.0)
 (`N = 4` dip, PvP loot preferring missing species, NPC difficulty; no runtime
 balancing editor). Parked for version 2: website and overlay served from the
 bot's server through a Cloudflare Tunnel instead of GitHub Pages + R2. Ideas
