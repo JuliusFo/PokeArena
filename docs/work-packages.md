@@ -29,6 +29,7 @@ in [roadmap.md](roadmap.md).
 | WP-11 | Automatic update of the desktop app (before WP-09) | 1.5.0 | done 2026-11-10 |
 | – | Crisp HP numbers (user report, `fix/hp-text-crisp`) | 1.6.0 | done 2026-11-10 |
 | – | „Schaden“ box on the fight page (user request, `feat/damage-meter`) | 1.6.0 | done 2026-11-10 |
+| – | Fight page colours as picked, white text in the „Schaden“ bars (user request, `feat/damage-text-white`) | 1.6.1 | done 2026-11-10 |
 | WP-09 | Balancing after the first streams | 1.7.0 | planned |
 
 ## Log
@@ -680,6 +681,26 @@ in [roadmap.md](roadmap.md).
   colour may be yellow. Never derive damage from the German log text — it is
   in the stored events.
 - Deliberately not done: damage taken, healing, per-round chart.
+
+### Colours as picked, white text in the „Schaden“ bars — user request (2026-11-10, branch feat/damage-text-white)
+- Built: `Tint.Style` returns the checked colour as picked (`--tint`, one
+  value for both themes; the per-theme darkening/lightening and the surface
+  constants are gone, `Tint.TextOn` too). `DamageMeter.Bar.Fill` is the raw
+  colour, `.damage-text.on-fill` always white. Tests: Tint (raw style, only
+  hex), DamageMeter (bar = name colour), bUnit page. Spec §9 notes on the log
+  colours and ⁴, Web pitfalls, CHANGELOG 1.6.1, „Neuigkeiten“ 1.6.1.
+- User decisions, in order: „Text-Farbe für den Damage-Meter wie bei den HP“;
+  names in the cards, the log and the bar „die selben Farben“; „erstmal mit
+  der selben Farbe“ (tried: per-theme variants with dark text in the dark
+  theme); „zum Test alles auf die tatsächliche Farbe“; „trotzdem weiße
+  Schrift“ — „Wir testen das als Kollektiv mit dem Streamer“; „als regulären
+  release fertig“.
+- Addenda: knowingly below WCAG AA for some colours (yellow names on white,
+  white on yellow bars, dark blue names on the dark page). One colour cannot
+  carry white text and read on `#222228` (luminance ≤ 0.18 vs ≥ 0.25), so
+  this is a trade-off for the streamer test, not an oversight.
+- Pitfalls: going back means restoring `Tint.Readable` and the
+  `--tint-light`/`--tint-dark` pair from 1.6.0.
 
 Template per entry:
 

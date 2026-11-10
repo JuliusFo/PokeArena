@@ -7,6 +7,17 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+## [1.6.1] - 2026-11-10
+
+### Changed
+- A fight page shows the trainers' Twitch chat colours and the boss's type
+  colour exactly as picked — names in the fight cards and the log as well as
+  the „Schaden“ bars, in both themes. Until now names were darkened or
+  lightened for contrast; a very light or very dark colour can now be harder
+  to read.
+- The text inside the „Schaden“ bars is white like the HP numbers instead of
+  black or white depending on the colour.
+
 ## [1.6.0] - 2026-11-10
 
 ### Added
