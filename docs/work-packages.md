@@ -486,7 +486,8 @@ in [roadmap.md](roadmap.md).
   After the code review: gold as a highlight, not as text colour („Goldene
   Markierung klingt gut“) — gold text turns brown on white at 4.5 : 1 and looks
   like an Elektro boss; the uncoloured boss in older files and version 1.4.1
-  stay („Der Rest passt so“).
+  stay („Der Rest passt so“). Second review pass: a crit part without text
+  crashed the page — now plain text („Yes, fix it“).
 - Pitfalls: files written before have no `isSpecies` — their boss stays
   uncoloured (not the whole label as before) until „Alles neu veröffentlichen“.
   Plain text (`lines`, desktop, chat) is unchanged.
