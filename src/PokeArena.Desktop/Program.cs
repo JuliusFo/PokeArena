@@ -12,7 +12,9 @@ public static class Program
     [STAThread]
     public static int Main()
     {
-        VelopackApp.Build().Run();
+        // Off: by default Velopack installs a downloaded update on the next start — after a crash or a restart for new
+        // settings that would be mid-stream. Only UpdateCheck installs, when UpdateGate allows (review WP-11).
+        VelopackApp.Build().SetAutoApplyOnStartup(false).Run();
 
         var app = new App();
         app.InitializeComponent();

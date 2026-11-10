@@ -32,7 +32,9 @@ Thin WPF host around a `BlazorWebView` (ADR-0007). UI belongs in PokeArena.UI, l
   `SettingsFile`) is inserted as a configuration source between `appsettings.json` and `appsettings.local.json`
   (`App.AddStreamerSettings`); it is read once at start, so changes apply after a restart.
 - Self-update (WP-11, ADR-0010): `Program.Main` runs `VelopackApp.Build().Run()` before anything else (Velopack starts
-  the exe with hook arguments during install/update/uninstall) — keep it first, before the mutex. App.xaml is a
+  the exe with hook arguments during install/update/uninstall) — keep it first, before the mutex, and keep
+  `SetAutoApplyOnStartup(false)`: Velopack's default installs a downloaded update on the next start, even mid-stream
+  (review WP-11). App.xaml is a
   `Page`, not an `ApplicationDefinition`, so WPF generates no second `Main`. The packId is `PokeArena.App`: with
   `PokeArena` the install folder would be the data directory, and uninstalling would delete the game data. Nothing in
   the program folder survives an update — settings go to `settings.json`. Try an update locally with
