@@ -23,7 +23,10 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   only ≈ 4.4 : 1 — fine for links, not for small status text. Measure light and dark in the preview
   (feat/battle-end-state).
 - Colours nobody chose for readability (chat colours, type colours as text) go through `Tint.Style` + class `tinted`,
-  never straight into `color`. `Tint.TypeColors` and the surfaces mirror site.css; `TintTests` fails if they drift
+  never straight into `color`. `Tint.Style` gives one colour for both themes, darkened until it reads on white — the
+  same as the „Schaden“ bars: user decision „die Balken-Farbe zum Standard“, a test whether names stay readable on
+  the dark page, where dark colours (blue) fall below 4.5 : 1 (feat/damage-text-white; until 1.6.0 a lighter dark-theme
+  variant). `Tint.TypeColors` and the light surface mirror site.css; `TintTests` fails if they drift
   (feat/fight-log-colours). Yellow/gold as text turns brown on white at 4.5 : 1 — use it as a background with dark
   text (`.log .critical`, review feat/fight-log-boss-name-crit).
 - A fighter row is `.who` (species + owner, wraps, `flex: 1 1 0`, never `min-width: 0` — the name would cover the
@@ -39,12 +42,10 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   (`clip-path`, not overlapping, or the dark copy fringes the white one); never `background-clip: text` — it loses
   subpixel antialiasing and the numbers looked thin and grey (fix/hp-text-crisp).
 - „Schaden“ box (`Shared/DamageBox.razor`, logic in `Services/DamageMeter.cs`, feat/damage-meter): a bar has the
-  darkened colour of the trainer's name in the light theme (`Tint.Darkened`, the `--tint-light` of `Tint.Style`; a test
-  keeps them equal; yellow turns olive) and white text over the fill like the HP numbers, in both themes like the HP
-  bar's dark fills — user request „Text-Farbe wie bei den HP“, then „die abgedunkelte Version, wie vorher die Namen“
-  (feat/damage-text-white; tried and dropped: raw colours everywhere). In the dark theme the names are lightened and
-  so lighter than their bar: no colour carries white text and reads on the dark page at once. `--text` over the
-  rest, two clipped copies. A bar that stops short ends in a 2 px `--text` edge (review feat/damage-meter). Only colours that pass
+  colour of the trainer's name (`Tint.Darkened`, the colour of `Tint.Style`; a test keeps them equal; yellow turns
+  olive) and white text over the fill like the HP numbers, in both themes like the HP bar's dark fills — user requests
+  „Text-Farbe wie bei den HP“, „die abgedunkelte Version, wie vorher die Namen“, „die Balken-Farbe zum Standard“
+  (feat/damage-text-white; tried and dropped: raw colours everywhere). `--text` over the rest, two clipped copies. A bar that stops short ends in a 2 px `--text` edge (review feat/damage-meter). Only colours that pass
   `Tint.IsColor` go into the inline style. No box when any fighter lacks `Damage` (older files).
 - Never tell a boss or NPC by `TrainerId == null`: a deleted trainer's fighters have no id either („[gelöscht]“). The
   boss is the fighter on side 1 of a boss fight (review feat/fight-log-colours).

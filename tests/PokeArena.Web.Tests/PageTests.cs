@@ -195,7 +195,7 @@ public class PageTests : BunitContext
         Assert.Equal(
             [("damage-text", "Raupy Misty", "32", null), ("damage-text on-fill", "Raupy Misty", "32", "true")],
             bar.Children.Select(e => (e.ClassName, e.QuerySelector(".who")!.TextContent, e.QuerySelector(".value")!.TextContent, e.GetAttribute("aria-hidden"))));
-        // Fills are darkened like the names in the light theme, so the white text reads (feat/damage-text-white).
+        // Fills are darkened like the names, so the white text reads (feat/damage-text-white).
         Assert.Equal("--share: 93.8%; --fill: #737300", ranking[1].QuerySelector(".damage-bar")!.GetAttribute("style"));
     }
 

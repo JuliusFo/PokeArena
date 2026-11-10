@@ -4,20 +4,19 @@ using PokeArena.Contracts;
 namespace PokeArena.Web.Services;
 
 /// <summary>
-/// Text colours from colours nobody chose for readability — a trainer's Twitch chat colour, a boss's type colour.
-/// Each is darkened for the light theme and lightened for the dark theme until it reaches WCAG AA (4.5 : 1) on the
-/// page surface; a colour that already passes stays as it is.
+/// Colours nobody chose for readability — a trainer's Twitch chat colour, a boss's type colour. Each is darkened until
+/// it reaches WCAG AA (4.5 : 1) on white (a colour that already passes stays as it is), and that one colour serves
+/// everywhere on the fight page: names in the cards and the log, in both themes, and the „Schaden“ bars with white
+/// text. User decision „die Balken-Farbe zum Standard“ (feat/damage-text-white), to test whether names stay readable
+/// on the dark page — dark colours such as blue fall below 4.5 : 1 there. Until 1.6.0 names were lightened for it.
 /// </summary>
 public static class Tint
 {
-    /// <summary>Contrast every tinted text reaches on <see cref="LightSurface"/> and <see cref="DarkSurface"/>.</summary>
+    /// <summary>Contrast every darkened colour reaches on <see cref="LightSurface"/>, and white text on it.</summary>
     public const double MinContrast = 4.5;
 
     /// <summary><c>--surface</c> of the light theme in site.css (fight sides and log).</summary>
     public const string LightSurface = "#ffffff";
-
-    /// <summary><c>--surface</c> of the dark theme in site.css.</summary>
-    public const string DarkSurface = "#222228";
 
     /// <summary>
     /// Chip colours of the types (<c>.type-*</c> in site.css; a test keeps both in line), keyed by
@@ -55,11 +54,11 @@ public static class Tint
             ? part.IsSpecies && fighter.Species.Types.Count > 0 ? TypeColors.GetValueOrDefault(Format.TypeClass(fighter.Species.Types[0])) : null
             : part.IsOwner ? fighter.Color : null;
 
-    /// <summary>Inline style for the <c>tinted</c> class: both theme variants of <paramref name="color"/>; null if it is not <c>#RRGGBB</c>.</summary>
-    public static string? Style(string? color) =>
-        color is not null && TryParse(color, out var rgb)
-            ? $"--tint-light: {ToHex(Readable(rgb, Parse(LightSurface), towards: 0))}; --tint-dark: {ToHex(Readable(rgb, Parse(DarkSurface), towards: 255))}"
-            : null;
+    /// <summary>
+    /// Inline style for the <c>tinted</c> class: <see cref="Darkened"/> <paramref name="color"/>, the same in both themes
+    /// and the same as a „Schaden“ bar; null if it is not <c>#RRGGBB</c>.
+    /// </summary>
+    public static string? Style(string? color) => IsColor(color) ? $"--tint: {Darkened(color!)}" : null;
 
     /// <summary>WCAG contrast ratio of two <c>#RRGGBB</c> colours (1 … 21).</summary>
     public static double Contrast(string a, string b) => Contrast(Parse(a), Parse(b));
@@ -68,9 +67,8 @@ public static class Tint
     public static bool IsColor(string? value) => value is not null && TryParse(value, out _);
 
     /// <summary>
-    /// The darkened variant of the <c>#RRGGBB</c> <paramref name="color"/> — the colour of a name in the light theme
-    /// (<c>--tint-light</c> of <see cref="Style"/>). Readable on white, so white text reads on it too: the fill of a
-    /// „Schaden“ bar with white text like the HP numbers, in both themes (user request, feat/damage-text-white).
+    /// The <c>#RRGGBB</c> <paramref name="color"/> darkened until it reads on white — so white text reads on it too: the
+    /// colour of a name (<see cref="Style"/>) and the fill of a „Schaden“ bar with white text like the HP numbers.
     /// </summary>
     public static string Darkened(string color) => ToHex(Readable(Parse(color), Parse(LightSurface), towards: 0));
 

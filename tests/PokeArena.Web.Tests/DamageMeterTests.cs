@@ -58,9 +58,9 @@ public class DamageMeterTests
                 new BattleFighter(Raupy, "Ben", "2", 30, 0, true, "#FF4500", Damage: 0),
             ])))!;
 
-        // One trainer per side: the side takes the trainer's colour, darkened like the name in the light theme.
+        // One trainer per side: the side takes the trainer's colour, darkened — the colour of the name.
         Assert.Equal([("Anna", "60", "#737300"), ("Ben", "60", "#d93b00")], board.Totals.Select(b => (b.Name, b.Value, b.Fill)));
-        Assert.StartsWith($"--tint-light: {board.Totals[0].Fill};", Tint.Style("#FFFF00"));
+        Assert.Equal($"--tint: {board.Totals[0].Fill}", Tint.Style("#FFFF00"));
         Assert.Equal("Pokémon", board.RankingTitle);
         Assert.Equal(
             [("1.", "Bisasam", "Anna", "60"), ("1.", "Glumanda", "Ben", "60"), ("3.", "Raupy", "Ben", "0")],

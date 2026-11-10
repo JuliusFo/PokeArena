@@ -7,15 +7,15 @@ public partial class TintTests
 {
     [Theory]
     [InlineData("#FFFF00")] // yellow: unreadable on white
-    [InlineData("#0000FF")] // blue: unreadable on the dark surface
+    [InlineData("#0000FF")]
     [InlineData("#FFFFFF")]
     [InlineData("#000000")]
     [InlineData("#808080")]
     [InlineData("#00FF7F")]
-    public void Every_tint_reaches_aa_contrast_in_both_themes(string color) => AssertReadable(color);
+    public void Every_tint_reaches_aa_contrast_on_white(string color) => AssertReadable(color);
 
     [Fact]
-    public void Every_type_colour_reaches_aa_contrast_in_both_themes()
+    public void Every_type_colour_reaches_aa_contrast_on_white()
     {
         foreach (var color in Tint.TypeColors.Values)
         {
@@ -36,12 +36,12 @@ public partial class TintTests
     }
 
     [Fact]
-    public void A_bar_fill_is_the_colour_of_the_name_in_the_light_theme()
+    public void A_name_has_the_colour_of_its_bar_in_both_themes()
     {
-        // User request (feat/damage-text-white): the bars take the darkened colour the names have on white.
+        // User decision „die Balken-Farbe zum Standard“ (feat/damage-text-white): one colour, no dark-theme variant.
         foreach (var color in new[] { "#FFFF00", "#FF4500", "#0000FF", "#8A2BE2", "#00FF7F", "#FFFFFF" }.Concat(Tint.TypeColors.Values))
         {
-            Assert.StartsWith($"--tint-light: {Tint.Darkened(color)};", Tint.Style(color));
+            Assert.Equal($"--tint: {Tint.Darkened(color)}", Tint.Style(color));
         }
     }
 
@@ -55,7 +55,7 @@ public partial class TintTests
 
     [Fact]
     public void A_colour_that_already_passes_stays_as_picked() =>
-        Assert.Equal("--tint-light: #0000ff; --tint-dark: #8080ff", Tint.Style("#0000FF"));
+        Assert.Equal("--tint: #0000ff", Tint.Style("#0000FF"));
 
     [Theory]
     [InlineData(null)]
@@ -73,8 +73,8 @@ public partial class TintTests
         var chips = TypeRule().Matches(css).ToDictionary(m => m.Groups[1].Value, m => m.Groups[2].Value);
 
         Assert.Equal(chips.OrderBy(c => c.Key), Tint.TypeColors.OrderBy(c => c.Key));
-        // Light theme first, then the dark one under prefers-color-scheme.
-        Assert.Equal([Tint.LightSurface, Tint.DarkSurface], Regex.Matches(css, @"--surface: (#[0-9a-f]{6});").Select(m => m.Groups[1].Value));
+        // The light theme's surface comes first; the dark one follows under prefers-color-scheme.
+        Assert.Equal(Tint.LightSurface, Regex.Match(css, @"--surface: (#[0-9a-f]{6});").Groups[1].Value);
         // A damage box side of several colours takes the HP bar's green (review feat/damage-meter).
         Assert.Equal(DamageMeter.Mixed, Regex.Match(css, @"--hp-fill: (#[0-9a-f]{6});").Groups[1].Value);
     }
@@ -91,11 +91,8 @@ public partial class TintTests
 
     private static void AssertReadable(string color)
     {
-        var style = Tint.Style(color)!;
-        var light = Regex.Match(style, "--tint-light: (#[0-9a-f]{6})").Groups[1].Value;
-        var dark = Regex.Match(style, "--tint-dark: (#[0-9a-f]{6})").Groups[1].Value;
-        Assert.True(Tint.Contrast(light, Tint.LightSurface) >= Tint.MinContrast, $"{color} → {light} on {Tint.LightSurface}");
-        Assert.True(Tint.Contrast(dark, Tint.DarkSurface) >= Tint.MinContrast, $"{color} → {dark} on {Tint.DarkSurface}");
+        var tint = Regex.Match(Tint.Style(color)!, "--tint: (#[0-9a-f]{6})").Groups[1].Value;
+        Assert.True(Tint.Contrast(tint, Tint.LightSurface) >= Tint.MinContrast, $"{color} → {tint} on {Tint.LightSurface}");
     }
 
     private static string RepositoryRoot()
