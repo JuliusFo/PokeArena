@@ -235,6 +235,21 @@ public class PageTests : BunitContext
     }
 
     [Fact]
+    public void A_critical_hit_part_without_text_renders_as_plain_text()
+    {
+        _host.Files[SitePaths.Battle(7)] = """
+            {"id":7,"kind":"Pvp","foughtAt":"2026-11-01T17:30:00+00:00","seed":1,"headline":"Ash gegen Misty","result":"Ash besiegt Misty.",
+            "sides":[],"lines":["5 Schaden zugefügt. "],
+            "log":[{"parts":[{"text":"5 Schaden zugefügt."},{"isCritical":true},{"text":" ","isCritical":true}]}]}
+            """;
+
+        var cut = Render<Battle>(p => p.Add(b => b.Id, 7));
+
+        cut.WaitForAssertion(() => Assert.Equal("5 Schaden zugefügt. ", cut.Find(".log li").TextContent));
+        Assert.Empty(cut.FindAll(".log .critical"));
+    }
+
+    [Fact]
     public void A_battle_file_from_before_the_end_state_shows_the_start_hp()
     {
         _host.Files[SitePaths.Battle(6)] = """

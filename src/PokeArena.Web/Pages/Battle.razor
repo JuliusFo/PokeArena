@@ -66,11 +66,11 @@
                 <li class="@(line.IsRound ? "round" : null)">
                     @foreach (var part in line.Parts)
                     {
-                        if (part.IsCritical)
+                        // Text may be missing in a file that is not ours (no null check in SiteJson): plain text then.
+                        if (part.IsCritical && (part.Text ?? "").TrimStart() is { Length: > 0 } word)
                         {
                             // The leading space stays outside the gold background.
-                            var word = part.Text.TrimStart();
-                            var space = part.Text[..^word.Length];
+                            var space = part.Text![..^word.Length];
                             @space
                             <strong class="critical">@word</strong>
                         }
