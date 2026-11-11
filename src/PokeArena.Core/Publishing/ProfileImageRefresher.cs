@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Headers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
@@ -183,7 +184,7 @@ public sealed class ProfileImageRefresher(
 
     /// <summary>
     /// The picture at <paramref name="url"/> (150×150 if Twitch has it). Null if it is refused — <c>Refused</c> —
-    /// or could not be fetched (network error, timeout), which is worth another try soon.
+    /// or could not be fetched (network error, timeout, 408, 429, 5xx), which is worth another try soon.
     /// </summary>
     private async Task<(DownloadedImage? Image, bool Refused)> DownloadAsync(string trainerId, string url, CancellationToken ct)
     {
@@ -212,7 +213,8 @@ public sealed class ProfileImageRefresher(
                 || (ex is OperationCanceledException && !ct.IsCancellationRequested))
             {
                 unreachable = true;
-                log.LogWarning("Downloading the profile picture of {UserId} failed: {Error}", trainerId, ex.GetType().Name);
+                var error = ex is HttpRequestException { StatusCode: { } status } ? $"status {(int)status}" : ex.GetType().Name;
+                log.LogWarning("Downloading the profile picture of {UserId} failed: {Error}", trainerId, error);
             }
         }
 
@@ -222,6 +224,12 @@ public sealed class ProfileImageRefresher(
     private async Task<DownloadedImage?> TryDownloadAsync(string trainerId, string url, CancellationToken ct)
     {
         using var response = await http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
+        if (IsTransient(response.StatusCode))
+        {
+            // The CDN is busy or down, not refusing this picture: worth another try next round, not a day later.
+            throw new HttpRequestException($"Status {(int)response.StatusCode}", null, response.StatusCode);
+        }
+
         if (!response.IsSuccessStatusCode)
         {
             log.LogDebug("Profile picture of {UserId} answered {Status}", trainerId, (int)response.StatusCode);
@@ -272,6 +280,9 @@ public sealed class ProfileImageRefresher(
         && uri.Scheme == Uri.UriSchemeHttps
         && uri.IsDefaultPort
         && string.Equals(uri.Host, ImageHost, StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsTransient(HttpStatusCode status) =>
+        status is HttpStatusCode.RequestTimeout or HttpStatusCode.TooManyRequests || (int)status >= 500;
 
     private static bool IsImageType(MediaTypeHeaderValue? type) =>
         type?.MediaType?.ToLowerInvariant() is SitePaths.Png or SitePaths.Jpeg or "image/jpg";

@@ -237,14 +237,22 @@ public class ProfileImageRefresherTests : IDisposable
         Assert.Equal(2, _http.RequestsTo(Users).Count());
     }
 
-    [Fact]
-    public async Task An_unreachable_picture_is_tried_again_next_round()
+    [Theory]
+    [InlineData(0)]
+    [InlineData(408)]
+    [InlineData(429)]
+    [InlineData(503)]
+    public async Task An_unreachable_picture_is_tried_again_next_round(int status)
     {
+        // 0: no connection at all; otherwise the CDN answers with a passing error.
+        Func<HttpResponseMessage> unreachable = status == 0
+            ? () => throw new HttpRequestException("offline")
+            : () => new HttpResponseMessage((HttpStatusCode)status);
         await _game.Trainers.RegisterAsync("1", "ash", "Ash", Starter, _ct);
         TwitchReports(("1", AshPng));
-        _http.On(HttpMethod.Get, AshPngSmall, () => throw new HttpRequestException("offline"));
+        _http.On(HttpMethod.Get, AshPngSmall, unreachable);
         _http.OnBytes(AshPngSmall, Png, "image/png");
-        _http.On(HttpMethod.Get, AshPng, () => throw new HttpRequestException("offline"));
+        _http.On(HttpMethod.Get, AshPng, unreachable);
 
         await RefreshAndPublishAsync();
         Assert.DoesNotContain(SitePaths.ProfileImage("1", SitePaths.Png), _bucket.Files.Keys);
@@ -265,7 +273,8 @@ public class ProfileImageRefresherTests : IDisposable
             await db.SaveChangesAsync(_ct);
         }
 
-        TwitchReports(("1", AshPng), ("2", Cdn + "misty-profile_image-300x300.png"));
+        // Twitch no longer knows 2: that puts it on the day's wait — but only once the round is stored.
+        TwitchReports(("1", AshPng));
         _http.OnBytes(Cdn, Png, "image/png");
         _onHelix = () =>
         {
@@ -284,10 +293,12 @@ public class ProfileImageRefresherTests : IDisposable
         _onHelix = null;
         _game.Time.Advance(ProfileImageRefresher.Interval);
         await _refresher.RefreshDueAsync(_ct);
-        await using (var db = _game.OpenLive())
-        {
-            Assert.Equal(["2"], db.ProfileImages.Select(i => i.TrainerId));
-        }
+        Assert.EndsWith("id=2", _http.RequestsTo(Users).Last().Url, StringComparison.Ordinal);
+
+        // Stored this time, so 2 now waits a day.
+        _game.Time.Advance(ProfileImageRefresher.Interval);
+        await _refresher.RefreshDueAsync(_ct);
+        Assert.Equal(2, _http.RequestsTo(Users).Count());
     }
 
     [Fact]
@@ -308,8 +319,14 @@ public class ProfileImageRefresherTests : IDisposable
 
             Assert.Empty(_http.RequestsTo(Users));
 
+            // Advanced until the first round ran: an advance before the loop waits again would be lost.
             _twitch.State = new TwitchConnectionState(TwitchStatus.Connected);
-            _game.Time.Advance(ProfileImageRefresher.CheckInterval);
+            for (var i = 0; i < 5 && _http.RequestsTo(Cdn).Count() < 2; i++)
+            {
+                _game.Time.Advance(ProfileImageRefresher.CheckInterval);
+                await Task.Delay(20, _ct);
+            }
+
             await Eventually.TrueAsync(() => _http.RequestsTo(Cdn).Count() == 2, "first round once connected");
 
             // A slow first round only pushes the second one later, never earlier.
