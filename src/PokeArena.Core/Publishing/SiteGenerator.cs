@@ -133,7 +133,7 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
                 t.Distinct,
                 t.Total,
                 t.ChatColor,
-                t.ImageType is { } imageType ? SitePaths.ProfileImage(t.TwitchUserId, imageType) : null))
+                ImagePath(t.TwitchUserId, t.ImageType)))
             .ToList();
         return new Leaderboard(now, ranked.Count, ranked);
     }
@@ -316,7 +316,7 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
             [.. achievements.Select(a => new AchievementInfo(a.Threshold, npcs.ForThreshold(a.Threshold).Name, a.UnlockedAt))],
             [.. badges.Select(b => new BadgeInfo(npcs.Find(b.NpcId)?.Name ?? b.NpcId, b.WonAt, b.BattleId))],
             recent,
-            trainer.ImageType is { } imageType ? SitePaths.ProfileImage(trainerId, imageType) : null,
+            ImagePath(trainerId, trainer.ImageType),
             trainer.ChatColor);
     }
 
@@ -382,6 +382,14 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
             return new BattleSummary(b.Id, b.Kind, b.FoughtAt, texts.Headline, texts.Result);
         })];
     }
+
+    /// <summary>
+    /// The site path of a stored picture, or null without one. A format the site does not know (only a hand-edited
+    /// database could hold one) counts as no picture: it must not break the leaderboard for everyone (review
+    /// feat/leaderboard-profile-colours).
+    /// </summary>
+    private static string? ImagePath(string trainerId, string? contentType) =>
+        contentType is SitePaths.Png or SitePaths.Jpeg ? SitePaths.ProfileImage(trainerId, contentType) : null;
 
     private SpeciesInfo Info(int speciesId)
     {

@@ -57,6 +57,23 @@ public class SiteGeneratorTests : IDisposable
     }
 
     [Fact]
+    public async Task A_picture_in_an_unknown_format_counts_as_none_instead_of_breaking_the_leaderboard()
+    {
+        await AddTrainerAsync("1", "Ash", (1, 0));
+        await using (var db = _game.OpenLive())
+        {
+            db.ProfileImages.Add(new TrainerProfileImage
+            {
+                TrainerId = "1", Content = [1], ContentType = "image/gif", SourceUrl = "https://static-cdn.jtvnw.net/a.gif", CheckedAt = Start,
+            });
+            await db.SaveChangesAsync(_ct);
+        }
+
+        Assert.Null((await LeaderboardAsync()).Entries.Single().ProfileImage);
+        Assert.Null((await TrainerPageAsync("1")).ProfileImage);
+    }
+
+    [Fact]
     public async Task The_leaderboard_file_leaves_out_unknown_colours_and_pictures()
     {
         await AddTrainerAsync("1", "Ash", (1, 0));
