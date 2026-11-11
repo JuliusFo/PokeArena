@@ -55,7 +55,10 @@ public class PageTests : BunitContext
         Assert.Equal(
             ["https://daten.example/profilbild/11.png", null, null],
             cut.FindAll("tbody .trainer-link").Select(a => a.QuerySelector("img")?.GetAttribute("src")));
-        Assert.Equal(2, cut.FindAll("tbody span.profile-image").Count);
+        // Every row has the circle; a picture sits inside it, so a failed one leaves the circle (review
+        // feat/leaderboard-profile-colours).
+        Assert.Equal(3, cut.FindAll("tbody .trainer-link > span.profile-image").Count);
+        Assert.Single(cut.FindAll("tbody span.profile-image > img"));
         Assert.Equal("lazy", cut.Find("tbody img").GetAttribute("loading"));
         Assert.Equal(
             [("Anna", "trainer-link tinted", Tint.Style("#1E90FF")), ("Ben", "trainer-link", null), ("Cleo", "trainer-link", null)],

@@ -113,7 +113,10 @@ h1.tinted {
   font-weight: 700;
 }
 
-/* Leaderboard: small picture before the name; an empty circle without one (feat/leaderboard-profile-colours). */
+/*
+  Leaderboard: the circle is a span, the picture fills it. Without a picture, or once it failed to load, the empty
+  circle stays and the names stay aligned (feat/leaderboard-profile-colours).
+*/
 .trainer-link {
   display: inline-flex;
   align-items: center;
@@ -123,12 +126,17 @@ h1.tinted {
 }
 
 .profile-image.small {
+  display: inline-block;
   width: 24px;
   height: 24px;
+  overflow: hidden;
 }
 
-span.profile-image.small {
-  display: inline-block;
+.profile-image.small img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .boot {

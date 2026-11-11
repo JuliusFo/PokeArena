@@ -35,9 +35,10 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   text (`.log .critical`, review feat/fight-log-boss-name-crit).
 - Names in the chat colour: fight page, statistics, leaderboard and trainer heading (feat/leaderboard-profile-colours).
   On a link the tint goes on the `<a>` itself, or the underline stays `--accent`; `.tinted` sets weight 600, so
-  `h1.tinted` restores 700. The leaderboard's 24 px pictures load lazily and hide with `visibility` (not `display`)
-  on an error, and rows without one get an empty `span.profile-image`, so the names stay aligned. The sample data
-  has colours but no pictures (`RepositoryTests` refuses image files under `src/`).
+  `h1.tinted` restores 700. The leaderboard's 24 px pictures load lazily inside an always-rendered
+  `span.profile-image` (the circle) and hide on an error; rows carry `@key` — an element hidden outside Blazor's view
+  must not move to another trainer when the poll reorders rows (review feat/leaderboard-profile-colours). The sample
+  data has colours but no pictures (`RepositoryTests` refuses image files under `src/`).
 - A fighter row is `.who` (species + owner, wraps, `flex: 1 1 0`, never `min-width: 0` — the name would cover the
   HP text) next to `.end-state` (never shrinks): never put a new element straight into `.fighters li`, or long
   names push the HP bar onto its own line again (a bUnit test checks the children) (fix/fighter-row-wrap).

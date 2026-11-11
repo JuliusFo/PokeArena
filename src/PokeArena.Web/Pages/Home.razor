@@ -31,21 +31,21 @@ else if (_leaderboard is not null)
         <tbody>
             @foreach (var entry in _leaderboard.Entries)
             {
-                <tr class="@(entry.Rank <= 3 ? "top" : "")">
+                @* Keyed: the poll reorders rows, and an <img> hidden by onerror (outside Blazor's view) must not move on
+                   to another trainer (review feat/leaderboard-profile-colours). *@
+                <tr @key="entry.TrainerId" class="@(entry.Rank <= 3 ? "top" : "")">
                     <td class="num">@entry.Rank</td>
                     <td>
                         @{ var tint = Tint.Style(entry.Color); }
                         @* The tint on the link itself, so the underline takes the name's colour too. *@
                         <a href="trainer/@entry.TrainerId" class="trainer-link@(tint is null ? null : " tinted")" style="@tint">
-                            @if (Data.ProfileImageUrl(entry.ProfileImage) is { } image)
-                            {
-                                @* Lazy: a few hundred rows. A file that is gone keeps its place, so the names stay aligned. *@
-                                <img class="profile-image small" src="@image" alt="" width="24" height="24" loading="lazy" onerror="this.style.visibility='hidden'" />
-                            }
-                            else
-                            {
-                                <span class="profile-image small" aria-hidden="true"></span>
-                            }
+                            <span class="profile-image small" aria-hidden="true">
+                                @if (Data.ProfileImageUrl(entry.ProfileImage) is { } image)
+                                {
+                                    @* Lazy: a few hundred rows. On an error the empty circle shows; a new path is a new element. *@
+                                    <img @key="image" src="@image" alt="" width="24" height="24" loading="lazy" onerror="this.style.visibility='hidden'" />
+                                }
+                            </span>
                             <span>@entry.DisplayName</span>
                         </a>
                     </td>
