@@ -7,12 +7,13 @@
 @if (_trainer is { } trainer)
 {
     <div class="trainer-head">
-        @if (Data.ProfileImageUrl(trainer) is { } image)
+        @if (Data.ProfileImageUrl(trainer.ProfileImage) is { } image)
         {
             @* Decorative next to the name; hidden if the file is gone (e.g. deleted while the page was cached). *@
             <img class="profile-image" src="@image" alt="" width="56" height="56" onerror="this.style.display='none'" />
         }
-        <h1>@trainer.DisplayName</h1>
+        @{ var tint = Tint.Style(trainer.Color); }
+        <h1 class="@(tint is null ? null : "tinted")" style="@tint">@trainer.DisplayName</h1>
     </div>
     <p class="muted">
         Dabei seit @Format.Date(trainer.RegisteredAt)

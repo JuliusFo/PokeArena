@@ -1,5 +1,5 @@
 {"updatedAt":"2026-11-01T18:30:00+00:00","playerCount":4,"entries":[
-{"rank":1,"trainerId":"1001","displayName":"Anna","distinct":17,"total":23},
-{"rank":2,"trainerId":"1002","displayName":"Ben","distinct":15,"total":19},
-{"rank":3,"trainerId":"1003","displayName":"Clara","distinct":15,"total":17},
+{"rank":1,"trainerId":"1001","displayName":"Anna","distinct":17,"total":23,"color":"#FF69B4"},
+{"rank":2,"trainerId":"1002","displayName":"Ben","distinct":15,"total":19,"color":"#1E90FF"},
+{"rank":3,"trainerId":"1003","displayName":"Clara","distinct":15,"total":17,"color":"#FFFF00"},
 {"rank":4,"trainerId":"1004","displayName":"Dennis","distinct":1,"total":1}]}

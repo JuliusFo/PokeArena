@@ -108,6 +108,29 @@ h1:focus {
   object-fit: cover;
 }
 
+/* A heading keeps its bold weight; .tinted only lends the colour. */
+h1.tinted {
+  font-weight: 700;
+}
+
+/* Leaderboard: small picture before the name; an empty circle without one (feat/leaderboard-profile-colours). */
+.trainer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  vertical-align: middle;
+  overflow-wrap: anywhere;
+}
+
+.profile-image.small {
+  width: 24px;
+  height: 24px;
+}
+
+span.profile-image.small {
+  display: inline-block;
+}
+
 .boot {
   padding: 24px 16px;
   color: var(--muted);

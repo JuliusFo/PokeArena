@@ -39,6 +39,30 @@ public class PageTests : BunitContext
     }
 
     [Fact]
+    public void The_leaderboard_shows_small_pictures_and_names_in_their_chat_colour()
+    {
+        Put(
+            SitePaths.Leaderboard,
+            new Leaderboard(Now, 3, [
+                new(1, "11", "Anna", 3, 4, "#1E90FF", "profilbild/11.png"),
+                new(2, "12", "Ben", 1, 1, "red; background: url(x)", "https://evil.example/profilbild/12.png"),
+                new(3, "13", "Cleo", 1, 1)]),
+            SiteJson.Default.Leaderboard);
+
+        var cut = Render<Home>();
+
+        cut.WaitForAssertion(() => Assert.Equal(3, cut.FindAll("tbody tr").Count));
+        Assert.Equal(
+            ["https://daten.example/profilbild/11.png", null, null],
+            cut.FindAll("tbody .trainer-link").Select(a => a.QuerySelector("img")?.GetAttribute("src")));
+        Assert.Equal(2, cut.FindAll("tbody span.profile-image").Count);
+        Assert.Equal("lazy", cut.Find("tbody img").GetAttribute("loading"));
+        Assert.Equal(
+            [("Anna", "trainer-link tinted", Tint.Style("#1E90FF")), ("Ben", "trainer-link", null), ("Cleo", "trainer-link", null)],
+            cut.FindAll("tbody .trainer-link").Select(a => (a.TextContent.Trim(), a.GetAttribute("class"), a.GetAttribute("style"))));
+    }
+
+    [Fact]
     public void The_leaderboard_polls_and_explains_an_empty_game()
     {
         var cut = Render<Home>();
@@ -363,6 +387,24 @@ public class PageTests : BunitContext
 
         cut.WaitForAssertion(() => Assert.Contains("Anna", cut.Find(".trainer-head h1").TextContent));
         Assert.Equal(expected, cut.FindAll(".trainer-head img").SingleOrDefault()?.GetAttribute("src"));
+    }
+
+    [Theory]
+    [InlineData("#1E90FF", "tinted", "--tint: #1873cc")]
+    [InlineData(null, null, null)]
+    [InlineData("blue", null, null)]
+    public void The_trainer_name_has_the_chat_colour(string? color, string? expectedClass, string? expectedStyle)
+    {
+        Put(
+            SitePaths.Trainer("11"),
+            new TrainerPage("11", "Anna", Now, Now, 1, 1, 0, 0, 0, [new(Bisasam, 1, true)], [], [], [], Color: color),
+            SiteJson.Default.TrainerPage);
+
+        var cut = Render<Trainer>(p => p.Add(t => t.Key, "11"));
+
+        cut.WaitForAssertion(() => Assert.Contains("Anna", cut.Find(".trainer-head h1").TextContent));
+        var heading = cut.Find(".trainer-head h1");
+        Assert.Equal((expectedClass, expectedStyle), (heading.GetAttribute("class"), heading.GetAttribute("style")));
     }
 
     [Fact]

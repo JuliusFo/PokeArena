@@ -39,8 +39,9 @@ public sealed class SiteData(HttpClient http)
     /// The address of a trainer's profile picture on the data host, or null without one. Only paths in the bot's own
     /// format count, so a file can never point the page at another host.
     /// </summary>
-    public string? ProfileImageUrl(TrainerPage trainer) =>
-        trainer.ProfileImage is { } path && SitePaths.ProfileImageOf(path) is not null && http.BaseAddress is { } data
+    /// <param name="path"><see cref="TrainerPage.ProfileImage"/> or <see cref="LeaderboardEntry.ProfileImage"/>.</param>
+    public string? ProfileImageUrl(string? path) =>
+        path is not null && SitePaths.ProfileImageOf(path) is not null && http.BaseAddress is { } data
             ? new Uri(data, path).ToString()
             : null;
 }
