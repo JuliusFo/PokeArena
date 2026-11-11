@@ -1,0 +1,50 @@
+@* A list of ranking bars: the „Schaden“ box (feat/damage-meter) and the statistics page (feat/statistics-page). *@
+
+@if (Ordered)
+{
+    <ol class="damage-bars">
+        @foreach (var bar in Bars)
+        {
+            <li>@Row(bar)</li>
+        }
+    </ol>
+}
+else
+{
+    <ul class="damage-bars">
+        @foreach (var bar in Bars)
+        {
+            <li>@Row(bar)</li>
+        }
+    </ul>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyList<Bar> Bars { get; set; } = null!;
+
+    /// <summary>A ranking (<c>ol</c>) rather than a plain list of bars.</summary>
+    [Parameter]
+    public bool Ordered { get; set; }
+
+    /// <summary>
+    /// One bar with its text twice, each copy clipped to its part like the HP numbers: --text over the empty rest,
+    /// white over the fill (site.css). Fill and share are checked values (Bar.Make), safe in the style. A link works in
+    /// both copies — clip-path also clips where a copy takes clicks — but only the visible-to-all copy is reachable by
+    /// screen readers and the keyboard. The rank cell stays without a rank, so the bars of a box line up.
+    /// </summary>
+    private static RenderFragment Row(Bar bar) =>
+        @<text>
+            <span class="rank">@bar.Rank</span>
+            <span class="damage-bar@(bar.Share == "100" ? " full" : "")" style="--share: @(bar.Share)%; --fill: @bar.Fill">
+                <span class="damage-text">@Text(bar, hidden: false)</span>
+                <span class="damage-text on-fill" aria-hidden="true">@Text(bar, hidden: true)</span>
+            </span>
+        </text>;
+
+    private static RenderFragment Text(Bar bar, bool hidden) =>
+        @<text>
+            <span class="who">@if (bar.Href is null) {<strong>@bar.Name</strong>} else {<a href="@bar.Href" tabindex="@(hidden ? "-1" : null)"><strong>@bar.Name</strong></a>}@(bar.Detail is null ? null : " " + bar.Detail)</span>
+            <span class="value">@bar.Value</span>
+        </text>;
+}

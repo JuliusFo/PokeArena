@@ -1,4 +1,3 @@
-using System.Globalization;
 using PokeArena.Contracts;
 
 namespace PokeArena.Web.Services;
@@ -11,20 +10,7 @@ namespace PokeArena.Web.Services;
 /// </summary>
 public static class DamageMeter
 {
-    /// <summary>Bar of a fighter without a usable colour: a trainer without a chat colour, a deleted trainer.</summary>
-    public const string Neutral = "#6b6b76";
-
-    /// <summary>Bar of a side whose fighters have different colours (the trainers of a boss fight): the HP bar's green.</summary>
-    public const string Mixed = "#1b7f45";
-
-    /// <param name="Rank">„1.“; equal damage shares a rank. Null for the totals.</param>
-    /// <param name="Name">Bold part: the trainer in a boss fight, otherwise the Pokémon or the side.</param>
-    /// <param name="Detail">Plain part after the name: the Pokémon, its owner, or the number of trainers.</param>
-    /// <param name="Value">„148“, in a boss fight's ranking with the share of the boss's HP: „148 · 26 %“.</param>
-    /// <param name="Share">Bar length in percent of the longest bar of the list, invariant „0.#“.</param>
-    /// <param name="Fill">Bar colour, <c>#RRGGBB</c>: <see cref="Tint.Darkened"/>, the light theme's name colour.</param>
-    public sealed record Bar(string? Rank, string Name, string? Detail, string Value, string Share, string Fill);
-
+    /// <param name="Totals">One bar per side, no rank; a side of several colours is <see cref="Bar.Mixed"/>.</param>
     /// <param name="RankingTitle">„Trainer“ in a boss fight, otherwise „Pokémon“.</param>
     public sealed record Board(IReadOnlyList<Bar> Totals, string RankingTitle, IReadOnlyList<Bar> Ranking);
 
@@ -54,7 +40,7 @@ public static class DamageMeter
                 return (Name: side.Name,
                     Detail: boss && s == 0 ? $"({fighters.Count})" : null,
                     Damage: fighters.Sum(x => (long)x.Fighter.Damage!.Value),
-                    Fill: colors.Count == 1 ? colors[0] : Mixed);
+                    Fill: colors.Count == 1 ? colors[0] : Bar.Mixed);
             })
             .ToList();
         var bossHp = boss && battle.Sides.Count > 1 ? battle.Sides[1].Fighters.Sum(f => (long)f.MaxHp) : 0;
@@ -65,17 +51,17 @@ public static class DamageMeter
         var damages = ranked.Select(x => x.Fighter.Damage!.Value).ToList();
 
         return new Board(
-            [.. totals.Select(t => Make(null, t.Name, t.Detail, Number(t.Damage), t.Damage, totals.Max(x => x.Damage), t.Fill))],
+            [.. totals.Select(t => Bar.Make(null, t.Name, t.Detail, Bar.Number(t.Damage), t.Damage, totals.Max(x => x.Damage), t.Fill))],
             boss ? "Trainer" : "Pokémon",
             [.. ranked.Select(x =>
             {
                 var f = x.Fighter;
                 var damage = f.Damage!.Value;
                 var rank = $"{1 + damages.Count(d => d > damage)}.";
-                var value = bossHp > 0 ? $"{Number(damage)} · {Number((long)Math.Round(100.0 * damage / bossHp))} %" : Number(damage);
+                var value = bossHp > 0 ? $"{Bar.Number(damage)} · {Bar.Number((long)Math.Round(100.0 * damage / bossHp))} %" : Bar.Number(damage);
                 return boss
-                    ? Make(rank, f.Owner, f.Species.Name, value, damage, damages[0], Fill(battle, x.Side, f))
-                    : Make(rank, f.Species.Name, f.Owner, value, damage, damages[0], Fill(battle, x.Side, f));
+                    ? Bar.Make(rank, f.Owner, f.Species.Name, value, damage, damages[0], Fill(battle, x.Side, f))
+                    : Bar.Make(rank, f.Species.Name, f.Owner, value, damage, damages[0], Fill(battle, x.Side, f));
             })]);
     }
 
@@ -88,13 +74,6 @@ public static class DamageMeter
         var color = side == 1 && battle.Kind is BattleKind.Boss or BattleKind.Npc
             ? fighter.Species.Types.Count > 0 ? Tint.TypeColors.GetValueOrDefault(Format.TypeClass(fighter.Species.Types[0])) : null
             : fighter.Color;
-        return Tint.IsColor(color) ? color!.ToLowerInvariant() : Neutral;
+        return Tint.IsColor(color) ? color!.ToLowerInvariant() : Bar.Neutral;
     }
-
-    private static Bar Make(string? rank, string name, string? detail, string value, long damage, long longest, string fill) =>
-        new(rank, name, detail, value,
-            (longest > 0 ? 100.0 * damage / longest : 0).ToString("0.#", CultureInfo.InvariantCulture),
-            Tint.Darkened(fill));
-
-    private static string Number(long value) => value.ToString(CultureInfo.InvariantCulture);
 }

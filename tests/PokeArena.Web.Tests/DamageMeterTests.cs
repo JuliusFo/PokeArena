@@ -28,16 +28,16 @@ public class DamageMeterTests
 
         Assert.Equal(
             [
-                new DamageMeter.Bar(null, "Trainer", "(3)", "400", "100", DamageMeter.Mixed),
-                new DamageMeter.Bar(null, "Relaxo", null, "200", "50", Tint.Darkened(Tint.TypeColors["type-normal"])),
+                new Bar(null, "Trainer", "(3)", "400", "100", Bar.Mixed),
+                new Bar(null, "Relaxo", null, "200", "50", Tint.Darkened(Tint.TypeColors["type-normal"])),
             ],
             board.Totals);
         Assert.Equal("Trainer", board.RankingTitle);
         Assert.Equal(
             [
-                new DamageMeter.Bar("1.", "Clara", "Glumanda", "300 · 75 %", "100", "#0000ff"),
-                new DamageMeter.Bar("2.", "Anna", "Bisasam", "100 · 25 %", "33.3", "#737300"),
-                new DamageMeter.Bar("3.", "Ben", "Raupy", "0 · 0 %", "0", DamageMeter.Neutral),
+                new Bar("1.", "Clara", "Glumanda", "300 · 75 %", "100", "#0000ff"),
+                new Bar("2.", "Anna", "Bisasam", "100 · 25 %", "33.3", "#737300"),
+                new Bar("3.", "Ben", "Raupy", "0 · 0 %", "0", Bar.Neutral),
             ],
             board.Ranking);
     }
@@ -80,9 +80,9 @@ public class DamageMeterTests
             ])))!;
 
         // An invalid chat colour falls back to grey; two type colours on one side make it the mixed green.
-        Assert.Equal([DamageMeter.Neutral, DamageMeter.Mixed], board.Totals.Select(b => b.Fill));
+        Assert.Equal([Bar.Neutral, Bar.Mixed], board.Totals.Select(b => b.Fill));
         Assert.Equal(
-            [Tint.Darkened(Tint.TypeColors["type-feuer"]), Tint.Darkened(Tint.TypeColors["type-normal"]), DamageMeter.Neutral],
+            [Tint.Darkened(Tint.TypeColors["type-feuer"]), Tint.Darkened(Tint.TypeColors["type-normal"]), Bar.Neutral],
             board.Ranking.Select(b => b.Fill));
     }
 

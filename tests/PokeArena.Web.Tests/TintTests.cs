@@ -76,7 +76,7 @@ public partial class TintTests
         // The light theme's surface comes first; the dark one follows under prefers-color-scheme.
         Assert.Equal(Tint.LightSurface, Regex.Match(css, @"--surface: (#[0-9a-f]{6});").Groups[1].Value);
         // A damage box side of several colours takes the HP bar's green (review feat/damage-meter).
-        Assert.Equal(DamageMeter.Mixed, Regex.Match(css, @"--hp-fill: (#[0-9a-f]{6});").Groups[1].Value);
+        Assert.Equal(Bar.Mixed, Regex.Match(css, @"--hp-fill: (#[0-9a-f]{6});").Groups[1].Value);
     }
 
     [Fact]

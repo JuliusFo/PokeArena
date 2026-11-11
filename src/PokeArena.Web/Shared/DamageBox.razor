@@ -5,42 +5,13 @@
     <section class="damage">
         <h2>Schaden</h2>
         <h3>Gesamt</h3>
-        <ul class="damage-bars">
-            @foreach (var bar in board.Totals)
-            {
-                <li>@Row(bar)</li>
-            }
-        </ul>
+        <BarList Bars="board.Totals" />
         <h3>@board.RankingTitle</h3>
-        <ol class="damage-bars">
-            @foreach (var bar in board.Ranking)
-            {
-                <li>@Row(bar)</li>
-            }
-        </ol>
+        <BarList Bars="board.Ranking" Ordered />
     </section>
 }
 
 @code {
     [Parameter, EditorRequired]
     public BattlePage Battle { get; set; } = null!;
-
-    /// <summary>
-    /// One bar with its text twice, each copy clipped to its part like the HP numbers: --text over the empty rest,
-    /// white over the fill (site.css). Fill and share are checked values (DamageMeter), safe in the style.
-    /// </summary>
-    private static RenderFragment Row(DamageMeter.Bar bar) =>
-        @<text>
-            <span class="rank">@bar.Rank</span>
-            <span class="damage-bar@(bar.Share == "100" ? " full" : "")" style="--share: @(bar.Share)%; --fill: @bar.Fill">
-                <span class="damage-text">@Text(bar)</span>
-                <span class="damage-text on-fill" aria-hidden="true">@Text(bar)</span>
-            </span>
-        </text>;
-
-    private static RenderFragment Text(DamageMeter.Bar bar) =>
-        @<text>
-            <span class="who"><strong>@bar.Name</strong>@(bar.Detail is null ? null : " " + bar.Detail)</span>
-            <span class="value">@bar.Value</span>
-        </text>;
 }
