@@ -11,7 +11,13 @@
 {
     <p class="muted">Lädt …</p>
 }
-else if (_stats is null ? !Failed : _stats.Community.Trainers == 0)
+else if (_stats is null && !Failed)
+{
+    @* No file yet: the site deploys with the release tag, the bot writes the file with its next change — not an empty
+       game (review feat/statistics-page). *@
+    <p>Die Statistik wird gerade erstellt. Spätestens nach dem nächsten Kampf ist sie da.</p>
+}
+else if (_stats is { Community.Trainers: 0 })
 {
     <p>Noch gibt es nichts zu zählen. Schreib im Chat <strong>!registrieren</strong> und such dir dein erstes Pokémon aus!</p>
 }

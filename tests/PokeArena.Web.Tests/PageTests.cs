@@ -420,9 +420,15 @@ public class PageTests : BunitContext
     }
 
     [Fact]
-    public void The_statistics_explain_an_empty_game_and_lists_without_rows()
+    public void The_statistics_explain_a_missing_file_an_empty_game_and_lists_without_rows()
     {
+        // Right after the release the site is live before the bot has written the file — not an empty game.
         var cut = Render<Stats>();
+        cut.WaitForAssertion(() => Assert.Contains("Spätestens nach dem nächsten Kampf", cut.Markup));
+        Assert.DoesNotContain("!registrieren", cut.Markup);
+
+        Put(SitePaths.Statistics, new Statistics(Now, new CommunityTotals(0, 151, 0, 0, 0), [], [], [], 0, [], [], [], []), SiteJson.Default.Statistics);
+        _time.Advance(PollingPage.Interval);
         cut.WaitForAssertion(() => Assert.Contains("!registrieren", cut.Markup));
 
         Put(SitePaths.Statistics, new Statistics(Now, new CommunityTotals(1, 151, 1, 0, 0), [], [], [], 0, [], [], [], []), SiteJson.Default.Statistics);
