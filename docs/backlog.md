@@ -72,6 +72,14 @@ Not chosen for the first version of the „Statistik“ page (roadmap.md);
 - Not recommended: most tokens (punishes redeeming once tokens can be spent),
   oldest trainers (says nothing, never changes).
 
+## Continuation of the profile picture (1.7.0)
+
+Left out of the first version (feat/trainer-profile-image, 2026-11-11):
+
+- The picture on the leaderboard and next to trainers on fight pages (the
+  files exist already; only the site and the JSON paths change).
+- A placeholder (initial in the chat colour) for trainers without a picture.
+
 ## Battle system
 
 - Attacks per Pokemon with per-attack types — 2026-09-03, spec §14.

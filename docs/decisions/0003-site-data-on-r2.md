@@ -77,3 +77,22 @@ above becomes "deployed with each release": `main` may hold website changes
 and „Neuigkeiten“ lines that are not released yet, and they go live together
 with the desktop release. The `github-pages` environment needs the tag rule
 `v*` (`docs/website-setup.md` §3).
+
+## Addendum 2026-11-11 (feat/trainer-profile-image): profile pictures in the bucket
+
+User decision: the trainer page shows the viewer's Twitch profile picture, and
+the picture is **mirrored to our bucket** instead of being loaded from
+Twitch's CDN — visitors' browsers keep talking only to our data host.
+
+- The bucket now holds binary files too: `profilbild/<twitch-id>.png` or
+  `.jpg`, uploaded with their own content type.
+- "Every site file is derived" still holds: the picture's bytes live in SQLite
+  (`TrainerProfileImage`), the outbox renders them like the JSON files, and
+  "republish everything" and the backup cover them. A picture only on R2 could
+  not be regenerated after restoring a backup.
+- The WAF rule refuses query strings, so there is no `?v=` cache busting: a
+  picture keeps its path when it changes and is cached for a day like fights.
+  The rate-limiting rule counts only `.json`, pictures are not counted.
+- Proposal (not confirmed): the refresher, the download guard (https,
+  `static-cdn.jtvnw.net` only, PNG/JPEG, at most 512 KB) and the intervals
+  (every 15 min, each picture checked once a day) — see roadmap.md.

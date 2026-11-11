@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-11-10 · v1.6.2 released (thin black outline for the white „Schaden“ bar text) · „Statistik“ page built (`feat/statistics-page`, → 1.7.0, PR open), then WP-09 (→ 1.8.0) after a few streams
+Status: 2026-11-11 · v1.6.2 released · 1.7.0 in progress: „Statistik“ page merged (`feat/statistics-page`), Twitch profile picture on the trainer page (`feat/trainer-profile-image`, PR open) · then WP-09 (→ 1.8.0) after a few streams
 
 ## 1. Where to find what
 
@@ -51,8 +51,9 @@ shows leaderboard, trainer pages and battle logs.
 | 1.4.2 | Fight cards as wide as the page again (1.4.1 widening reverted) | fix/fight-card-width |
 | 1.5.0 | Mods shorten the boss cooldown for up to 24 h (`!bosscooldown`); desktop app updates itself from the GitHub releases | feat/boss-cooldown-reduced, WP-11 |
 | 1.6.0 | Fight page „Schaden“ box (damage per side and ranking in chat colours), crisp HP numbers | feat/damage-meter, fix/hp-text-crisp |
-Schaden bars in the darkened name colour with white text, names in that colour in both themes | feat/damage-text-white |„Schaden“ bars in the darkened name colour with white text, names in that colour in both themes | feat/damage-text-white |
-| 1.7.0 | Website page „Statistik“: boss participations, PvP fights, bad-luck streaks, rarities, rivals, boss record | feat/statistics-page |
+| 1.6.1 | „Schaden“ bars in the darkened name colour with white text, names in that colour in both themes | feat/damage-text-white |
+| 1.6.2 | Thin black outline for the white „Schaden“ bar text | feat/damage-text-outline |
+| 1.7.0 | Website page „Statistik“: boss participations, PvP fights, bad-luck streaks, rarities, rivals, boss record; trainer page shows the Twitch profile picture, mirrored to R2; stylesheet cache busting | feat/statistics-page, feat/trainer-profile-image, fix/css-cache-busting |
 | 1.8.0 | Balancing with real stream data | WP-09 |
 | 2.0.0 | Parked: website and overlay served from the bot's server (roadmap.md) | — |
 
@@ -190,6 +191,10 @@ PokeArena.slnx
 
 ## 9. Next
 
+`feat/trainer-profile-image` (→ 1.7.0, built 2026-11-11, PR open): the trainer page shows the Twitch
+profile picture left of the name. `ProfileImageRefresher` mirrors it every 15 min (each picture checked daily) into
+SQLite and the bucket (`profilbild/<id>.png|.jpg`, ADR-0003 addendum); to test on stream: pictures appear for
+registered trainers within 15 minutes after the update, while Twitch is connected.
 1.6.2 (`feat/damage-text-outline`): the white „Schaden“ bar text has a 1 px black outline.
 1.6.1 (`feat/damage-text-white`): the „Schaden“ bars take the darkened name colour with white text like the HP
 numbers, and names keep that colour in the dark theme too — a test with the streamer whether names stay readable on
@@ -211,9 +216,9 @@ boss pick uniform over distinct species and showed trainers in their Twitch chat
 colour in the fight log; 1.3.0 brought the
 „Neuigkeiten“ page (WP-10), 1.2.0 the fight page's end state, 1.1.0 R1 (fixes
 of the whole review 1.0.3, docs/review-1.0.3.md) and the boss lobby. Next:
-the „Statistik“ page (1.7.0, `feat/statistics-page`, built 2026-11-11, open PR: `statistik.json` and `/statistik`
-with bars like the „Schaden“ box; after updating the streamer clicks „Alles neu veröffentlichen“ once), then
-after a few streams WP-09 balancing (1.8.0)
+release 1.7.0 with the „Statistik“ page (`feat/statistics-page`, merged 2026-11-11: `statistik.json` and
+`/statistik` with bars like the „Schaden“ box; after updating the streamer clicks „Alles neu veröffentlichen“ once)
+and the profile picture, then after a few streams WP-09 balancing (1.8.0)
 (`N = 4` dip, PvP loot preferring missing species, NPC difficulty; no runtime
 balancing editor). Parked for version 2: website and overlay served from the
 bot's server through a Cloudflare Tunnel instead of GitHub Pages + R2. Ideas

@@ -15,7 +15,7 @@ structure.
 | `Game/` | `TrainerService` (registration, display names, trainer list), `BossEncounter` (lobby, fight, catches, cooldown), `Achievements`, `BattleService` (battle list for the UI), `PvpService` (open challenges, fight, loot transfer), `NpcService` (NPC fights, rewards, cooldowns) |
 | `Game/Battles/` | Pure engine without database: `DamageCalculator`, `BossBattle`, `TeamBattle` (1-vs-1 with teams, for PvP/NPC), `BossDraw`, `BattleLog` (structured events, JSON, German lines), `BattleSettings` / `BossSettings` / `PvpSettings` / `NpcSettings`, `BattleRandom` + `ISeedSource` |
 | `Data/` | EF Core model (`PokeArenaDb`), migrations, `GameDatabase` (live database or dry-run sandbox), `SpeciesCatalog`, `TypeChart`, `NpcCatalog` (validated `data/*.json`) |
-| `Publishing/` | `SiteOutbox` (queue paths in the game transaction), `SiteGenerator` (renders every site file from the DB), `SitePublishWorker` (uploads, backoff, status for the UI), `ISitePublisher` + `R2SitePublisher` / `R2Access` (AWSSDK.S3, key in the secret store), `SiteLinks` (battle links in chat), `OverlayOptions` |
+| `Publishing/` | `SiteOutbox` (queue paths in the game transaction), `SiteGenerator` (renders every site file from the DB), `SitePublishWorker` (uploads, backoff, status for the UI), `ProfileImageRefresher` (mirrors Twitch profile pictures), `ISitePublisher` + `R2SitePublisher` / `R2Access` (AWSSDK.S3, key in the secret store), `SiteLinks` (battle links in chat), `OverlayOptions` |
 
 External systems sit behind seams with fakes for tests: HTTP via `HttpClient`
 (fake handler), the EventSub socket via `IEventSubSocketFactory`, outgoing chat
@@ -52,6 +52,7 @@ PvP loot columns of `Battle`; in WP-05: `Trainer.Tokens`, `Battle.NpcId` /
 | `Cooldown` | Key (PK), Until, Length? | `boss` (global cooldown and failed-lobby retry share it; `Length` = a fight cooldown's length since 1.5.0, null for the retry, so `!bosscooldown` shrinks only fight cooldowns, by the right factor); `npc:<trainer>:<npc>` per trainer and NPC |
 | `BossCooldownReduction` | Id (PK, always 1), Cooldown, Until | `!bosscooldown` (1.5.0): fights ending before `Until` get `Cooldown` instead of `BossCooldownMinutes`; an expired row counts as none and is replaced by the next call |
 | `PublishQueueItem` | Path (PK), Revision, QueuedAt, NextAttemptAt, Attempts, LastError | Website outbox: only the path — the file is rendered at upload time, so queuing a path twice is one upload. `Revision` keeps a row that was queued again during its upload |
+| `TrainerProfileImage` | TrainerId (PK, FK → Trainer, cascade), Content, ContentType, SourceUrl, CheckedAt | Mirrored Twitch profile picture (1.7.0, ADR-0003 addendum): bytes in the database so the picture file is derived like every site file; own table so trainer queries never load the blob. `SourceUrl` = Twitch's `profile_image_url` (new upload → new URL), `CheckedAt` = last confirmation by Helix |
 
 Species, type chart and NPC teams stay in `data/*.json`, referenced by id (NPC
 teams by slug). Balancing values (spec §13) are code defaults in `BattleSettings` /
@@ -88,12 +89,20 @@ no runtime editor (user decision 2026-11-04).
   deletes it when its source is gone; failures back off up to 15 min and never
   give up. The dry run writes to the sandbox outbox, which nobody reads.
   "Republish everything" queues every path.
+- **Profile pictures** (1.7.0): `ProfileImageRefresher` (live database only,
+  every 15 min while Twitch is connected) asks Helix `GET /users?id=` (100 ids
+  per call) for trainers without a picture or with one not checked for 24 h,
+  downloads only changed URLs (150×150 variant, `static-cdn.jtvnw.net` only,
+  PNG/JPEG, ≤ 512 KB), stores the bytes and queues `profilbild/<id>.png|.jpg`
+  plus the trainer page. A user Twitch no longer returns loses the picture,
+  not the trainer. A format change moves the path; the old one has no source
+  and gets deleted.
 - **Deletion** (spec §11, built in WP-08): `!entfernen @x` (mods, confirmed
   by the same mod within 60 s via `TrainerRemoval`) or the button in the
   trainer list → `TrainerService.DeleteAsync` in one transaction: participant
-  rows, specimens, achievements, badges and NPC cooldowns go, the trainer's
-  fighters in the stored logs become „[gelöscht]“ without id (ADR-0004
-  addendum) → trainer page (removed), lists, the fights and the other
+  rows, specimens, achievements, badges, NPC cooldowns and the profile picture
+  go, the trainer's fighters in the stored logs become „[gelöscht]“ without id
+  (ADR-0004 addendum) → trainer page and picture (removed), lists, the fights and the other
   participants' pages queued. Fight files are cached for a day, so the name
   leaves the CDN without a purge.
 - **Backup** (spec §10, built in WP-08): `DatabaseBackup` writes `VACUUM INTO`

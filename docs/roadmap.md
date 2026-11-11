@@ -1,7 +1,8 @@
 # Roadmap
 
 Planned work packages up to v1.0.0, plus the packages after it (WP-10 news
-page, then WP-11 automatic update, then the statistics page, then WP-09
+page, then WP-11 automatic update, then the profile picture, then the
+statistics page, then WP-09
 with its version still open) and a parked idea for version 2. Read the package before starting it and agree the plan with
 the user. Estimates: solo, "day" = one focused person-day; total ≈ 25–31
 days. Every package ends in a state that could run on stream.
@@ -400,7 +401,10 @@ User decisions (2026-11-10, evaluation of the idea):
 - Lifetime damage is left out for now („erstmal weg“, backlog): it would
   read every fight log on every publish, and teams of 6 in PvP collect damage
   faster than one fielded Pokémon per boss fight.
-- Before WP-09, released as 1.7.0; WP-09 moves to 1.8.0 („Vor wp-09“).
+- Before WP-09, released as 1.7.0; WP-09 moves to 1.8.0 („Vor wp-09“). Moved to 1.8.0
+  (WP-09 to 1.9.0) when the profile picture went first (2026-11-11); merged
+  first after all, so both ship in 1.7.0 and WP-09 stays 1.8.0 — Proposal (not
+  confirmed).
 - „Einzelstücke“ as a capped list, not every species with one owner („Eine
   begrenzte Liste“).
 - Built with `/ship-wp` (2026-11-11); at the plan the lists as bars instead of
@@ -429,6 +433,82 @@ Built as the simplest variant, **Proposal (not confirmed)**:
 - Equal values in a list are ordered by name; a tie at place 10 is cut at ten
   rows.
 - A line on the „Neuigkeiten“ page, the file in the table of spec §9.
+
+## Twitch profile picture on the trainer page (`feat/trainer-profile-image`) → v1.7.0
+
+User idea (2026-11-11): the trainer page shows the viewer's Twitch profile
+picture left of the name.
+
+User decisions (2026-11-11):
+
+- Planned right away instead of parking it in the backlog („Gleich planen“).
+- The picture is mirrored to **our R2 bucket**, not loaded from Twitch's CDN:
+  visitors' browsers talk only to our data host (no IP addresses to Twitch).
+- Built right away, before the „Statistik“ page, as 1.7.0 („Mach das ruhig
+  jetzt“ on the question before or after it); Statistik moves to 1.8.0,
+  WP-09 to 1.9.0. The „Statistik“ page was merged first after all, so both
+  ship in 1.7.0 and WP-09 stays 1.8.0 — Proposal (not confirmed).
+
+Constraints found while planning:
+
+- EventSub chat messages carry the chat colour but no picture: it comes from
+  Helix `GET /users?id=…` (`profile_image_url`, up to 100 ids per call, no
+  scope; `HelixClient` already calls `users?login=`).
+- SQLite is the single source of truth and every site file is regenerable
+  (ADR-0001, ADR-0003) — a picture only on R2 would break that. So the
+  **image bytes live in the database** and the outbox renders them like any
+  JSON file.
+- The WAF blocks every query string on the data host (website-setup.md §2),
+  so cache busting with `?v=<hash>` is out; the rate limit counts only `.json`.
+- `R2SitePublisher` sends a fixed JSON content type; images need their own.
+
+Built as below (feat/trainer-profile-image); the details are a **Proposal (not
+confirmed)**:
+
+- **Data:** a new table `TrainerProfileImage` (trainer id as key, cascade
+  delete with the trainer; `Content` blob, `ContentType`, `SourceUrl`,
+  `CheckedAt`). Own table so the leaderboard's trainer queries never load
+  blobs. A few hundred trainers × ~10–30 KB stay a few MB in the database and
+  the backup.
+- **Fetch:** a `ProfileImageRefresher` background service on the live
+  database only (not the dry run), every 15 minutes while Twitch is connected:
+  trainers without a picture or with one older than 24 h, 100 per Helix call.
+  The picture is downloaded only when `profile_image_url` changed (Twitch puts
+  a new id into the URL on every upload), so a daily round costs about four
+  Helix calls. New trainers get their picture within 15 minutes; no signal
+  from registration needed.
+- **Download guard:** https only, host `static-cdn.jtvnw.net` only, at most
+  512 KB, content type `image/png` or `image/jpeg`. The 150×150 variant
+  (`-300x300.` → `-150x150.` in the URL), falling back to the original URL
+  if that fails — no image library in Core.
+- A user Twitch no longer returns (account deleted or banned): the picture
+  row goes and the file is deleted; the trainer stays.
+- **Publishing:** a change writes the row and queues
+  `profilbild/<twitch-id>.png` or `.jpg` plus the trainer file in one
+  transaction. `SiteFile` gets a content type (default JSON) that
+  `R2SitePublisher` sends. The extension follows the format (changed while
+  building: the local preview serves no extensionless files); a picture in the
+  other format moves the path and the old one gets deleted.
+  Cache a day like fights: a new picture or a deletion is visible on the next
+  day at the latest (same reasoning as spec §11 for fights).
+- „Alles neu veröffentlichen“ queues every picture and lists the
+  `profilbild/` prefix, so leftovers without a source get deleted;
+  `IsOwnPath` accepts only `profilbild/<numeric id>.png|.jpg`.
+- **Contract:** `TrainerPage.ProfileImage` (`string?`, path relative to the
+  data base URL, null without a picture). New optional field, so the data
+  format version stays 1; older site builds ignore it.
+- **Website:** a round picture (~56 px) left of the `<h1>` on the trainer page;
+  without one nothing is shown (no placeholder). Leaderboard and fight pages
+  stay as they are (backlog if wanted).
+- **Privacy:** deleting a trainer (spec §11) deletes the row by cascade and
+  queues the picture's path; the privacy note on the website mentions the
+  mirrored picture. Spec §9 (file table), §11 and architecture.md (data model,
+  refresher) get the change; ADR-0003 an addendum (binary files in the bucket,
+  bytes in SQLite).
+- Tests: refresher with fake Helix/HTTP (changed URL, unchanged URL, user
+  gone, host or size refused), generator renders and deletes the picture,
+  republish covers the prefix, bUnit for the page with and without picture.
+- A line on the „Neuigkeiten“ page.
 
 ## WP-09 — Balancing after the first streams (≈ 2 days) → v1.8.0
 

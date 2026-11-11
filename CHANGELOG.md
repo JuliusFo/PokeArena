@@ -20,6 +20,14 @@ tagged `vX.Y.Z` once its section is complete.
 - The page updates itself after every fight. After updating, the streamer
   clicks „Alles neu veröffentlichen“ once, so that the page is there before
   the next fight.
+- Trainer pages show the viewer's Twitch profile picture left of the name.
+  The bot fetches the pictures itself (new trainers within 15 minutes, every
+  picture checked once a day) and uploads a copy with the other website data,
+  so visitors' browsers never load anything from Twitch. A new picture can
+  take up to two days to show (daily check plus one day of caching). Deleting
+  a trainer deletes the picture too. After updating, nothing needs to be
+  clicked: the pictures arrive by themselves while the bot is connected to
+  Twitch.
 
 ### Fixed
 - After a release a browser could keep the old stylesheet from its cache next

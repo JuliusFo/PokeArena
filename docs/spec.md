@@ -375,11 +375,12 @@ Data files (all derived — fully regenerable from the DB; the UI has a
 | File                       | Content                                              |
 |----------------------------|------------------------------------------------------|
 | `rangliste.json`           | rank, display name, distinct count, total count, player count, timestamp. Sort: distinct desc, then total desc, then earliest attainment¹ |
-| `trainer/<twitch-id>.json` | pokedex (species + count), achievements, recent fights, stats |
+| `trainer/<twitch-id>.json` | pokedex (species + count), achievements, recent fights, stats, the path of the profile picture⁶ |
 | `kampf/<id>.json`          | participants, teams, log lines, result, loot, seed; per fighter its HP left and whether it was sent in², its owner's chat colour³ and the damage it dealt⁴; the log lines also in parts that name their fighter³ |
 | `kaempfe.json`             | last N fights for an index page                      |
 | `statistik.json`           | community Pokédex and totals, rankings beyond the leaderboard⁵ |
 | `meta.json`                | data format version, timestamp                       |
+| `profilbild/<twitch-id>.png` or `.jpg` | the trainer's Twitch profile picture⁶, mirrored by the bot (binary, cached a day) |
 
 ¹ Attainment = the moment the trainer last completed the set of species they
 own now: for each owned species the earliest time they got a specimen of it
@@ -455,6 +456,15 @@ written it — possibly for a whole stream, as the bot installs the update only
 after it), the page says it is being made and comes soon, without promising
 when, instead of calling the game empty.
 
+⁶ Profile picture on the trainer page (user idea 2026-11-11, 1.7.0): a round
+picture left of the name, nothing without one. The bot mirrors the Twitch
+profile picture to the bucket (user decision: our R2, not Twitch's CDN, so
+visitors' browsers never contact Twitch); the bytes live in the database, so
+the file is derived like every other (ADR-0003 addendum). New trainers get
+theirs within 15 minutes, a changed picture shows within a day (checked
+daily, cached a day — the data host refuses query strings, so no cache
+busting). Details of the refresher: architecture.md „Profile pictures“.
+
 - Files are uploaded **directly per change** via the publish queue.
 - Uploads normally land within seconds, but the queue may lag (network
   failure, bot offline). The battle page therefore shows a friendly
@@ -501,7 +511,7 @@ when, instead of calling the game empty.
 Display names appear permanently on a public website. Therefore:
 
 - `!entfernen @name` (mods) and a UI action delete a trainer and their
-  specimens, delete their `trainer/<twitch-id>.json` from the bucket, and
+  specimens, delete their `trainer/<twitch-id>.json` and profile picture from the bucket, and
   republish affected files; the trainer's name in existing battle logs is
   replaced by „[gelöscht]". Because player data never enters the git
   repository, nothing survives in any history.

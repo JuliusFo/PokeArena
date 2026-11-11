@@ -225,7 +225,7 @@ don't edit it by hand.
 | 1.4.0 | Boss pick per species, fight log in chat colours | done |
 | 1.5.0 | Mods shorten the boss cooldown for a while (`!bosscooldown`); the desktop app updates itself | done |
 | 1.6.0 | Fight page shows who dealt how much damage | done |
-| 1.7.0 | Website page „Statistik“ with rankings beyond the leaderboard | planned |
+| 1.7.0 | Website page „Statistik“ with rankings beyond the leaderboard; trainer pages show the Twitch profile picture | in progress |
 | 1.8.0 | Balancing with real stream data | planned |
 
 Details per work package: [docs/roadmap.md](docs/roadmap.md) ·
