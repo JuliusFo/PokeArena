@@ -423,6 +423,47 @@ public class ProfileImageRefresherTests : IDisposable
             _bucket.Files.Keys.Where(k => k.StartsWith(SitePaths.ProfileImagePrefix, StringComparison.Ordinal)).Order(StringComparer.Ordinal));
     }
 
+    [Fact]
+    public async Task A_stored_picture_in_an_unknown_format_breaks_neither_republishing_nor_the_refresher()
+    {
+        await RegisterWithPictureAsync("1", "2");
+        await SetContentTypeAsync("1", "image/gif");
+
+        // „Alles neu veröffentlichen“ (review feat/leaderboard-profile-colours): the others' files still go out.
+        _bucket.Files.Clear();
+        await _worker.RepublishEverythingAsync(_ct);
+        await _worker.PublishDueAsync(_ct);
+        Assert.Contains(SitePaths.ProfileImage("2", SitePaths.Png), _bucket.Files.Keys);
+        Assert.Null(LeaderboardEntry("1").ProfileImage);
+
+        // Twitch no longer knows trainer 1: the row goes without a path to delete, the batch does not fail.
+        _game.Time.Advance(TimeSpan.FromDays(1));
+        TwitchReports(("2", AshPng));
+        await RefreshAndPublishAsync();
+        await using var db = _game.OpenLive();
+        Assert.Equal(["2"], await db.ProfileImages.Select(i => i.TrainerId).ToListAsync(_ct));
+    }
+
+    [Fact]
+    public async Task A_trainer_with_a_picture_in_an_unknown_format_can_be_deleted()
+    {
+        await RegisterWithPictureAsync("1");
+        await SetContentTypeAsync("1", "image/gif");
+
+        Assert.True(await _game.Trainers.DeleteAsync("1", _ct));
+
+        await using var db = _game.OpenLive();
+        Assert.Empty(db.ProfileImages);
+    }
+
+    [Theory]
+    [InlineData("1", SitePaths.Png, "profilbild/1.png")]
+    [InlineData("1", SitePaths.Jpeg, "profilbild/1.jpg")]
+    [InlineData("1", "image/gif", null)]
+    [InlineData("1", null, null)]
+    public void TryProfileImage_knows_only_png_and_jpeg(string trainerId, string? contentType, string? expected) =>
+        Assert.Equal(expected, SitePaths.TryProfileImage(trainerId, contentType));
+
     [Theory]
     [InlineData("profilbild/123.png", "123", SitePaths.Png)]
     [InlineData("profilbild/123.jpg", "123", SitePaths.Jpeg)]
@@ -467,6 +508,26 @@ public class ProfileImageRefresherTests : IDisposable
 
     private TrainerPage Trainer(string id) =>
         JsonSerializer.Deserialize(_bucket.Files[SitePaths.Trainer(id)].Content, SiteJson.Default.TrainerPage)!;
+
+    /// <summary>Registers the trainers and gives each the same PNG picture, published.</summary>
+    private async Task RegisterWithPictureAsync(params string[] ids)
+    {
+        foreach (var id in ids)
+        {
+            await _game.Trainers.RegisterAsync(id, "u" + id, "U" + id, Starter, _ct);
+        }
+
+        TwitchReports([.. ids.Select(id => (id, AshPng))]);
+        _http.OnBytes(AshPngSmall, Png, "image/png");
+        await RefreshAndPublishAsync();
+    }
+
+    /// <summary>What only a hand-edited database holds: a format the site does not know.</summary>
+    private async Task SetContentTypeAsync(string trainerId, string contentType)
+    {
+        await using var db = _game.OpenLive();
+        await db.ProfileImages.Where(i => i.TrainerId == trainerId).ExecuteUpdateAsync(s => s.SetProperty(i => i.ContentType, contentType), _ct);
+    }
 
     private LeaderboardEntry LeaderboardEntry(string id) =>
         JsonSerializer.Deserialize(_bucket.Files[SitePaths.Leaderboard].Content, SiteJson.Default.Leaderboard)!.Entries.Single(e => e.TrainerId == id);

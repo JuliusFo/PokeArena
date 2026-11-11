@@ -48,6 +48,14 @@ public static class SitePaths
     };
 
     /// <summary>
+    /// <see cref="ProfileImage"/> for a stored format, or null without a picture or in a format the site does not know.
+    /// Only a hand-edited database holds such a row; it counts as no picture instead of breaking the leaderboard,
+    /// „Alles neu veröffentlichen“, a deletion or the refresher (review feat/leaderboard-profile-colours).
+    /// </summary>
+    public static string? TryProfileImage(string twitchUserId, string? contentType) =>
+        contentType is Png or Jpeg ? ProfileImage(twitchUserId, contentType) : null;
+
+    /// <summary>
     /// Twitch user id (digits only) and format of a <see cref="ProfileImage"/> path, or null for any other path.
     /// </summary>
     public static (string TrainerId, string ContentType)? ProfileImageOf(string path)

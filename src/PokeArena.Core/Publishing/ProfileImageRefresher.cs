@@ -111,7 +111,7 @@ public sealed class ProfileImageRefresher(
                 if (image is not null)
                 {
                     db.ProfileImages.Remove(image);
-                    paths.AddRange([SitePaths.ProfileImage(trainerId, image.ContentType), SitePaths.Trainer(trainerId)]);
+                    paths.AddRange([.. OldPath(trainerId, image), SitePaths.Trainer(trainerId)]);
                 }
 
                 continue;
@@ -149,7 +149,7 @@ public sealed class ProfileImageRefresher(
             else
             {
                 // A format change moves the file: the old path then has no source and gets deleted.
-                paths.Add(SitePaths.ProfileImage(trainerId, image.ContentType));
+                paths.AddRange(OldPath(trainerId, image));
                 image.Content = download.Content;
                 image.ContentType = download.ContentType;
                 image.SourceUrl = url;
@@ -280,6 +280,10 @@ public sealed class ProfileImageRefresher(
 
         return new DownloadedImage(content, contentType);
     }
+
+    /// <summary>The stored picture's file, to delete or replace; none for a format the site does not know.</summary>
+    private static IEnumerable<string> OldPath(string trainerId, TrainerProfileImage image) =>
+        SitePaths.TryProfileImage(trainerId, image.ContentType) is { } path ? [path] : [];
 
     private static bool IsTwitchImage(string url) =>
         Uri.TryCreate(url, UriKind.Absolute, out var uri)

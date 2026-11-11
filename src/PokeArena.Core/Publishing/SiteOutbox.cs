@@ -60,7 +60,7 @@ public static class SiteOutbox
                 SitePaths.BattleIndex,
                 .. ForTrainers(trainers),
                 .. battles.Select(SitePaths.Battle),
-                .. images.Select(i => SitePaths.ProfileImage(i.TrainerId, i.ContentType)),
+                .. images.Select(i => SitePaths.TryProfileImage(i.TrainerId, i.ContentType)).OfType<string>(),
                 .. inBucket,
             ],
             now,

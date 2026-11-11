@@ -279,7 +279,7 @@ public sealed class TrainerService
                 SitePaths.BattleIndex,
                 .. SiteOutbox.ForTrainers([twitchUserId, .. others]),
                 .. battleIds.Select(SitePaths.Battle),
-                .. (imageType is null ? [] : new[] { SitePaths.ProfileImage(twitchUserId, imageType) }),
+                .. (SitePaths.TryProfileImage(twitchUserId, imageType) is { } image ? [image] : Array.Empty<string>()),
             ],
             _time.GetUtcNow(),
             ct);
