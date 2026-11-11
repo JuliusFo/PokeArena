@@ -445,15 +445,31 @@ public class ProfileImageRefresherTests : IDisposable
     }
 
     [Fact]
-    public async Task A_trainer_with_a_picture_in_an_unknown_format_can_be_deleted()
+    public async Task A_trainer_with_a_picture_in_an_unknown_format_can_be_deleted_and_the_old_file_goes()
     {
         await RegisterWithPictureAsync("1");
         await SetContentTypeAsync("1", "image/gif");
 
         Assert.True(await _game.Trainers.DeleteAsync("1", _ct));
+        await _worker.PublishDueAsync(_ct);
 
+        // The published PNG goes although the row no longer says PNG (review feat/leaderboard-profile-colours).
+        Assert.DoesNotContain(_bucket.Files.Keys, k => k.StartsWith(SitePaths.ProfileImagePrefix, StringComparison.Ordinal));
         await using var db = _game.OpenLive();
         Assert.Empty(db.ProfileImages);
+    }
+
+    [Fact]
+    public async Task A_lost_picture_in_an_unknown_format_still_removes_the_old_file()
+    {
+        await RegisterWithPictureAsync("1");
+        await SetContentTypeAsync("1", "image/gif");
+
+        _game.Time.Advance(TimeSpan.FromDays(1));
+        TwitchReports();
+        await RefreshAndPublishAsync();
+
+        Assert.DoesNotContain(_bucket.Files.Keys, k => k.StartsWith(SitePaths.ProfileImagePrefix, StringComparison.Ordinal));
     }
 
     [Theory]

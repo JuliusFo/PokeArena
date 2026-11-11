@@ -56,6 +56,14 @@ public static class SitePaths
         contentType is Png or Jpeg ? ProfileImage(twitchUserId, contentType) : null;
 
     /// <summary>
+    /// Every path a trainer's picture can have. A picture that goes queues all of them, whatever format is stored:
+    /// with the row gone each renders as nothing, so the worker deletes whichever file is in the bucket — even when the
+    /// stored format no longer matches it (review feat/leaderboard-profile-colours).
+    /// </summary>
+    public static IEnumerable<string> AllProfileImages(string twitchUserId) =>
+        [ProfileImage(twitchUserId, Png), ProfileImage(twitchUserId, Jpeg)];
+
+    /// <summary>
     /// Twitch user id (digits only) and format of a <see cref="ProfileImage"/> path, or null for any other path.
     /// </summary>
     public static (string TrainerId, string ContentType)? ProfileImageOf(string path)

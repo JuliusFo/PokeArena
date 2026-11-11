@@ -111,7 +111,7 @@ public sealed class ProfileImageRefresher(
                 if (image is not null)
                 {
                     db.ProfileImages.Remove(image);
-                    paths.AddRange([.. OldPath(trainerId, image), SitePaths.Trainer(trainerId)]);
+                    paths.AddRange([.. SitePaths.AllProfileImages(trainerId), SitePaths.Trainer(trainerId)]);
                 }
 
                 continue;
