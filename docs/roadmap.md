@@ -403,8 +403,8 @@ User decisions (2026-11-10, evaluation of the idea):
   faster than one fielded Pokémon per boss fight.
 - Before WP-09, released as 1.7.0; WP-09 moves to 1.8.0 („Vor wp-09“). Moved to 1.8.0
   (WP-09 to 1.9.0) when the profile picture went first (2026-11-11); merged
-  first after all, so both ship in 1.7.0 and WP-09 stays 1.8.0 — Proposal (not
-  confirmed).
+  first after all, so both ship in 1.7.0 and WP-09 stays 1.8.0 (user decision
+  2026-11-11, „Ja, so lassen“).
 - „Einzelstücke“ as a capped list, not every species with one owner („Eine
   begrenzte Liste“).
 - Built with `/ship-wp` (2026-11-11); at the plan the lists as bars instead of
@@ -447,7 +447,8 @@ User decisions (2026-11-11):
 - Built right away, before the „Statistik“ page, as 1.7.0 („Mach das ruhig
   jetzt“ on the question before or after it); Statistik moves to 1.8.0,
   WP-09 to 1.9.0. The „Statistik“ page was merged first after all, so both
-  ship in 1.7.0 and WP-09 stays 1.8.0 — Proposal (not confirmed).
+  ship in 1.7.0 and WP-09 stays 1.8.0 (user decision 2026-11-11, „Ja, so
+  lassen“).
 
 Constraints found while planning:
 

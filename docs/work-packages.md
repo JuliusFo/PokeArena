@@ -816,8 +816,7 @@ in [roadmap.md](roadmap.md).
   auf unseren r2 packen“ (mirror, not Twitch's CDN); „Mach das ruhig jetzt“
   — built before the „Statistik“ page as 1.7.0 (Statistik → 1.8.0, WP-09 →
   1.9.0). Merge order: `feat/statistics-page` was merged first (also
-  as 1.7.0), so both ship in 1.7.0 and WP-09 stays 1.8.0 — Proposal (not
-  confirmed).
+  as 1.7.0), so both ship in 1.7.0 and WP-09 stays 1.8.0 — „Ja, so lassen“.
 - Addenda: the image bytes live in SQLite so the file stays derived (ADR-0003);
   the WAF refuses query strings, so no cache busting — a new picture can take
   two days (daily check + a day of cache). Keys got an extension while
