@@ -355,8 +355,9 @@ would keep deleted trainers' names forever (see §11).
 
 Pages (v1): leaderboard, list of fights, battle log per fight, trainer detail
 page, privacy note, player guide („So geht's“, `/anleitung`), news
-(„Neuigkeiten“, `/neuigkeiten`, since 1.3.0). The OBS overlay is served by the
-desktop app, not by the website (below).
+(„Neuigkeiten“, `/neuigkeiten`, since 1.3.0), statistics („Statistik“,
+`/statistik`, since 1.7.0)⁵. The OBS overlay is served by the desktop app, not
+by the website (below).
 
 The news page is static text for players: per version only what they notice
 (commands, rules, durations, odds, website), newest first — not a copy of
@@ -377,6 +378,7 @@ Data files (all derived — fully regenerable from the DB; the UI has a
 | `trainer/<twitch-id>.json` | pokedex (species + count), achievements, recent fights, stats |
 | `kampf/<id>.json`          | participants, teams, log lines, result, loot, seed; per fighter its HP left and whether it was sent in², its owner's chat colour³ and the damage it dealt⁴; the log lines also in parts that name their fighter³ |
 | `kaempfe.json`             | last N fights for an index page                      |
+| `statistik.json`           | community Pokédex and totals, rankings beyond the leaderboard⁵ |
 | `meta.json`                | data format version, timestamp                       |
 
 ¹ Attainment = the moment the trainer last completed the set of species they
@@ -426,6 +428,28 @@ a thin black outline over the fill, normal text over the rest (user decisions
 dark edge (light in the dark theme), so a colour close to the track still shows
 its length. Older files show no box until „Alles
 neu veröffentlichen“.
+
+⁵ „Statistik“ page (user idea 2026-11-10, feat/statistics-page). At the top is
+the community Pokédex: the distinct species anyone owns, out of 151, with the
+numbers of trainers, fights and boss catches. Below it is one box per list.
+Each list has at most ten rows, only values above zero, and equal values
+share a place (1, 1, 3):
+- boss fights taken part in
+- PvP fights with wins (NPC fights do not count)
+- „Unglücksraben“: the longest run of boss fights without a catch, marked
+  „läuft noch“ if it is the trainer's current run
+- „Erzrivalen“: the pairs with the most PvP fights against each other, with
+  their record, the one with more wins first
+- „Einzelstücke“: how many species only one trainer owns, and ten of them,
+  rarest first, then by dex number
+- the bosses that appeared most often and escaped most often
+
+The bars work like the „Schaden“ box: trainers in their chat colour with a
+link to their page, bosses in the colour of their first type, rivals and the
+community in the HP bar's green. The file is rewritten with every change to a
+trainer, and so with every fight. It is built from participant rows, battle
+headers and owners only, never from a fight log, and a deleted trainer drops
+out of every list.
 
 - Files are uploaded **directly per change** via the publish queue.
 - Uploads normally land within seconds, but the queue may lag (network

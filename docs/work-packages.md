@@ -31,7 +31,7 @@ in [roadmap.md](roadmap.md).
 | – | „Schaden“ box on the fight page (user request, `feat/damage-meter`) | 1.6.0 | done 2026-11-10 |
 | – | White text in the „Schaden“ bars (user request, `feat/damage-text-white`) | 1.6.1 | done 2026-11-10 |
 | – | Black outline for the „Schaden“ bar text (user request, `feat/damage-text-outline`) | 1.6.2 | done 2026-11-10 |
-| – | „Statistik“ page on the website (user idea, `feat/statistics-page`, before WP-09) | 1.7.0 | planned |
+| – | „Statistik“ page on the website (user idea, `feat/statistics-page`, before WP-09) | 1.7.0 | built 2026-11-11 |
 | WP-09 | Balancing after the first streams | 1.8.0 | planned |
 
 ## Log
@@ -730,6 +730,51 @@ in [roadmap.md](roadmap.md).
 - Pitfalls: `#[.{fingerprint}]` in `index.html` only resolves for JS modules.
   `StaticWebAssetFingerprintPattern` for `*.css` renames the published file to
   `site.<hash>.css` but leaves the link as `css/site.css` — a 404 on Pages.
+
+### „Statistik“ page — user idea (2026-11-11, branch feat/statistics-page)
+- Built:
+  - **Core:** `statistik.json` (`SitePaths.Statistics`, `Statistics` and its
+    row records in Contracts), `SiteGenerator.StatisticsAsync` with:
+    - the community Pokédex and totals
+    - boss participations
+    - PvP fights with wins
+    - the longest boss streak without a catch
+    - species only one trainer owns (count plus ten, rarest first)
+    - rivals
+    - the bosses that appeared and escaped most often
+  - **Ranking:** top 10 per list, values above zero only, equal values share
+    a place.
+  - **Publishing:** queued through `SiteOutbox.ForTrainers`, so with every
+    trainer change and every fight. It reads only participant rows, battle
+    headers and owners, never a log.
+  - **Website:** `/statistik` (`Pages/Stats.razor`, polling) with the
+    damage box's bars, extracted into `Shared/BarList.razor` + `Services/Bar.cs`
+    (a bar can link its name); `Services/StatisticsBars.cs`; a „Statistik“
+    item in the menu; sample data.
+  - **Tests:** `StatisticsTests` (every list, ties, deletion, render),
+    `StatisticsBarsTests`, bUnit page and menu, and the exact-path
+    assertions of the game tests updated.
+  - **Docs:** spec §9 note ⁵, architecture, Web pitfalls, CHANGELOG,
+    „Neuigkeiten“ 1.7.0.
+- User decisions: the idea itself (screenshot: boss participations, most
+  fights, lifetime damage meter, „Unglücksraben“). After the evaluation:
+  - „Unglücksraben“ as a streak („Finde ich gut“)
+  - fights = „PvP“
+  - lifetime damage „erstmal weg“
+  - added: community Pokédex, „Einzelstücke“, „Erzrivalen“ and the boss
+    record („Ich würde noch die Boss-Bilanz mit aufnehmen“)
+  - „Vor wp-09“, so 1.7.0
+  - „Eine begrenzte Liste“ for „Einzelstücke“
+  - at the plan: bars instead of tables („Ich würde Balken bevorzugen“)
+- Addenda: Proposal (not confirmed) points in roadmap.md (wins next to PvP
+  fights, two boss lists, rivals' leader first, colours, ties by name).
+- Pitfalls:
+  - `ForTrainers` changed, so every test that lists the exact queued paths
+    or counts uploads had to grow by one file.
+  - The name in a bar is rendered inline: a separate `RenderFragment`
+    introduced whitespace between name and detail.
+- Deliberately not done (→ backlog): lifetime damage, „Pioniere“,
+  „Erstbesieger“, round records, PvP win streak, most loot.
 
 Template per entry:
 

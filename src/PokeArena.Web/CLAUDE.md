@@ -53,5 +53,9 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   counters at 13 px — feat/damage-text-outline). `--text` over the rest, two clipped copies. A bar that stops short
   ends in a 2 px `--text` edge (review feat/damage-meter). Only colours that pass `Tint.IsColor` go into the inline
   style. No box when any fighter lacks `Damage` (older files).
+- Ranking bars are one component, `Shared/BarList.razor` with `Services/Bar.cs` (`Bar.Make` checks the colour and
+  darkens it): the „Schaden“ box and the statistics page (`Pages/Stats.razor`, bars in `Services/StatisticsBars.cs`)
+  share them, so a change to the bars shows on both. A bar's name can be a link; it sits in both clipped copies
+  (clip-path also clips the clickable area), the copy over the fill has `tabindex="-1"` (feat/statistics-page).
 - Never tell a boss or NPC by `TrainerId == null`: a deleted trainer's fighters have no id either („[gelöscht]“). The
   boss is the fighter on side 1 of a boss fight (review feat/fight-log-colours).

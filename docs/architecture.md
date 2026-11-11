@@ -80,8 +80,9 @@ no runtime editor (user decision 2026-11-04).
   on a first win badge and reward specimen, achievements and cooldown in one
   transaction → site paths queued → chat messages with the battle link.
 - **Publishing** (spec §9, built): game logic queues site paths (`SiteOutbox`)
-  in its own transaction; registration and renames queue the trainer and the
-  leaderboard. `SitePublishWorker` polls the **live** outbox every 2 s,
+  in its own transaction; registration and renames queue the trainer, the
+  leaderboard and the statistics (`SiteOutbox.ForTrainers`, which every fight
+  includes). `SitePublishWorker` polls the **live** outbox every 2 s,
   renders each file from the current data (`SiteGenerator`) and uploads it, or
   deletes it when its source is gone; failures back off up to 15 min and never
   give up. The dry run writes to the sandbox outbox, which nobody reads.

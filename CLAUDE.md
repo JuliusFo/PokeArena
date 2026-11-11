@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-11-10 · v1.6.2 released (thin black outline for the white „Schaden“ bar text) · next the „Statistik“ page (→ 1.7.0), then WP-09 (→ 1.8.0) after a few streams
+Status: 2026-11-10 · v1.6.2 released (thin black outline for the white „Schaden“ bar text) · „Statistik“ page built (`feat/statistics-page`, → 1.7.0, PR open), then WP-09 (→ 1.8.0) after a few streams
 
 ## 1. Where to find what
 
@@ -211,7 +211,9 @@ boss pick uniform over distinct species and showed trainers in their Twitch chat
 colour in the fight log; 1.3.0 brought the
 „Neuigkeiten“ page (WP-10), 1.2.0 the fight page's end state, 1.1.0 R1 (fixes
 of the whole review 1.0.3, docs/review-1.0.3.md) and the boss lobby. Next:
-the „Statistik“ page (1.7.0, roadmap.md), then after a few streams WP-09 balancing (1.8.0)
+the „Statistik“ page (1.7.0, `feat/statistics-page`, built 2026-11-11, open PR: `statistik.json` and `/statistik`
+with bars like the „Schaden“ box; after updating the streamer clicks „Alles neu veröffentlichen“ once), then
+after a few streams WP-09 balancing (1.8.0)
 (`N = 4` dip, PvP loot preferring missing species, NPC difficulty; no runtime
 balancing editor). Parked for version 2: website and overlay served from the
 bot's server through a Cloudflare Tunnel instead of GitHub Pages + R2. Ideas

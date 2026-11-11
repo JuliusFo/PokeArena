@@ -6,7 +6,7 @@ A persistent Pokémon collecting and battling game played through Twitch chat.
 Viewers register with a starter, team up against bosses, challenge each other
 and work their way through 17 NPC trainers, all via chat commands. A desktop
 app on the streamer's PC runs the bot; a static website shows the leaderboard,
-trainer pages and battle logs.
+statistics, trainer pages and battle logs.
 
 > **Status:** stream-ready since 1.0.0 (WP-08); see the
 > [releases](https://github.com/JuliusFo/PokeArena/releases) for the current

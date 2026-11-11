@@ -7,6 +7,20 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+### Added
+- A website page „Statistik“ with rankings beyond the leaderboard, as bars
+  like the „Schaden“ box:
+  - the community's Pokédex (species owned by anyone, out of 151) with
+    totals for trainers, fights and boss catches
+  - most boss fights taken part in, and most PvP fights with wins
+  - „Unglücksraben“: the longest run of boss fights without a catch
+  - „Erzrivalen“: the pairs with the most PvP fights against each other
+  - species only one trainer owns
+  - the bosses that appeared and escaped most often
+- The page updates itself after every fight. After updating, the streamer
+  clicks „Alles neu veröffentlichen“ once, so that the page is there before
+  the next fight.
+
 ### Fixed
 - After a release a browser could keep the old stylesheet from its cache next
   to the new website code; after 1.6.0 Firefox showed the HP numbers inside the

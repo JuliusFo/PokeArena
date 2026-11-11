@@ -403,8 +403,11 @@ User decisions (2026-11-10, evaluation of the idea):
 - Before WP-09, released as 1.7.0; WP-09 moves to 1.8.0 („Vor wp-09“).
 - „Einzelstücke“ as a capped list, not every species with one owner („Eine
   begrenzte Liste“).
+- Built with `/ship-wp` (2026-11-11); at the plan the lists as bars instead of
+  tables („Ich würde Balken bevorzugen“) — the same bars as the „Schaden“ box
+  (`Shared/BarList.razor`).
 
-Simplest variant, **Proposal (not confirmed)**:
+Built as the simplest variant, **Proposal (not confirmed)**:
 
 - One new site file `statistik.json` (`SitePaths`, records in Contracts) and a
   page `/statistik` in the navigation; it polls every 15 s like the
@@ -415,7 +418,16 @@ Simplest variant, **Proposal (not confirmed)**:
   rename and deletion (`ForTrainers`); „Alles neu veröffentlichen“ includes
   it. Mutable cache like the leaderboard.
 - „Einzelstücke“: the number of them in the heading, then 10 — rarest tier
-  first (legendary, rare, common), then by dex number.
+  first (legendary, rare, common), then by dex number. A plain list (species
+  with type chips, owner link), no bars: there is no number to measure.
+- PvP shows the wins next to the fights („9 Kämpfe · 6 Siege“); the boss
+  record is two lists (appeared, escaped); rivals „Ben – Anna“ with „5 Kämpfe ·
+  3 : 2“, the one with more wins first.
+- Bar colours as in the „Schaden“ box: trainers in their darkened chat colour
+  (no colour → grey), bosses in their first type's colour, rivals and the
+  community bar in the HP bar's green (several colours).
+- Equal values in a list are ordered by name; a tie at place 10 is cut at ten
+  rows.
 - A line on the „Neuigkeiten“ page, the file in the table of spec §9.
 
 ## WP-09 — Balancing after the first streams (≈ 2 days) → v1.8.0
