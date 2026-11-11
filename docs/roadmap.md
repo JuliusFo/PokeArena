@@ -477,7 +477,8 @@ confirmed)**:
   a new id into the URL on every upload), so a daily round costs about four
   Helix calls. A trainer who got no picture (account gone, picture refused)
   also waits 24 h, remembered in memory (review: otherwise a Helix call and
-  warnings every round); an unreachable picture is tried again next round.
+  warnings every round); an unreachable picture (no connection, timeout,
+  408, 429, 5xx) is tried again next round.
   New trainers get their picture within 15 minutes; no signal from
   registration needed. Logs name the trainer by id, never the picture URL
   (older URLs contain the login; privacy page).

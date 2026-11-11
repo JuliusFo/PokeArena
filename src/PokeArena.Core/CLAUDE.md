@@ -20,6 +20,9 @@
 - Timers in async loops: `Task.Delay(delay, timeProvider, ct)` and `new CancellationTokenSource(timeout,
   timeProvider)`, so tests drive them with `FakeTimeProvider.Advance`. The overloads without a `TimeProvider`
   (and `Stopwatch`, `CancelAfter`) break the build since review 1.0.3.
+- Downloads with `HttpCompletionOption.ResponseHeadersRead`: `HttpClient.Timeout` ends with the headers — bound the
+  body with a `TimeProvider` token. Never log URLs that can carry a login; name the trainer by id
+  (review feat/trainer-profile-image).
 - SQLite (WP-02/08): copying the database file while it is open loses the WAL content — back up with
   `VACUUM INTO` or the SQLite backup API.
 - The `boss` cooldown row is shared by a fight's cooldown and the failed-lobby retry; only `Cooldown.Length` (null for the

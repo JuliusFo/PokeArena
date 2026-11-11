@@ -96,7 +96,8 @@ no runtime editor (user decision 2026-11-04).
   PNG/JPEG by file signature, ≤ 512 KB, 30 s), stores the bytes and queues
   `profilbild/<id>.png|.jpg` plus the trainer page. A user Twitch no longer
   returns loses the picture, not the trainer; trainers left without a picture
-  wait 24 h too (in memory), an unreachable picture is retried next round.
+  wait 24 h too (in memory), an unreachable one (no connection, timeout, 408,
+  429, 5xx) is retried next round.
   A format change moves the path; the old one has no source and gets deleted.
 - **Deletion** (spec §11, built in WP-08): `!entfernen @x` (mods, confirmed
   by the same mod within 60 s via `TrainerRemoval`) or the button in the
