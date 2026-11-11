@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Components;
 namespace PokeArena.Web.Services;
 
 /// <summary>
-/// A page that reloads its data every <see cref="Interval"/> while it is open (spec §9: the leaderboard and the list
-/// of fights poll every 15 s). A failed load keeps the last data and shows a hint; the next round tries again.
+/// A page that reloads its data every <see cref="Interval"/> while it is open (spec §9: the leaderboard, the list of
+/// fights and the statistics poll every 15 s). A failed load keeps the last data and shows a hint; the next round tries again.
 /// </summary>
 public abstract class PollingPage : ComponentBase, IDisposable
 {

@@ -449,7 +449,10 @@ link to their page, bosses in the colour of their first type, rivals and the
 community in the HP bar's green. The file is rewritten with every change to a
 trainer, and so with every fight. It is built from participant rows, battle
 headers and owners only, never from a fight log, and a deleted trainer drops
-out of every list.
+out of every list. A chat colour change alone republishes it too. As long as
+the file is missing (the site deploys with the release tag, before the bot has
+written it), the page says it appears after the next fight, instead of calling
+the game empty.
 
 - Files are uploaded **directly per change** via the publish queue.
 - Uploads normally land within seconds, but the queue may lag (network
@@ -462,7 +465,7 @@ out of every list.
   all other files are mutable and uploaded with a short max-age (≤ the poll
   interval) so browsers and the Cloudflare cache never serve stale
   leaderboards.
-- The leaderboard and the list of fights poll every 15 s; a fight page
+- The leaderboard, the list of fights and the statistics poll every 15 s; a fight page
   retries a missing file for 2 minutes (a chat link can be faster than the
   upload), then says the fight is not there yet. The OBS overlay is not part
   of the website: the desktop app serves it locally and it polls every 2 s.

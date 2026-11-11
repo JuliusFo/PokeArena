@@ -165,7 +165,7 @@ public sealed record BadLuckStreak(int Rank, TrainerRef Trainer, int Length, boo
 
 public sealed record SingleOwned(SpeciesInfo Species, TrainerRef Owner);
 
-/// <param name="First">The one with more wins; on a tie the lower Twitch user id.</param>
+/// <param name="First">The one with more wins; on a tie the Twitch user id that sorts first ordinally („10“ before „9“).</param>
 public sealed record Rivalry(int Rank, TrainerRef First, TrainerRef Second, int Fights, int FirstWins, int SecondWins);
 
 /// <param name="Count">Appearances in <see cref="Statistics.BossesSeen"/>, escapes in <see cref="Statistics.BossesEscaped"/>.</param>
