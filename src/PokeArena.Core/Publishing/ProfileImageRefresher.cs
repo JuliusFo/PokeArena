@@ -159,6 +159,12 @@ public sealed class ProfileImageRefresher(
             paths.AddRange([SitePaths.ProfileImage(trainerId, download.ContentType), SitePaths.Trainer(trainerId)]);
         }
 
+        if (paths.Count > 0)
+        {
+            // The leaderboard shows the pictures too (feat/leaderboard-profile-colours): once per batch, not per trainer.
+            paths.Add(SitePaths.Leaderboard);
+        }
+
         await SiteOutbox.EnqueueAsync(db, paths, now, ct);
         try
         {

@@ -18,7 +18,17 @@ public sealed record Leaderboard(DateTimeOffset UpdatedAt, int PlayerCount, IRea
 
 /// <param name="Distinct">Distinct species owned — the ranking value.</param>
 /// <param name="Total">All specimens owned, duplicates included.</param>
-public sealed record LeaderboardEntry(int Rank, string TrainerId, string DisplayName, int Distinct, int Total);
+/// <param name="Color">Twitch chat colour (<c>#RRGGBB</c>) as picked; null if unknown and in older files.</param>
+/// <param name="ProfileImage">The mirrored Twitch profile picture as in <see cref="TrainerPage.ProfileImage"/>; null
+/// without one and in older files (feat/leaderboard-profile-colours).</param>
+public sealed record LeaderboardEntry(
+    int Rank,
+    string TrainerId,
+    string DisplayName,
+    int Distinct,
+    int Total,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Color = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? ProfileImage = null);
 
 /// <summary>The kind of a fight — in the site JSON and, stored as text, in the bot's database (review 1.0.3, B2).</summary>
 public enum BattleKind
@@ -104,6 +114,7 @@ public sealed record LogPart(
 /// The mirrored Twitch profile picture (<see cref="SitePaths.ProfileImage"/>, relative to the data host); null without
 /// one and in older files.
 /// </param>
+/// <param name="Color">Twitch chat colour (<c>#RRGGBB</c>) as picked; null if unknown and in older files.</param>
 public sealed record TrainerPage(
     string TrainerId,
     string DisplayName,
@@ -118,7 +129,8 @@ public sealed record TrainerPage(
     IReadOnlyList<AchievementInfo> Achievements,
     IReadOnlyList<BadgeInfo> Badges,
     IReadOnlyList<BattleSummary> RecentBattles,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? ProfileImage = null);
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? ProfileImage = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Color = null);
 
 /// <param name="HasStarter">One of the specimens is the protected starter.</param>
 public sealed record PokedexEntry(SpeciesInfo Species, int Count, bool HasStarter);

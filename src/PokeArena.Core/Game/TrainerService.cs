@@ -177,11 +177,11 @@ public sealed class TrainerService
         }
         else if (message.Color is { } color && trainer.ChatColor != color)
         {
-            // Fight pages pick the colour up with the next fight or „Alles neu veröffentlichen“; the statistics show it
-            // on their bars right away (review feat/statistics-page). One save, so the colour and the queued file
-            // land together.
+            // Fight pages pick the colour up with the next fight or „Alles neu veröffentlichen“; the statistics, the
+            // leaderboard and the trainer page show it right away (review feat/statistics-page,
+            // feat/leaderboard-profile-colours). One save, so the colour and the queued files land together.
             trainer.ChatColor = color;
-            await SiteOutbox.EnqueueAsync(db, [SitePaths.Statistics], _time.GetUtcNow(), ct);
+            await SiteOutbox.EnqueueAsync(db, SiteOutbox.ForTrainers([trainer.TwitchUserId]), _time.GetUtcNow(), ct);
             await db.SaveChangesAsync(ct);
         }
 

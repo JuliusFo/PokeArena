@@ -71,6 +71,24 @@ public class ProfileImageRefresherTests : IDisposable
     }
 
     [Fact]
+    public async Task A_new_or_lost_picture_republishes_the_leaderboard()
+    {
+        await _game.Trainers.RegisterAsync("1", "ash", "Ash", Starter, _ct);
+        await _worker.PublishDueAsync(_ct);
+        Assert.Null(LeaderboardEntry("1").ProfileImage);
+
+        TwitchReports(("1", AshPng));
+        _http.OnBytes(AshPngSmall, Png, "image/png");
+        await RefreshAndPublishAsync();
+        Assert.Equal("profilbild/1.png", LeaderboardEntry("1").ProfileImage);
+
+        _game.Time.Advance(TimeSpan.FromDays(1));
+        TwitchReports();
+        await RefreshAndPublishAsync();
+        Assert.Null(LeaderboardEntry("1").ProfileImage);
+    }
+
+    [Fact]
     public async Task Without_a_small_variant_the_reported_picture_is_taken()
     {
         await _game.Trainers.RegisterAsync("1", "ash", "Ash", Starter, _ct);
@@ -449,6 +467,9 @@ public class ProfileImageRefresherTests : IDisposable
 
     private TrainerPage Trainer(string id) =>
         JsonSerializer.Deserialize(_bucket.Files[SitePaths.Trainer(id)].Content, SiteJson.Default.TrainerPage)!;
+
+    private LeaderboardEntry LeaderboardEntry(string id) =>
+        JsonSerializer.Deserialize(_bucket.Files[SitePaths.Leaderboard].Content, SiteJson.Default.Leaderboard)!.Entries.Single(e => e.TrainerId == id);
 
     public void Dispose() => _game.Dispose();
 

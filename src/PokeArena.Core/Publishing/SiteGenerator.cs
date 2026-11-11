@@ -100,13 +100,22 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
     public async Task<Leaderboard> LeaderboardAsync(PokeArenaDb db, DateTimeOffset now, CancellationToken ct)
     {
         var trainers = await db.Trainers.AsNoTracking()
-            .Select(t => new { t.TwitchUserId, t.DisplayName, Specimens = t.Specimens.Select(s => new { s.SpeciesId, s.AcquiredAt }).ToList() })
+            .Select(t => new
+            {
+                t.TwitchUserId,
+                t.DisplayName,
+                t.ChatColor,
+                ImageType = db.ProfileImages.Where(i => i.TrainerId == t.TwitchUserId).Select(i => i.ContentType).FirstOrDefault(),
+                Specimens = t.Specimens.Select(s => new { s.SpeciesId, s.AcquiredAt }).ToList(),
+            })
             .ToListAsync(ct);
         var ranked = trainers
             .Select(t => new
             {
                 t.TwitchUserId,
                 t.DisplayName,
+                t.ChatColor,
+                t.ImageType,
                 Distinct = t.Specimens.Select(s => s.SpeciesId).Distinct().Count(),
                 Total = t.Specimens.Count,
                 Attained = t.Specimens.Count == 0
@@ -117,7 +126,14 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
             .ThenByDescending(t => t.Total)
             .ThenBy(t => t.Attained)
             .ThenBy(t => t.TwitchUserId, StringComparer.Ordinal)
-            .Select((t, i) => new LeaderboardEntry(i + 1, t.TwitchUserId, t.DisplayName, t.Distinct, t.Total))
+            .Select((t, i) => new LeaderboardEntry(
+                i + 1,
+                t.TwitchUserId,
+                t.DisplayName,
+                t.Distinct,
+                t.Total,
+                t.ChatColor,
+                t.ImageType is { } imageType ? SitePaths.ProfileImage(t.TwitchUserId, imageType) : null))
             .ToList();
         return new Leaderboard(now, ranked.Count, ranked);
     }
@@ -256,6 +272,7 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
                 t.DisplayName,
                 t.RegisteredAt,
                 t.Tokens,
+                t.ChatColor,
                 ImageType = db.ProfileImages.Where(i => i.TrainerId == t.TwitchUserId).Select(i => i.ContentType).FirstOrDefault(),
                 Specimens = t.Specimens.Select(s => new { s.SpeciesId, s.IsStarter }).ToList(),
             })
@@ -299,7 +316,8 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
             [.. achievements.Select(a => new AchievementInfo(a.Threshold, npcs.ForThreshold(a.Threshold).Name, a.UnlockedAt))],
             [.. badges.Select(b => new BadgeInfo(npcs.Find(b.NpcId)?.Name ?? b.NpcId, b.WonAt, b.BattleId))],
             recent,
-            trainer.ImageType is { } imageType ? SitePaths.ProfileImage(trainerId, imageType) : null);
+            trainer.ImageType is { } imageType ? SitePaths.ProfileImage(trainerId, imageType) : null,
+            trainer.ChatColor);
     }
 
     private async Task<BattlePage?> BattleAsync(PokeArenaDb db, long battleId, CancellationToken ct)

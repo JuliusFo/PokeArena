@@ -48,7 +48,7 @@ public class TrainerServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task A_new_chat_colour_republishes_the_statistics_but_the_same_one_does_not()
+    public async Task A_new_chat_colour_republishes_the_trainers_files_but_the_same_one_does_not()
     {
         await _game.Trainers.RegisterAsync("1", "bob", "Bob", Pikachu, _ct);
         await _game.Trainers.ObserveAsync(new ChatMessage("m-1", "1", "bob", "Bob", "hallo", ChatRole.Viewer, Color: "#FF0000"), _ct);
@@ -62,7 +62,10 @@ public class TrainerServiceTests : IDisposable
         Assert.Empty(await QueuedAsync());
 
         await _game.Trainers.ObserveAsync(new ChatMessage("m-3", "1", "bob", "Bob", "hallo", ChatRole.Viewer, Color: "#00FF00"), _ct);
-        Assert.Equal([Contracts.SitePaths.Statistics], await QueuedAsync());
+        // Statistics, leaderboard and trainer page show the colour (feat/leaderboard-profile-colours).
+        Assert.Equal(
+            [Contracts.SitePaths.Meta, Contracts.SitePaths.Leaderboard, Contracts.SitePaths.Statistics, Contracts.SitePaths.Trainer("1")],
+            (await QueuedAsync()).Order(StringComparer.Ordinal));
     }
 
     private async Task<List<string>> QueuedAsync()

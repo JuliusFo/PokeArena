@@ -31,6 +31,46 @@ public class SiteGeneratorTests : IDisposable
     }
 
     [Fact]
+    public async Task Leaderboard_and_trainer_page_carry_chat_colour_and_profile_picture()
+    {
+        await AddTrainerAsync("1", "Ash", (1, 0));
+        await AddTrainerAsync("2", "Misty", (1, 0), (2, 0));
+        await using (var db = _game.OpenLive())
+        {
+            (await db.Trainers.FindAsync(["1"], _ct))!.ChatColor = "#1E90FF";
+            db.ProfileImages.Add(new TrainerProfileImage
+            {
+                TrainerId = "1", Content = [1], ContentType = SitePaths.Jpeg, SourceUrl = "https://static-cdn.jtvnw.net/a.jpeg", CheckedAt = Start,
+            });
+            await db.SaveChangesAsync(_ct);
+        }
+
+        var leaderboard = await LeaderboardAsync();
+
+        Assert.Equal(
+            [new LeaderboardEntry(1, "2", "Misty", 2, 2), new LeaderboardEntry(2, "1", "Ash", 1, 1, "#1E90FF", "profilbild/1.jpg")],
+            leaderboard.Entries);
+        var ash = await TrainerPageAsync("1");
+        Assert.Equal(("#1E90FF", "profilbild/1.jpg"), (ash.Color, ash.ProfileImage));
+        var misty = await TrainerPageAsync("2");
+        Assert.Equal((null, null), (misty.Color, misty.ProfileImage));
+    }
+
+    [Fact]
+    public async Task The_leaderboard_file_leaves_out_unknown_colours_and_pictures()
+    {
+        await AddTrainerAsync("1", "Ash", (1, 0));
+
+        await using var db = _game.OpenLive();
+        var file = await _generator.RenderAsync(db, SitePaths.Leaderboard, Start, _ct);
+
+        // A few hundred rows: nulls would only add bytes.
+        var json = System.Text.Encoding.UTF8.GetString(file!.Content);
+        Assert.DoesNotContain("color", json, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("profileImage", json, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task The_overlay_shows_the_top_five_of_the_leaderboard()
     {
         for (var i = 1; i <= 7; i++)
@@ -204,6 +244,13 @@ public class SiteGeneratorTests : IDisposable
         await db.SaveChangesAsync(_ct);
         var file = await _generator.RenderAsync(db, SitePaths.Battle(battle.Id), Start, _ct);
         return JsonSerializer.Deserialize(file!.Content, SiteJson.Default.BattlePage)!;
+    }
+
+    private async Task<TrainerPage> TrainerPageAsync(string trainerId)
+    {
+        await using var db = _game.OpenLive();
+        var file = await _generator.RenderAsync(db, SitePaths.Trainer(trainerId), Start, _ct);
+        return JsonSerializer.Deserialize(file!.Content, SiteJson.Default.TrainerPage)!;
     }
 
     private async Task<Leaderboard> LeaderboardAsync()
