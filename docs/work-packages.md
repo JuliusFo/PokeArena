@@ -31,6 +31,7 @@ in [roadmap.md](roadmap.md).
 | – | „Schaden“ box on the fight page (user request, `feat/damage-meter`) | 1.6.0 | done 2026-11-10 |
 | – | White text in the „Schaden“ bars (user request, `feat/damage-text-white`) | 1.6.1 | done 2026-11-10 |
 | – | Black outline for the „Schaden“ bar text (user request, `feat/damage-text-outline`) | 1.6.2 | done 2026-11-10 |
+| – | Stylesheet cache busting (user report, `fix/css-cache-busting`) | 1.7.0 | done 2026-11-10 |
 | – | „Statistik“ page on the website (user idea, `feat/statistics-page`, before WP-09) | 1.7.0 | done 2026-11-11 |
 | – | Profile picture on the trainer page (user idea, `feat/trainer-profile-image`) | 1.7.0 | done 2026-11-11 |
 | WP-09 | Balancing after the first streams | 1.8.0 | planned |

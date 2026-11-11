@@ -7,6 +7,8 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-11-11
+
 ### Added
 - A website page „Statistik“ with rankings beyond the leaderboard, as bars
   like the „Schaden“ box:

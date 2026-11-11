@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-11-11 · v1.6.2 released · 1.7.0 in progress: „Statistik“ page merged (`feat/statistics-page`), Twitch profile picture on the trainer page (`feat/trainer-profile-image`, PR open) · then WP-09 (→ 1.8.0) after a few streams
+Status: 2026-11-11 · v1.7.0 released („Statistik“ page, Twitch profile picture on the trainer page, stylesheet cache busting) · next WP-09 (→ 1.8.0) after a few streams
 
 ## 1. Where to find what
 
@@ -192,8 +192,10 @@ PokeArena.slnx
 
 ## 9. Next
 
-`feat/trainer-profile-image` (→ 1.7.0, built 2026-11-11, PR open): the trainer page shows the Twitch
-profile picture left of the name. `ProfileImageRefresher` mirrors it every 15 min (each picture checked daily) into
+1.7.0 is released (2026-11-11): the „Statistik“ page (`feat/statistics-page`: `statistik.json` and `/statistik`
+with bars like the „Schaden“ box; after updating the streamer clicks „Alles neu veröffentlichen“ once), stylesheet
+cache busting on deploy (`fix/css-cache-busting`) and the profile picture (`feat/trainer-profile-image`): the
+trainer page shows the Twitch profile picture left of the name. `ProfileImageRefresher` mirrors it every 15 min (each picture checked daily) into
 SQLite and the bucket (`profilbild/<id>.png|.jpg`, ADR-0003 addendum); to test on stream: pictures appear for
 registered trainers within 15 minutes after the update, while Twitch is connected.
 1.6.2 (`feat/damage-text-outline`): the white „Schaden“ bar text has a 1 px black outline.
@@ -217,9 +219,7 @@ boss pick uniform over distinct species and showed trainers in their Twitch chat
 colour in the fight log; 1.3.0 brought the
 „Neuigkeiten“ page (WP-10), 1.2.0 the fight page's end state, 1.1.0 R1 (fixes
 of the whole review 1.0.3, docs/review-1.0.3.md) and the boss lobby. Next:
-release 1.7.0 with the „Statistik“ page (`feat/statistics-page`, merged 2026-11-11: `statistik.json` and
-`/statistik` with bars like the „Schaden“ box; after updating the streamer clicks „Alles neu veröffentlichen“ once)
-and the profile picture, then after a few streams WP-09 balancing (1.8.0)
+after a few streams WP-09 balancing (1.8.0)
 (`N = 4` dip, PvP loot preferring missing species, NPC difficulty; no runtime
 balancing editor). Parked for version 2: website and overlay served from the
 bot's server through a Cloudflare Tunnel instead of GitHub Pages + R2. Ideas
