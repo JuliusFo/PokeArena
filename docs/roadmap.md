@@ -530,8 +530,8 @@ User decisions (2026-11-11):
   (colour). The fight lists stay plain — their names sit inside bot-written
   sentences (backlog). Fight page and statistics had the colours already.
 
-**Proposal (not confirmed):** released as 1.7.1 like the earlier look-only
-changes (1.4.1, 1.6.1), so WP-09 stays 1.8.0; `/release` asks again.
+- Released as 1.7.1 like the earlier look-only changes (1.4.1, 1.6.1), so
+  WP-09 stays 1.8.0 (user decision 2026-11-11 at the release, „1.7.1“).
 
 Open question for the streamer test: in the dark theme the darkened colours
 reach only about 3.2 : 1 on the table (the open 1.6.1 test, „Balken-Farbe zum

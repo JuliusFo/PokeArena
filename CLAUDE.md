@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-11-11 · v1.7.0 released („Statistik“ page, Twitch profile picture on the trainer page, stylesheet cache busting) · next WP-09 (→ 1.8.0) after a few streams
+Status: 2026-11-11 · v1.7.1 released (profile pictures and chat colours on the leaderboard, coloured trainer name) · next WP-09 (→ 1.8.0) after a few streams
 
 ## 1. Where to find what
 
@@ -54,6 +54,7 @@ shows leaderboard, trainer pages and battle logs.
 | 1.6.1 | „Schaden“ bars in the darkened name colour with white text, names in that colour in both themes | feat/damage-text-white |
 | 1.6.2 | Thin black outline for the white „Schaden“ bar text | feat/damage-text-outline |
 | 1.7.0 | Website page „Statistik“: boss participations, PvP fights, bad-luck streaks, rarities, rivals, boss record; trainer page shows the Twitch profile picture, mirrored to R2; stylesheet cache busting | feat/statistics-page, feat/trainer-profile-image, fix/css-cache-busting |
+| 1.7.1 | Leaderboard shows small profile pictures and names in the chat colour; trainer page name in the chat colour | feat/leaderboard-profile-colours |
 | 1.8.0 | Balancing with real stream data | WP-09 |
 | 2.0.0 | Parked: website and overlay served from the bot's server (roadmap.md) | — |
 
@@ -192,6 +193,10 @@ PokeArena.slnx
 
 ## 9. Next
 
+1.7.1 is released (2026-11-11, `feat/leaderboard-profile-colours`): the leaderboard shows the profile pictures small
+before the names and every name in the trainer's chat colour, the trainer page its heading in that colour (fight
+lists stay plain, backlog). After updating the streamer clicks „Alles neu veröffentlichen“ once; open test with the
+streamer: whether the darkened names read well on the dark page (≈ 3.2 : 1, roadmap.md).
 1.7.0 is released (2026-11-11): the „Statistik“ page (`feat/statistics-page`: `statistik.json` and `/statistik`
 with bars like the „Schaden“ box; after updating the streamer clicks „Alles neu veröffentlichen“ once), stylesheet
 cache busting on deploy (`fix/css-cache-busting`) and the profile picture (`feat/trainer-profile-image`): the

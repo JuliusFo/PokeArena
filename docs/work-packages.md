@@ -34,7 +34,7 @@ in [roadmap.md](roadmap.md).
 | – | Stylesheet cache busting (user report, `fix/css-cache-busting`) | 1.7.0 | done 2026-11-10 |
 | – | „Statistik“ page on the website (user idea, `feat/statistics-page`, before WP-09) | 1.7.0 | done 2026-11-11 |
 | – | Profile picture on the trainer page (user idea, `feat/trainer-profile-image`) | 1.7.0 | done 2026-11-11 |
-| – | Leaderboard pictures and chat colours (user request, `feat/leaderboard-profile-colours`) | 1.7.1 (proposal) | done 2026-11-11 |
+| – | Leaderboard pictures and chat colours (user request, `feat/leaderboard-profile-colours`) | 1.7.1 | done 2026-11-11 |
 | WP-09 | Balancing after the first streams | 1.8.0 | planned |
 
 ## Log
@@ -869,7 +869,7 @@ in [roadmap.md](roadmap.md).
   streamer clicks „Alles neu veröffentlichen“ once: trainer pages are written
   only on a change, so idle trainers would never get their colour.
 - User decisions: scope „Ohne Kampfliste“ (fight lists stay plain → backlog).
-- Addenda: version 1.7.1 is a proposal (roadmap.md).
+- Addenda: released as 1.7.1 (user decision at the release); live test passed.
 - Pitfalls: `.tinted` sets weight 600 — on the `h1` it would thin the heading
   (`h1.tinted` keeps 700). Sample pictures were generated for the preview and
   removed again (`RepositoryTests`, ADR-0008); the sample data carries colours

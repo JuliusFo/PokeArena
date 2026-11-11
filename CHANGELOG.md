@@ -7,6 +7,8 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+## [1.7.1] - 2026-11-11
+
 ### Added
 - The leaderboard shows each trainer's Twitch profile picture small before the
   name, and every name in the trainer's Twitch chat colour. The trainer page
