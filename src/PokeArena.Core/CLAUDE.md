@@ -54,7 +54,9 @@
   the **same** context/transaction as the change (`SiteOutbox.ForBattle` / `ForTrainers`). Forgetting it leaves
   the site stale until "republish everything". The battle id exists only after the first `SaveChangesAsync`.
   A site file that shows the chat colour must also be queued in `TrainerService`'s colour-only branch — a colour
-  change is not a rename and does not go through `ForTrainers` (review feat/statistics-page).
+  change is not a rename and does not go through `ForTrainers` (review feat/statistics-page). Since
+  feat/leaderboard-profile-colours that branch queues `ForTrainers` itself (leaderboard and trainer page show the
+  colour), and `ProfileImageRefresher` queues the leaderboard with every picture change.
 - The publish worker, backups and `ProfileImageRefresher` read `GameDatabase.OpenLive()` — the only exceptions to
   `Open()`: the sandbox is never published, and pictures belong to the live trainers (feat/trainer-profile-image).
 - Live gate (WP-07): `CommandProcessor` drops real messages while `StreamStatus.AcceptsCommands` is false — new

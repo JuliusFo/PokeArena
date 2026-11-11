@@ -518,6 +518,27 @@ confirmed)**:
   republish covers the prefix, bUnit for the page with and without picture.
 - A line on the „Neuigkeiten“ page.
 
+## Leaderboard pictures and chat colours (`feat/leaderboard-profile-colours`) → v1.7.1
+
+User request (2026-11-11): the profile pictures small before the names on the
+leaderboard, and trainers' names in their Twitch chat colour everywhere
+(trainer page, leaderboard, …).
+
+User decisions (2026-11-11):
+
+- Scope „Ohne Kampfliste“: leaderboard (picture + colour) and trainer page
+  (colour). The fight lists stay plain — their names sit inside bot-written
+  sentences (backlog). Fight page and statistics had the colours already.
+
+**Proposal (not confirmed):** released as 1.7.1 like the earlier look-only
+changes (1.4.1, 1.6.1), so WP-09 stays 1.8.0; `/release` asks again.
+
+Open question for the streamer test: in the dark theme the darkened colours
+reach only about 3.2 : 1 on the table (the open 1.6.1 test, „Balken-Farbe zum
+Standard“); a whole leaderboard in chat colours shows it more than a few names
+in the fight log. If it does not read well, the lighter dark-theme variant of
+1.6.0 returns for names.
+
 ## WP-09 — Balancing after the first streams (≈ 2 days) → v1.8.0
 
 Tuning with real stream data and the Monte Carlo simulator instead of

@@ -374,8 +374,8 @@ Data files (all derived — fully regenerable from the DB; the UI has a
 
 | File                       | Content                                              |
 |----------------------------|------------------------------------------------------|
-| `rangliste.json`           | rank, display name, distinct count, total count, player count, timestamp. Sort: distinct desc, then total desc, then earliest attainment¹ |
-| `trainer/<twitch-id>.json` | pokedex (species + count), achievements, recent fights, stats, the path of the profile picture⁶ |
+| `rangliste.json`           | rank, display name, distinct count, total count, player count, timestamp; per trainer the chat colour and the path of the profile picture⁷. Sort: distinct desc, then total desc, then earliest attainment¹ |
+| `trainer/<twitch-id>.json` | pokedex (species + count), achievements, recent fights, stats, the path of the profile picture⁶, the chat colour⁷ |
 | `kampf/<id>.json`          | participants, teams, log lines, result, loot, seed; per fighter its HP left and whether it was sent in², its owner's chat colour³ and the damage it dealt⁴; the log lines also in parts that name their fighter³ |
 | `kaempfe.json`             | last N fights for an index page                      |
 | `statistik.json`           | community Pokédex and totals, rankings beyond the leaderboard⁵ |
@@ -464,6 +464,16 @@ the file is derived like every other (ADR-0003 addendum). New trainers get
 theirs within 15 minutes, a changed picture shows within a day (checked
 daily, cached a day — the data host refuses query strings, so no cache
 busting). Details of the refresher: architecture.md „Profile pictures“.
+
+⁷ Leaderboard and trainer page in the chat colour (user request 2026-11-11,
+feat/leaderboard-profile-colours): the leaderboard shows a small round picture
+before each name (an empty circle without one, so the names stay aligned;
+loaded lazily) and every name in the trainer's chat colour; the trainer page
+shows its heading in that colour. The colour is darkened like on the fight
+page (³). A new or lost picture and a chat colour change republish the
+leaderboard and the trainer page. The fight lists („Kämpfe“, „Letzte
+Kämpfe“) stay plain: their names sit inside a sentence the bot writes (user
+decision „Ohne Kampfliste“, backlog).
 
 - Files are uploaded **directly per change** via the publish queue.
 - Uploads normally land within seconds, but the queue may lag (network

@@ -33,6 +33,11 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   variant). `Tint.TypeColors` and the light surface mirror site.css; `TintTests` fails if they drift
   (feat/fight-log-colours). Yellow/gold as text turns brown on white at 4.5 : 1 — use it as a background with dark
   text (`.log .critical`, review feat/fight-log-boss-name-crit).
+- Names in the chat colour: fight page, statistics, leaderboard and trainer heading (feat/leaderboard-profile-colours).
+  On a link the tint goes on the `<a>` itself, or the underline stays `--accent`; `.tinted` sets weight 600, so
+  `h1.tinted` restores 700. The leaderboard's 24 px pictures load lazily and hide with `visibility` (not `display`)
+  on an error, and rows without one get an empty `span.profile-image`, so the names stay aligned. The sample data
+  has colours but no pictures (`RepositoryTests` refuses image files under `src/`).
 - A fighter row is `.who` (species + owner, wraps, `flex: 1 1 0`, never `min-width: 0` — the name would cover the
   HP text) next to `.end-state` (never shrinks): never put a new element straight into `.fighters li`, or long
   names push the HP bar onto its own line again (a bUnit test checks the children) (fix/fighter-row-wrap).

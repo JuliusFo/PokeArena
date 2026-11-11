@@ -76,9 +76,16 @@ Not chosen for the first version of the „Statistik“ page (roadmap.md);
 
 Left out of the first version (feat/trainer-profile-image, 2026-11-11):
 
-- The picture on the leaderboard and next to trainers on fight pages (the
-  files exist already; only the site and the JSON paths change).
-- A placeholder (initial in the chat colour) for trainers without a picture.
+- The picture next to trainers on fight pages (the files exist already; only
+  the site and the JSON paths change). The leaderboard has it since
+  feat/leaderboard-profile-colours.
+- A placeholder (initial in the chat colour) for trainers without a picture;
+  the leaderboard shows an empty circle so far.
+- Names in the chat colour in the fight lists („Kämpfe“, „Letzte Kämpfe“):
+  `BattleSummary.Headline`/`Result` are sentences the bot writes, so the names
+  would need parts like `LogPart` (Contracts, `BattleTexts`, every list) and a
+  „Alles neu veröffentlichen“ — left out by user decision „Ohne Kampfliste“
+  (2026-11-11, feat/leaderboard-profile-colours).
 - Hide a single trainer's picture (desktop app or mod command), for a complaint
   or a takedown notice; today only deleting the trainer removes it (ADR-0008
   addendum) — 2026-11-11, review feat/trainer-profile-image.

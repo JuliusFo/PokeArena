@@ -34,6 +34,7 @@ in [roadmap.md](roadmap.md).
 | – | Stylesheet cache busting (user report, `fix/css-cache-busting`) | 1.7.0 | done 2026-11-10 |
 | – | „Statistik“ page on the website (user idea, `feat/statistics-page`, before WP-09) | 1.7.0 | done 2026-11-11 |
 | – | Profile picture on the trainer page (user idea, `feat/trainer-profile-image`) | 1.7.0 | done 2026-11-11 |
+| – | Leaderboard pictures and chat colours (user request, `feat/leaderboard-profile-colours`) | 1.7.1 (proposal) | done 2026-11-11 |
 | WP-09 | Balancing after the first streams | 1.8.0 | planned |
 
 ## Log
@@ -847,6 +848,31 @@ in [roadmap.md](roadmap.md).
   - L test gaps (redirect, service loop, deletion during a round): fixed; second
     pass made the deletion test cover the backoff-after-save and the loop test
     robust against a lost advance.
+
+### Leaderboard pictures and chat colours — user request (2026-11-11, branch feat/leaderboard-profile-colours)
+- Built: Contracts `LeaderboardEntry.Color` / `.ProfileImage` and
+  `TrainerPage.Color` (optional, left out of the JSON when null — a few hundred
+  leaderboard rows; no format bump). `SiteGenerator` fills them; the colour-only
+  branch of `TrainerService` now queues `ForTrainers` (leaderboard, statistics,
+  meta, trainer page) instead of the statistics alone; `ProfileImageRefresher`
+  queues the leaderboard once per batch when a picture appeared, changed or
+  went. Website: 24 px round picture before the name (`loading="lazy"`, an
+  empty circle without one, `visibility: hidden` on a load error so the names
+  stay aligned), the tint on the leaderboard link itself (the underline takes
+  the colour), trainer heading tinted with its bold weight kept;
+  `SiteData.ProfileImageUrl` takes a path. Tests: generator (colour, picture,
+  nulls left out), refresher (leaderboard follows a new and a lost picture),
+  colour change queue, bUnit (leaderboard pictures, foreign host and invalid
+  colour refused; trainer heading). Spec §9 ⁷, CHANGELOG, „Neuigkeiten“.
+- User decisions: scope „Ohne Kampfliste“ (fight lists stay plain → backlog).
+- Addenda: version 1.7.1 is a proposal (roadmap.md).
+- Pitfalls: `.tinted` sets weight 600 — on the `h1` it would thin the heading
+  (`h1.tinted` keeps 700). Sample pictures were generated for the preview and
+  removed again (`RepositoryTests`, ADR-0008); the sample data carries colours
+  only. Dark theme: darkened names reach about 3.2 : 1 on the table — the open
+  1.6.1 test, now more visible.
+- Deliberately not done (→ backlog): colours in the fight lists, pictures on
+  fight pages, an initial as placeholder.
 
 Template per entry:
 
