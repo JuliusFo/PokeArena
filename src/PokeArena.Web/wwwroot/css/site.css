@@ -84,6 +84,30 @@ h1:focus {
   outline: none;
 }
 
+/* Trainer page: Twitch profile picture left of the name (feat/trainer-profile-image). */
+.trainer-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 8px 0 12px;
+}
+
+.trainer-head h1 {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.profile-image {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  object-fit: cover;
+}
+
 .boot {
   padding: 24px 16px;
   color: var(--muted);

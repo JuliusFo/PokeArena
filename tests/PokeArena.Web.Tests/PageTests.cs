@@ -345,6 +345,26 @@ public class PageTests : BunitContext
         Assert.Equal("kampf/9", cut.Find(".chip-badge a").GetAttribute("href"));
     }
 
+    [Theory]
+    [InlineData("profilbild/11.png", "https://daten.example/profilbild/11.png")]
+    [InlineData("profilbild/11.jpg", "https://daten.example/profilbild/11.jpg")]
+    [InlineData(null, null)]
+    [InlineData("https://evil.example/profilbild/11.png", null)]
+    [InlineData("//evil.example/profilbild/11.png", null)]
+    [InlineData("profilbild/../trainer/11.png", null)]
+    public void The_profile_picture_comes_only_from_the_data_host(string? path, string? expected)
+    {
+        Put(
+            SitePaths.Trainer("11"),
+            new TrainerPage("11", "Anna", Now, Now, 1, 1, 0, 0, 0, [new(Bisasam, 1, true)], [], [], [], path),
+            SiteJson.Default.TrainerPage);
+
+        var cut = Render<Trainer>(p => p.Add(t => t.Key, "11"));
+
+        cut.WaitForAssertion(() => Assert.Contains("Anna", cut.Find(".trainer-head h1").TextContent));
+        Assert.Equal(expected, cut.FindAll(".trainer-head img").SingleOrDefault()?.GetAttribute("src"));
+    }
+
     [Fact]
     public void An_unknown_trainer_is_reported()
     {

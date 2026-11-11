@@ -34,4 +34,13 @@ public sealed class SiteData(HttpClient http)
     public Task<Statistics?> StatisticsAsync(CancellationToken ct) => GetAsync(SitePaths.Statistics, SiteJson.Default.Statistics, ct);
 
     public Task<SiteMeta?> MetaAsync(CancellationToken ct) => GetAsync(SitePaths.Meta, SiteJson.Default.SiteMeta, ct);
+
+    /// <summary>
+    /// The address of a trainer's profile picture on the data host, or null without one. Only paths in the bot's own
+    /// format count, so a file can never point the page at another host.
+    /// </summary>
+    public string? ProfileImageUrl(TrainerPage trainer) =>
+        trainer.ProfileImage is { } path && SitePaths.ProfileImageOf(path) is not null && http.BaseAddress is { } data
+            ? new Uri(data, path).ToString()
+            : null;
 }
