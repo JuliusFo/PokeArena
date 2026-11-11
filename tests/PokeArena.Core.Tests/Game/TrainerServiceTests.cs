@@ -47,6 +47,30 @@ public class TrainerServiceTests : IDisposable
         Assert.Equal("#0000FF", await ColorAsync("1"));
     }
 
+    [Fact]
+    public async Task A_new_chat_colour_republishes_the_statistics_but_the_same_one_does_not()
+    {
+        await _game.Trainers.RegisterAsync("1", "bob", "Bob", Pikachu, _ct);
+        await _game.Trainers.ObserveAsync(new ChatMessage("m-1", "1", "bob", "Bob", "hallo", ChatRole.Viewer, Color: "#FF0000"), _ct);
+        await using (var db = _game.OpenLive())
+        {
+            db.PublishQueue.RemoveRange(db.PublishQueue);
+            await db.SaveChangesAsync(_ct);
+        }
+
+        await _game.Trainers.ObserveAsync(new ChatMessage("m-2", "1", "bob", "Bob", "hallo", ChatRole.Viewer, Color: "#FF0000"), _ct);
+        Assert.Empty(await QueuedAsync());
+
+        await _game.Trainers.ObserveAsync(new ChatMessage("m-3", "1", "bob", "Bob", "hallo", ChatRole.Viewer, Color: "#00FF00"), _ct);
+        Assert.Equal([Contracts.SitePaths.Statistics], await QueuedAsync());
+    }
+
+    private async Task<List<string>> QueuedAsync()
+    {
+        await using var db = _game.OpenLive();
+        return await db.PublishQueue.Select(i => i.Path).ToListAsync(_ct);
+    }
+
     private async Task<string?> ColorAsync(string trainerId)
     {
         await using var db = _game.OpenLive();

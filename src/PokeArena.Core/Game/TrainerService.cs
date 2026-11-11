@@ -177,8 +177,11 @@ public sealed class TrainerService
         }
         else if (message.Color is { } color && trainer.ChatColor != color)
         {
-            // Only fight pages show the colour; they pick it up with the next fight or „Alles neu veröffentlichen“.
+            // Fight pages pick the colour up with the next fight or „Alles neu veröffentlichen“; the statistics show it
+            // on their bars right away (review feat/statistics-page). One save, so the colour and the queued file
+            // land together.
             trainer.ChatColor = color;
+            await SiteOutbox.EnqueueAsync(db, [SitePaths.Statistics], _time.GetUtcNow(), ct);
             await db.SaveChangesAsync(ct);
         }
 
