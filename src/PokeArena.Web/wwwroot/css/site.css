@@ -526,6 +526,15 @@ h1:focus {
   text-decoration: underline;
 }
 
+/*
+  The focusable link sits in the copy that is clipped away under the fill, so its own focus ring would be invisible:
+  the whole bar shows the focus instead (review feat/statistics-page).
+*/
+.damage-bar:has(a:focus-visible) {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+
 .singles {
   margin: 0;
   padding: 0;
