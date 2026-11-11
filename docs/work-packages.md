@@ -775,6 +775,24 @@ in [roadmap.md](roadmap.md).
     introduced whitespace between name and detail.
 - Deliberately not done (→ backlog): lifetime damage, „Pioniere“,
   „Erstbesieger“, round records, PvP win streak, most loot.
+- Code review (2026-11-11): „Alle beheben“ for the first pass; for the second
+  pass „Ja, beide“.
+  - L1 fixed: a missing `statistik.json` (right after the release tag) no
+    longer says the game is empty; it gets its own text and a bUnit test.
+  - L2 fixed: a chat colour change alone queues `statistik.json`. The new
+    test fails without the fix.
+  - L3 fixed: keyboard focus on a bar link outlines the whole bar
+    (`:has(a:focus-visible)`), because the link's own ring is clipped. Not
+    seen in a browser: the preview window was hidden.
+  - L4 fixed (docs): ties between rivals are ordinal by Twitch id.
+  - L5 fixed (docs): spec §9 and `PollingPage` list the statistics among the
+    polling pages.
+  - L6 fixed (second pass): the missing-file text promises no time („erscheint
+    bald“), because the bot may install 1.7.0 only after a stream.
+  - L7 fixed (second pass): architecture.md names the statistics as showing
+    the chat colour, and the colour-only enqueue.
+  - Pre-existing, not changed: Home and Battle build `trainer/<id>` links
+    without escaping; this is harmless for numeric Twitch ids.
 
 Template per entry:
 

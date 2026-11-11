@@ -50,6 +50,8 @@
 - Website (WP-06): every change a viewer could see on the site queues its paths with `SiteOutbox.EnqueueAsync` in
   the **same** context/transaction as the change (`SiteOutbox.ForBattle` / `ForTrainers`). Forgetting it leaves
   the site stale until "republish everything". The battle id exists only after the first `SaveChangesAsync`.
+  A site file that shows the chat colour must also be queued in `TrainerService`'s colour-only branch — a colour
+  change is not a rename and does not go through `ForTrainers` (review feat/statistics-page).
 - The publish worker reads `GameDatabase.OpenLive()` — the one exception to `Open()`; the sandbox is never published.
 - Live gate (WP-07): `CommandProcessor` drops real messages while `StreamStatus.AcceptsCommands` is false — new
   `CommandProcessor` tests must report the stream live first. Stream events only report changes: whenever a new

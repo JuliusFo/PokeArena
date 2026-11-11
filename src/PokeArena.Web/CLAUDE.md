@@ -56,6 +56,9 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
 - Ranking bars are one component, `Shared/BarList.razor` with `Services/Bar.cs` (`Bar.Make` checks the colour and
   darkens it): the „Schaden“ box and the statistics page (`Pages/Stats.razor`, bars in `Services/StatisticsBars.cs`)
   share them, so a change to the bars shows on both. A bar's name can be a link; it sits in both clipped copies
-  (clip-path also clips the clickable area), the copy over the fill has `tabindex="-1"` (feat/statistics-page).
+  (clip-path also clips the clickable area), the copy over the fill has `tabindex="-1"`; the link's own focus ring is
+  clipped, so the bar shows it (`:has(a:focus-visible)`) (feat/statistics-page).
+- A new site file is missing between the release tag (the site deploys at once) and the bot's update (only after a
+  stream): treat its 404 as „kommt bald“ without promising when, never as an empty game (review feat/statistics-page).
 - Never tell a boss or NPC by `TrainerId == null`: a deleted trainer's fighters have no id either („[gelöscht]“). The
   boss is the fighter on side 1 of a boss fight (review feat/fight-log-colours).

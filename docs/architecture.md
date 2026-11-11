@@ -43,7 +43,7 @@ PvP loot columns of `Battle`; in WP-05: `Trainer.Tokens`, `Battle.NpcId` /
 
 | Entity | Fields | Notes |
 |---|---|---|
-| `Trainer` | TwitchUserId (PK), DisplayName, Login, ChatColor, RegisteredAt, Tokens | Display name and login refreshed when seen, the chat colour (`#RRGGBB`, null until seen with one) too — only fight pages show it; `@name` mentions resolve by login, then display name. Tokens: plain balance, the first win against an NPC adds its tokens |
+| `Trainer` | TwitchUserId (PK), DisplayName, Login, ChatColor, RegisteredAt, Tokens | Display name and login refreshed when seen, the chat colour (`#RRGGBB`, null until seen with one) too — fight pages and the statistics show it; `@name` mentions resolve by login, then display name. Tokens: plain balance, the first win against an NPC adds its tokens |
 | `Specimen` | Id, TrainerId, SpeciesId, CaughtAt, AcquiredAt, Origin (Starter, Boss, Npc), IsStarter | PvP loot changes `TrainerId`; unique filtered index: one starter per trainer; `AcquiredAt` = when the current owner got it (leaderboard ties) |
 | `Battle` | Id, Kind, FoughtAt, Seed, BossSpeciesId?, NpcId?, LootSpecimenId?, LootSpeciesId?, Tokens?, Outcome, Rounds, LogJson | Log stored verbatim (ADR-0004); fighters, owners and HP are in the log. PvP: outcome `ChallengerWon` / `OpponentWon`, loot without foreign key. NPC: the trainer is the challenger, loot = reward specimen of a first win, `Tokens` = tokens of a first win |
 | `BattleParticipant` | Id, BattleId, TrainerId, Won | Boss: `Won` = caught the boss; PvP and NPC: `Won` = winner. Bosses and NPCs need no row, they are in the log |
@@ -82,7 +82,8 @@ no runtime editor (user decision 2026-11-04).
 - **Publishing** (spec §9, built): game logic queues site paths (`SiteOutbox`)
   in its own transaction; registration and renames queue the trainer, the
   leaderboard and the statistics (`SiteOutbox.ForTrainers`, which every fight
-  includes). `SitePublishWorker` polls the **live** outbox every 2 s,
+  includes); a chat colour change alone queues the statistics.
+  `SitePublishWorker` polls the **live** outbox every 2 s,
   renders each file from the current data (`SiteGenerator`) and uploads it, or
   deletes it when its source is gone; failures back off up to 15 min and never
   give up. The dry run writes to the sandbox outbox, which nobody reads.
