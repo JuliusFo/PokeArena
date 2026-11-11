@@ -1,6 +1,8 @@
+using System.Collections.Concurrent;
 using System.Net;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using PokeArena.Contracts;
 using PokeArena.Core.Data;
@@ -19,16 +21,19 @@ public class ProfileImageRefresherTests : IDisposable
     private const string AshPng = Cdn + "ash-profile_image-300x300.png";
     private const string AshPngSmall = Cdn + "ash-profile_image-150x150.png";
 
-    private static readonly byte[] Png = [0x89, 0x50, 0x4E, 0x47, 1, 2, 3];
+    private static readonly byte[] Png = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 1, 2, 3];
     private static readonly byte[] Jpeg = [0xFF, 0xD8, 0xFF, 4, 5, 6];
 
     private readonly GameFixture _game = new();
     private readonly FakeHttpHandler _http = new();
     private readonly FakeSitePublisher _bucket = new();
+    private readonly FakeTwitch _twitch = new();
+    private readonly RecordingLogger _log = new();
     private readonly ProfileImageRefresher _refresher;
     private readonly SitePublishWorker _worker;
     private readonly CancellationToken _ct = TestContext.Current.CancellationToken;
     private (string Id, string Url)[] _reported = [];
+    private Action? _onHelix;
 
     public ProfileImageRefresherTests()
     {
@@ -41,9 +46,9 @@ public class ProfileImageRefresherTests : IDisposable
             _game.Database,
             new HelixClient(http, options, tokens),
             http,
-            new ConnectedTwitch(),
+            _twitch,
             _game.Time,
-            NullLogger<ProfileImageRefresher>.Instance);
+            _log);
         _worker = new SitePublishWorker(_game.Database, new SiteGenerator(GameFixture.Species, GameFixture.Npcs), _bucket, _game.Time, NullLogger<SitePublishWorker>.Instance);
     }
 
@@ -137,6 +142,7 @@ public class ProfileImageRefresherTests : IDisposable
     [InlineData("http://static-cdn.jtvnw.net/ash-profile_image-300x300.png", "image/png", 10)]
     [InlineData(AshPng, "text/html", 10)]
     [InlineData(AshPng, "image/svg+xml", 10)]
+    [InlineData(AshPng, "image/png", 10)]
     [InlineData(AshPng, "image/png", ProfileImageRefresher.MaxBytes + 1)]
     public async Task Pictures_from_elsewhere_of_another_kind_or_too_large_are_refused(string url, string contentType, int size)
     {
@@ -153,6 +159,174 @@ public class ProfileImageRefresherTests : IDisposable
         if (!url.StartsWith("https://static-cdn.jtvnw.net/", StringComparison.Ordinal))
         {
             Assert.Equal(_http.RequestsTo(Users).Count(), _http.Requests.Count);
+        }
+
+        // The log names the trainer by id; picture URLs can contain the login (privacy page).
+        Assert.NotEmpty(_log.Messages);
+        Assert.All(_log.Messages, m => Assert.DoesNotContain("profile_image", m, StringComparison.Ordinal));
+        Assert.Contains(_log.Messages, m => m.Contains("of 1 ", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task A_picture_is_typed_by_its_bytes_not_by_the_header()
+    {
+        await _game.Trainers.RegisterAsync("1", "ash", "Ash", Starter, _ct);
+        TwitchReports(("1", AshPng));
+        _http.OnBytes(AshPngSmall, Png, "image/jpeg");
+
+        await RefreshAndPublishAsync();
+
+        Assert.Equal(Png, _bucket.Files[SitePaths.ProfileImage("1", SitePaths.Png)].Content);
+        Assert.Equal("profilbild/1.png", Trainer("1").ProfileImage);
+    }
+
+    [Fact]
+    public async Task A_picture_redirected_away_from_twitch_is_refused()
+    {
+        await _game.Trainers.RegisterAsync("1", "ash", "Ash", Starter, _ct);
+        TwitchReports(("1", AshPng));
+        _http.On(HttpMethod.Get, Cdn, () => Picture(Png, "https://evil.example/ash.png"));
+
+        await RefreshAndPublishAsync();
+
+        await using var db = _game.OpenLive();
+        Assert.Empty(db.ProfileImages);
+        Assert.Equal(2, _http.RequestsTo(Cdn).Count());
+    }
+
+    [Fact]
+    public async Task A_picture_whose_body_stalls_is_given_up_after_the_download_timeout()
+    {
+        await _game.Trainers.RegisterAsync("1", "ash", "Ash", Starter, _ct);
+        TwitchReports(("1", AshPng));
+        _http.On(HttpMethod.Get, AshPngSmall, () => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StallingContent() });
+        _http.OnBytes(AshPng, Png, "image/png");
+
+        var round = _refresher.RefreshDueAsync(_ct);
+        await Eventually.TrueAsync(() => _http.RequestsTo(AshPngSmall).Any());
+        _game.Time.Advance(ProfileImageRefresher.DownloadTimeout);
+        await round.WaitAsync(TimeSpan.FromSeconds(5), TimeProvider.System, _ct);
+        await _worker.PublishDueAsync(_ct);
+
+        Assert.Equal(Png, _bucket.Files[SitePaths.ProfileImage("1", SitePaths.Png)].Content);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task A_trainer_who_got_no_picture_is_asked_for_again_only_after_a_day(bool accountGone)
+    {
+        await _game.Trainers.RegisterAsync("1", "ash", "Ash", Starter, _ct);
+        if (accountGone)
+        {
+            TwitchReports();
+        }
+        else
+        {
+            TwitchReports(("1", AshPng));
+            _http.OnBytes(Cdn, [1, 2, 3], "text/html");
+        }
+
+        await _refresher.RefreshDueAsync(_ct);
+        _game.Time.Advance(ProfileImageRefresher.Interval);
+        await _refresher.RefreshDueAsync(_ct);
+        Assert.Single(_http.RequestsTo(Users));
+
+        _game.Time.Advance(ProfileImageRefresher.MaxAge);
+        await _refresher.RefreshDueAsync(_ct);
+        Assert.Equal(2, _http.RequestsTo(Users).Count());
+    }
+
+    [Fact]
+    public async Task An_unreachable_picture_is_tried_again_next_round()
+    {
+        await _game.Trainers.RegisterAsync("1", "ash", "Ash", Starter, _ct);
+        TwitchReports(("1", AshPng));
+        _http.On(HttpMethod.Get, AshPngSmall, () => throw new HttpRequestException("offline"));
+        _http.OnBytes(AshPngSmall, Png, "image/png");
+        _http.On(HttpMethod.Get, AshPng, () => throw new HttpRequestException("offline"));
+
+        await RefreshAndPublishAsync();
+        Assert.DoesNotContain(SitePaths.ProfileImage("1", SitePaths.Png), _bucket.Files.Keys);
+
+        _game.Time.Advance(ProfileImageRefresher.Interval);
+        await RefreshAndPublishAsync();
+        Assert.Equal(Png, _bucket.Files[SitePaths.ProfileImage("1", SitePaths.Png)].Content);
+    }
+
+    [Fact]
+    public async Task A_trainer_deleted_during_a_round_fails_only_that_round()
+    {
+        await using (var db = _game.OpenLive())
+        {
+            db.Trainers.AddRange(
+                new Trainer { TwitchUserId = "1", DisplayName = "Ash", Login = "ash" },
+                new Trainer { TwitchUserId = "2", DisplayName = "Misty", Login = "misty" });
+            await db.SaveChangesAsync(_ct);
+        }
+
+        TwitchReports(("1", AshPng), ("2", Cdn + "misty-profile_image-300x300.png"));
+        _http.OnBytes(Cdn, Png, "image/png");
+        _onHelix = () =>
+        {
+            // Deleted while Helix answers: storing the batch then breaks the foreign key.
+            using var db = _game.OpenLive();
+            db.Database.ExecuteSqlRaw("DELETE FROM Trainers WHERE TwitchUserId = '1'");
+        };
+
+        await _refresher.RefreshDueAsync(_ct);
+        await using (var db = _game.OpenLive())
+        {
+            Assert.Empty(db.ProfileImages);
+            Assert.Empty(db.PublishQueue);
+        }
+
+        _onHelix = null;
+        _game.Time.Advance(ProfileImageRefresher.Interval);
+        await _refresher.RefreshDueAsync(_ct);
+        await using (var db = _game.OpenLive())
+        {
+            Assert.Equal(["2"], db.ProfileImages.Select(i => i.TrainerId));
+        }
+    }
+
+    [Fact]
+    public async Task Rounds_run_only_while_twitch_is_connected_and_every_fifteen_minutes()
+    {
+        await _game.Trainers.RegisterAsync("1", "ash", "Ash", Starter, _ct);
+        TwitchReports(("1", AshPng));
+        _http.On(HttpMethod.Get, Cdn, () => throw new HttpRequestException("offline"));
+        _twitch.State = new TwitchConnectionState(TwitchStatus.Disconnected);
+        await _refresher.StartAsync(_ct);
+        try
+        {
+            for (var i = 0; i < 3; i++)
+            {
+                _game.Time.Advance(ProfileImageRefresher.CheckInterval);
+                await Task.Delay(20, _ct);
+            }
+
+            Assert.Empty(_http.RequestsTo(Users));
+
+            _twitch.State = new TwitchConnectionState(TwitchStatus.Connected);
+            _game.Time.Advance(ProfileImageRefresher.CheckInterval);
+            await Eventually.TrueAsync(() => _http.RequestsTo(Cdn).Count() == 2, "first round once connected");
+
+            // A slow first round only pushes the second one later, never earlier.
+            var minutes = 0;
+            while (_http.RequestsTo(Users).Count() < 2 && minutes < 30)
+            {
+                _game.Time.Advance(ProfileImageRefresher.CheckInterval);
+                minutes++;
+                await Task.Delay(20, _ct);
+            }
+
+            Assert.Equal(2, _http.RequestsTo(Users).Count());
+            Assert.InRange(minutes, (int)ProfileImageRefresher.Interval.TotalMinutes, 30);
+        }
+        finally
+        {
+            await _refresher.StopAsync(_ct);
         }
     }
 
@@ -236,8 +410,16 @@ public class ProfileImageRefresherTests : IDisposable
     /// <summary>What Helix answers from now on.</summary>
     private void TwitchReports(params (string Id, string Url)[] users) => _reported = users;
 
+    private static HttpResponseMessage Picture(byte[] content, string servedFrom)
+    {
+        var body = new ByteArrayContent(content);
+        body.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png");
+        return new HttpResponseMessage(HttpStatusCode.OK) { Content = body, RequestMessage = new HttpRequestMessage(HttpMethod.Get, servedFrom) };
+    }
+
     private HttpResponseMessage HelixUsers()
     {
+        _onHelix?.Invoke();
         var data = _reported.Select(u => new { id = u.Id, login = "u" + u.Id, display_name = "U" + u.Id, profile_image_url = u.Url });
         return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(JsonSerializer.Serialize(new { data }), System.Text.Encoding.UTF8, "application/json") };
     }
@@ -253,9 +435,9 @@ public class ProfileImageRefresherTests : IDisposable
 
     public void Dispose() => _game.Dispose();
 
-    private sealed class ConnectedTwitch : ITwitchConnection
+    private sealed class FakeTwitch : ITwitchConnection
     {
-        public TwitchConnectionState State { get; } = new(TwitchStatus.Connected);
+        public TwitchConnectionState State { get; set; } = new(TwitchStatus.Connected);
 
         public string Channel => "shiyofurball";
 
@@ -278,5 +460,67 @@ public class ProfileImageRefresherTests : IDisposable
         public Task DisconnectAsync() => Task.CompletedTask;
 
         public Task SignOutAsync() => Task.CompletedTask;
+    }
+
+    private sealed class RecordingLogger : ILogger<ProfileImageRefresher>
+    {
+        private readonly ConcurrentQueue<string> _messages = new();
+
+        public IReadOnlyCollection<string> Messages => _messages;
+
+        public IDisposable? BeginScope<TState>(TState state)
+            where TState : notnull => null;
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) =>
+            _messages.Enqueue(formatter(state, exception) + (exception is null ? "" : " " + exception));
+    }
+
+    /// <summary>Response headers arrive, the body never does.</summary>
+    private sealed class StallingContent : HttpContent
+    {
+        public StallingContent() => Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png");
+
+        protected override Task<Stream> CreateContentReadStreamAsync() => Task.FromResult<Stream>(new StallingStream());
+
+        protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context) => Task.Delay(Timeout.Infinite);
+
+        protected override bool TryComputeLength(out long length)
+        {
+            length = 0;
+            return false;
+        }
+    }
+
+    private sealed class StallingStream : Stream
+    {
+        public override bool CanRead => true;
+
+        public override bool CanSeek => false;
+
+        public override bool CanWrite => false;
+
+        public override long Length => throw new NotSupportedException();
+
+        public override long Position { get => 0; set => throw new NotSupportedException(); }
+
+        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            await Task.Delay(Timeout.Infinite, cancellationToken);
+            return 0;
+        }
+
+        public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+        public override void Flush()
+        {
+        }
+
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+
+        public override void SetLength(long value) => throw new NotSupportedException();
+
+        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
     }
 }
