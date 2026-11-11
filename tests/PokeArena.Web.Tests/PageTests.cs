@@ -424,7 +424,7 @@ public class PageTests : BunitContext
     {
         // Right after the release the site is live before the bot has written the file — not an empty game.
         var cut = Render<Stats>();
-        cut.WaitForAssertion(() => Assert.Contains("Spätestens nach dem nächsten Kampf", cut.Markup));
+        cut.WaitForAssertion(() => Assert.Contains("wird gerade erstellt und erscheint bald", cut.Markup));
         Assert.DoesNotContain("!registrieren", cut.Markup);
 
         Put(SitePaths.Statistics, new Statistics(Now, new CommunityTotals(0, 151, 0, 0, 0), [], [], [], 0, [], [], [], []), SiteJson.Default.Statistics);

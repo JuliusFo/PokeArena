@@ -451,8 +451,9 @@ trainer, and so with every fight. It is built from participant rows, battle
 headers and owners only, never from a fight log, and a deleted trainer drops
 out of every list. A chat colour change alone republishes it too. As long as
 the file is missing (the site deploys with the release tag, before the bot has
-written it), the page says it appears after the next fight, instead of calling
-the game empty.
+written it — possibly for a whole stream, as the bot installs the update only
+after it), the page says it is being made and comes soon, without promising
+when, instead of calling the game empty.
 
 - Files are uploaded **directly per change** via the publish queue.
 - Uploads normally land within seconds, but the queue may lag (network
