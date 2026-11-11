@@ -35,7 +35,7 @@ feat/boss-lobby, K1, K3", the original review 1.0.3).
   directly; they post `QueuedWork`. No second consumer, no locks added to work around one.
 - Dry run: services that cache data reset on `GameDatabase.Switched`; in-memory state remembers `IsSimulated` or a
   generation and is dropped after a switch; nothing from the sandbox is published (`OpenLive()` only in the publish
-  worker and backups).
+  worker, backups and the profile picture refresher, which never write game state).
 - Live gate: new commands respect `StreamStatus.AcceptsCommands`; mod commands bypass it on purpose (WP-08).
 - Async: `CancellationToken` passed on; nothing blocks on `.Result`; timers via `Task.Delay(…, timeProvider, ct)`;
   components re-render via `InvokeAsync(StateHasChanged)` and unsubscribe in `Dispose`.

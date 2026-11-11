@@ -93,10 +93,11 @@ no runtime editor (user decision 2026-11-04).
   every 15 min while Twitch is connected) asks Helix `GET /users?id=` (100 ids
   per call) for trainers without a picture or with one not checked for 24 h,
   downloads only changed URLs (150×150 variant, `static-cdn.jtvnw.net` only,
-  PNG/JPEG, ≤ 512 KB), stores the bytes and queues `profilbild/<id>.png|.jpg`
-  plus the trainer page. A user Twitch no longer returns loses the picture,
-  not the trainer. A format change moves the path; the old one has no source
-  and gets deleted.
+  PNG/JPEG by file signature, ≤ 512 KB, 30 s), stores the bytes and queues
+  `profilbild/<id>.png|.jpg` plus the trainer page. A user Twitch no longer
+  returns loses the picture, not the trainer; trainers left without a picture
+  wait 24 h too (in memory), an unreachable picture is retried next round.
+  A format change moves the path; the old one has no source and gets deleted.
 - **Deletion** (spec §11, built in WP-08): `!entfernen @x` (mods, confirmed
   by the same mod within 60 s via `TrainerRemoval`) or the button in the
   trainer list → `TrainerService.DeleteAsync` in one transaction: participant

@@ -475,10 +475,16 @@ confirmed)**:
   trainers without a picture or with one older than 24 h, 100 per Helix call.
   The picture is downloaded only when `profile_image_url` changed (Twitch puts
   a new id into the URL on every upload), so a daily round costs about four
-  Helix calls. New trainers get their picture within 15 minutes; no signal
-  from registration needed.
+  Helix calls. A trainer who got no picture (account gone, picture refused)
+  also waits 24 h, remembered in memory (review: otherwise a Helix call and
+  warnings every round); an unreachable picture is tried again next round.
+  New trainers get their picture within 15 minutes; no signal from
+  registration needed. Logs name the trainer by id, never the picture URL
+  (older URLs contain the login; privacy page).
 - **Download guard:** https only, host `static-cdn.jtvnw.net` only, at most
-  512 KB, content type `image/png` or `image/jpeg`. The 150×150 variant
+  512 KB, content type `image/png` or `image/jpeg` and the matching file
+  signature (the type comes from the bytes), 30 s per download including the
+  body. The 150×150 variant
   (`-300x300.` → `-150x150.` in the URL), falling back to the original URL
   if that fails — no image library in Core.
 - A user Twitch no longer returns (account deleted or banned): the picture

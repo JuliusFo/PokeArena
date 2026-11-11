@@ -61,8 +61,9 @@ public sealed class GameDatabase : IDisposable
     }
 
     /// <summary>
-    /// A new context on the live database even during the dry run. Only for the website: its outbox must keep
-    /// draining and must never publish the sandbox. Game logic uses <see cref="Open"/>.
+    /// A new context on the live database even during the dry run. Only for the website (publish worker,
+    /// profile picture refresher) and backups: the outbox must keep draining and must never publish the sandbox.
+    /// Game logic uses <see cref="Open"/>.
     /// </summary>
     public PokeArenaDb OpenLive() => new(PokeArenaDb.Options(_liveConnectionString));
 
