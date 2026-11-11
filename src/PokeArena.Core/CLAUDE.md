@@ -59,6 +59,8 @@
   colour), and `ProfileImageRefresher` queues the leaderboard with every picture change.
 - The publish worker, backups and `ProfileImageRefresher` read `GameDatabase.OpenLive()` — the only exceptions to
   `Open()`: the sandbox is never published, and pictures belong to the live trainers (feat/trainer-profile-image).
+  A path from a stored `ContentType` goes through `SitePaths.TryProfileImage` (an unknown format is no picture, never
+  an exception); a picture that goes queues `SitePaths.AllProfileImages` (review feat/leaderboard-profile-colours).
 - Live gate (WP-07): `CommandProcessor` drops real messages while `StreamStatus.AcceptsCommands` is false — new
   `CommandProcessor` tests must report the stream live first. Stream events only report changes: whenever a new
   EventSub session starts, ask `HelixClient.IsLiveAsync` **after** subscribing, or a change in between is lost.
