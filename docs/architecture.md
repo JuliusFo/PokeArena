@@ -83,7 +83,8 @@ no runtime editor (user decision 2026-11-04).
 - **Publishing** (spec §9, built): game logic queues site paths (`SiteOutbox`)
   in its own transaction; registration and renames queue the trainer, the
   leaderboard and the statistics (`SiteOutbox.ForTrainers`, which every fight
-  includes); a chat colour change alone queues the statistics.
+  includes); a chat colour change alone queues `ForTrainers` too (leaderboard,
+  statistics and trainer page show the colour, feat/leaderboard-profile-colours).
   `SitePublishWorker` polls the **live** outbox every 2 s,
   renders each file from the current data (`SiteGenerator`) and uploads it, or
   deletes it when its source is gone; failures back off up to 15 min and never
@@ -94,7 +95,8 @@ no runtime editor (user decision 2026-11-04).
   per call) for trainers without a picture or with one not checked for 24 h,
   downloads only changed URLs (150×150 variant, `static-cdn.jtvnw.net` only,
   PNG/JPEG by file signature, ≤ 512 KB, 30 s), stores the bytes and queues
-  `profilbild/<id>.png|.jpg` plus the trainer page. A user Twitch no longer
+  `profilbild/<id>.png|.jpg` plus the trainer page, and the leaderboard once
+  per batch (small pictures there since feat/leaderboard-profile-colours). A user Twitch no longer
   returns loses the picture, not the trainer; trainers left without a picture
   wait 24 h too (in memory), an unreachable one (no connection, timeout, 408,
   429, 5xx) is retried next round.

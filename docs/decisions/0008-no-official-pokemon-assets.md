@@ -60,8 +60,10 @@ URLs. Base data never stores image URLs.
 ## Addendum 2026-11-11 (feat/trainer-profile-image): viewers' profile pictures
 
 Since 1.7.0 the trainer page shows the viewer's Twitch profile picture,
-mirrored to our bucket (ADR-0003 addendum). On a Pokémon channel some of
-these pictures may well be Pokémon artwork or fan drawings.
+mirrored to our bucket (ADR-0003 addendum); since 1.7.1 also small before each
+name on the leaderboard, the site's start page (user request,
+feat/leaderboard-profile-colours). On a Pokémon channel some of these
+pictures may well be Pokémon artwork or fan drawings.
 
 User decision (review of feat/trainer-profile-image, „#1 als Nachtrag“): a
 profile picture is **content the viewer chose for their own Twitch account**,

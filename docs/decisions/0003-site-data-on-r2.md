@@ -82,7 +82,10 @@ with the desktop release. The `github-pages` environment needs the tag rule
 
 User decision: the trainer page shows the viewer's Twitch profile picture, and
 the picture is **mirrored to our bucket** instead of being loaded from
-Twitch's CDN — visitors' browsers keep talking only to our data host.
+Twitch's CDN — visitors' browsers keep talking only to our data host. Since
+1.7.1 the leaderboard shows the same files small before each name
+(feat/leaderboard-profile-colours): `rangliste.json` carries the paths, no
+second picture size.
 
 - The bucket now holds binary files too: `profilbild/<twitch-id>.png` or
   `.jpg`, uploaded with their own content type.
