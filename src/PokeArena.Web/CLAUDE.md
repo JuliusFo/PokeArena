@@ -7,6 +7,7 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
 - Page components must not share a name with a Contracts record (`Leaderboard.razor` clashed with
   `Contracts.Leaderboard`; the leaderboard page is `Home.razor`).
 - No official Pokémon assets, not even hot-linked (ADR-0008): species are text plus type chips (`Format.TypeClass`).
+  The viewers' Twitch profile pictures are viewer content outside that ban (ADR-0008 addendum, 1.7.0).
 - Times: `Format.*` shows German time (Europe/Berlin), whatever the visitor's browser says.
 - Polling pages inherit `PollingPage` (15 s, spec §13) and use the injected `TimeProvider`, so bUnit tests drive
   them with `FakeTimeProvider.Advance`. A battle page retries 404s: chat links can be faster than the upload.

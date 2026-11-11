@@ -73,7 +73,8 @@ shows leaderboard, trainer pages and battle logs.
 - Achievements are never revoked; the starter specimen is never transferred.
   (spec §1, §6)
 - No official Pokémon assets (sprites, artwork, sounds, logos) in repo, app,
-  website or overlay — not even fetched at runtime. (ADR-0008)
+  website or overlay — not even fetched at runtime. (ADR-0008; a viewer's own
+  Twitch profile picture is viewer content, not an asset — addendum 2026-11-11)
 
 ## 4. Stack
 
