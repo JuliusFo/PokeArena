@@ -1,0 +1,110 @@
+@page "/statistik"
+@inherits PollingPage
+
+@* „Statistik“ (feat/statistics-page). Not Statistics.razor: that name is the Contracts record (Web CLAUDE.md). *@
+
+<PageTitle>Statistik – PokeArena</PageTitle>
+
+<h1>Statistik</h1>
+
+@if (Loading)
+{
+    <p class="muted">Lädt …</p>
+}
+else if (_stats is null ? !Failed : _stats.Community.Trainers == 0)
+{
+    <p>Noch gibt es nichts zu zählen. Schreib im Chat <strong>!registrieren</strong> und such dir dein erstes Pokémon aus!</p>
+}
+else if (_stats is not null)
+{
+    var c = _stats.Community;
+    <p class="muted">Stand @Format.Moment(_stats.UpdatedAt, Now) · Jede Liste zeigt die besten 10.</p>
+
+    <section class="bar-box">
+        <h2>Gemeinsamer Pokédex</h2>
+        <p>So viele verschiedene Arten haben alle Trainer zusammen.</p>
+        <BarList Bars="[StatisticsBars.Community(c)]" />
+        <p class="muted totals">
+            @Count(c.Trainers, "Trainer", "Trainer") · @Count(c.Battles, "Kampf", "Kämpfe") · @Count(c.Catches, "Boss gefangen", "Bosse gefangen")
+        </p>
+    </section>
+
+    @Box("Boss-Kämpfe", "Wer war am häufigsten beim Boss dabei?", StatisticsBars.BossParticipations(_stats.BossParticipations))
+    @Box("Unglücksraben", "Die meisten Boss-Kämpfe hintereinander, ohne den Boss zu fangen.", StatisticsBars.BadLuck(_stats.BadLuck))
+    @Box("PvP-Kämpfe", "Wer hat am meisten gegen andere Trainer gekämpft?", StatisticsBars.PvpFights(_stats.PvpFights))
+    @Box("Erzrivalen", "Wer hat am häufigsten gegeneinander gekämpft? Vorne steht, wer öfter gewonnen hat.", StatisticsBars.Rivals(_stats.Rivals))
+
+    <section class="bar-box">
+        <h2>Einzelstücke</h2>
+        @if (_stats.SingleOwnedCount == 0)
+        {
+            <p class="muted">Gerade gibt es keine Art, die nur ein Trainer hat.</p>
+        }
+        else
+        {
+            <p>
+                @(_stats.SingleOwnedCount == 1 ? "1 Art hat" : $"{_stats.SingleOwnedCount} Arten hat") nur ein einziger Trainer.
+                @(_stats.SingleOwnedCount > _stats.SingleOwned.Count ? "Hier die seltensten:" : null)
+            </p>
+            <ul class="singles">
+                @foreach (var single in _stats.SingleOwned)
+                {
+                    <li>
+                        <SpeciesName Species="single.Species" />
+                        <a href="@StatisticsBars.TrainerLink(single.Owner)" class="@(Tint.Style(single.Owner.Color) is null ? null : "tinted")" style="@Tint.Style(single.Owner.Color)">@single.Owner.DisplayName</a>
+                    </li>
+                }
+            </ul>
+        }
+    </section>
+
+    <section class="bar-box">
+        <h2>Boss-Bilanz</h2>
+        @if (_stats.BossesSeen.Count == 0)
+        {
+            <p class="muted">Noch kein Boss-Kampf.</p>
+        }
+        else
+        {
+            <h3>Am häufigsten erschienen</h3>
+            <BarList Bars="StatisticsBars.Bosses(_stats.BossesSeen)" Ordered />
+            <h3>Am häufigsten entkommen</h3>
+            @if (_stats.BossesEscaped.Count == 0)
+            {
+                <p class="muted">Bisher wurde jeder Boss gefangen.</p>
+            }
+            else
+            {
+                <BarList Bars="StatisticsBars.Bosses(_stats.BossesEscaped)" Ordered />
+            }
+        }
+    </section>
+}
+
+@if (Failed)
+{
+    <LoadFailed />
+}
+
+@code {
+    private Statistics? _stats;
+
+    protected override async Task LoadAsync(CancellationToken ct) => _stats = await Data.StatisticsAsync(ct);
+
+    private static RenderFragment Box(string title, string intro, IReadOnlyList<Bar> bars) =>
+        @<section class="bar-box">
+            <h2>@title</h2>
+            <p>@intro</p>
+            @if (bars.Count == 0)
+            {
+                <p class="muted">Noch niemand.</p>
+            }
+            else
+            {
+                <BarList Bars="bars" Ordered />
+            }
+        </section>;
+
+    private static string Count(int count, string one, string many) =>
+        $"{count.ToString(System.Globalization.CultureInfo.InvariantCulture)} {(count == 1 ? one : many)}";
+}

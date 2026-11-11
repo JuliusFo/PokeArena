@@ -400,19 +400,22 @@ h1:focus {
   fills. The numbers inside are white over the fill (at least 4.5 : 1) and --text over the empty rest: two clipped
   copies like the HP numbers, never background-clip: text (user request feat/damage-text-white).
 */
-.damage {
+.damage,
+.bar-box {
   margin-top: 12px;
   padding: 4px 16px 12px;
   border-radius: var(--radius);
   background: var(--surface);
 }
 
-.damage h2 {
+.damage h2,
+.bar-box h2 {
   margin: 10px 0 2px;
   font-size: 17px;
 }
 
-.damage h3 {
+.damage h3,
+.bar-box h3 {
   margin: 10px 0 4px;
   color: var(--muted);
   font-size: 13px;
@@ -499,6 +502,49 @@ h1:focus {
   flex: none;
   font-variant-numeric: tabular-nums;
   font-weight: 600;
+}
+
+/*
+  Statistics page (feat/statistics-page): one box per list, the same bars as the „Schaden“ box. The trainer links
+  inside a bar take the bar's text colour, so they read like the damage box's names.
+*/
+.bar-box p {
+  margin: 4px 0 8px;
+  font-size: 14px;
+}
+
+.bar-box p.totals {
+  margin: 8px 0 0;
+}
+
+.damage-text a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.damage-text a:hover strong {
+  text-decoration: underline;
+}
+
+.singles {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.singles li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+  padding: 4px 0;
+  border-top: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.singles li:first-child {
+  border-top: none;
 }
 
 .log {

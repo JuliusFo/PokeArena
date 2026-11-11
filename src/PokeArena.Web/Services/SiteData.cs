@@ -31,5 +31,7 @@ public sealed class SiteData(HttpClient http)
 
     public Task<TrainerPage?> TrainerAsync(string id, CancellationToken ct) => GetAsync(SitePaths.Trainer(id), SiteJson.Default.TrainerPage, ct);
 
+    public Task<Statistics?> StatisticsAsync(CancellationToken ct) => GetAsync(SitePaths.Statistics, SiteJson.Default.Statistics, ct);
+
     public Task<SiteMeta?> MetaAsync(CancellationToken ct) => GetAsync(SitePaths.Meta, SiteJson.Default.SiteMeta, ct);
 }
