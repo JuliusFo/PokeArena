@@ -54,7 +54,7 @@ public class PvpServiceTests : IDisposable
         Assert.Equal(loot.SpeciesId, battle.LootSpeciesId);
         Assert.Equal(7, await db.Specimens.CountAsync(s => s.TrainerId == "1", _ct));
         Assert.Equal(
-            [SitePaths.BattleIndex, SitePaths.Battle(battle.Id), SitePaths.Meta, SitePaths.Leaderboard, SitePaths.Trainer("1"), SitePaths.Trainer("2")],
+            [SitePaths.BattleIndex, SitePaths.Battle(battle.Id), SitePaths.Meta, SitePaths.Leaderboard, SitePaths.Statistics, SitePaths.Trainer("1"), SitePaths.Trainer("2")],
             await db.PublishQueue.Select(i => i.Path).OrderBy(p => p).ToListAsync(_ct));
         Assert.Equal(5, await db.Specimens.CountAsync(s => s.TrainerId == "2", _ct));
     }

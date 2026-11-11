@@ -55,7 +55,7 @@ public class NpcServiceTests : IDisposable
         Assert.Equal(_game.Time.GetUtcNow() + NpcSettings.Default.WinCooldown, (await db.Cooldowns.SingleAsync(_ct)).Until);
         Assert.Equal([$"Ash besiegt Eich und bekommt den Orden von Eich, {Species.Get(reward.SpeciesId).Name} und 1 Token!"], _chat.Sent);
         Assert.Equal(
-            [SitePaths.BattleIndex, SitePaths.Battle(battle.Id), SitePaths.Meta, SitePaths.Leaderboard, SitePaths.Trainer("1")],
+            [SitePaths.BattleIndex, SitePaths.Battle(battle.Id), SitePaths.Meta, SitePaths.Leaderboard, SitePaths.Statistics, SitePaths.Trainer("1")],
             await db.PublishQueue.Select(i => i.Path).OrderBy(p => p).ToListAsync(_ct));
     }
 

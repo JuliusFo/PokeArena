@@ -11,9 +11,12 @@ namespace PokeArena.Core.Publishing;
 /// </summary>
 public static class SiteOutbox
 {
-    /// <summary>Files that change with every new or changed trainer.</summary>
+    /// <summary>
+    /// Files that change with every new or changed trainer — and so with every fight. The statistics show names and
+    /// fight counts, so they go along (feat/statistics-page).
+    /// </summary>
     public static IEnumerable<string> ForTrainers(IEnumerable<string> trainerIds) =>
-        [SitePaths.Leaderboard, SitePaths.Meta, .. trainerIds.Select(SitePaths.Trainer)];
+        [SitePaths.Leaderboard, SitePaths.Statistics, SitePaths.Meta, .. trainerIds.Select(SitePaths.Trainer)];
 
     /// <summary>Files that change with a new fight: the fight itself, the index and everyone who took part.</summary>
     public static IEnumerable<string> ForBattle(long battleId, IEnumerable<string> trainerIds) =>

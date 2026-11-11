@@ -25,7 +25,7 @@ public class SitePublishWorkerTests : IDisposable
 
         await worker.PublishDueAsync(_ct);
 
-        Assert.Equal([SitePaths.Meta, SitePaths.Leaderboard, SitePaths.Trainer("1")], _bucket.Files.Keys.Order(StringComparer.Ordinal));
+        Assert.Equal([SitePaths.Meta, SitePaths.Leaderboard, SitePaths.Statistics, SitePaths.Trainer("1")], _bucket.Files.Keys.Order(StringComparer.Ordinal));
         var leaderboard = Read(SitePaths.Leaderboard, SiteJson.Default.Leaderboard);
         Assert.Equal([new LeaderboardEntry(1, "1", "Ash", 1, 1)], leaderboard.Entries);
         var trainer = Read(SitePaths.Trainer("1"), SiteJson.Default.TrainerPage);
@@ -60,11 +60,11 @@ public class SitePublishWorkerTests : IDisposable
         await worker.PublishDueAsync(_ct);
 
         Assert.Empty(_bucket.Calls);
-        Assert.Equal(new PublishState(false, 3, null, null), worker.State);
+        Assert.Equal(new PublishState(false, 4, null, null), worker.State);
 
         _bucket.IsSetUp = true;
         await worker.PublishDueAsync(_ct);
-        Assert.Equal(3, _bucket.Files.Count);
+        Assert.Equal(4, _bucket.Files.Count);
         Assert.Equal(0, worker.State.Pending);
     }
 
@@ -78,7 +78,7 @@ public class SitePublishWorkerTests : IDisposable
         await worker.PublishDueAsync(_ct);
 
         Assert.Single(_bucket.Calls);
-        Assert.Equal(("Keine Verbindung zu Cloudflare. Ist der PC online?", 3), (worker.State.LastError, worker.State.Pending));
+        Assert.Equal(("Keine Verbindung zu Cloudflare. Ist der PC online?", 4), (worker.State.LastError, worker.State.Pending));
         await using (var db = _game.OpenLive())
         {
             var failed = await db.PublishQueue.SingleAsync(i => i.Attempts == 1, _ct);
@@ -89,7 +89,7 @@ public class SitePublishWorkerTests : IDisposable
         _bucket.Failure = null;
         _game.Time.Advance(SitePublishWorker.FirstBackoff);
         await worker.PublishDueAsync(_ct);
-        Assert.Equal(3, _bucket.Files.Count);
+        Assert.Equal(4, _bucket.Files.Count);
         Assert.Null(worker.State.LastError);
     }
 
@@ -123,7 +123,7 @@ public class SitePublishWorkerTests : IDisposable
         Assert.Equal(1, worker.State.Pending);
         await worker.PublishDueAsync(_ct);
         Assert.Equal(0, worker.State.Pending);
-        Assert.Equal(4, _bucket.Calls.Count);
+        Assert.Equal(5, _bucket.Calls.Count);
     }
 
     [Fact]
@@ -160,7 +160,7 @@ public class SitePublishWorkerTests : IDisposable
         await worker.PublishDueAsync(_ct);
 
         Assert.Equal(
-            [SitePaths.BattleIndex, SitePaths.Meta, SitePaths.Leaderboard, SitePaths.Trainer("1"), SitePaths.Trainer("2")],
+            [SitePaths.BattleIndex, SitePaths.Meta, SitePaths.Leaderboard, SitePaths.Statistics, SitePaths.Trainer("1"), SitePaths.Trainer("2")],
             _bucket.Files.Keys.Order(StringComparer.Ordinal));
     }
 
@@ -181,7 +181,7 @@ public class SitePublishWorkerTests : IDisposable
         await worker.PublishDueAsync(_ct);
 
         Assert.Equal(
-            [SitePaths.BattleIndex, SitePaths.Battle(fight), SitePaths.Meta, SitePaths.Leaderboard, SitePaths.Trainer("1")],
+            [SitePaths.BattleIndex, SitePaths.Battle(fight), SitePaths.Meta, SitePaths.Leaderboard, SitePaths.Statistics, SitePaths.Trainer("1")],
             _bucket.Files.Keys.Order(StringComparer.Ordinal));
         Assert.Equal(51, await AddFightAsync("1"));
     }

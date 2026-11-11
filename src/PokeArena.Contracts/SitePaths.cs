@@ -11,6 +11,8 @@ public static class SitePaths
 
     public const string BattleIndex = "kaempfe.json";
 
+    public const string Statistics = "statistik.json";
+
     /// <summary>Folder of the trainer pages.</summary>
     public const string TrainerPrefix = "trainer/";
 

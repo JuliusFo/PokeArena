@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using PokeArena.Contracts;
@@ -22,6 +23,9 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
 
     /// <summary>Fights listed on a trainer page.</summary>
     public const int RecentBattlesPerTrainer = 10;
+
+    /// <summary>Rows per list of <c>statistik.json</c>.</summary>
+    public const int StatisticsSize = 10;
 
     /// <summary>Leaderboard rows the OBS overlay shows.</summary>
     public const int OverlayTopSize = 5;
@@ -48,6 +52,8 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
             case SitePaths.BattleIndex:
                 var index = new BattleIndex(now, await LatestBattlesAsync(db, b => true, BattleIndexSize, ct));
                 return Mutable(JsonSerializer.SerializeToUtf8Bytes(index, SiteJson.Default.BattleIndex));
+            case SitePaths.Statistics:
+                return Mutable(JsonSerializer.SerializeToUtf8Bytes(await StatisticsAsync(db, now, ct), SiteJson.Default.Statistics));
         }
 
         if (SitePaths.TrainerIdOf(path) is { } trainerId)
@@ -94,6 +100,123 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
             .Select((t, i) => new LeaderboardEntry(i + 1, t.TwitchUserId, t.DisplayName, t.Distinct, t.Total))
             .ToList();
         return new Leaderboard(now, ranked.Count, ranked);
+    }
+
+    /// <summary>
+    /// The statistics page (feat/statistics-page): only participant rows, battle headers and owners — no fight log is
+    /// read. Deleted trainers drop out by themselves: their participant rows and specimens are gone.
+    /// </summary>
+    public async Task<Statistics> StatisticsAsync(PokeArenaDb db, DateTimeOffset now, CancellationToken ct)
+    {
+        var trainers = await db.Trainers.AsNoTracking()
+            .Select(t => new TrainerRef(t.TwitchUserId, t.DisplayName, t.ChatColor))
+            .ToDictionaryAsync(t => t.TrainerId, ct);
+        var owners = await db.Specimens.AsNoTracking()
+            .Select(s => new { s.SpeciesId, s.TrainerId })
+            .Distinct()
+            .ToListAsync(ct);
+        var battles = await db.Battles.AsNoTracking()
+            .Select(b => new { b.Id, b.Kind, b.FoughtAt, b.BossSpeciesId, b.Outcome })
+            .ToDictionaryAsync(b => b.Id, ct);
+        var rows = await db.BattleParticipants.AsNoTracking()
+            .Select(p => new { p.BattleId, p.TrainerId, p.Won })
+            .ToListAsync(ct);
+        var participants = rows
+            .Where(p => trainers.ContainsKey(p.TrainerId))
+            .Select(p => (Battle: battles[p.BattleId], Trainer: trainers[p.TrainerId], p.Won))
+            .ToList();
+        var boss = participants.Where(p => p.Battle.Kind == BattleKind.Boss).ToList();
+        var pvp = participants.Where(p => p.Battle.Kind == BattleKind.Pvp).ToList();
+
+        var bossParticipations = Ranked(
+            boss.GroupBy(p => p.Trainer).Select(g => (Trainer: g.Key, Count: g.Count())),
+            x => x.Count, x => x.Trainer.DisplayName, x => x.Trainer.TrainerId,
+            (rank, x) => new TrainerCount(rank, x.Trainer, x.Count));
+
+        var pvpFights = Ranked(
+            pvp.GroupBy(p => p.Trainer).Select(g => (Trainer: g.Key, Fights: g.Count(), Wins: g.Count(p => p.Won))),
+            x => x.Fights, x => x.Trainer.DisplayName, x => x.Trainer.TrainerId,
+            (rank, x) => new PvpRecord(rank, x.Trainer, x.Fights, x.Wins));
+
+        var badLuck = Ranked(
+            boss.GroupBy(p => p.Trainer).Select(g =>
+            {
+                int longest = 0, current = 0;
+                foreach (var p in g.OrderBy(p => p.Battle.FoughtAt).ThenBy(p => p.Battle.Id))
+                {
+                    current = p.Won ? 0 : current + 1;
+                    longest = Math.Max(longest, current);
+                }
+
+                return (Trainer: g.Key, Length: longest, Running: longest > 0 && current == longest);
+            }),
+            x => x.Length, x => x.Trainer.DisplayName, x => x.Trainer.TrainerId,
+            (rank, x) => new BadLuckStreak(rank, x.Trainer, x.Length, x.Running));
+
+        var single = owners
+            .GroupBy(o => o.SpeciesId)
+            .Where(g => g.Count() == 1 && trainers.ContainsKey(g.First().TrainerId))
+            .Select(g => (Species: species.Get(g.Key), Owner: trainers[g.First().TrainerId]))
+            .OrderByDescending(x => x.Species.Rarity)
+            .ThenBy(x => x.Species.Id)
+            .ToList();
+
+        var rivals = Ranked(
+            pvp.GroupBy(p => p.Battle.Id)
+                .Where(g => g.Count() == 2)
+                .Select(g => g.OrderBy(p => p.Trainer.TrainerId, StringComparer.Ordinal).ToList())
+                .GroupBy(pair => (A: pair[0].Trainer, B: pair[1].Trainer))
+                .Select(g =>
+                {
+                    var (a, b) = g.Key;
+                    var winsA = g.Count(pair => pair[0].Won);
+                    var winsB = g.Count(pair => pair[1].Won);
+                    return winsB > winsA
+                        ? (First: b, Second: a, Fights: g.Count(), FirstWins: winsB, SecondWins: winsA)
+                        : (First: a, Second: b, Fights: g.Count(), FirstWins: winsA, SecondWins: winsB);
+                }),
+            x => x.Fights, x => x.First.DisplayName, x => x.First.TrainerId + "/" + x.Second.TrainerId,
+            (rank, x) => new Rivalry(rank, x.First, x.Second, x.Fights, x.FirstWins, x.SecondWins));
+
+        var bossFights = battles.Values.Where(b => b.Kind == BattleKind.Boss && b.BossSpeciesId is not null).ToList();
+        IReadOnlyList<BossTally> Bosses(Func<BattleOutcome, bool> counts) => Ranked(
+            bossFights.Where(b => counts(b.Outcome)).GroupBy(b => b.BossSpeciesId!.Value).Select(g => (Species: g.Key, Count: g.Count())),
+            x => x.Count, x => species.Get(x.Species).Name, x => x.Species.ToString("D3", CultureInfo.InvariantCulture),
+            (rank, x) => new BossTally(rank, Info(x.Species), x.Count));
+
+        return new Statistics(
+            now,
+            new CommunityTotals(
+                owners.Select(o => o.SpeciesId).Distinct().Count(),
+                species.All.Count,
+                trainers.Count,
+                battles.Count,
+                boss.Count(p => p.Won)),
+            bossParticipations,
+            pvpFights,
+            badLuck,
+            single.Count,
+            [.. single.Take(StatisticsSize).Select(x => new SingleOwned(Info(x.Species.Id), x.Owner))],
+            rivals,
+            Bosses(_ => true),
+            Bosses(o => o == BattleOutcome.BossEscaped));
+    }
+
+    /// <summary>
+    /// The top <see cref="StatisticsSize"/> of <paramref name="items"/> with a value above zero, highest first; equal
+    /// values share a rank (1, 1, 3) and are ordered by name, then by <paramref name="key"/> so the order is stable.
+    /// </summary>
+    private static List<TResult> Ranked<T, TResult>(
+        IEnumerable<T> items, Func<T, int> value, Func<T, string> name, Func<T, string> key, Func<int, T, TResult> make)
+    {
+        var all = items.Where(x => value(x) > 0).ToList();
+        var values = all.Select(value).ToList();
+        return [.. all
+            .OrderByDescending(value)
+            .ThenBy(name, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(key, StringComparer.Ordinal)
+            .Take(StatisticsSize)
+            .Select(x => make(1 + values.Count(v => v > value(x)), x))];
     }
 
     /// <summary>The local OBS overlay: latest fight and the top of the leaderboard.</summary>

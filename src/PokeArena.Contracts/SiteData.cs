@@ -123,5 +123,53 @@ public sealed record AchievementInfo(int Threshold, string NpcName, DateTimeOffs
 
 public sealed record BadgeInfo(string NpcName, DateTimeOffset WonAt, long BattleId);
 
+/// <summary>
+/// <c>statistik.json</c>: rankings beyond the leaderboard (feat/statistics-page). Every list holds at most ten rows
+/// with a value above zero; equal values share a rank.
+/// </summary>
+/// <param name="BossParticipations">Boss fights taken part in.</param>
+/// <param name="PvpFights">PvP fights only — boss fights have their own list, NPC fights do not count.</param>
+/// <param name="BadLuck">„Unglücksraben“: the longest run of boss fights without a catch.</param>
+/// <param name="SingleOwnedCount">All species exactly one trainer owns; <paramref name="SingleOwned"/> lists ten of them.</param>
+/// <param name="SingleOwned">Rarest first (legendary, rare, common), then by dex number.</param>
+/// <param name="Rivals">Trainer pairs with the most PvP fights against each other.</param>
+/// <param name="BossesSeen">Boss species by how often they appeared.</param>
+/// <param name="BossesEscaped">Boss species by how often they escaped.</param>
+public sealed record Statistics(
+    DateTimeOffset UpdatedAt,
+    CommunityTotals Community,
+    IReadOnlyList<TrainerCount> BossParticipations,
+    IReadOnlyList<PvpRecord> PvpFights,
+    IReadOnlyList<BadLuckStreak> BadLuck,
+    int SingleOwnedCount,
+    IReadOnlyList<SingleOwned> SingleOwned,
+    IReadOnlyList<Rivalry> Rivals,
+    IReadOnlyList<BossTally> BossesSeen,
+    IReadOnlyList<BossTally> BossesEscaped);
+
+/// <summary>The head of the statistics page: what the community has together.</summary>
+/// <param name="Species">Distinct species owned by anyone.</param>
+/// <param name="SpeciesTotal">All species of the game (151).</param>
+/// <param name="Catches">Boss catches: survivors of a won boss fight.</param>
+public sealed record CommunityTotals(int Species, int SpeciesTotal, int Trainers, int Battles, int Catches);
+
+/// <param name="Color">Twitch chat colour (<c>#RRGGBB</c>) as picked; null if unknown.</param>
+public sealed record TrainerRef(string TrainerId, string DisplayName, string? Color = null);
+
+public sealed record TrainerCount(int Rank, TrainerRef Trainer, int Count);
+
+public sealed record PvpRecord(int Rank, TrainerRef Trainer, int Fights, int Wins);
+
+/// <param name="Running">The streak is the trainer's current one: their last boss fight was no catch either.</param>
+public sealed record BadLuckStreak(int Rank, TrainerRef Trainer, int Length, bool Running);
+
+public sealed record SingleOwned(SpeciesInfo Species, TrainerRef Owner);
+
+/// <param name="First">The one with more wins; on a tie the lower Twitch user id.</param>
+public sealed record Rivalry(int Rank, TrainerRef First, TrainerRef Second, int Fights, int FirstWins, int SecondWins);
+
+/// <param name="Count">Appearances in <see cref="Statistics.BossesSeen"/>, escapes in <see cref="Statistics.BossesEscaped"/>.</param>
+public sealed record BossTally(int Rank, SpeciesInfo Species, int Count);
+
 /// <summary>What the local OBS overlay shows: the latest fight and the top of the leaderboard.</summary>
 public sealed record OverlayState(BattleSummary? LatestBattle, IReadOnlyList<LeaderboardEntry> Top);

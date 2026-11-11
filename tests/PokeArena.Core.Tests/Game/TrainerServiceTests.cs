@@ -120,7 +120,7 @@ public class TrainerServiceTests : IDisposable
         Assert.Equal(("AshKetchum", "ashketchum"), (trainer.DisplayName, trainer.Login));
         Assert.Equal(1, changes);
         Assert.Equal(
-            [Contracts.SitePaths.Meta, Contracts.SitePaths.Leaderboard, Contracts.SitePaths.Trainer("1001")],
+            [Contracts.SitePaths.Meta, Contracts.SitePaths.Leaderboard, Contracts.SitePaths.Statistics, Contracts.SitePaths.Trainer("1001")],
             await db.PublishQueue.Select(i => i.Path).OrderBy(p => p).ToListAsync(_ct));
     }
 
