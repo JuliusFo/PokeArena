@@ -35,7 +35,7 @@ public sealed class R2SitePublisher : ISitePublisher, IDisposable
             BucketName = _bucket,
             Key = path,
             InputStream = content,
-            ContentType = "application/json; charset=utf-8",
+            ContentType = file.ContentType,
             DisablePayloadSigning = true,
         };
         request.Headers.CacheControl = file.CacheControl;

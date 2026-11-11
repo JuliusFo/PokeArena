@@ -25,6 +25,8 @@ public sealed class PokeArenaDb(DbContextOptions<PokeArenaDb> options) : DbConte
 
     public DbSet<PublishQueueItem> PublishQueue => Set<PublishQueueItem>();
 
+    public DbSet<TrainerProfileImage> ProfileImages => Set<TrainerProfileImage>();
+
     public static DbContextOptions<PokeArenaDb> Options(string connectionString) =>
         new DbContextOptionsBuilder<PokeArenaDb>().UseSqlite(connectionString).Options;
 
@@ -102,6 +104,15 @@ public sealed class PokeArenaDb(DbContextOptions<PokeArenaDb> options) : DbConte
             item.Property(i => i.Path).HasMaxLength(128);
             item.Property(i => i.LastError).HasMaxLength(500);
             item.HasIndex(i => i.NextAttemptAt);
+        });
+
+        modelBuilder.Entity<TrainerProfileImage>(image =>
+        {
+            image.HasKey(i => i.TrainerId);
+            image.Property(i => i.TrainerId).HasMaxLength(32);
+            image.Property(i => i.ContentType).HasMaxLength(16);
+            image.Property(i => i.SourceUrl).HasMaxLength(512);
+            image.HasOne<Trainer>().WithOne().HasForeignKey<TrainerProfileImage>(i => i.TrainerId).OnDelete(DeleteBehavior.Cascade);
         });
     }
 

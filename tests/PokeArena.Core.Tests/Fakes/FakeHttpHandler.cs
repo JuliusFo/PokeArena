@@ -15,7 +15,22 @@ public sealed class FakeHttpHandler : HttpMessageHandler
     public Func<Task>? Gate { get; set; }
 
     /// <summary>Queues a response; the last one queued for a route repeats once the queue is down to it.</summary>
-    public FakeHttpHandler On(HttpMethod method, string urlPrefix, HttpStatusCode status, string json = "{}")
+    public FakeHttpHandler On(HttpMethod method, string urlPrefix, HttpStatusCode status, string json = "{}") =>
+        On(method, urlPrefix, () => new HttpResponseMessage(status)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json"),
+        });
+
+    /// <summary>Queues a binary response, e.g. a picture.</summary>
+    public FakeHttpHandler OnBytes(string urlPrefix, byte[] content, string contentType, HttpStatusCode status = HttpStatusCode.OK) =>
+        On(HttpMethod.Get, urlPrefix, () =>
+        {
+            var body = new ByteArrayContent(content);
+            body.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
+            return new HttpResponseMessage(status) { Content = body };
+        });
+
+    public FakeHttpHandler On(HttpMethod method, string urlPrefix, Func<HttpResponseMessage> response)
     {
         lock (_lock)
         {
@@ -26,10 +41,7 @@ public sealed class FakeHttpHandler : HttpMessageHandler
                 _routes.Add(route);
             }
 
-            route.Responses.Enqueue(() => new HttpResponseMessage(status)
-            {
-                Content = new StringContent(json, Encoding.UTF8, "application/json"),
-            });
+            route.Responses.Enqueue(response);
         }
 
         return this;

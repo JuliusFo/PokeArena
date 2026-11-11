@@ -266,6 +266,34 @@ namespace PokeArena.Core.Data.Migrations
                     b.ToTable("Trainers");
                 });
 
+            modelBuilder.Entity("PokeArena.Core.Data.TrainerProfileImage", b =>
+                {
+                    b.Property<string>("TrainerId")
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("CheckedAt")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<byte[]>("Content")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SourceUrl")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("TrainerId");
+
+                    b.ToTable("ProfileImages");
+                });
+
             modelBuilder.Entity("PokeArena.Core.Data.AchievementUnlock", b =>
                 {
                     b.HasOne("PokeArena.Core.Data.Trainer", "Trainer")
@@ -314,6 +342,15 @@ namespace PokeArena.Core.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Trainer");
+                });
+
+            modelBuilder.Entity("PokeArena.Core.Data.TrainerProfileImage", b =>
+                {
+                    b.HasOne("PokeArena.Core.Data.Trainer", null)
+                        .WithOne()
+                        .HasForeignKey("PokeArena.Core.Data.TrainerProfileImage", "TrainerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("PokeArena.Core.Data.Battle", b =>

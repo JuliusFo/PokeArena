@@ -50,9 +50,9 @@ public sealed class SitePublishWorker(
     public PublishState State => Volatile.Read(ref _state);
 
     /// <summary>
-    /// „Alles neu veröffentlichen“: queues every file of the live database (spec §9) and every trainer or fight file
-    /// in the bucket, so files the database no longer knows (an older backup was restored) get deleted. Fight ids
-    /// then continue above the highest one in the bucket: a reused id would show the old, cached fight for a day.
+    /// „Alles neu veröffentlichen“: queues every file of the live database (spec §9) and every trainer, fight or
+    /// picture file in the bucket, so files the database no longer knows (an older backup was restored) get deleted.
+    /// Fight ids then continue above the highest one in the bucket: a reused id would show the old, cached fight for a day.
     /// </summary>
     public async Task RepublishEverythingAsync(CancellationToken ct)
     {
@@ -157,7 +157,12 @@ public sealed class SitePublishWorker(
 
         try
         {
-            var keys = (await publisher.ListAsync(SitePaths.TrainerPrefix, ct)).Concat(await publisher.ListAsync(SitePaths.BattlePrefix, ct)).ToList();
+            var keys = new List<string>();
+            foreach (var prefix in (string[])[SitePaths.TrainerPrefix, SitePaths.BattlePrefix, SitePaths.ProfileImagePrefix])
+            {
+                keys.AddRange(await publisher.ListAsync(prefix, ct));
+            }
+
             var paths = keys.Where(IsOwnPath).ToList();
             if (paths.Count < keys.Count)
             {
@@ -175,11 +180,16 @@ public sealed class SitePublishWorker(
         }
     }
 
-    /// <summary>A trainer page of a numeric Twitch id or a fight page, exactly as <see cref="SitePaths"/> writes it.</summary>
+    /// <summary>
+    /// A trainer page or profile picture of a numeric Twitch id, or a fight page, exactly as <see cref="SitePaths"/>
+    /// writes it.
+    /// </summary>
     private static bool IsOwnPath(string key) =>
         SitePaths.BattleIdOf(key) is { } battleId
             ? key == SitePaths.Battle(battleId)
-            : SitePaths.TrainerIdOf(key) is { Length: > 0 } trainerId && trainerId.All(char.IsAsciiDigit) && key == SitePaths.Trainer(trainerId);
+            : SitePaths.ProfileImageOf(key) is ({ } imageTrainerId, { } contentType)
+                ? key == SitePaths.ProfileImage(imageTrainerId, contentType)
+                : SitePaths.TrainerIdOf(key) is { Length: > 0 } trainerId && trainerId.All(char.IsAsciiDigit) && key == SitePaths.Trainer(trainerId);
 
     /// <summary>Raises the AUTOINCREMENT counter of the fights so the next id is above <paramref name="highest"/>.</summary>
     private static async Task KeepBattleIdsAboveAsync(PokeArenaDb db, long highest, CancellationToken ct)

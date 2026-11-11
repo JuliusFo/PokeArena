@@ -219,3 +219,23 @@ public sealed class BossCooldownReduction
 
     public DateTimeOffset Until { get; set; }
 }
+
+/// <summary>
+/// A trainer's Twitch profile picture, mirrored to the website's data host. The bytes live here, so the picture file
+/// is derived like every other site file (ADR-0003). Own table: trainer queries never load the blob.
+/// </summary>
+public sealed class TrainerProfileImage
+{
+    public required string TrainerId { get; init; }
+
+    public required byte[] Content { get; set; }
+
+    /// <summary><see cref="SitePaths.Png"/> or <see cref="SitePaths.Jpeg"/>.</summary>
+    public required string ContentType { get; set; }
+
+    /// <summary>The <c>profile_image_url</c> Twitch reported; a new upload gets a new URL.</summary>
+    public required string SourceUrl { get; set; }
+
+    /// <summary>When Twitch last confirmed <see cref="SourceUrl"/>.</summary>
+    public DateTimeOffset CheckedAt { get; set; }
+}

@@ -261,16 +261,26 @@ public sealed class TrainerService
             battle.LogJson = BattleLog.FromJson(battle.LogJson).WithoutTrainer(twitchUserId).ToJson();
         }
 
+        var imageType = await db.ProfileImages
+            .Where(i => i.TrainerId == twitchUserId)
+            .Select(i => i.ContentType)
+            .FirstOrDefaultAsync(ct);
         var npcCooldowns = NpcService.CooldownKey(twitchUserId, "");
         await db.BattleParticipants.Where(p => p.TrainerId == twitchUserId).ExecuteDeleteAsync(ct);
         await db.Specimens.Where(s => s.TrainerId == twitchUserId).ExecuteDeleteAsync(ct);
         await db.AchievementUnlocks.Where(u => u.TrainerId == twitchUserId).ExecuteDeleteAsync(ct);
         await db.NpcBadges.Where(b => b.TrainerId == twitchUserId).ExecuteDeleteAsync(ct);
         await db.Cooldowns.Where(c => c.Key.StartsWith(npcCooldowns)).ExecuteDeleteAsync(ct);
+        await db.ProfileImages.Where(i => i.TrainerId == twitchUserId).ExecuteDeleteAsync(ct);
         db.Trainers.Remove(trainer);
         await SiteOutbox.EnqueueAsync(
             db,
-            [SitePaths.BattleIndex, .. SiteOutbox.ForTrainers([twitchUserId, .. others]), .. battleIds.Select(SitePaths.Battle)],
+            [
+                SitePaths.BattleIndex,
+                .. SiteOutbox.ForTrainers([twitchUserId, .. others]),
+                .. battleIds.Select(SitePaths.Battle),
+                .. (imageType is null ? [] : new[] { SitePaths.ProfileImage(twitchUserId, imageType) }),
+            ],
             _time.GetUtcNow(),
             ct);
         await db.SaveChangesAsync(ct);

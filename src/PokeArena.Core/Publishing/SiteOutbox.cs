@@ -53,6 +53,17 @@ public static class SiteOutbox
     {
         var trainers = await db.Trainers.Select(t => t.TwitchUserId).ToListAsync(ct);
         var battles = await db.Battles.Select(b => b.Id).ToListAsync(ct);
-        await EnqueueAsync(db, [SitePaths.BattleIndex, .. ForTrainers(trainers), .. battles.Select(SitePaths.Battle), .. inBucket], now, ct);
+        var images = await db.ProfileImages.Select(i => new { i.TrainerId, i.ContentType }).ToListAsync(ct);
+        await EnqueueAsync(
+            db,
+            [
+                SitePaths.BattleIndex,
+                .. ForTrainers(trainers),
+                .. battles.Select(SitePaths.Battle),
+                .. images.Select(i => SitePaths.ProfileImage(i.TrainerId, i.ContentType)),
+                .. inBucket,
+            ],
+            now,
+            ct);
     }
 }

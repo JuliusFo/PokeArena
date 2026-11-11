@@ -100,6 +100,10 @@ public sealed record LogPart(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool IsCritical = false);
 
 /// <summary><c>trainer/&lt;twitch-id&gt;.json</c>: one trainer's collection and history.</summary>
+/// <param name="ProfileImage">
+/// The mirrored Twitch profile picture (<see cref="SitePaths.ProfileImage"/>, relative to the data host); null without
+/// one and in older files.
+/// </param>
 public sealed record TrainerPage(
     string TrainerId,
     string DisplayName,
@@ -113,7 +117,8 @@ public sealed record TrainerPage(
     IReadOnlyList<PokedexEntry> Pokedex,
     IReadOnlyList<AchievementInfo> Achievements,
     IReadOnlyList<BadgeInfo> Badges,
-    IReadOnlyList<BattleSummary> RecentBattles);
+    IReadOnlyList<BattleSummary> RecentBattles,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? ProfileImage = null);
 
 /// <param name="HasStarter">One of the specimens is the protected starter.</param>
 public sealed record PokedexEntry(SpeciesInfo Species, int Count, bool HasStarter);

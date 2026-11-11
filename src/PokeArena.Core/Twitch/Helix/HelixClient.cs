@@ -21,6 +21,34 @@ public sealed class HelixClient(HttpClient http, TwitchOptions options, TwitchTo
         return body.Data.Select(u => new TwitchUser(u.Id, u.Login, u.DisplayName)).FirstOrDefault();
     }
 
+    /// <summary>Most user ids one <c>GET /users</c> accepts.</summary>
+    public const int MaxUsersPerRequest = 100;
+
+    /// <returns>
+    /// The profile picture URL per user id; ids Twitch no longer knows (account deleted or banned) are missing.
+    /// </returns>
+    /// <exception cref="ArgumentException">More than <see cref="MaxUsersPerRequest"/> ids.</exception>
+    public async Task<IReadOnlyDictionary<string, string>> GetProfileImageUrlsAsync(IReadOnlyCollection<string> userIds, CancellationToken ct)
+    {
+        if (userIds.Count > MaxUsersPerRequest)
+        {
+            throw new ArgumentException($"At most {MaxUsersPerRequest} ids per request", nameof(userIds));
+        }
+
+        if (userIds.Count == 0)
+        {
+            return new Dictionary<string, string>();
+        }
+
+        var query = string.Join('&', userIds.Select(id => "id=" + Uri.EscapeDataString(id)));
+        using var response = await SendAsync(() => new HttpRequestMessage(HttpMethod.Get, BaseUrl + "users?" + query), ct);
+        var body = await ReadAsync<DataResponse<UserData>>(response, ct);
+        return body.Data
+            .Where(u => u.ProfileImageUrl is { Length: > 0 })
+            .GroupBy(u => u.Id)
+            .ToDictionary(g => g.Key, g => g.First().ProfileImageUrl!);
+    }
+
     /// <summary>Subscribes the WebSocket session to the channel's chat messages as seen by the bot account.</summary>
     public Task SubscribeToChatMessagesAsync(string sessionId, string broadcasterId, string botUserId, CancellationToken ct) =>
         SubscribeAsync(sessionId, "channel.chat.message", new { broadcaster_user_id = broadcasterId, user_id = botUserId }, ct);
@@ -120,7 +148,7 @@ public sealed class HelixClient(HttpClient http, TwitchOptions options, TwitchTo
 
     private sealed record DataResponse<T>(IReadOnlyList<T> Data);
 
-    private sealed record UserData(string Id, string Login, string DisplayName);
+    private sealed record UserData(string Id, string Login, string DisplayName, string? ProfileImageUrl = null);
 
     private sealed record StreamData(string Type);
 

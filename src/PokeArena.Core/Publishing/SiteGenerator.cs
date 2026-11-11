@@ -7,8 +7,11 @@ using PokeArena.Core.Game.Battles;
 
 namespace PokeArena.Core.Publishing;
 
-/// <summary>A rendered site file and how long browsers and the CDN may keep it.</summary>
-public sealed record SiteFile(byte[] Content, string CacheControl);
+/// <summary>A rendered site file, how long browsers and the CDN may keep it, and its media type.</summary>
+public sealed record SiteFile(byte[] Content, string CacheControl, string ContentType = SiteFile.Json)
+{
+    public const string Json = "application/json; charset=utf-8";
+}
 
 /// <summary>
 /// Renders the website's JSON files from the database (spec §9). Every file is derived: rendering the same path
@@ -39,6 +42,13 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
     /// <summary>Below the site's 15 s poll interval (spec §9, §13), so nobody sees a stale leaderboard for long.</summary>
     public const string MutableCache = "public, max-age=10";
 
+    /// <summary>
+    /// Profile pictures keep their path when they change, and the data host refuses query strings, so there is no
+    /// cache busting: like fights, a new or deleted picture is gone from Cloudflare and browsers after a day
+    /// (feat/trainer-profile-image).
+    /// </summary>
+    public const string ImageCache = BattleCache;
+
     /// <summary>The file at <paramref name="path"/>, or null if it no longer exists (deleted trainer) and must be removed.</summary>
     /// <exception cref="ArgumentException">Not a site path.</exception>
     public async Task<SiteFile?> RenderAsync(PokeArenaDb db, string path, DateTimeOffset now, CancellationToken ct)
@@ -68,6 +78,16 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
             return await BattleAsync(db, battleId, ct) is { } battle
                 ? new SiteFile(JsonSerializer.SerializeToUtf8Bytes(battle, SiteJson.Default.BattlePage), BattleCache)
                 : null;
+        }
+
+        if (SitePaths.ProfileImageOf(path) is ({ } imageTrainerId, { } contentType))
+        {
+            // A path in the other format (the trainer uploaded a picture of a new kind) has no source any more.
+            var image = await db.ProfileImages.AsNoTracking()
+                .Where(i => i.TrainerId == imageTrainerId && i.ContentType == contentType)
+                .Select(i => i.Content)
+                .FirstOrDefaultAsync(ct);
+            return image is null ? null : new SiteFile(image, ImageCache, contentType);
         }
 
         throw new ArgumentException($"Not a site path: {path}", nameof(path));
@@ -231,7 +251,14 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
     {
         var trainer = await db.Trainers.AsNoTracking()
             .Where(t => t.TwitchUserId == trainerId)
-            .Select(t => new { t.DisplayName, t.RegisteredAt, t.Tokens, Specimens = t.Specimens.Select(s => new { s.SpeciesId, s.IsStarter }).ToList() })
+            .Select(t => new
+            {
+                t.DisplayName,
+                t.RegisteredAt,
+                t.Tokens,
+                ImageType = db.ProfileImages.Where(i => i.TrainerId == t.TwitchUserId).Select(i => i.ContentType).FirstOrDefault(),
+                Specimens = t.Specimens.Select(s => new { s.SpeciesId, s.IsStarter }).ToList(),
+            })
             .FirstOrDefaultAsync(ct);
         if (trainer is null)
         {
@@ -271,7 +298,8 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
                 .Select(g => new PokedexEntry(Info(g.Key), g.Count(), g.Any(s => s.IsStarter)))],
             [.. achievements.Select(a => new AchievementInfo(a.Threshold, npcs.ForThreshold(a.Threshold).Name, a.UnlockedAt))],
             [.. badges.Select(b => new BadgeInfo(npcs.Find(b.NpcId)?.Name ?? b.NpcId, b.WonAt, b.BattleId))],
-            recent);
+            recent,
+            trainer.ImageType is { } imageType ? SitePaths.ProfileImage(trainerId, imageType) : null);
     }
 
     private async Task<BattlePage?> BattleAsync(PokeArenaDb db, long battleId, CancellationToken ct)
