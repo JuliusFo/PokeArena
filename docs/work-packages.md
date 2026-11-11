@@ -856,14 +856,18 @@ in [roadmap.md](roadmap.md).
   branch of `TrainerService` now queues `ForTrainers` (leaderboard, statistics,
   meta, trainer page) instead of the statistics alone; `ProfileImageRefresher`
   queues the leaderboard once per batch when a picture appeared, changed or
-  went. Website: 24 px round picture before the name (`loading="lazy"`, an
-  empty circle without one, `visibility: hidden` on a load error so the names
-  stay aligned), the tint on the leaderboard link itself (the underline takes
-  the colour), trainer heading tinted with its bold weight kept;
+  went; an unknown picture format counts as none instead of throwing.
+  Website: a 24 px circle before every name with the picture inside it
+  (`loading="lazy"`, hidden on a load error so the empty circle shows), rows
+  keyed by trainer id, the tint on the leaderboard link itself (the underline
+  takes the colour), trainer heading tinted with its bold weight kept;
   `SiteData.ProfileImageUrl` takes a path. Tests: generator (colour, picture,
-  nulls left out), refresher (leaderboard follows a new and a lost picture),
-  colour change queue, bUnit (leaderboard pictures, foreign host and invalid
-  colour refused; trainer heading). Spec §9 ⁷, CHANGELOG, „Neuigkeiten“.
+  nulls left out, unknown format), refresher (leaderboard follows a new and a
+  lost picture), colour change queue, bUnit (leaderboard pictures, foreign
+  host and invalid colour refused; trainer heading). Spec §9 ⁷, architecture,
+  ADR-0003 and ADR-0008 addenda, CHANGELOG, „Neuigkeiten“. After updating the
+  streamer clicks „Alles neu veröffentlichen“ once: trainer pages are written
+  only on a change, so idle trainers would never get their colour.
 - User decisions: scope „Ohne Kampfliste“ (fight lists stay plain → backlog).
 - Addenda: version 1.7.1 is a proposal (roadmap.md).
 - Pitfalls: `.tinted` sets weight 600 — on the `h1` it would thin the heading

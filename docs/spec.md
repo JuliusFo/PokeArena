@@ -471,7 +471,9 @@ before each name (an empty circle without one, so the names stay aligned;
 loaded lazily) and every name in the trainer's chat colour; the trainer page
 shows its heading in that colour. The colour is darkened like on the fight
 page (³). A new or lost picture and a chat colour change republish the
-leaderboard and the trainer page. The fight lists („Kämpfe“, „Letzte
+leaderboard and the trainer page; pages written before the change get the
+colour with „Alles neu veröffentlichen“ (once after updating) or the
+trainer's next fight. The fight lists („Kämpfe“, „Letzte
 Kämpfe“) stay plain: their names sit inside a sentence the bot writes (user
 decision „Ohne Kampfliste“, backlog).
 

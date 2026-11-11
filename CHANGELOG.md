@@ -10,8 +10,9 @@ tagged `vX.Y.Z` once its section is complete.
 ### Added
 - The leaderboard shows each trainer's Twitch profile picture small before the
   name, and every name in the trainer's Twitch chat colour. The trainer page
-  shows the name in that colour too. A new picture or a new chat colour
-  updates both pages by itself; nothing needs to be clicked after updating.
+  shows the name in that colour too. After updating, the streamer clicks
+  „Alles neu veröffentlichen“ once, so that every trainer page gets its colour;
+  later a new picture or a new chat colour updates both pages by itself.
   The fight lists keep plain names.
 
 ## [1.7.0] - 2026-11-11
