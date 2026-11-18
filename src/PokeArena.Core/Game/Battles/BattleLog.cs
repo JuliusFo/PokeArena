@@ -78,18 +78,38 @@ public sealed record BattleLog(IReadOnlyList<LogFighter> Fighters, IReadOnlyList
     /// </summary>
     public IReadOnlyList<int> DamageDealt()
     {
-        var hp = Fighters.Select(f => f.MaxHp).ToArray();
         var dealt = new int[Fighters.Count];
-        foreach (var e in Events)
+        foreach (var (e, targetHpBefore) in WithTargetHpBefore())
         {
-            if (e is { Kind: BattleEventKind.Attack, Target: { } target })
+            if (e is { Kind: BattleEventKind.Attack, Target: not null })
             {
-                dealt[e.Fighter] += hp[target] - e.TargetHp;
-                hp[target] = e.TargetHp;
+                dealt[e.Fighter] += targetHpBefore - e.TargetHp;
             }
         }
 
         return dealt;
+    }
+
+    /// <summary>
+    /// Every event with its target's HP just before it (0 for events without a target). The one HP replay that
+    /// <see cref="DamageDealt"/> and <see cref="ToText"/> share, so the „Schaden“ box and the log's „HP 10 → 0“ never
+    /// disagree (review fix/battle-log-hp-before).
+    /// </summary>
+    private IEnumerable<(BattleEvent Event, int TargetHpBefore)> WithTargetHpBefore()
+    {
+        var hp = Fighters.Select(f => f.MaxHp).ToArray();
+        foreach (var e in Events)
+        {
+            if (e is { Kind: BattleEventKind.Attack, Target: { } target })
+            {
+                yield return (e, hp[target]);
+                hp[target] = e.TargetHp;
+            }
+            else
+            {
+                yield return (e, 0);
+            }
+        }
     }
 
     /// <summary>
@@ -116,21 +136,13 @@ public sealed record BattleLog(IReadOnlyList<LogFighter> Fighters, IReadOnlyList
     public IReadOnlyList<LogText> ToText(SpeciesCatalog species)
     {
         var lines = new List<LogText>();
-        var hp = Fighters.Select(f => f.MaxHp).ToArray();
         var round = 0;
-        foreach (var e in Events)
+        foreach (var (e, targetHpBefore) in WithTargetHpBefore())
         {
             if (e.Round != round && e.Kind != BattleEventKind.RoundLimit)
             {
                 round = e.Round;
                 lines.Add(new LogText([new LogSpan($"Runde {round}")], IsRound: true));
-            }
-
-            var target = e.Target ?? 0;
-            var targetHpBefore = hp[target];
-            if (e.Kind == BattleEventKind.Attack)
-            {
-                hp[target] = e.TargetHp;
             }
 
             lines.Add(new LogText(e.Kind switch
@@ -139,7 +151,7 @@ public sealed record BattleLog(IReadOnlyList<LogFighter> Fighters, IReadOnlyList
                 [
                     .. Label(species, e.Fighter, Number(e.FighterHp)),
                     new(" hat "),
-                    .. Label(species, target, $"{Number(targetHpBefore)} → {Number(e.TargetHp)}"),
+                    .. Label(species, e.Target ?? 0, $"{Number(targetHpBefore)} → {Number(e.TargetHp)}"),
                     .. Outcome(e),
                 ],
                 BattleEventKind.Fainted => [.. Label(species, e.Fighter), new(" wurde besiegt.")],
