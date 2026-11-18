@@ -7,6 +7,13 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+### Fixed
+- The fight log shows a hit's target with its HP before and after the hit
+  („Digda (Ash, HP 10 → 0)“) instead of only the HP after it, so a
+  knockout no longer reads as a hit on a Pokémon with 0 HP. The text is
+  rendered from the stored fight, so after updating the streamer clicks
+  „Alles neu veröffentlichen“ once to fix older fight pages too.
+
 ## [1.7.1] - 2026-11-11
 
 ### Added

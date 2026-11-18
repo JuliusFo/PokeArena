@@ -539,6 +539,19 @@ Standard“); a whole leaderboard in chat colours shows it more than a few names
 in the fight log. If it does not read well, the lighter dark-theme variant of
 1.6.0 returns for names.
 
+## Fight log: HP before the hit (`fix/battle-log-hp-before`) → v1.7.2 (proposal)
+
+Viewer feedback (2026-11-18, on a duel): „Owei (…, HP 52) hat Digda (…, HP 0)
+46 Schaden zugefügt“ shows the target's HP after the hit, so every knockout
+reads „HP 0“; the viewer suggested the HP before the hit.
+
+- User decision (2026-11-18): the small fix first, the fight log redesign later
+  (ideas in backlog.md, „Fight log redesign“).
+- Proposal (not confirmed): the target shows both, „HP 10 → 0“, so a 46 on 10
+  HP left explains itself; the attacker keeps one number (its HP does not
+  change by its own hit). The text is rendered from the stored events, so older
+  fights change after „Alles neu veröffentlichen“.
+
 ## WP-09 — Balancing after the first streams (≈ 2 days) → v1.8.0
 
 Tuning with real stream data and the Monte Carlo simulator instead of
