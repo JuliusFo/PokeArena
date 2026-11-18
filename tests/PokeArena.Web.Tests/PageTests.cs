@@ -144,7 +144,7 @@ public class PageTests : BunitContext
 
         cut.WaitForAssertion(() => Assert.Contains("Ash gegen Misty", cut.Markup));
         Assert.Contains("Ash – gewonnen", cut.Markup);
-        Assert.Equal(["Runde 1", "Bisasam (Ash, HP 40) hat Raupy (Misty, HP 0) 50 Schaden zugefügt."], cut.FindAll(".log li").Select(li => li.TextContent));
+        Assert.Equal(["Runde 1", "Bisasam (Ash, HP 40) hat Raupy (Misty, HP 45 → 0) 50 Schaden zugefügt."], cut.FindAll(".log li").Select(li => li.TextContent));
         Assert.NotNull(cut.Find(".type-kaefer"));
     }
 
@@ -542,7 +542,7 @@ public class PageTests : BunitContext
             new BattleSide("Ash", true, [new BattleFighter(Bisasam, "Ash", "11", 40)]),
             new BattleSide("Misty", false, [new BattleFighter(Raupy, "Misty", "12", 30)]),
         ],
-        ["Runde 1", "Bisasam (Ash, HP 40) hat Raupy (Misty, HP 0) 50 Schaden zugefügt."]);
+        ["Runde 1", "Bisasam (Ash, HP 40) hat Raupy (Misty, HP 45 → 0) 50 Schaden zugefügt."]);
 
     private void Put<T>(string path, T value, JsonTypeInfo<T> type) => _host.Files[path] = JsonSerializer.Serialize(value, type);
 }

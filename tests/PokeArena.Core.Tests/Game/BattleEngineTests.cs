@@ -225,8 +225,35 @@ public class BattleEngineTests
         var lines = result.Log.ToLines(Species);
 
         Assert.Equal("Ash schickt Pikachu in den Kampf.", lines[1]);
-        Assert.Equal("Pikachu (Ash, HP 35) hat Schiggy (Misty, HP 0) 50 Schaden zugefügt. Sehr effektiv!", lines[3]);
+        Assert.Equal("Pikachu (Ash, HP 35) hat Schiggy (Misty, HP 44 → 0) 50 Schaden zugefügt. Sehr effektiv!", lines[3]);
         Assert.Equal("Schiggy (Misty) wurde besiegt.", lines[4]);
+    }
+
+    [Fact]
+    public void A_target_shows_its_hp_before_and_after_each_hit()
+    {
+        // The second hit is more than Schiggy has left: the line shows the 30 it had, not only the 0 after (fix/battle-log-hp-before).
+        var log = new BattleLog(
+            [new LogFighter(0, 25, 70, "1", "Ash"), new LogFighter(1, 7, 88, "2", "Misty")],
+            [
+                new BattleEvent(BattleEventKind.Attack, 1, 0, 70, 1, 30, 58),
+                new BattleEvent(BattleEventKind.Attack, 1, 1, 30, 0, 50, 20),
+                new BattleEvent(BattleEventKind.Attack, 2, 0, 50, 1, 0, 45),
+                new BattleEvent(BattleEventKind.Fainted, 2, 1),
+            ]);
+
+        var lines = log.ToLines(Species);
+
+        Assert.Equal(
+            [
+                "Runde 1",
+                "Pikachu (Ash, HP 70) hat Schiggy (Misty, HP 88 → 30) 58 Schaden zugefügt.",
+                "Schiggy (Misty, HP 30) hat Pikachu (Ash, HP 70 → 50) 20 Schaden zugefügt.",
+                "Runde 2",
+                "Pikachu (Ash, HP 50) hat Schiggy (Misty, HP 30 → 0) 45 Schaden zugefügt.",
+                "Schiggy (Misty) wurde besiegt.",
+            ],
+            lines);
     }
 
     [Theory]
@@ -244,7 +271,7 @@ public class BattleEngineTests
             [
                 new LogSpan("Pikachu", 0, IsSpecies: true), new LogSpan(" (", 0), new LogSpan("Ash", 0, IsOwner: true), new LogSpan(", HP 70)", 0),
                 new LogSpan(" hat "),
-                new LogSpan("Schiggy", 1, IsSpecies: true), new LogSpan(" (", 1), new LogSpan("Boss", 1, IsOwner: true), new LogSpan(", HP 38)", 1),
+                new LogSpan("Schiggy", 1, IsSpecies: true), new LogSpan(" (", 1), new LogSpan("Boss", 1, IsOwner: true), new LogSpan(", HP 88 → 38)", 1),
                 new LogSpan(" 50 Schaden zugefügt."), new LogSpan(" Volltreffer!", IsCritical: true),
                 .. effect is null ? Array.Empty<LogSpan>() : [new LogSpan(effect)],
             ],
