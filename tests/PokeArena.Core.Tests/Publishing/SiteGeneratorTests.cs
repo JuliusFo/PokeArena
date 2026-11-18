@@ -203,7 +203,7 @@ public class SiteGeneratorTests : IDisposable
         Assert.Equal(
             [
                 new LogPart("Raupy", 0, 1, IsSpecies: true), new LogPart(" (", 0, 1), new LogPart("Misty", 0, 1, IsOwner: true), new LogPart(", HP 90)", 0, 1), new LogPart(" hat "),
-                new LogPart("Arkani", 1, 0, IsSpecies: true), new LogPart(" (", 1, 0), new LogPart("Boss", 1, 0, IsOwner: true), new LogPart(", HP 380)", 1, 0), new LogPart(" 20 Schaden zugefügt."),
+                new LogPart("Arkani", 1, 0, IsSpecies: true), new LogPart(" (", 1, 0), new LogPart("Boss", 1, 0, IsOwner: true), new LogPart(", HP 400 → 380)", 1, 0), new LogPart(" 20 Schaden zugefügt."),
             ],
             page.Log[1].Parts);
         Assert.Equal(

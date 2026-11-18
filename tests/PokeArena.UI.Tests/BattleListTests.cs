@@ -69,7 +69,7 @@ public class BattleListTests : BunitContext
         {
             var lines = cut.FindAll(".battle-log li").Select(li => li.TextContent).ToList();
             Assert.Equal(
-                ["Runde 1", "Pikachu (Ash, HP 35) hat Arkani (Boss, HP 0) 200 Schaden zugefügt.", "Arkani (Boss) wurde besiegt."],
+                ["Runde 1", "Pikachu (Ash, HP 35) hat Arkani (Boss, HP 200 → 0) 200 Schaden zugefügt.", "Arkani (Boss) wurde besiegt."],
                 lines);
             Assert.Contains("selected", cut.Find("tbody tr").ClassName);
         });

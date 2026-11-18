@@ -110,11 +110,13 @@ public sealed record BattleLog(IReadOnlyList<LogFighter> Fighters, IReadOnlyList
     /// <summary>
     /// The lines of <see cref="ToLines"/> in parts, so the website can colour them: a fighter's label „Pikachu (Ash,
     /// HP 24)“ names the fighter, and its species and its owner („Ash“, „Boss“, an NPC's name) are parts of their own;
-    /// so is „Volltreffer!“.
+    /// so is „Volltreffer!“. A hit's target shows its HP before and after the hit („Digda (Ash, HP 10 → 0)“), so a
+    /// knockout does not read as a hit on a fighter that already had 0 HP (fix/battle-log-hp-before).
     /// </summary>
     public IReadOnlyList<LogText> ToText(SpeciesCatalog species)
     {
         var lines = new List<LogText>();
+        var hp = Fighters.Select(f => f.MaxHp).ToArray();
         var round = 0;
         foreach (var e in Events)
         {
@@ -124,13 +126,20 @@ public sealed record BattleLog(IReadOnlyList<LogFighter> Fighters, IReadOnlyList
                 lines.Add(new LogText([new LogSpan($"Runde {round}")], IsRound: true));
             }
 
+            var target = e.Target ?? 0;
+            var targetHpBefore = hp[target];
+            if (e.Kind == BattleEventKind.Attack)
+            {
+                hp[target] = e.TargetHp;
+            }
+
             lines.Add(new LogText(e.Kind switch
             {
                 BattleEventKind.Attack =>
                 [
-                    .. Label(species, e.Fighter, e.FighterHp),
+                    .. Label(species, e.Fighter, Number(e.FighterHp)),
                     new(" hat "),
-                    .. Label(species, e.Target ?? 0, e.TargetHp),
+                    .. Label(species, target, $"{Number(targetHpBefore)} → {Number(e.TargetHp)}"),
                     .. Outcome(e),
                 ],
                 BattleEventKind.Fainted => [.. Label(species, e.Fighter), new(" wurde besiegt.")],
@@ -148,7 +157,7 @@ public sealed record BattleLog(IReadOnlyList<LogFighter> Fighters, IReadOnlyList
     }
 
     /// <summary>„Pikachu (Ash, HP 24)“ in four parts that all name the fighter: species, „ (“, owner, the rest.</summary>
-    private LogSpan[] Label(SpeciesCatalog species, int index, int? hp = null)
+    private LogSpan[] Label(SpeciesCatalog species, int index, string? hp = null)
     {
         var fighter = Fighters[index];
         return
@@ -156,9 +165,11 @@ public sealed record BattleLog(IReadOnlyList<LogFighter> Fighters, IReadOnlyList
             new(species.Get(fighter.SpeciesId).Name, index, IsSpecies: true),
             new(" (", index),
             new(fighter.Owner, index, IsOwner: true),
-            new(hp is { } value ? $", HP {value.ToString(CultureInfo.InvariantCulture)})" : ")", index),
+            new(hp is null ? ")" : $", HP {hp})", index),
         ];
     }
+
+    private static string Number(int value) => value.ToString(CultureInfo.InvariantCulture);
 
     /// <summary>„ 20 Schaden zugefügt. Volltreffer! Sehr effektiv!“ — „Volltreffer!“ as a part of its own, so it can stand out.</summary>
     private static LogSpan[] Outcome(BattleEvent e)
