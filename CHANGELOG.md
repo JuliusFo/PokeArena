@@ -9,8 +9,8 @@ tagged `vX.Y.Z` once its section is complete.
 
 ### Added
 - The leaderboard shows a small trophy before ranks 1 to 3 — gold, silver
-  and bronze; trainers sharing a rank share its trophy. Drawn by the site
-  itself (no emoji, no official asset), hidden from screen readers.
+  and bronze. Drawn by the site itself (no emoji, no official asset),
+  hidden from screen readers.
 
 ### Changed
 - Boss fights are easier and no longer depend on the group size: the boss

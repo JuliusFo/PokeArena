@@ -45,6 +45,8 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   `span.profile-image` (the circle) and hide on an error; rows carry `@key` — an element hidden outside Blazor's view
   must not move to another trainer when the poll reorders rows (review feat/leaderboard-profile-colours). The sample
   data has colours but no pictures (`RepositoryTests` refuses image files under `src/`).
+- Leaderboard trophies (ranks 1–3) are an own inline SVG (`Shared/Trophy.razor`), never emoji (they differ per system)
+  or image files; the stroke-only handles take the metal on the dark page (claude/ranking-trophy-icons-458526).
 - A fighter row is `.who` (species + owner, wraps, `flex: 1 1 0`, never `min-width: 0` — the name would cover the
   HP text) next to `.end-state` (never shrinks): never put a new element straight into `.fighters li`, or long
   names push the HP bar onto its own line again (a bUnit test checks the children) (fix/fighter-row-wrap).
