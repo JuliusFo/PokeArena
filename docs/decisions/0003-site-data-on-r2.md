@@ -95,7 +95,23 @@ second picture size.
   not be regenerated after restoring a backup.
 - The WAF rule refuses query strings, so there is no `?v=` cache busting: a
   picture keeps its path when it changes and is cached for a day like fights.
-  The rate-limiting rule counts only `.json`, pictures are not counted.
+  The rate-limiting rule counts only `.json`, pictures are not counted
+  (superseded by the addendum of 2026-11-19).
 - Proposal (not confirmed): the refresher, the download guard (https,
   `static-cdn.jtvnw.net` only, PNG/JPEG, at most 512 KB) and the intervals
   (every 15 min, each picture checked once a day) — see roadmap.md.
+
+## Addendum 2026-11-19 (review 1.8.1, A2): only the site's own paths reach R2
+
+A 404 is not cached, and R2 bills a failed read like a successful one: a script
+asking for invented paths (`/profilbild/<random>.png`, `/foo`) would have cost a
+billed read per request without limit, because the WAF rule refused only query
+strings and the rate limit counted only `.json`. User decision „Alles mit
+Vorschlägen“ (review 1.8.1, question 3):
+
+- The WAF rule blocks every path on the data host except `*.json` and
+  `/profilbild/*.png|.jpg` (`docs/website-setup.md` §2, check steps in §5).
+- The rate limit also counts `/profilbild/` where the free rule allows it.
+- An R2 usage/billing alert is required, no longer optional. Invented picture
+  ids inside the allowed shape remain possible; that rest is an accepted risk,
+  caught by the alert.

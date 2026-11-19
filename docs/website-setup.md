@@ -42,9 +42,8 @@ labels are from memory and may differ slightly.
    - Edge TTL: **Use cache-control header if present**; the bot sends
      `max-age=10` for lists and a day for fights and profile pictures
      (`profilbild/*.png|.jpg` since 1.7.0; a deleted trainer's name and
-     picture must drop out of the cache, spec §11). The pictures need no
-     rule change: the rule matches the whole hostname, and the rate limit
-     below counts only `.json`.
+     picture must drop out of the cache, spec §11). The rule matches the whole
+     hostname, so the pictures need no rule of their own here.
    - Status code TTL: **404 → no store**. A battle link posted in chat can be
      opened a second before its upload; a cached 404 would hide the fight for
      minutes.
@@ -53,19 +52,38 @@ labels are from memory and may differ slightly.
      misses the cache on every request, and every miss is a billed R2 read —
      exactly what the cache is there to prevent (ADR-0003 addendum; review
      1.0.3).
-2. **WAF custom rule** (Security → WAF → Custom rules): when *Hostname equals*
-   `arena-daten.<domain>` and (*URI Query String* is not empty or *Request
-   Method* is not `GET`/`HEAD`/`OPTIONS`) → **Block**. The site never sends a
-   query string; scripts that do are refused before they reach R2.
+2. **WAF custom rule** (Security → WAF → Custom rules), with *Edit expression*:
+
+   ```
+   (http.host eq "arena-daten.<domain>" and (
+     http.request.uri.query ne ""
+     or not http.request.method in {"GET" "HEAD" "OPTIONS"}
+     or not (
+       ends_with(http.request.uri.path, ".json")
+       or (starts_with(http.request.uri.path, "/profilbild/")
+           and (ends_with(http.request.uri.path, ".png") or ends_with(http.request.uri.path, ".jpg")))
+     )
+   ))
+   ```
+
+   → **Block**. The site never sends a query string and only ever asks for
+   `*.json` and `/profilbild/<id>.png|.jpg`. Every other path is refused before
+   it reaches R2: a 404 is not cached (step 1), so a script asking for invented
+   paths would otherwise cost a billed R2 read per request (review 1.8.1, A2).
+   The match is case-sensitive like R2 keys, so `/RANGLISTE.JSON` is blocked too.
 3. **Rate-limiting rule** (Security → WAF → Rate limiting rules; the free plan
-   has one per zone, currently unused). The free plan cannot match the
-   hostname, only the path: when *URI Path contains* `.json`, counted per IP,
+   has one per zone). The free plan cannot match the hostname, only the path:
+   when *URI Path contains* `.json` **or** *URI Path starts with* `/profilbild/`
+   (if the plan allows only one condition, keep `.json`), counted per IP,
    **more than 50 requests in 10 seconds** → block for 10 seconds. It applies
    to the whole zone, but other sites on it (HorizonNET) fetch hardly any
    `.json`. A viewer with the site open makes about one request per 15
-   seconds plus two per page opened, so only scripts hit the limit.
-4. Optional: Notifications → check whether a usage/billing alert for R2
-   exists and enable it.
+   seconds plus two per page opened and up to 25 small pictures on the
+   leaderboard, so only scripts hit the limit.
+4. **Required:** Notifications → enable a usage/billing alert for R2 (Class B
+   operations). Invented picture ids (`/profilbild/<random digits>.png`) still
+   pass the WAF rule; if the rate limit cannot count them, this alert is what
+   catches a cost attack (accepted risk, ADR-0003 addendum 2026-11-19).
 
 ## 3. GitHub Pages
 
@@ -112,6 +130,10 @@ labels are from memory and may differ slightly.
   has `cf-cache-status: HIT` (browser dev tools, Network tab).
 - `curl -I "https://arena-daten.<domain>/rangliste.json?x=1"` twice: the second
   answer is `cf-cache-status: HIT` (query string ignored) or 403 (WAF rule).
+- `curl -I https://arena-daten.<domain>/foo` and
+  `curl -I https://arena-daten.<domain>/RANGLISTE.JSON` → 403 each (WAF rule,
+  review 1.8.1); `curl -I https://arena-daten.<domain>/profilbild/1.png` → 404
+  or 200, not 403.
 - `https://arena.<domain>/` shows the leaderboard without CORS errors in the
   browser console. If cached responses lack the CORS header, add a response
   header transform rule for the data host
