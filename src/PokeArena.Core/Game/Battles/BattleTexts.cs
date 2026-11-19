@@ -30,11 +30,20 @@ public sealed class BattleTexts(SpeciesCatalog species, NpcCatalog npcs)
     /// <summary>„Arkani hatte noch 45 von 270 HP.“ after an escaped boss (chat and website).</summary>
     public static string BossHpLeft(Species boss, int hp, int maxHp) => $"{boss.Name} hatte noch {hp} von {maxHp} HP.";
 
-    /// <summary><see cref="BossHpLeft"/> from a stored log: the boss is the fighter on side 1.</summary>
-    private static string EscapedBossHpLeft(Species boss, BattleLog log)
+    /// <summary>
+    /// „Arkani ist entkommen – alle Pokémon wurden besiegt. Arkani hatte noch 45 von 270 HP.“, without the middle
+    /// clause when a trainer's Pokémon was still standing (the round limit). Chat and website alike (review 1.8.1, A14).
+    /// </summary>
+    public static string BossEscaped(Species boss, bool anyTrainerStanding, int hp, int maxHp) =>
+        (anyTrainerStanding ? $"{boss.Name} ist entkommen. " : $"{boss.Name} ist entkommen – alle Pokémon wurden besiegt. ")
+        + BossHpLeft(boss, hp, maxHp);
+
+    /// <summary><see cref="BossEscaped"/> from a stored log: the boss is the fighter on side 1.</summary>
+    private static string BossEscaped(Species boss, BattleLog log)
     {
         var bossIndex = log.Fighters.Select((f, i) => (f, i)).First(x => x.f.Side == 1).i;
-        return BossHpLeft(boss, log.HpLeft(bossIndex), log.Fighters[bossIndex].MaxHp);
+        var anyTrainerStanding = log.Survivors().Any(i => log.Fighters[i].Side == 0);
+        return BossEscaped(boss, anyTrainerStanding, log.HpLeft(bossIndex), log.Fighters[bossIndex].MaxHp);
     }
 
     public BattleDescription Describe(Battle battle, BattleLog log)
@@ -57,7 +66,7 @@ public sealed class BattleTexts(SpeciesCatalog species, NpcCatalog npcs)
                     .ToList();
                 var result = defeated
                     ? $"{boss.Name} wurde besiegt! Gefangen von: {string.Join(", ", catchers)}."
-                    : $"{boss.Name} ist entkommen. {EscapedBossHpLeft(boss, log)}";
+                    : BossEscaped(boss, log);
                 return new BattleDescription($"Boss-Kampf gegen {boss.Name}{TierSuffix(boss)}", result, "Trainer", boss.Name, defeated);
             }
 

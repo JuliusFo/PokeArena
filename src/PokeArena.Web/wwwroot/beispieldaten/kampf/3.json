@@ -1,4 +1,4 @@
-{"id":3,"kind":"Boss","foughtAt":"2026-11-01T18:40:00+00:00","seed":777,"headline":"Boss-Kampf gegen Arkani (selten)","result":"Arkani ist entkommen. Arkani hatte noch 45 von 405 HP.",
+{"id":3,"kind":"Boss","foughtAt":"2026-11-01T18:40:00+00:00","seed":777,"headline":"Boss-Kampf gegen Arkani (selten)","result":"Arkani ist entkommen – alle Pokémon wurden besiegt. Arkani hatte noch 45 von 405 HP.",
 "sides":[
 {"name":"Trainer","won":false,"fighters":[
 {"species":{"id":7,"name":"Schiggy","types":["Wasser"]},"owner":"Ben","trainerId":"1002","maxHp":88,"hpLeft":0,"used":true,"damage":104,"color":"#FF4500"},

@@ -34,7 +34,7 @@ public class BattleTextsTests
     }
 
     [Fact]
-    public void An_escaped_boss_says_so_with_the_hp_left_after_its_last_hit_taken()
+    public void A_boss_that_beat_everyone_says_so_like_the_chat_with_the_hp_left_after_its_last_hit_taken()
     {
         var log = new BattleLog(
             [new LogFighter(0, Pikachu, 35, "1", "Ash"), new LogFighter(1, Arkani, 200, null, "Boss")],
@@ -48,11 +48,12 @@ public class BattleTextsTests
 
         var texts = Texts.Describe(Battle(BattleKind.Boss, BattleOutcome.BossEscaped, boss: Arkani), log);
 
-        Assert.Equal(("Arkani ist entkommen. Arkani hatte noch 145 von 200 HP.", false), (texts.Result, texts.TrainerSideWon));
+        // The same sentence as chat row 14 (review 1.8.1, A14).
+        Assert.Equal(("Arkani ist entkommen – alle Pokémon wurden besiegt. Arkani hatte noch 145 von 200 HP.", false), (texts.Result, texts.TrainerSideWon));
     }
 
     [Fact]
-    public void A_boss_never_hit_has_its_full_hp_left()
+    public void A_boss_never_hit_escapes_at_the_round_limit_with_its_full_hp_left()
     {
         var log = new BattleLog([new LogFighter(0, Pikachu, 35, "1", "Ash"), new LogFighter(1, Arkani, 200, null, "Boss")], []);
 
