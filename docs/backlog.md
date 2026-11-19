@@ -105,6 +105,9 @@ showed it together with the ideas below); the rest is not decided yet:
 - „Sehr effektiv“ / „Nicht sehr effektiv“ as badges, like „Volltreffer“ in gold.
 - Boss fights: filter „nur meine Pokémon“ or collapsible rounds — the logs get
   long there.
+- Fight cards: the survivor's `.hp-bar` (`12ch + 16px`) is probably too narrow
+  for „1040 / 1300 HP“ of a boss with 1000+ HP, the numbers may be clipped —
+  found in the code review of the HP bar per hit (2026-11-19).
 
 ## Battle system
 

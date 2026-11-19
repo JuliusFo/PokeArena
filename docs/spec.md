@@ -428,6 +428,11 @@ both themes — the same as the „Schaden“ bars (user decision 2026-11-10, a 
 whether names stay readable on the dark page; until 1.6.0 they were lightened
 there). Like the end state, older files show the log uncoloured until „Alles
 neu veröffentlichen“, and a colour change shows on older fights only after it.
+Every hit in the „Kampfverlauf“ shows its target's HP as a small bar instead of
+in the sentence (§5, user pick 2026-11-19); the piece a hit took is at least a
+few pixels wide, so small hits on a big boss stay visible (user decision
+2026-11-19). Older files keep the full sentence until „Alles neu
+veröffentlichen“, and like the end state for up to a day after it (cache).
 
 ⁴ „Schaden“ box on the fight page (user request 2026-11-10), between the fight
 cards and the „Kampfverlauf“, as wide as both cards: „Gesamt“ compares what each
