@@ -49,11 +49,11 @@ public class BattleEngineTests
     [Fact]
     public void Boss_hp_scales_with_the_participants()
     {
-        // Arkani base HP 90 × HpFactor 1.0 × BossHpPerParticipant 1.5 (1.0.1) × 4 participants = 540.
+        // Arkani base HP 90 × HpFactor 1.0 × BossHpPerParticipant 1.3 (1.8.0) × 4 participants = 468.
         var arkani = GameFixture.Species.Find("Arkani")!;
 
-        Assert.Equal(540, BossDraw.Fighter(arkani, BattleSettings.Default, BossSettings.Default, 4).MaxHp);
-        Assert.Equal(135, BossDraw.Fighter(arkani, BattleSettings.Default, BossSettings.Default, 1).MaxHp);
+        Assert.Equal(468, BossDraw.Fighter(arkani, BattleSettings.Default, BossSettings.Default, 4).MaxHp);
+        Assert.Equal(117, BossDraw.Fighter(arkani, BattleSettings.Default, BossSettings.Default, 1).MaxHp);
     }
 
     [Theory]
@@ -107,20 +107,33 @@ public class BattleEngineTests
     }
 
     [Fact]
-    public void Boss_attacks_a_third_of_the_participants_rounded_up_each_a_different_one()
+    public void Boss_attacks_a_third_of_the_participants_on_average_each_a_different_one()
     {
         var party = Enumerable.Range(1, 4).Select(i => F("Relaxo", owner: $"T{i}")).ToList();
         var boss = F("Karpador", owner: "Boss", hpMultiplier: 1000);
 
         var result = new BossBattle(Damage()).Fight(boss, party, 3, new BattleRandom(3));
 
-        var bossHitsRound1 = result.Log.Events
-            .Where(e => e is { Kind: BattleEventKind.Attack, Round: 1, Fighter: 4 })
-            .Select(e => e.Target)
-            .ToList();
-        Assert.Equal(2, bossHitsRound1.Count);
-        Assert.Equal(2, bossHitsRound1.Distinct().Count());
+        List<int?> BossHits(int round) => [.. result.Log.Events
+            .Where(e => e.Kind == BattleEventKind.Attack && e.Round == round && e.Fighter == 4)
+            .Select(e => e.Target)];
+        Assert.Equal([2, 1, 1, 2], Enumerable.Range(1, 4).Select(round => BossHits(round).Count));
+        Assert.Equal(2, BossHits(1).Distinct().Count());
         Assert.Equal(4, result.Log.Events.Count(e => e is { Kind: BattleEventKind.Attack, Round: 1 } && e.Fighter < 4));
+    }
+
+    [Theory]
+    [InlineData(1, new[] { 1, 0, 0, 1, 0, 0 })]
+    [InlineData(2, new[] { 1, 1, 0, 1, 1, 0 })]
+    [InlineData(3, new[] { 1, 1, 1, 1, 1, 1 })]
+    [InlineData(4, new[] { 2, 1, 1, 2, 1, 1 })]
+    [InlineData(5, new[] { 2, 2, 1, 2, 2, 1 })]
+    [InlineData(6, new[] { 2, 2, 2, 2, 2, 2 })]
+    [InlineData(7, new[] { 3, 2, 2, 3, 2, 2 })]
+    public void Boss_targets_carry_the_remainder_over_rounding_up_first(int participants, int[] targets)
+    {
+        // N / 3 per round on average instead of ⌈N / 3⌉ every round (ADR-0006 addendum 2026-11-19).
+        Assert.Equal(targets, Enumerable.Range(1, 6).Select(round => BossBattle.TargetsInRound(participants, 3, round)));
     }
 
     [Fact]

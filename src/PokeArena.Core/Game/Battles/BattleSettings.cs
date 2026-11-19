@@ -56,9 +56,9 @@ public sealed record BossSettings
     public TimeSpan FailedLobbyCooldown { get; init; } = TimeSpan.FromMinutes(2);
 
     /// <summary>BossHpPerParticipant: boss HP = base HP × HpFactor × this × participants.</summary>
-    public double HpPerParticipant { get; init; } = 1.5;
+    public double HpPerParticipant { get; init; } = 1.3;
 
-    /// <summary>BossTargetDivisor: the boss attacks ⌈N / this⌉ participants per round.</summary>
+    /// <summary>BossTargetDivisor: the boss attacks N / this participants per round on average (BossBattle.TargetsInRound).</summary>
     public int TargetDivisor { get; init; } = 3;
 
     /// <summary>Legendary tier: min(cap, base + per participant × N).</summary>
