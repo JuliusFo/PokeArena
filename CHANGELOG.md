@@ -7,6 +7,12 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+### Changed
+- Going back in the browser returns to the same spot of the website: after
+  scrolling down the list of fights, opening one and going back, the list is
+  where it was instead of at the top. The same holds for the leaderboard,
+  trainer pages and the statistics, for forward and for reloading a page.
+
 ## [1.7.1] - 2026-11-11
 
 ### Added

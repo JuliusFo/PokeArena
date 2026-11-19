@@ -20,6 +20,10 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   resolve only for JS. `css/site.css` keeps its name; `pages.yml` appends its content hash as `?v=`, or a browser
   pairs a cached old stylesheet with new markup (HP numbers twice in Firefox after 1.6.0, fix/css-cache-busting).
   Keep the link exactly `href="css/site.css"` — the workflow fails if it cannot find it.
+- „Zurück“ keeps the scroll position through the inline script at the end of `index.html` (feat/back-keeps-scroll):
+  an id per history entry in `history.state`, applied again on every resize after back/forward. Never replace
+  `history.state` without spreading it — Blazor reads `_index` and `userState` from it — and never scroll a page to the
+  top on load yourself (`window.scrollTo(0, 0)`), or the restored position is lost.
 - `Pages/News.razor` („Neuigkeiten“) is hand-written for players, not the CHANGELOG: a new section goes on top as
   `<h2>Version X.Y.Z…</h2>` inside `.news` — the bUnit test parses that heading. At 375 px the menu already wraps to
   a second line with four items; links never break inside (`nowrap`, WP-10).

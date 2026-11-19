@@ -35,6 +35,7 @@ in [roadmap.md](roadmap.md).
 | – | „Statistik“ page on the website (user idea, `feat/statistics-page`, before WP-09) | 1.7.0 | done 2026-11-11 |
 | – | Profile picture on the trainer page (user idea, `feat/trainer-profile-image`) | 1.7.0 | done 2026-11-11 |
 | – | Leaderboard pictures and chat colours (user request, `feat/leaderboard-profile-colours`) | 1.7.1 | done 2026-11-11 |
+| – | „Zurück“ keeps the scroll position on the website (streamer feedback, `feat/back-keeps-scroll`) | 1.7.2 | done 2026-11-19 |
 | WP-09 | Balancing after the first streams | 1.8.0 | planned |
 
 ## Log
@@ -877,6 +878,27 @@ in [roadmap.md](roadmap.md).
   1.6.1 test, now more visible.
 - Deliberately not done (→ backlog): colours in the fight lists, pictures on
   fight pages, an initial as placeholder.
+
+### „Zurück“ keeps the scroll position — streamer feedback (2026-11-19, branch feat/back-keeps-scroll)
+- Built: an inline script in `wwwroot/index.html` (before Blazor). Cause: on
+  back/forward Blazor renders the page anew and the page loads its JSON first,
+  so the browser's own restoring found only „Lädt …“ and clamped to the top.
+  The script sets `history.scrollRestoration = 'manual'`, gives every history
+  entry an id in `history.state` (spread next to Blazor's `_index` and
+  `userState`), remembers its position on scroll, input and `pagehide`
+  (memory + `sessionStorage`, last 100 entries) and after `popstate` or a
+  reload applies it on every resize of `body` until the visitor scrolls,
+  clicks or types, another page opens, or 15 s pass. A link click still opens
+  the next page at the top (Blazor's own reset). Checked in the preview: list
+  of fights back and forward, with the data fetch delayed by 1.2 s, reload,
+  menu link to the same page goes to the top. No automated test: bUnit does
+  not run the page's JS, and UI automation is out (`CLAUDE.md` §4).
+- User decisions: —
+- Addenda: version 1.7.2 is a proposal (not confirmed); `/release` decides.
+- Pitfalls: in a hidden browser pane no frames render, so scroll events and
+  `ResizeObserver` wait — remember the position on input and `pagehide` too,
+  not only on scroll.
+- Deliberately not done (→ backlog): —
 
 Template per entry:
 
