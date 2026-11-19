@@ -58,9 +58,12 @@ public sealed class TypeChart
             throw new InvalidDataException($"typen.json is malformed: {ex.Message}", ex);
         }
 
+        // A missing key is a readable problem, not a NullReferenceException (review 1.8.1, A13).
+        var typeList = file.Types ?? [];
+        var rows = (file.Factors ?? []).ToDictionary(r => r.Key, r => r.Value ?? [], StringComparer.Ordinal);
         var problems = new List<string>();
-        var types = file.Types.ToHashSet(StringComparer.Ordinal);
-        if (file.Types.Count != ExpectedCount || types.Count != ExpectedCount)
+        var types = typeList.ToHashSet(StringComparer.Ordinal);
+        if (typeList.Count != ExpectedCount || types.Count != ExpectedCount)
         {
             problems.Add($"expected {ExpectedCount} distinct types, found {types.Count}");
         }
@@ -70,7 +73,12 @@ public sealed class TypeChart
             problems.Add("standardfaktor must be positive");
         }
 
-        foreach (var (attack, row) in file.Factors)
+        if (file.Factors is null)
+        {
+            problems.Add("faktoren is missing");
+        }
+
+        foreach (var (attack, row) in rows)
         {
             if (!types.Contains(attack))
             {
@@ -100,15 +108,15 @@ public sealed class TypeChart
             throw new InvalidDataException("typen.json is invalid: " + string.Join("; ", problems));
         }
 
-        var factors = file.Factors.ToDictionary(
+        var factors = rows.ToDictionary(
             r => r.Key,
             r => new Dictionary<string, double>(r.Value, StringComparer.Ordinal),
             StringComparer.Ordinal);
-        return new TypeChart(file.Types, factors, file.DefaultFactor);
+        return new TypeChart(typeList, factors, file.DefaultFactor);
     }
 
     private sealed record TypeChartFile(
         [property: JsonPropertyName("standardfaktor")] double DefaultFactor,
-        [property: JsonPropertyName("typen")] IReadOnlyList<string> Types,
-        [property: JsonPropertyName("faktoren")] Dictionary<string, Dictionary<string, double>> Factors);
+        [property: JsonPropertyName("typen")] IReadOnlyList<string>? Types,
+        [property: JsonPropertyName("faktoren")] Dictionary<string, Dictionary<string, double>?>? Factors);
 }

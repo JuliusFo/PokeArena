@@ -19,6 +19,12 @@ public sealed class NpcCatalog
 
     public const int TeamSize = 6;
 
+    /// <summary>
+    /// The achievement thresholds of spec §1. Unlocks are stored by threshold only, so changing one in
+    /// <c>npcs.json</c> would silently revoke achievements (review 1.8.1, A11): that needs a data migration first.
+    /// </summary>
+    public static readonly IReadOnlyList<int> Thresholds = [15, 25, 40, 60, 70, 80, 90, 100, 105, 110, 115, 130, 135, 140, 145, 150, 151];
+
     private readonly Dictionary<int, Npc> _byThreshold;
 
     private NpcCatalog(IReadOnlyList<Npc> npcs)
@@ -70,19 +76,25 @@ public sealed class NpcCatalog
             throw new InvalidDataException($"npcs.json is malformed: {ex.Message}", ex);
         }
 
+        // A missing key or a null entry is a readable problem, not a NullReferenceException (review 1.8.1, A13).
+        var entries = (file.Npcs ?? []).Where(n => n is not null).ToList();
         var problems = new List<string>();
-        if (file.Npcs.Count != ExpectedCount)
+        if (entries.Count != ExpectedCount)
         {
-            problems.Add($"expected {ExpectedCount} NPCs, found {file.Npcs.Count}");
+            problems.Add($"expected {ExpectedCount} NPCs, found {entries.Count}");
         }
 
-        problems.AddRange(file.Npcs.GroupBy(n => n.Id, StringComparer.OrdinalIgnoreCase).Where(g => g.Count() > 1)
+        problems.AddRange(entries.GroupBy(n => n.Id ?? "", StringComparer.OrdinalIgnoreCase).Where(g => g.Count() > 1)
             .Select(g => $"duplicate id '{g.Key}'"));
-        problems.AddRange(file.Npcs.GroupBy(n => n.Threshold).Where(g => g.Count() > 1)
+        problems.AddRange(entries.GroupBy(n => n.Threshold).Where(g => g.Count() > 1)
             .Select(g => $"duplicate threshold {g.Key}"));
+        if (!entries.Select(n => n.Threshold).Order().SequenceEqual(Thresholds))
+        {
+            problems.Add($"thresholds must be those of spec §1 ({string.Join(", ", Thresholds)}); changing one revokes achievements");
+        }
 
         var npcs = new List<Npc>();
-        foreach (var entry in file.Npcs)
+        foreach (var entry in entries)
         {
             if (string.IsNullOrWhiteSpace(entry.Id) || string.IsNullOrWhiteSpace(entry.Name))
             {
@@ -113,7 +125,11 @@ public sealed class NpcCatalog
             var team = new List<Species>();
             foreach (var slug in slugs)
             {
-                if (species.Find(slug) is { } s)
+                if (slug is null)
+                {
+                    problems.Add($"{entry.Name}: empty team slot");
+                }
+                else if (species.Find(slug) is { } s)
                 {
                     team.Add(s);
                 }
@@ -134,7 +150,7 @@ public sealed class NpcCatalog
         return new NpcCatalog([.. npcs.OrderBy(n => n.Threshold)]);
     }
 
-    private sealed record NpcFile([property: JsonPropertyName("npcs")] IReadOnlyList<NpcEntry> Npcs);
+    private sealed record NpcFile([property: JsonPropertyName("npcs")] IReadOnlyList<NpcEntry>? Npcs);
 
     private sealed record NpcEntry(
         [property: JsonPropertyName("id")] string Id,

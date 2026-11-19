@@ -86,4 +86,41 @@ public class BaseDataTests
         Assert.Contains("duplicate threshold 15", Assert.Throws<InvalidDataException>(() => NpcCatalog.Parse(duplicate, GameFixture.Species)).Message);
         Assert.Contains("Eich: tokens must not be negative", Assert.Throws<InvalidDataException>(() => NpcCatalog.Parse(negative, GameFixture.Species)).Message);
     }
+
+    [Fact]
+    public void A_changed_threshold_is_refused_because_it_would_revoke_achievements()
+    {
+        // Unlocks are stored by threshold: Eich at 12 instead of 15 would orphan every „AV 15“ (review 1.8.1, A11).
+        var changed = RealNpcsJson.Replace("\"schwelle\": 15", "\"schwelle\": 12");
+
+        Assert.Contains("thresholds must be those of spec §1", Assert.Throws<InvalidDataException>(() => NpcCatalog.Parse(changed, GameFixture.Species)).Message);
+        Assert.Equal(NpcCatalog.Thresholds, GameFixture.Npcs.All.Select(n => n.Threshold));
+    }
+
+    [Theory]
+    [InlineData("""{ "hinweis": [] }""")]
+    [InlineData("""{ "npcs": null }""")]
+    [InlineData("""{ "npcs": [null] }""")]
+    public void Npcs_without_their_list_get_a_readable_error(string json) =>
+        Assert.Contains("expected 17 NPCs", Assert.Throws<InvalidDataException>(() => NpcCatalog.Parse(json, GameFixture.Species)).Message);
+
+    [Fact]
+    public void An_empty_team_slot_gets_a_readable_error()
+    {
+        var json = RealNpcsJson.Replace("\"raupy\"", "null");
+
+        Assert.Contains("Eich: empty team slot", Assert.Throws<InvalidDataException>(() => NpcCatalog.Parse(json, GameFixture.Species)).Message);
+    }
+
+    [Theory]
+    [InlineData("""{ "standardfaktor": 1.0 }""", "expected 15 distinct types")]
+    [InlineData("""{ "standardfaktor": 1.0, "typen": [] }""", "faktoren is missing")]
+    public void A_type_chart_without_its_lists_gets_a_readable_error(string json, string problem) =>
+        Assert.Contains(problem, Assert.Throws<InvalidDataException>(() => TypeChart.Parse(json, GameFixture.Species)).Message);
+
+    [Theory]
+    [InlineData("""{ "hinweis": [] }""")]
+    [InlineData("""{ "pokemon": [null] }""")]
+    public void Species_without_their_list_get_a_readable_error(string json) =>
+        Assert.Contains("expected 151 species", Assert.Throws<InvalidDataException>(() => SpeciesCatalog.Parse(json)).Message);
 }

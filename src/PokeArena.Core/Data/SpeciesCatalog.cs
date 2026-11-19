@@ -81,8 +81,10 @@ public sealed class SpeciesCatalog
             throw new InvalidDataException($"pokemon.json is malformed: {ex.Message}", ex);
         }
 
-        var species = file.Pokemon
-            // A missing "typen" must end in the readable problem list below, not in a NullReferenceException.
+        // A missing "pokemon" or "typen" or a null entry must end in the readable problem list below, not in a
+        // NullReferenceException (review 1.0.3 A17, review 1.8.1 A13).
+        var species = (file.Pokemon ?? [])
+            .Where(p => p is not null)
             .Select(p => new Species(p.Id, p.Name, p.Slug, p.Types ?? [], p.Hp, p.Atk, p.Def, p.Spez, p.Rarity))
             .OrderBy(s => s.Id)
             .ToList();
@@ -145,7 +147,7 @@ public sealed class SpeciesCatalog
         }
     }
 
-    private sealed record BaseDataFile([property: JsonPropertyName("pokemon")] IReadOnlyList<BaseDataEntry> Pokemon);
+    private sealed record BaseDataFile([property: JsonPropertyName("pokemon")] IReadOnlyList<BaseDataEntry>? Pokemon);
 
     private sealed record BaseDataEntry(
         [property: JsonPropertyName("id")] int Id,
