@@ -9,7 +9,7 @@ namespace PokeArena.Core.Tests.Twitch;
 public class EventSubSessionTests
 {
     private readonly FakeEventSubSockets _sockets = new();
-    private readonly FakeTimeProvider _time = new();
+    private readonly TimerCountingTimeProvider _time = new();
     private readonly RecordingHandler _handler = new();
     private readonly CancellationTokenSource _stop = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
     private readonly EventSubSession _session;
@@ -73,18 +73,21 @@ public class EventSubSessionTests
         var run = _session.RunAsync(_handler, _stop.Token);
         var socket = await _sockets.NextAsync();
         socket.Push(EventSubFrames.Welcome(keepaliveSeconds: 10));
-        await Eventually.TrueAsync(() => _handler.Sessions.Count == 1);
+
+        // The session arms its next keepalive wait only after the handler returned, so every step waits for that
+        // timer before it advances the clock — advancing first skipped the timer and hung the test now and then.
+        await Eventually.TrueAsync(() => _handler.Sessions.Count == 1 && _time.ActiveTimers == 1);
 
         // A keepalive after 10 s restarts the wait; a message right behind it shows it was read (no real-time sleep).
         _time.Advance(TimeSpan.FromSeconds(10));
         socket.Push(EventSubFrames.Keepalive());
         socket.Push(EventSubFrames.ChatMessage("nach dem Keepalive"));
-        await Eventually.TrueAsync(() => _handler.Texts.Count == 1);
+        await Eventually.TrueAsync(() => _handler.Texts.Count == 1 && _time.ActiveTimers == 1);
 
         // 10 s later the session still lives: Twitch's 10 s plus the grace of 5 s are not over.
         _time.Advance(TimeSpan.FromSeconds(10));
         socket.Push(EventSubFrames.ChatMessage("noch da"));
-        await Eventually.TrueAsync(() => _handler.Texts.Count == 2);
+        await Eventually.TrueAsync(() => _handler.Texts.Count == 2 && _time.ActiveTimers == 1);
 
         _time.Advance(TimeSpan.FromSeconds(10) + EventSubSession.KeepaliveGrace + TimeSpan.FromSeconds(1));
 
