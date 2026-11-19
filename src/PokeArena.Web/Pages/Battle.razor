@@ -37,13 +37,10 @@
                                 @switch (state)
                                 {
                                     case "survived":
-                                        @* The numbers sit inside the bar to save width. Two copies, each clipped to its part of the
-                                           bar (site.css): dark over the empty rest, white over the fill. *@
-                                        var hpText = $"{fighter.HpLeft} / {fighter.MaxHp} HP";
-                                        <span class="hp-bar@(fighter.HpLeft * 4 <= fighter.MaxHp ? " low" : "")" style="--hp: @HpPercent(fighter)%">
-                                            <span class="hp-text">@hpText</span>
-                                            <span class="hp-text on-fill" aria-hidden="true">@hpText</span>
-                                        </span>
+                                        @* The numbers sit inside the bar to save width. *@
+                                        <HpBar Class="@("hp-bar" + (fighter.HpLeft * 4 <= fighter.MaxHp ? " low" : ""))"
+                                               Style="@($"--hp: {HpPercent(fighter)}%")"
+                                               Text="@($"{fighter.HpLeft} / {fighter.MaxHp} HP")" />
                                         break;
                                     case "fainted":
                                         <span>besiegt</span>
@@ -82,12 +79,11 @@
                         <span class="hit">
                             <span class="hit-text">@Parts(battle, line, withoutTargetHp: true)</span>
                             @* „HP“ for screen readers, who would otherwise hear only „80 Pfeil 22“ (review). *@
-                            <span class="@barClass"
-                                  style="--hp: @Percent(hit.After, target.MaxHp)%; --before: @Percent(hit.Before, target.MaxHp)%"
-                                  title="HP @hpText von @target.MaxHp">
-                                <span class="hp-text"><span class="visually-hidden">@("HP ")</span>@hpText</span>
-                                <span class="hp-text on-fill" aria-hidden="true">@hpText</span>
-                            </span>
+                            <HpBar Class="@barClass"
+                                   Style="@($"--hp: {Percent(hit.After, target.MaxHp)}%; --before: {Percent(hit.Before, target.MaxHp)}%")"
+                                   Title="@($"HP {hpText} von {target.MaxHp}")"
+                                   HiddenPrefix="HP "
+                                   Text="@hpText" />
                         </span>
                     }
                     else
@@ -156,12 +152,15 @@ else
         _ => "unknown",
     };
 
-    /// <summary>The fighter a log part names, or null (plain text, or an index the page does not have).</summary>
-    private static BattleFighter? FighterOf(BattlePage battle, LogPart part) =>
-        part is { Side: { } side, Fighter: { } index } && side >= 0 && side < battle.Sides.Count &&
-        index >= 0 && index < battle.Sides[side].Fighters.Count
+    /// <summary>The fighter at a page position, or null for a position the page does not have (a file not ours).</summary>
+    private static BattleFighter? FighterAt(BattlePage battle, int side, int index) =>
+        side >= 0 && side < battle.Sides.Count && index >= 0 && index < battle.Sides[side].Fighters.Count
             ? battle.Sides[side].Fighters[index]
             : null;
+
+    /// <summary>The fighter a log part names, or null (plain text, or an index the page does not have).</summary>
+    private static BattleFighter? FighterOf(BattlePage battle, LogPart part) =>
+        part is { Side: { } side, Fighter: { } index } ? FighterAt(battle, side, index) : null;
 
     private static string HpPercent(BattleFighter fighter) => Percent(fighter.HpLeft ?? 0, fighter.MaxHp);
 
@@ -173,9 +172,7 @@ else
     /// (an index or HP that is not ours) — the line then shows its full text as before.
     /// </summary>
     private static BattleFighter? TargetOf(BattlePage battle, LogLine line) =>
-        line.Hit is { } hit && hit.Side >= 0 && hit.Side < battle.Sides.Count &&
-        hit.Fighter >= 0 && hit.Fighter < battle.Sides[hit.Side].Fighters.Count &&
-        battle.Sides[hit.Side].Fighters[hit.Fighter] is { MaxHp: > 0 } fighter &&
+        line.Hit is { } hit && FighterAt(battle, hit.Side, hit.Fighter) is { MaxHp: > 0 } fighter &&
         hit.After >= 0 && hit.After <= hit.Before && hit.Before <= fighter.MaxHp
             ? fighter
             : null;
