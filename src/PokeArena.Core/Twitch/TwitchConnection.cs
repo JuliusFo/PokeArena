@@ -189,7 +189,7 @@ public sealed class TwitchConnection(
                 {
                     result = await auth.PollDeviceLoginAsync(login, ct);
                 }
-                catch (HttpRequestException ex)
+                catch (Exception ex) when (IsTransient(ex, ct))
                 {
                     log.LogWarning(ex, "Polling the Twitch device login failed, trying again");
                     continue;
@@ -356,7 +356,7 @@ public sealed class TwitchConnection(
                 await tokens.ValidateAsync(ct);
                 ReportPolledLive(await helix.IsLiveAsync(target.BroadcasterId, ct), announce: false);
             }
-            catch (Exception ex) when (ex is HttpRequestException or TwitchApiException { IsTransient: true })
+            catch (Exception ex) when (IsTransient(ex, ct))
             {
                 log.LogWarning(ex, "Hourly Twitch check failed, trying again later");
             }
@@ -381,12 +381,24 @@ public sealed class TwitchConnection(
             {
                 ReportPolledLive(await helix.IsLiveAsync(target.BroadcasterId, ct), announce: false);
             }
-            catch (Exception ex) when (ex is HttpRequestException or TwitchApiException { IsTransient: true })
+            catch (Exception ex) when (IsTransient(ex, ct))
             {
                 log.LogWarning(ex, "Checking the live state failed, trying again later");
             }
         }
     }
+
+    /// <summary>
+    /// A hiccup worth trying again: no network, Twitch busy (429/5xx), or the shared client's 30 s timeout – which
+    /// .NET reports as a cancellation, not as an <see cref="HttpRequestException"/> (review 1.8.1, A4).
+    /// </summary>
+    internal static bool IsTransient(Exception ex, CancellationToken ct) => ex switch
+    {
+        HttpRequestException => true,
+        TwitchApiException { IsTransient: true } => true,
+        OperationCanceledException => !ct.IsCancellationRequested,
+        _ => false,
+    };
 
     internal static TimeSpan RetryDelay(int failures) => failures switch
     {

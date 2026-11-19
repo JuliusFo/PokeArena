@@ -106,6 +106,49 @@ public class TwitchConnectionTests
     }
 
     [Fact]
+    public async Task A_busy_twitch_or_a_timeout_while_polling_the_login_is_tried_again()
+    {
+        _http.On(HttpMethod.Post, Id + "device", HttpStatusCode.OK, """
+                {"device_code":"dev-1","expires_in":1800,"interval":5,"user_code":"ABCDEFGH","verification_uri":"https://www.twitch.tv/activate"}
+                """)
+            .On(HttpMethod.Post, Id + "token", HttpStatusCode.ServiceUnavailable, """{"status":503,"message":"busy"}""")
+            .On(HttpMethod.Post, Id + "token", () => throw new TaskCanceledException("timeout", new TimeoutException()))
+            .On(HttpMethod.Post, Id + "token", HttpStatusCode.OK, """{"access_token":"at-1","expires_in":14400,"refresh_token":"rt-1"}""");
+        ArrangeConnect();
+
+        await _connection.BeginLoginAsync();
+        await AdvanceUntilAsync(() => _http.RequestsTo(Id + "token").Count() == 3, TimeSpan.FromSeconds(5));
+        (await _sockets.NextAsync()).Push(EventSubFrames.Welcome());
+
+        // Before review 1.8.1 (A4) the 503 or the timeout ended the login with „LoginFailed“.
+        await Eventually.TrueAsync(() => _connection.State.Status == TwitchStatus.Connected);
+        await _connection.DisconnectAsync();
+    }
+
+    [Theory]
+    [InlineData("http", false, true)]
+    [InlineData("503", false, true)]
+    [InlineData("429", false, true)]
+    [InlineData("400", false, false)]
+    [InlineData("timeout", false, true)]
+    [InlineData("timeout", true, false)]
+    [InlineData("other", false, false)]
+    public void Only_hiccups_count_as_transient(string kind, bool cancelled, bool transient)
+    {
+        Exception ex = kind switch
+        {
+            "http" => new HttpRequestException("no network"),
+            "503" => new TwitchApiException(HttpStatusCode.ServiceUnavailable, "busy"),
+            "429" => new TwitchApiException(HttpStatusCode.TooManyRequests, "slow down"),
+            "400" => new TwitchApiException(HttpStatusCode.BadRequest, "bad"),
+            "timeout" => new TaskCanceledException("timeout", new TimeoutException()),
+            _ => new InvalidOperationException(),
+        };
+
+        Assert.Equal(transient, TwitchConnection.IsTransient(ex, new CancellationToken(cancelled)));
+    }
+
+    [Fact]
     public async Task Lost_connection_is_retried_with_a_new_session()
     {
         StoreLogin();
