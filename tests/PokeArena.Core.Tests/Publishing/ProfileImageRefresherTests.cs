@@ -375,20 +375,22 @@ public class ProfileImageRefresherTests : IDisposable
         await _refresher.StartAsync(_ct);
         try
         {
+            // Each step waits until the loop armed its next timer: then it has checked the connection, and an advance
+            // is never lost (review 1.8.1, C13 – fixed 20 ms waits could only produce a false green).
             for (var i = 0; i < 3; i++)
             {
+                await Eventually.TrueAsync(() => _game.Time.ActiveTimers > 0);
                 _game.Time.Advance(ProfileImageRefresher.CheckInterval);
-                await Task.Delay(20, _ct);
             }
 
+            await Eventually.TrueAsync(() => _game.Time.ActiveTimers > 0);
             Assert.Empty(_http.RequestsTo(Users));
 
-            // Advanced until the first round ran: an advance before the loop waits again would be lost.
             _twitch.State = new TwitchConnectionState(TwitchStatus.Connected);
             for (var i = 0; i < 5 && _http.RequestsTo(Cdn).Count() < 2; i++)
             {
+                await Eventually.TrueAsync(() => _game.Time.ActiveTimers > 0);
                 _game.Time.Advance(ProfileImageRefresher.CheckInterval);
-                await Task.Delay(20, _ct);
             }
 
             await Eventually.TrueAsync(() => _http.RequestsTo(Cdn).Count() == 2, "first round once connected");
@@ -397,10 +399,12 @@ public class ProfileImageRefresherTests : IDisposable
             var minutes = 0;
             while (_http.RequestsTo(Users).Count() < 2 && minutes < 30)
             {
+                await Eventually.TrueAsync(() => _game.Time.ActiveTimers > 0);
                 _game.Time.Advance(ProfileImageRefresher.CheckInterval);
                 minutes++;
-                await Task.Delay(20, _ct);
             }
+
+            await Eventually.TrueAsync(() => _http.RequestsTo(Users).Count() >= 2 || _game.Time.ActiveTimers > 0);
 
             Assert.Equal(2, _http.RequestsTo(Users).Count());
             Assert.InRange(minutes, (int)ProfileImageRefresher.Interval.TotalMinutes, 30);

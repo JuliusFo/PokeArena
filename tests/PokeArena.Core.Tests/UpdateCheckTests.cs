@@ -10,7 +10,7 @@ public class UpdateCheckTests : IDisposable
 {
     private static readonly DateTimeOffset Start = new(2026, 11, 10, 20, 0, 0, TimeSpan.Zero);
 
-    private readonly FakeTimeProvider _time = new(Start);
+    private readonly TimerCountingTimeProvider _time = new(Start);
     private readonly FakeUpdater _updater = new();
     private readonly FakeGate _gate = new();
     private readonly UpdateCheck _check;
@@ -27,10 +27,11 @@ public class UpdateCheckTests : IDisposable
         _updater.Newer = "1.6.1";
         _gate.MayInstall = false;
         await _check.StartAsync(_ct);
-        await Task.Delay(20, _ct);
+        await Eventually.TrueAsync(() => _time.ActiveTimers > 0);
 
+        // The first delay is still armed a second before its end (review 1.8.1, C13: no fixed waits).
         _time.Advance(UpdateCheck.FirstCheckDelay - TimeSpan.FromSeconds(1));
-        await Task.Delay(20, _ct);
+        Assert.Equal(1, _time.ActiveTimers);
         Assert.Equal(0, _updater.Checks);
 
         await PumpUntilAsync(() => _check.State == UpdateState.Ready);
@@ -269,7 +270,7 @@ public class UpdateCheckTests : IDisposable
         var first = _check.CheckNowAsync(_ct);
         Assert.True(_check.Checking);
 
-        Assert.Equal(UpdateCheckResult.Busy, await _check.CheckNowAsync(_ct));
+        Assert.Equal(UpdateCheckResult.Busy, await _check.CheckNowAsync(_ct).WaitAsync(TimeSpan.FromSeconds(5), _ct));
 
         release.SetResult(null);
         Assert.Equal(UpdateCheckResult.UpToDate, await first);

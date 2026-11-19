@@ -48,7 +48,8 @@ public sealed class GameFixture : IDisposable
 
     public string LiveConnectionString { get; }
 
-    public FakeTimeProvider Time { get; } = new(new DateTimeOffset(2026, 10, 13, 18, 0, 0, TimeSpan.Zero));
+    /// <summary>Counts its timers, so a test can wait until a background loop armed its next one.</summary>
+    public TimerCountingTimeProvider Time { get; } = new(new DateTimeOffset(2026, 10, 13, 18, 0, 0, TimeSpan.Zero));
 
     public DryRunMode DryRun { get; } = new();
 

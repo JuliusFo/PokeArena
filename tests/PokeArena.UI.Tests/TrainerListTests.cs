@@ -141,7 +141,7 @@ public class TrainerListTests : BunitContext
 
         cut.FindAll("button.delete")[1].Click();
         cut.Find(".confirm-delete .btn-danger").Click();
-        var work = Assert.IsType<QueuedWork>(await _inbox.Reader.ReadAsync(_ct));
+        var work = Assert.IsType<QueuedWork>(await _inbox.Reader.ReadAsync(_ct).AsTask().WaitAsync(TimeSpan.FromSeconds(5), _ct));
         await work.RunAsync(_ct);
 
         cut.WaitForAssertion(() => Assert.Equal("Rocko", Assert.Single(cut.FindAll("tbody tr td.strong")).TextContent));

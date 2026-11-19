@@ -11,6 +11,15 @@ public sealed class TimerCountingTimeProvider : FakeTimeProvider
 {
     private int _active;
 
+    public TimerCountingTimeProvider()
+    {
+    }
+
+    public TimerCountingTimeProvider(DateTimeOffset start)
+        : base(start)
+    {
+    }
+
     public int ActiveTimers => Volatile.Read(ref _active);
 
     public override ITimer CreateTimer(TimerCallback callback, object? state, TimeSpan dueTime, TimeSpan period)
