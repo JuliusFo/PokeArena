@@ -77,6 +77,23 @@ public class NpcServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task The_first_win_brings_the_tokens_of_that_npc()
+    {
+        // Every NPC gives 1 today (1.8.0), so only another value shows the per-NPC field is used (review 1.8.1, C11).
+        var json = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "data", "npcs.json"))
+            .Replace("\"schwelle\": 15, \"staerke\": 1.0, \"tokens\": 1", "\"schwelle\": 15, \"staerke\": 1.0, \"tokens\": 3", StringComparison.Ordinal);
+        var npcs = NpcCatalog.Parse(json, Species);
+        Assert.Equal(3, npcs.Find("eich")!.Tokens);
+        await RegisterAsync("1", "Ash", "Karpador", 5, unlock: 15);
+
+        await Npc(npcs: npcs).ChallengeAsync(Challenge("1", "Ash"), "eich", _ct);
+
+        await using var db = _game.OpenLive();
+        Assert.Equal(3, (await db.Trainers.SingleAsync(_ct)).Tokens);
+        Assert.EndsWith("und 3 Tokens!", _chat.Sent[^1]);
+    }
+
+    [Fact]
     public async Task Further_wins_bring_nothing()
     {
         await RegisterAsync("1", "Ash", "Karpador", 5, unlock: 15);
@@ -263,10 +280,10 @@ public class NpcServiceTests : IDisposable
         Assert.True(await db.AchievementUnlocks.AnyAsync(u => u.TrainerId == "1" && u.Threshold == 25, _ct));
     }
 
-    private NpcService Npc(PvpSettings? pvpSettings = null, GameDatabase? database = null, int seed = Seed) => new(
+    private NpcService Npc(PvpSettings? pvpSettings = null, GameDatabase? database = null, int seed = Seed, NpcCatalog? npcs = null) => new(
         database ?? _game.Database,
         Species,
-        GameFixture.Npcs,
+        npcs ?? GameFixture.Npcs,
         OneHitKnockouts,
         pvpSettings ?? PvpSettings.Default,
         NpcSettings.Default,

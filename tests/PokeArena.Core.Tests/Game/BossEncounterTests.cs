@@ -152,6 +152,22 @@ public class BossEncounterTests : IDisposable
     }
 
     [Fact]
+    public async Task A_boss_that_escapes_at_the_round_limit_is_caught_by_nobody()
+    {
+        // One round of tiny hits: nobody faints, the boss is not defeated, the round limit ends the fight.
+        var boss = Boss(HopelessBoss, BattleSettings.Default with { MaxRounds = 1, Scaling = 0.0001 });
+        await RegisterAsync("1", "Ash", "2", "Misty");
+
+        await RunEncounterAsync(boss, ("1", "Ash"), ("2", "Misty"));
+
+        // Survivors catch only a defeated boss (spec §4, review 1.8.1, C11).
+        await using var db = _game.OpenLive();
+        Assert.Empty(db.Specimens.Where(s => s.Origin == SpecimenOrigin.Boss));
+        Assert.All(db.BattleParticipants, p => Assert.False(p.Won));
+        Assert.Matches(@"^\S+ ist entkommen\. ", _chat.Sent[2]);
+    }
+
+    [Fact]
     public async Task A_newcomer_with_exactly_ten_seconds_left_extends()
     {
         var boss = Boss(EasyBoss);
@@ -639,13 +655,13 @@ public class BossEncounterTests : IDisposable
         Assert.DoesNotContain(_chat.Sent, t => t.Contains("Zum Kampf"));
     }
 
-    private BossEncounter Boss(BossSettings settings) => new(
+    private BossEncounter Boss(BossSettings settings, BattleSettings? battle = null) => new(
         _game.Database,
         Species,
         GameFixture.Npcs,
-        BattleSettings.Default,
+        battle ?? BattleSettings.Default,
         settings,
-        new DamageCalculator(BattleSettings.Default, GameFixture.Types),
+        new DamageCalculator(battle ?? BattleSettings.Default, GameFixture.Types),
         new FixedSeeds(Seed),
         _inbox,
         _chat,

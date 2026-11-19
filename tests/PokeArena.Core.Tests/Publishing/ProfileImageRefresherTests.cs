@@ -162,6 +162,7 @@ public class ProfileImageRefresherTests : IDisposable
     [InlineData(AshPng, "image/svg+xml", 10)]
     [InlineData(AshPng, "image/png", 10)]
     [InlineData(AshPng, "image/png", ProfileImageRefresher.MaxBytes + 1)]
+    [InlineData("https://static-cdn.jtvnw.net:8443/ash-profile_image-300x300.png", "image/png", 10)]
     public async Task Pictures_from_elsewhere_of_another_kind_or_too_large_are_refused(string url, string contentType, int size)
     {
         await _game.Trainers.RegisterAsync("1", "ash", "Ash", Starter, _ct);
@@ -183,6 +184,51 @@ public class ProfileImageRefresherTests : IDisposable
         Assert.NotEmpty(_log.Messages);
         Assert.All(_log.Messages, m => Assert.DoesNotContain("profile_image", m, StringComparison.Ordinal));
         Assert.Contains(_log.Messages, m => m.Contains("of 1 ", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task A_picture_without_a_length_header_is_cut_off_at_the_limit()
+    {
+        await _game.Trainers.RegisterAsync("1", "ash", "Ash", Starter, _ct);
+        TwitchReports(("1", AshPng));
+        byte[] large = [.. Png, .. new byte[ProfileImageRefresher.MaxBytes]];
+        _http.On(HttpMethod.Get, Cdn, () => new HttpResponseMessage(HttpStatusCode.OK) { Content = new UnknownLengthContent(large) });
+
+        await RefreshAndPublishAsync();
+
+        // Chunked answers announce no size: the body itself is counted (review 1.8.1, C11).
+        await using var db = _game.OpenLive();
+        Assert.Empty(db.ProfileImages);
+    }
+
+    [Fact]
+    public async Task Only_numeric_twitch_ids_are_asked_for()
+    {
+        await _game.Trainers.RegisterAsync("1", "ash", "Ash", Starter, _ct);
+        await _game.Trainers.RegisterAsync("x&login=evil", "evil", "Evil", Starter, _ct);
+        TwitchReports(("1", AshPng));
+        _http.OnBytes(AshPngSmall, Png, "image/png");
+
+        await RefreshAndPublishAsync();
+
+        // A hand-edited id must never reach the Helix query (review 1.8.1, C11).
+        Assert.All(_http.RequestsTo(Users), r => Assert.DoesNotContain("evil", r.Url, StringComparison.Ordinal));
+        Assert.Contains(_http.RequestsTo(Users), r => r.Url.Contains("id=1", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task Pictures_belong_to_the_live_trainers_even_during_the_dry_run()
+    {
+        await _game.Trainers.RegisterAsync("1", "ash", "Ash", Starter, _ct);
+        TwitchReports(("1", AshPng));
+        _http.OnBytes(AshPngSmall, Png, "image/png");
+        _game.DryRun.Enabled = true;
+
+        await _refresher.RefreshDueAsync(_ct);
+
+        // The sandbox has no trainer 1; the refresher reads and writes the live database (review 1.8.1, C11).
+        await using var db = _game.OpenLive();
+        Assert.Equal(["1"], db.ProfileImages.Select(i => i.TrainerId));
     }
 
     [Fact]
@@ -590,6 +636,28 @@ public class ProfileImageRefresherTests : IDisposable
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) =>
             _messages.Enqueue(formatter(state, exception) + (exception is null ? "" : " " + exception));
+    }
+
+    /// <summary>A PNG body sent without Content-Length, like a chunked answer.</summary>
+    private sealed class UnknownLengthContent : HttpContent
+    {
+        private readonly byte[] _content;
+
+        public UnknownLengthContent(byte[] content)
+        {
+            _content = content;
+            Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png");
+        }
+
+        protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context) => stream.WriteAsync(_content).AsTask();
+
+        protected override Task<Stream> CreateContentReadStreamAsync() => Task.FromResult<Stream>(new MemoryStream(_content, writable: false));
+
+        protected override bool TryComputeLength(out long length)
+        {
+            length = 0;
+            return false;
+        }
     }
 
     /// <summary>Response headers arrive, the body never does.</summary>

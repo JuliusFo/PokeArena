@@ -227,6 +227,75 @@ public class SitePublishWorkerTests : IDisposable
         Assert.Contains(SitePaths.Trainer("1"), _bucket.Files.Keys);
     }
 
+    [Theory]
+    [InlineData(SitePublishWorker.MaxBattleIdGap, true)]
+    [InlineData(SitePublishWorker.MaxBattleIdGap + 1, false)]
+    public async Task Fight_ids_follow_the_bucket_only_within_the_gap(long ahead, bool raised)
+    {
+        await _game.Trainers.RegisterAsync("1", "ash", "Ash", Starter, _ct);
+        var fight = await AddFightAsync("1");
+        _bucket.Files[SitePaths.Battle(fight + ahead)] = new SiteFile([], SiteGenerator.MutableCache);
+
+        await Worker().RepublishEverythingAsync(_ct);
+
+        // Review 1.8.1, C11: the boundary of the sanity gap, not only a far-away id.
+        Assert.Equal(raised ? fight + ahead + 1 : fight + 1, await AddFightAsync("1"));
+    }
+
+    [Fact]
+    public async Task A_file_that_failed_and_changes_again_goes_out_at_once()
+    {
+        await _game.Trainers.RegisterAsync("1", "ash", "Ash", Starter, _ct);
+        _bucket.Failure = new SitePublishException("offline");
+        var worker = Worker();
+        await worker.PublishDueAsync(_ct);
+        _bucket.Failure = null;
+
+        // A new change queues the waiting file again: it is due now, not after its backoff (review 1.8.1, C11).
+        await _game.Trainers.ObserveAsync(new Core.Chat.ChatMessage("m", "1", "ash", "Ash", "hallo", Core.Chat.ChatRole.Viewer, Color: "#FF0000"), _ct);
+        await using (var db = _game.OpenLive())
+        {
+            Assert.All(db.PublishQueue, i => Assert.Equal(0, i.Attempts));
+        }
+
+        await worker.PublishDueAsync(_ct);
+        await worker.PublishDueAsync(_ct);
+        Assert.Equal(0, worker.State.Pending);
+    }
+
+    [Fact]
+    public async Task A_failed_bucket_listing_still_republishes_the_database()
+    {
+        await _game.Trainers.RegisterAsync("1", "ash", "Ash", Starter, _ct);
+        var worker = Worker();
+        await worker.PublishDueAsync(_ct);
+        _bucket.Files.Clear();
+        _bucket.ListFailure = new SitePublishException("Liste nicht lesbar");
+
+        await worker.RepublishEverythingAsync(_ct);
+        await worker.PublishDueAsync(_ct);
+
+        Assert.Contains(SitePaths.Trainer("1"), _bucket.Files.Keys);
+    }
+
+    [Fact]
+    public async Task Republishing_during_the_dry_run_queues_the_live_data()
+    {
+        await _game.Trainers.RegisterAsync("1", "ash", "Ash", Starter, _ct);
+        await using (var db = _game.OpenLive())
+        {
+            db.PublishQueue.RemoveRange(db.PublishQueue);
+            await db.SaveChangesAsync(_ct);
+        }
+
+        _game.DryRun.Enabled = true;
+        await Worker().RepublishEverythingAsync(_ct);
+
+        // The sandbox is never published, and the live site must not go stale meanwhile (review 1.8.1, C11).
+        await using var live = _game.OpenLive();
+        Assert.Contains(SitePaths.Trainer("1"), live.PublishQueue.Select(i => i.Path));
+    }
+
     [Fact]
     public async Task New_access_retries_waiting_files_at_once()
     {

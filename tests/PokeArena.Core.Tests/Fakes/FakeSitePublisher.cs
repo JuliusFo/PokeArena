@@ -12,6 +12,9 @@ public sealed class FakeSitePublisher : ISitePublisher, ISitePublisherFactory
 
     public Exception? Failure { get; set; }
 
+    /// <summary>Makes only the bucket listing throw.</summary>
+    public Exception? ListFailure { get; set; }
+
     public bool IsSetUp { get; set; } = true;
 
     public Func<string, Task>? OnPut { get; set; }
@@ -26,7 +29,7 @@ public sealed class FakeSitePublisher : ISitePublisher, ISitePublisherFactory
     public Task<IReadOnlyList<string>> ListAsync(string prefix, CancellationToken ct)
     {
         Calls.Add("list " + prefix);
-        if (Failure is { } failure)
+        if ((Failure ?? ListFailure) is { } failure)
         {
             throw failure;
         }

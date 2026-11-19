@@ -454,6 +454,30 @@ public class TwitchConnectionTests
         await sender.StopAsync(TestContext.Current.CancellationToken);
     }
 
+    [Fact]
+    public async Task Stopping_without_twitch_waits_three_seconds_not_a_minute()
+    {
+        var clock = new TimerCountingTimeProvider();
+        var sender = new ChatSender(_helix, new SettableTarget(), new DryRunMode(), _chatLog, clock, NullLogger<ChatSender>.Instance);
+        await sender.StartAsync(TestContext.Current.CancellationToken);
+        sender.Send("Der Boss wurde besiegt!");
+        await Eventually.TrueAsync(() => clock.ActiveTimers > 0);
+
+        // Closed during a Twitch outage: the queued message gets the stop wait, not its full minute (R1 second review,
+        // test from review 1.8.1, C9).
+        var stopping = sender.StopAsync(TestContext.Current.CancellationToken);
+        for (var waited = TimeSpan.Zero; !stopping.IsCompleted && waited < ChatSender.TargetWait; waited += TimeSpan.FromSeconds(1))
+        {
+            await Eventually.TrueAsync(() => stopping.IsCompleted || clock.ActiveTimers > 0);
+            clock.Advance(TimeSpan.FromSeconds(1));
+            await Task.Delay(10, TestContext.Current.CancellationToken);
+        }
+
+        Assert.True(stopping.IsCompleted);
+        Assert.True(clock.GetUtcNow() - clock.Start <= ChatSender.StopTargetWait + TimeSpan.FromSeconds(2));
+        Assert.Contains(_chatLog.Snapshot(), e => e.Text.StartsWith("Nicht mit Twitch verbunden", StringComparison.Ordinal));
+    }
+
     private sealed class SettableTarget : IChatTargetSource
     {
         public ChatTarget? Target { get; set; }

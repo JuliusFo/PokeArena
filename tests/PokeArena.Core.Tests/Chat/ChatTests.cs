@@ -37,6 +37,8 @@ public class ChatTests
     [InlineData("1001", """[{"set_id":"lead_moderator","id":"1","info":""}]""", ChatRole.Moderator)]
     [InlineData("42", """[{"set_id":"broadcaster","id":"1","info":""}]""", ChatRole.Broadcaster)]
     [InlineData("1001", """[{"set_id":"subscriber","id":"12","info":"16"}]""", ChatRole.Viewer)]
+    [InlineData("1001", """[{"set_id":"vip","id":"1","info":""}]""", ChatRole.Viewer)]
+    [InlineData("1001", """[{"set_id":"vip","id":"1","info":""},{"set_id":"moderator","id":"1","info":""}]""", ChatRole.Moderator)]
     public void Chat_event_role_comes_from_badges_and_broadcaster_id(string chatterId, string badges, ChatRole expected)
     {
         var message = Read(EventSubFrames.ChatMessage("hi", chatterId: chatterId, badgesJson: badges));

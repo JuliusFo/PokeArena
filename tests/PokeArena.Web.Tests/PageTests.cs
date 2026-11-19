@@ -388,6 +388,10 @@ public class PageTests : BunitContext
     [InlineData(1, 5, 30, 10)] // a fighter the page does not have
     [InlineData(1, 0, 90, 10)] // more HP before than the target has
     [InlineData(1, 0, 10, 20)] // more HP after than before
+    [InlineData(-1, 0, 30, 10)] // negative values from a file not ours must not throw (review 1.8.1, C12)
+    [InlineData(1, -1, 30, 10)]
+    [InlineData(2, 0, 30, 10)]
+    [InlineData(1, 0, 30, -5)]
     public void A_hit_the_page_cannot_draw_keeps_its_full_sentence(int side, int fighter, int before, int after)
     {
         Put(
@@ -413,6 +417,55 @@ public class PageTests : BunitContext
 
         cut.WaitForAssertion(() => Assert.Equal("Raupy (Misty, HP 30 → 10) 20 Schaden.", cut.Find(".log li").TextContent));
         Assert.Empty(cut.FindAll(".log .hit-bar"));
+    }
+
+    [Fact]
+    public void Parts_naming_a_position_the_page_lacks_are_plain_text()
+    {
+        Put(
+            SitePaths.Battle(10),
+            BattlePage(10) with
+            {
+                Sides = [new BattleSide("Ash", true, [new BattleFighter(Bisasam, "Ash", "11", 90, Color: "#FFFF00")])],
+                Lines = ["Bisasam Raupy Karpador"],
+                Log = [new LogLine([new LogPart("Bisasam", -1, 0, IsSpecies: true), new LogPart(" Raupy", 0, -1, IsSpecies: true), new LogPart(" Karpador", 5, 0, IsSpecies: true)])],
+            },
+            SiteJson.Default.BattlePage);
+
+        var cut = Render<Battle>(p => p.Add(b => b.Id, 10));
+
+        // A foreign file must not break the page (review 1.8.1, C12).
+        cut.WaitForAssertion(() => Assert.Equal("Bisasam Raupy Karpador", cut.Find(".log li").TextContent));
+        Assert.Empty(cut.FindAll(".log .tinted"));
+    }
+
+    [Fact]
+    public void A_quarter_of_the_hp_left_counts_as_low_on_the_card_and_in_the_log()
+    {
+        Put(
+            SitePaths.Battle(11),
+            BattlePage(11) with
+            {
+                Sides =
+                [
+                    new BattleSide("Ash", true, [new BattleFighter(Bisasam, "Ash", "11", 90, HpLeft: 90, Used: true)]),
+                    new BattleSide("Misty", false, [new BattleFighter(Raupy, "Misty", "12", 80, HpLeft: 20, Used: true)]),
+                ],
+                Lines = ["Raupy (Misty, HP 80 → 20) 60 Schaden."],
+                Log =
+                [
+                    new LogLine(
+                        [new LogPart("Raupy", 1, 0, IsSpecies: true), new LogPart(" (Misty"), new LogPart(", HP 80 → 20", 1, 0, IsTargetHp: true), new LogPart(") 60 Schaden.")],
+                        Hit: new LogHit(1, 0, 80, 20)),
+                ],
+            },
+            SiteJson.Default.BattlePage);
+
+        var cut = Render<Battle>(p => p.Add(b => b.Id, 11));
+
+        // Exactly 25 % is low: 20 × 4 ≤ 80 (review 1.8.1, C12).
+        cut.WaitForAssertion(() => Assert.Contains("low", cut.Find(".log .hit-bar").ClassName));
+        Assert.Equal(["hp-bar", "hp-bar low"], cut.FindAll(".fighters .hp-bar").Select(b => b.ClassName));
     }
 
     [Fact]
