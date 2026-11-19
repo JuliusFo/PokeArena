@@ -20,6 +20,7 @@ public static class WebsiteServiceCollectionExtensions
         services.AddSingleton<SitePublishWorker>();
         services.AddHostedService(sp => sp.GetRequiredService<SitePublishWorker>());
         services.AddHostedService<ProfileImageRefresher>();
+        services.AddHostedService<RepublishAfterUpdate>();
         services.AddSingleton<IChatCommand, ArenaCommand>();
         return services;
     }
