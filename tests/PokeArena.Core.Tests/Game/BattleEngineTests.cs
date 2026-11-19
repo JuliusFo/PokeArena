@@ -49,7 +49,7 @@ public class BattleEngineTests
     [Fact]
     public void Boss_hp_scales_with_the_participants()
     {
-        // Arkani base HP 90 × HpFactor 1.0 × BossHpPerParticipant 1.3 (1.8.0) × 4 participants = 468.
+        // Arkani base HP 90 × HpFactor 1.0 × BossHpPerParticipant 1.3 (WP-09, 2026-11-19) × 4 participants = 468.
         var arkani = GameFixture.Species.Find("Arkani")!;
 
         Assert.Equal(468, BossDraw.Fighter(arkani, BattleSettings.Default, BossSettings.Default, 4).MaxHp);
@@ -134,6 +134,31 @@ public class BattleEngineTests
     {
         // N / 3 per round on average instead of ⌈N / 3⌉ every round (ADR-0006 addendum 2026-11-19).
         Assert.Equal(targets, Enumerable.Range(1, 6).Select(round => BossBattle.TargetsInRound(participants, 3, round)));
+    }
+
+    [Theory]
+    [InlineData(4, 3, 0)]
+    [InlineData(4, 3, -1)]
+    [InlineData(0, 3, 1)]
+    [InlineData(4, 0, 1)]
+    public void Boss_targets_refuse_counts_below_one(int participants, int divisor, int round)
+    {
+        // TargetsInRound(4, 3, 0) would give 0 instead of the ceiling difference 1: the division truncates to zero.
+        Assert.Throws<ArgumentOutOfRangeException>(() => BossBattle.TargetsInRound(participants, divisor, round));
+    }
+
+    [Fact]
+    public void A_round_without_a_boss_attack_goes_on_and_keeps_its_heading()
+    {
+        // Two participants: the boss attacks 1, 1, 0, 1 … — round 3 has only the participants' hits.
+        var party = new[] { F("Relaxo", owner: "A"), F("Relaxo", owner: "B") };
+        var result = new BossBattle(Damage()).Fight(F("Karpador", owner: "Boss", hpMultiplier: 1000), party, 3, new BattleRandom(5));
+
+        int BossHits(int round) => result.Log.Events.Count(e => e.Kind == BattleEventKind.Attack && e.Round == round && e.Fighter == 2);
+        Assert.True(result.Rounds >= 4);
+        Assert.Equal([1, 1, 0, 1], Enumerable.Range(1, 4).Select(BossHits));
+        Assert.Equal(2, result.Log.Events.Count(e => e is { Kind: BattleEventKind.Attack, Round: 3 } && e.Fighter < 2));
+        Assert.Contains("Runde 3", result.Log.ToLines(GameFixture.Species));
     }
 
     [Fact]
