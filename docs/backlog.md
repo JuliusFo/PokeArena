@@ -90,6 +90,23 @@ Left out of the first version (feat/trainer-profile-image, 2026-11-11):
   or a takedown notice; today only deleting the trainer removes it (ADR-0008
   addendum) — 2026-11-11, review feat/trainer-profile-image.
 
+## Fight log redesign
+
+The user plans to rework the „Kampfverlauf“ on the fight page; ideas from
+2026-11-18 (viewer feedback on a duel, fix/battle-log-hp-before), none
+decided yet:
+
+- A small HP bar per hit with the lost piece set apart, like the bars on the
+  fight cards (needs HP before, after and max per line in `LogLine`).
+- Shorter lines in duels: the owner's name is clear from the side and its chat
+  colour, e.g. „Owei → Digda · 46 Schaden · sehr effektiv“.
+- The knockout inside the hit's line, set apart, instead of a line of its own.
+- Duel sections: „Tentacha gegen Owei“ as a sub-heading instead of „… schickt …
+  in den Kampf“, rounds as quiet separators.
+- „Sehr effektiv“ / „Nicht sehr effektiv“ as badges, like „Volltreffer“ in gold.
+- Boss fights: filter „nur meine Pokémon“ or collapsible rounds — the logs get
+  long there.
+
 ## Battle system
 
 - Attacks per Pokemon with per-attack types — 2026-09-03, spec §14.
