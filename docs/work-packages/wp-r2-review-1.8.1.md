@@ -1,7 +1,7 @@
 # R2 — Review 1.8.1 (2026-11-19, branch wp/r2-review-1.8.1)
 
 - Built: the fixes of the whole review 1.8.1 ([review-1.8.1.md](../review-1.8.1.md), six agents on `9ff8851`).
-  Tests 484 → 548 (Core 374 → 430, UI 32 → 34, Web 78 → 84), Integration 9 → 10 (one skips without R2).
+  Tests 484 → 551 (Core 374 → 433, UI 32 → 34, Web 78 → 84), Integration 9 → 10 (one skips without R2).
 - User decisions (2026-11-19): „Alles mit Vorschlägen“ — one package R2, version 1.8.2 (proposal, not confirmed);
   every question took its proposed default (recorded in the review document).
 - Part A:
@@ -16,8 +16,10 @@
     hourly check and the start rechecks; test with a 503 and a timeout while polling the login (red without the fix).
   - A5 fixed: a successful check that finds nothing drops a downloaded update.
   - A6 fixed: a start logger writes to the log file before the configuration is read, closed before the final one.
-  - A7 built: `RepublishAfterUpdate` republishes once per new version (marker `website-version.txt`), waits for an
-    R2 key; hint in the card.
+  - A7 built: `RepublishAfterUpdate` re-renders once per new version (marker `website-version.txt`), waits for an
+    R2 key; hint in the card. Since the code review below only the upload half of „Alles neu veröffentlichen“
+    (`SitePublishWorker.RequeueDatabaseFilesAsync`: no bucket listing, nothing deleted, no id raise, nothing without
+    trainers; the marker is written then too).
   - A8, A9 fixed: republish errors show a `.problem` line; key removal asks first.
   - A10 fixed: privacy page „auf dem Rechner, auf dem der Bot läuft“.
   - A11, A13 fixed: thresholds pinned to spec §1 (`NpcCatalog.Thresholds`); missing lists and null entries in all
@@ -49,6 +51,20 @@
   status and roadmap; D3 this split (index with „Areas“, backlog item done); D4 decided proposals marked, `/release`
   asks about open ones; D5 protocol rule; D6 pitfalls trimmed (all five 39.8 → 33.2 KB); D7 „Windows machine“; D8
   roadmap and architecture; D9 „deploys with the release tag“.
+- Code review (2026-11-19): separate reviewer on `9ff8851..e57c027`, no H or M; user decision „Alle“. All fixed in
+  `e57c027..5a69feb`; the reviewer's second pass on that range confirmed them (its only new note: this protocol).
+  - 1 fixed: the automatic run did the whole reconciliation (listing, deleting, id raise) without anyone deciding; a
+    fresh or wrong data directory with the stored R2 key could have emptied the site. Now upload only, skipped
+    without trainers; test that files only the bucket knows stay.
+  - 2 fixed: tests for an empty database and a failed run (no marker, bot keeps starting, next start retries).
+  - 3 fixed: privacy page „Sicherungskopien auf dem Rechner des Bots“.
+  - 4 fixed: `pages.yml` checks out with `persist-credentials: false`.
+  - 5 fixed: the overlay's cleanup after a failed start never throws.
+  - 6 fixed: spec §9, architecture.md and the release skill name the automatic re-render.
+  - 7 fixed: the skills name the log file `docs/work-packages/<branch, / as ->.md`.
+  - 8 fixed: `SemaphoreSlim.Wait(TimeSpan, CancellationToken)` and the timed `Task.Wait` overloads banned.
+  - 9 fixed: a space between the HP bar's two copies, as before the component.
+  - 10 fixed: `AddPokeArenaWebsite`'s comment names the new service and its dependencies.
 - Addenda: version 1.8.2 is a proposal (not confirmed). Proposal (not confirmed): the republish marker as a file in the
   data directory instead of a database table (no migration for one value; a restored backup does not republish by
   itself — the README step stays).

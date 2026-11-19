@@ -10,9 +10,9 @@ tagged `vX.Y.Z` once its section is complete.
 Fixes of the whole review 1.8.1 (R2, `docs/review-1.8.1.md`).
 
 ### Changed
-- After an update the bot republishes the website once by itself, so older
-  fights and trainer pages pick up the new look without anyone clicking
-  „Alles neu veröffentlichen“.
+- After an update the bot uploads every page of the website once by itself, so
+  older fights and trainer pages pick up the new look without anyone clicking
+  „Alles neu veröffentlichen“ (the button still also cleans up the bucket).
 - A boss that beat every Pokémon reads „… ist entkommen – alle Pokémon wurden
   besiegt.“ on the fight page and in the desktop app too, like in chat.
 - The privacy page says the data lies on the machine the bot runs on.

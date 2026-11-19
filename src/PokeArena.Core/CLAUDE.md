@@ -58,6 +58,9 @@
   `BeginTransactionAsync` (BEGIN IMMEDIATE), also for a single save: `EnqueueAsync` updates tracked rows the worker
   may delete in between (review 1.0.3 A25, review 1.8.1 A3). Tests prove a flow is one transaction with
   `GameFixture.FailOutboxInserts()` (review 1.8.1, C2).
+- Anything that runs without a human decision (e.g. `RepublishAfterUpdate`) only queues the database's own files —
+  never the bucket listing that deletes what the database does not know: a wrong data directory would empty the site
+  (review R2).
 - The publish worker, backups and `ProfileImageRefresher` read `GameDatabase.OpenLive()` — the only exceptions to
   `Open()`: the sandbox is never published, and pictures belong to the live trainers (feat/trainer-profile-image).
   A path from a stored `ContentType` goes through `SitePaths.TryProfileImage` (an unknown format is no picture, never
