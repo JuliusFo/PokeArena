@@ -25,6 +25,8 @@ public class CommandTests : IDisposable
     [InlineData("  !PokeArena  ", "pokearena", "")]
     [InlineData("!fight @Misty extra", "fight", "@Misty extra")]
     [InlineData("!pokearena \U000E0000", "pokearena", "")]
+    [InlineData("!fight　@Misty", "fight", "@Misty")]
+    [InlineData("!fight @Misty", "fight", "@Misty")]
     public void Parses_commands(string text, string name, string arguments)
     {
         Assert.Equal(new ParsedCommand(name, arguments), ParsedCommand.TryParse(text));

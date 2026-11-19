@@ -46,9 +46,15 @@ public sealed record ParsedCommand(string Name, string Arguments)
             return null;
         }
 
-        var end = trimmed.IndexOfAny([' ', '\t']);
+        // Any whitespace ends the name, as it separates the arguments (review 1.8.1, A12): „!fight<U+3000>@ash“ from an
+        // IME is a fight, not an unknown command.
+        var end = trimmed.AsSpan().IndexOfAny(WhiteSpace);
         var name = end < 0 ? trimmed[1..] : trimmed[1..end];
         var arguments = end < 0 ? "" : trimmed[end..].Trim();
         return new ParsedCommand(name.ToLowerInvariant(), arguments);
     }
+
+    /// <summary>Every character <see cref="char.IsWhiteSpace(char)"/> accepts, as <c>ChatText.Words</c> splits.</summary>
+    private static readonly System.Buffers.SearchValues<char> WhiteSpace = System.Buffers.SearchValues.Create(
+        [.. Enumerable.Range(0, char.MaxValue + 1).Select(c => (char)c).Where(char.IsWhiteSpace)]);
 }
