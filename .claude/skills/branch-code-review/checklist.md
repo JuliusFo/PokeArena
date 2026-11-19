@@ -100,7 +100,7 @@ without the fix.
 
 - `docs/spec.md` (game rules, commands, defaults), `docs/architecture.md`, ADRs and the `src/<Project>/CLAUDE.md`
   pitfalls still true after the change.
-- Package log in `docs/work-packages/<branch>.md` with a row in `docs/work-packages.md`, `CHANGELOG.md` entry under `[Unreleased]` for anything players or the
+- Package log in `docs/work-packages/<branch, / as ->.md` with a row in `docs/work-packages.md`, `CHANGELOG.md` entry under `[Unreleased]` for anything players or the
   streamer notice.
 - A change players notice (commands, rules, durations, odds, website) has a line on the „Neuigkeiten“ page
   (`Pages/News.razor`) under the upcoming version, without a date — on every branch, not only `wp/…`.

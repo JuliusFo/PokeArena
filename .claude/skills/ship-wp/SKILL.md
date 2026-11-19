@@ -26,7 +26,7 @@ Talk to the user in German; code, docs and commits in English. The rules are `CL
      errors, then stop it.
    - Desktop UI behaviour: covered by bUnit; no UI automation (`CLAUDE.md` §4). What only the real app or a stream can
      show goes into "to test" in the summary.
-5. **Docs of the package.** Row in `docs/work-packages.md` and log file `docs/work-packages/<branch>.md` (with the user's decisions in their words),
+5. **Docs of the package.** Row in `docs/work-packages.md` and log file `docs/work-packages/<branch, / as ->.md` (with the user's decisions in their words),
    `CHANGELOG.md` under `[Unreleased]` in plain words for streamer and players, `README.md` if a command or visible
    feature changed, the status line and "Next" in `CLAUDE.md` – replace "Next" with the current state, history goes to the CHANGELOG and the log (review 1.8.1, D1). Ideas that came up go to `docs/backlog.md`. If players
    notice the change (commands, rules, durations, odds, website), add a line to `Pages/News.razor` under the upcoming
