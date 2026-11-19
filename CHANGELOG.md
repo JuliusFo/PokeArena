@@ -7,6 +7,34 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+Fixes of the whole review 1.8.1 (R2, `docs/review-1.8.1.md`).
+
+### Changed
+- After an update the bot republishes the website once by itself, so older
+  fights and trainer pages pick up the new look without anyone clicking
+  „Alles neu veröffentlichen“.
+- A boss that beat every Pokémon reads „… ist entkommen – alle Pokémon wurden
+  besiegt.“ on the fight page and in the desktop app too, like in chat.
+- The privacy page says the data lies on the machine the bot runs on.
+- „Schlüssel entfernen“ in the website card asks first.
+- The data host's Cloudflare rule lets only the site's own files through and an
+  R2 billing alert is required (`docs/website-setup.md` §2; to set by hand).
+
+### Fixed
+- The bot starts even if the overlay cannot open its port for another reason
+  than „in use“ (for example a port Windows reserved); only the overlay is off.
+- A slow or busy Twitch answer no longer ends a working connection or a login
+  in progress.
+- A release deleted after its download is no longer installed.
+- Errors at the very start of the app reach the log file.
+- A failed „Alles neu veröffentlichen“ shows a hint in the card instead of an
+  error box.
+- A colour change in chat and new profile pictures cannot lose a viewer's
+  command or the pictures when the website upload runs at the same moment.
+- Commands work with any kind of space after the command name.
+- Broken base data files stop the app with a readable message; a changed
+  achievement threshold is refused.
+
 ## [1.8.1] - 2026-11-19
 
 ### Changed

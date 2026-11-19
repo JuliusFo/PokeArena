@@ -9,7 +9,7 @@ Request (2026-11-19): `/complete-code-review`, run right after the 1.8.1 release
 - TE: tests; the only agent that builds and runs tests, plus about 200 mutations on copies
 - RD: reuse, dead code, structure, docs
 
-**Status:** decided (all proposals), being implemented with R2 (`wp/r2-review-1.8.1`).
+**Status:** implemented with R2 (`docs/work-packages/wp-r2-review-1.8.1.md`, branch `wp/r2-review-1.8.1`), release 1.8.2 (proposal) after the live test; not done: three tests of C11/C12 (backlog); A2 needs the Cloudflare change by hand.
 
 Duplicate findings are merged (all IDs named). **Confirmed** means: additionally checked by hand in the code; otherwise the agent's assessment applies.
 

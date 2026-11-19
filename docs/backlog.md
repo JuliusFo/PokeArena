@@ -151,5 +151,10 @@ From the comparison with FerretSharp (2026-11-09); not needed at the current siz
 - Pitfalls as `.claude/rules/*.md` with `paths` headers instead of
   `src/<Project>/CLAUDE.md` — once `src/PokeArena.Core/CLAUDE.md` grows well
   past 10 KB.
+- Tests left out of R2 (review 1.8.1, C11/C12): the live rechecks stop once the
+  channel is live (needs a quiescence hook in `TwitchConnection` for a negative
+  test); `@key` on leaderboard rows and unsubscribing in `Dispose` of the UI
+  components (bUnit cannot observe element identity or events after disposal) —
+  2026-11-19, R2.
 - Local coverage script (`tools/coverage/`, ReportGenerator as a local tool)
   for the TE agent of `/complete-code-review`; no badge.
