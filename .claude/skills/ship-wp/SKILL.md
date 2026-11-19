@@ -8,8 +8,8 @@ Talk to the user in German; code, docs and commits in English. The rules are `CL
 "Integration"); this skill only runs them in order. Adapted from FerretSharp's `ship-wp`.
 
 1. **Plan.** Read the package in `docs/roadmap.md` (from `$ARGUMENTS`, otherwise the next planned one in the table of
-   `docs/work-packages.md`) with its user decisions and open questions, the log entries of earlier packages in the same
-   area, and for game logic or chat texts `docs/spec.md` and `docs/chat-texts.md`. Create `wp/NN-short-name` from an
+   `docs/work-packages.md`) with its user decisions and open questions, the log files of earlier packages in the same
+   area (column "Areas", `docs/work-packages/`), and for game logic or chat texts `docs/spec.md` and `docs/chat-texts.md`. Create `wp/NN-short-name` from an
    up-to-date `origin/main`. Write the plan (what changes, where, tests, docs, open questions). If it is unclear *which*
    element is meant, ask; if only *how*, plan the simplest variant and name the question. **Wait for the approval.**
 2. **Implement.** Core logic first with unit tests (`FakeTimeProvider`, seeded randomness), then UI (bUnit). In the same
@@ -26,7 +26,7 @@ Talk to the user in German; code, docs and commits in English. The rules are `CL
      errors, then stop it.
    - Desktop UI behaviour: covered by bUnit; no UI automation (`CLAUDE.md` §4). What only the real app or a stream can
      show goes into "to test" in the summary.
-5. **Docs of the package.** Row and log entry in `docs/work-packages.md` (with the user's decisions in their words),
+5. **Docs of the package.** Row in `docs/work-packages.md` and log file `docs/work-packages/<branch>.md` (with the user's decisions in their words),
    `CHANGELOG.md` under `[Unreleased]` in plain words for streamer and players, `README.md` if a command or visible
    feature changed, the status line and "Next" in `CLAUDE.md`. Ideas that came up go to `docs/backlog.md`. If players
    notice the change (commands, rules, durations, odds, website), add a line to `Pages/News.razor` under the upcoming

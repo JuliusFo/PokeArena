@@ -6,7 +6,7 @@ neighbouring question, so a finding is reported once.
 
 Common to all: read the files in question, never guess from names. A finding needs a failure scenario someone could
 reproduce (input, steps, wrong result), not "could be a problem". Check the "Checked without findings" list of the last
-review and say whether it still holds for your topic. Decisions in `docs/work-packages.md`, `docs/roadmap.md`, ADRs
+review and say whether it still holds for your topic. Decisions in `docs/work-packages/*.md`, `docs/roadmap.md`, ADRs
 and items already in `docs/backlog.md` are not findings unless the code deviates from them.
 
 ## GL – Game logic and data
@@ -80,7 +80,7 @@ in parallel mode); never the integration tests (read them and check that they sk
 break one guard at a time, build, run the whole suite, restore. A gap is "mutation X stays green". At least: every
 invariant guard (starter, achievements, trainer by id, outbox in the transaction, live gate, moderator access of the
 real commands, deletion confirmation, dry-run separation, refresh serialization, reconnect order, publish worker),
-every fix since the last review (protocols in `docs/work-packages.md`, CHANGELOG), and the changed defaults.
+every fix since the last review (protocols in `docs/work-packages/*.md`, CHANGELOG), and the changed defaults.
 
 **Weak and flaky:** asserts that cannot fail (text that never appears, a mock returning what it was told, a fake that
 answers synchronously in a concurrency test), fixed waits, real clocks, culture or order dependence, battles predicted

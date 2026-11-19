@@ -18,7 +18,7 @@ For a review of one branch's changes use `/branch-code-review` instead.
   point every agent there – other sessions may switch branches in the shared copy. Remove it afterwards with
   `git worktree remove --force` and `git worktree prune`.
 - Context for the agents: the last `docs/review-*.md` (findings, user decisions, "Status"), `docs/backlog.md`,
-  `docs/roadmap.md`, the packages logged in `docs/work-packages.md` since that review, and
+  `docs/roadmap.md`, the packages logged since that review (`docs/work-packages.md` table, their files in `docs/work-packages/`), and
   `.claude/skills/branch-code-review/checklist.md`. Each agent also gets its brief from `agents.md` (next to this
   file).
 
@@ -38,7 +38,7 @@ edits, commits, checkout, stash, reset; never start the app or touch Twitch/R2).
 
 Every prompt contains: the snapshot path and SHA; that it is one of six parallel read-only reviewers; the required
 reading (`CLAUDE.md`, the checklist, the `src/<Project>/CLAUDE.md` files of its topic, the docs of its topic, "User
-decisions" in `docs/work-packages.md`); the agent's block from `agents.md` verbatim; the review points dead code,
+decisions" in `docs/work-packages/*.md`); the agent's block from `agents.md` verbatim; the review points dead code,
 duplicates, readability, architecture, security, structure, tests, docs as far as the topic covers them; the focus
 from `$ARGUMENTS`, if any; "findings of the last review and the backlog only if their implementation is missing or
 faulty; check that the last review's fixes took effect"; the answer format: English, IDs with the topic prefix (GL1,
@@ -82,7 +82,7 @@ questions. **Stop and wait for the decisions.**
   the same way (break it briefly, run, restore). Note the test count before and after in the log.
 - Done as in `CLAUDE.md` §7: `dotnet build PokeArena.slnx -warnaserror`, the four test projects (integration tests
   skip cleanly), `docs/chat-texts.md` and the guide page for changed texts or defaults, ADRs, log entry
-  `### R<n> — Review X.Y.Z` in `docs/work-packages.md` (row in the table, user decisions, per finding fixed / not
+  `docs/work-packages/wp-r<n>-review-X.Y.Z.md` (row in the table of `docs/work-packages.md`, user decisions, per finding fixed / not
   reproduced / moved to backlog), `CHANGELOG.md` under `[Unreleased]`, and the "Status" line in the review document.
   Kept-but-not-done items go to `docs/backlog.md`.
 - Learnings: a trap that will come back in an area gets one line in `src/<Project>/CLAUDE.md` (source in

@@ -148,9 +148,6 @@ showed it together with the ideas below); the rest is not decided yet:
 
 From the comparison with FerretSharp (2026-11-09); not needed at the current size.
 
-- One log file per package in `docs/work-packages/` with an index that has an
-  "Areas" column (code → package) — once `docs/work-packages.md` grows past
-  about 50 KB.
 - Pitfalls as `.claude/rules/*.md` with `paths` headers instead of
   `src/<Project>/CLAUDE.md` — once `src/PokeArena.Core/CLAUDE.md` grows well
   past 10 KB.

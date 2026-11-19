@@ -100,14 +100,14 @@ without the fix.
 
 - `docs/spec.md` (game rules, commands, defaults), `docs/architecture.md`, ADRs and the `src/<Project>/CLAUDE.md`
   pitfalls still true after the change.
-- Package log in `docs/work-packages.md`, `CHANGELOG.md` entry under `[Unreleased]` for anything players or the
+- Package log in `docs/work-packages/<branch>.md` with a row in `docs/work-packages.md`, `CHANGELOG.md` entry under `[Unreleased]` for anything players or the
   streamer notice.
 - A change players notice (commands, rules, durations, odds, website) has a line on the „Neuigkeiten“ page
   (`Pages/News.razor`) under the upcoming version, without a date — on every branch, not only `wp/…`.
 
 ## Not a finding
 
-- Decisions the user already made: "User decisions" in `docs/work-packages.md`, `docs/roadmap.md`, ADRs and their
+- Decisions the user already made: "User decisions" in `docs/work-packages/*.md`, `docs/roadmap.md`, ADRs and their
   addenda.
 - Items already in `docs/backlog.md` or `docs/roadmap.md` (e.g. WP-09 balancing), unless the change makes them worse.
 - Features of later packages that are deliberately missing.

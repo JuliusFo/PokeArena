@@ -15,7 +15,7 @@ Status: 2026-11-19 · v1.8.1 released (HP bar per hit in the fight log; 1.8.0: b
 | `docs/backlog.md` | Unplanned ideas, grouped by topic | When an idea comes up — park it there |
 | `docs/chat-texts.md` | Every chat text of the bot | When a chat text changes (same change) |
 | `docs/review-X.Y.Z.md` | Whole-solution reviews with findings and user decisions | Before the next whole review |
-| `docs/work-packages.md` | Package overview + log per finished package | After finishing a package |
+| `docs/work-packages.md` | Package index (version, areas) → one log file per package in `docs/work-packages/` | At the start (logs of the same area) and after finishing a package |
 | `CHANGELOG.md` | Release notes (Keep a Changelog, SemVer) | Before tagging a release |
 | `src/<Project>/CLAUDE.md` | Pitfalls of that project (Core, UI, Desktop, Web; loads automatically) | — |
 | `.claude/skills/` | `/ship-wp` (one package from plan to green CI), `/branch-code-review` (one branch, separate reviewer agent, `checklist.md`), `/complete-code-review` (whole solution, six agents → `docs/review-X.Y.Z.md`), `/release` | Before a package, review or release; keep the checklist in line with §3 |
@@ -154,7 +154,7 @@ PokeArena.slnx
   (not confirmed)" until the user agrees — otherwise the next session takes
   them as settled.
 - Done means: build with warnings as errors and tests green, ADR if needed, log
-  in work-packages.md, CHANGELOG entry, a line on the website's „Neuigkeiten“
+  in docs/work-packages/, CHANGELOG entry, a line on the website's „Neuigkeiten“
   page if players notice the change (user decision 2026-11-09, review WP-10),
   then a short summary (built / open / to test).
 - Small, topical commits, Conventional Commits (`feat:`, `fix:`, `test:`,
