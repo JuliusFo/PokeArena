@@ -15,12 +15,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- One copy of the update fakes for both suites (review 1.8.1, C15). -->
+    <Compile Include="..\PokeArena.Core.Tests\Fakes\FakeUpdater.cs;..\PokeArena.Core.Tests\Fakes\FakeGate.cs" Link="Fakes\%(Filename)%(Extension)" />
     <None Include="..\..\data\*.json" Link="data\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Bunit" />
     <Using Include="Xunit" />
+    <Using Include="PokeArena.UI.Tests.Fakes" />
+    <Using Include="PokeArena.Core.Tests.Fakes" />
   </ItemGroup>
 
   <ItemGroup>

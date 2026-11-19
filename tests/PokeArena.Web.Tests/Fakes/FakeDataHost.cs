@@ -1,7 +1,7 @@
 using System.Net;
 using System.Text;
 
-namespace PokeArena.Web.Tests;
+namespace PokeArena.Web.Tests.Fakes;
 
 /// <summary>The data host as a dictionary of JSON files; missing paths answer 404, <see cref="Down"/> fails every request.</summary>
 public sealed class FakeDataHost : HttpMessageHandler

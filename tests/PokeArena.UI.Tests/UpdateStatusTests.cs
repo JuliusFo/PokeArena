@@ -8,7 +8,7 @@ namespace PokeArena.UI.Tests;
 public class UpdateStatusTests : BunitContext
 {
     private readonly FakeUpdater _updater = new();
-    private readonly FakeGate _gate = new();
+    private readonly FakeGate _gate = new() { MayInstall = false };
     private readonly UpdateCheck _check;
 
     public UpdateStatusTests()
@@ -93,31 +93,5 @@ public class UpdateStatusTests : BunitContext
         cut.Find("button").Click();
 
         cut.WaitForAssertion(() => Assert.Equal("Version 1.6.1 bereit", cut.Find(".tag-update").TextContent));
-    }
-
-    private sealed class FakeUpdater : IAppUpdater
-    {
-        public bool SelfUpdate { get; set; } = true;
-        public string? Newer { get; set; }
-        public bool FailDownload { get; set; }
-        public int Installs { get; private set; }
-
-        public bool CanSelfUpdate => SelfUpdate;
-
-        public Task<string?> FindNewerAsync(CancellationToken ct) => Task.FromResult(Newer);
-
-        public Task DownloadAsync(CancellationToken ct) =>
-            FailDownload ? throw new HttpRequestException("broken download") : Task.CompletedTask;
-
-        public void RestartIntoUpdate() => Installs++;
-    }
-
-    private sealed class FakeGate : IUpdateGate
-    {
-        public bool Lobby { get; set; }
-
-        public bool LobbyOpen => Lobby;
-
-        public bool MayInstallAutomatically => false;
     }
 }

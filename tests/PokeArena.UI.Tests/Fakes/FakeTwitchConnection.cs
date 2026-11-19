@@ -1,6 +1,6 @@
 using PokeArena.Core.Twitch;
 
-namespace PokeArena.UI.Tests;
+namespace PokeArena.UI.Tests.Fakes;
 
 /// <summary>The Twitch connection as the UI sees it, without a network; <see cref="Set"/> changes the state like a real event.</summary>
 public sealed class FakeTwitchConnection : ITwitchConnection

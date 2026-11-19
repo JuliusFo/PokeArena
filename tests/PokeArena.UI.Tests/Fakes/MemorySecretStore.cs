@@ -1,6 +1,6 @@
 using PokeArena.Core.Secrets;
 
-namespace PokeArena.UI.Tests;
+namespace PokeArena.UI.Tests.Fakes;
 
 public sealed class MemorySecretStore : ISecretStore
 {

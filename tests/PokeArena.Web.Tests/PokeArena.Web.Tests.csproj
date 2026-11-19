@@ -17,6 +17,7 @@
   <ItemGroup>
     <Using Include="Bunit" />
     <Using Include="Xunit" />
+    <Using Include="PokeArena.Web.Tests.Fakes" />
   </ItemGroup>
 
   <ItemGroup>

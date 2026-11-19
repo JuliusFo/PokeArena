@@ -13,56 +13,9 @@ using PokeArena.Core.Twitch;
 
 namespace PokeArena.UI.Tests;
 
-/// <summary>Trainer list and navigation on a real in-memory database.</summary>
-public class TrainerListTests : BunitContext
+/// <summary>The trainer list: registrations, search, delete and the dry run.</summary>
+public class TrainerListTests : DesktopTestContext
 {
-    private readonly SqliteConnection _keeper;
-    private readonly DryRunMode _dryRun = new();
-    private readonly SpeciesCatalog _species = SpeciesCatalog.Load(Path.Combine(AppContext.BaseDirectory, "data", "pokemon.json"));
-    private readonly NpcCatalog _npcs;
-    private readonly FakeTimeProvider _time = new(new DateTimeOffset(2026, 10, 13, 18, 30, 0, TimeSpan.Zero));
-    private readonly GameDatabase _database;
-    private readonly TrainerService _trainers;
-    private readonly ChatInbox _inbox = new();
-    private readonly AppPaths _paths = new(Path.Combine(Path.GetTempPath(), "pokearena-ui-" + Guid.NewGuid().ToString("N")));
-    private readonly CancellationToken _ct = Xunit.TestContext.Current.CancellationToken;
-
-    public TrainerListTests()
-    {
-        var connectionString = $"Data Source=ui-{Guid.NewGuid():N};Mode=Memory;Cache=Shared";
-        _keeper = new SqliteConnection(connectionString);
-        _keeper.Open();
-        _npcs = NpcCatalog.Load(Path.Combine(AppContext.BaseDirectory, "data", "npcs.json"), _species);
-        _database = new GameDatabase(connectionString, _dryRun, NullLogger<GameDatabase>.Instance);
-        _database.MigrateLiveAsync(_ct).GetAwaiter().GetResult();
-        _trainers = new TrainerService(_database, _species, _time, NullLogger<TrainerService>.Instance);
-
-        Services.AddSingleton(_dryRun);
-        Services.AddSingleton(_database);
-        Services.AddSingleton(_trainers);
-        var battles = new BattleService(_database, _species, _npcs);
-        Services.AddSingleton(battles);
-        Services.AddSingleton(new AppInfo("0.2.0"));
-        var chatLog = new ChatLog(_time);
-        var inbox = _inbox;
-        Services.AddSingleton(chatLog);
-        Services.AddSingleton(inbox);
-        Services.AddSingleton(new DryRunTrainers(_database, _species, _npcs, _trainers, PvpSettings.Default, new SystemSeedSource(), inbox, chatLog, _time));
-        Services.AddSingleton<ITwitchConnection>(new FakeTwitchConnection { State = new(TwitchStatus.SignedOut) });
-        Services.AddSingleton(new TrainerRemoval(_trainers, battles, new NullChatSender(), _time, NullLogger<TrainerRemoval>.Instance));
-        Services.AddSingleton(new StreamStatus());
-        var r2 = new R2Access(new WebsiteOptions(), new MemorySecretStore());
-        Services.AddSingleton(r2);
-        Services.AddSingleton(new OverlayOptions());
-        Services.AddSingleton(new OverlayStatus());
-        Services.AddSingleton(new DatabaseBackup(_paths, _database, _time, NullLogger<DatabaseBackup>.Instance));
-        Services.AddSingleton(new SettingsFile(_paths));
-        Services.AddSingleton(new TwitchOptions { Channel = "shiyofurball" });
-        Services.AddSingleton(new WebsiteOptions());
-        Services.AddSingleton(new UpdateCheck(new GitHubReleaseHint(new HttpClient(), new AppInfo("0.2.0")), new UpdateGate(new StreamStatus(), _dryRun, () => false, _time), _time, NullLogger<UpdateCheck>.Instance));
-        Services.AddSingleton(new SitePublishWorker(_database, new SiteGenerator(_species, _npcs), r2, _time, NullLogger<SitePublishWorker>.Instance));
-    }
-
     [Fact]
     public void Empty_list_explains_how_viewers_join()
     {
@@ -148,36 +101,6 @@ public class TrainerListTests : BunitContext
     }
 
     [Fact]
-    public void Backup_card_shows_that_there_is_no_backup_yet_and_where_they_go()
-    {
-        var cut = Render<BackupPanel>();
-
-        Assert.Equal("noch keine", cut.Find("[data-testid=latest-backup]").TextContent);
-        Assert.EndsWith("backups", cut.Find(".facts .path").TextContent);
-        Assert.Equal("Jetzt sichern", cut.Find("button").TextContent);
-    }
-
-    [Fact]
-    public void Settings_are_checked_then_written_to_the_data_directory()
-    {
-        var cut = Render<SettingsPanel>();
-        Assert.Equal("shiyofurball", cut.Find("input").GetAttribute("value"));
-
-        cut.FindAll("input")[1].Input("http://arena.example.de");
-        cut.Find("form").Submit();
-        Assert.Equal("Die Website-Adresse muss mit https:// beginnen.", cut.Find(".problem").TextContent);
-        Assert.False(File.Exists(new SettingsFile(_paths).Path));
-
-        cut.FindAll("input")[1].Input("https://arena.example.de/");
-        cut.Find("form").Submit();
-
-        cut.WaitForAssertion(() => Assert.NotNull(cut.Find("[data-testid=settings-saved]")));
-        var json = File.ReadAllText(new SettingsFile(_paths).Path);
-        Assert.Contains("\"Channel\": \"shiyofurball\"", json);
-        Assert.Contains("\"SiteUrl\": \"https://arena.example.de\"", json);
-    }
-
-    [Fact]
     public async Task Dry_run_shows_only_test_trainers_and_says_so()
     {
         await _trainers.RegisterAsync("1", "misty", "Misty", _species.Get(7), _ct);
@@ -191,57 +114,5 @@ public class TrainerListTests : BunitContext
             Assert.Contains("nur Testtrainer", cut.Markup);
             Assert.Contains("Noch niemand registriert", cut.Markup);
         });
-    }
-
-    [Fact]
-    public void Navigation_switches_to_the_trainer_area_and_marks_the_dry_run()
-    {
-        var cut = Render<Shell>();
-        Assert.Contains(cut.FindAll("section h2"), h => h.TextContent == "Twitch-Verbindung");
-
-        cut.FindAll("button.tab").Single(b => b.TextContent == "Trainer").Click();
-        _dryRun.Enabled = true;
-
-        cut.WaitForAssertion(() =>
-        {
-            Assert.Contains(cut.FindAll("section h2"), h => h.TextContent == "Trainer");
-            Assert.Equal("Probelauf aktiv", cut.Find(".tag-dry-run").TextContent);
-        });
-    }
-
-    [Fact]
-    public void Navigation_switches_to_the_battle_area()
-    {
-        var cut = Render<Shell>();
-
-        cut.FindAll("button.tab").Single(b => b.TextContent == "Kämpfe").Click();
-
-        cut.WaitForAssertion(() =>
-        {
-            Assert.Contains(cut.FindAll("section h2"), h => h.TextContent == "Kämpfe");
-            Assert.Contains(cut.FindAll("section h2"), h => h.TextContent == "Kampfverlauf");
-        });
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            _database.Dispose();
-            _keeper.Dispose();
-            if (Directory.Exists(_paths.Root))
-            {
-                Directory.Delete(_paths.Root, recursive: true);
-            }
-        }
-
-        base.Dispose(disposing);
-    }
-
-    private sealed class NullChatSender : IChatSender
-    {
-        public void Send(string text)
-        {
-        }
     }
 }
