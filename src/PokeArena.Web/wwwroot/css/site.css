@@ -244,6 +244,46 @@ h1.tinted {
   font-weight: 800;
 }
 
+/*
+  Trophies before ranks 1–3 (Shared/Trophy.razor): the same metal colours in both themes, each with a darker edge so
+  silver does not vanish on white. Decorative — the rank number carries the information.
+*/
+.trophy {
+  width: 18px;
+  height: 18px;
+  margin-right: 5px;
+  vertical-align: -3px;
+}
+
+.trophy .cup {
+  fill: var(--metal);
+  stroke: var(--metal-edge);
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+}
+
+.trophy .handles {
+  fill: none;
+  stroke: var(--metal-edge);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+.trophy.rank-1 {
+  --metal: #f2b500;
+  --metal-edge: #8a6400;
+}
+
+.trophy.rank-2 {
+  --metal: #c3c7cf;
+  --metal-edge: #6b707a;
+}
+
+.trophy.rank-3 {
+  --metal: #cd7f3a;
+  --metal-edge: #7a4519;
+}
+
 .table tbody tr:last-child td {
   border-bottom: none;
 }

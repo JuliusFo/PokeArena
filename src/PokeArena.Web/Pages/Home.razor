@@ -34,7 +34,7 @@ else if (_leaderboard is not null)
                 @* Keyed: the poll reorders rows, and an <img> hidden by onerror (outside Blazor's view) must not move on
                    to another trainer (review feat/leaderboard-profile-colours). *@
                 <tr @key="entry.TrainerId" class="@(entry.Rank <= 3 ? "top" : "")">
-                    <td class="num">@entry.Rank</td>
+                    <td class="num"><Trophy Rank="entry.Rank" />@entry.Rank</td>
                     <td>
                         @{ var tint = Tint.Style(entry.Color); }
                         @* The tint on the link itself, so the underline takes the name's colour too. *@

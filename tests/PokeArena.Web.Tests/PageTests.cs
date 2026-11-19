@@ -66,6 +66,27 @@ public class PageTests : BunitContext
     }
 
     [Fact]
+    public void The_leaderboard_puts_a_trophy_before_the_first_three_ranks()
+    {
+        // Ben and Cleo share rank 2, so both get silver; rank 4 gets none.
+        Put(
+            SitePaths.Leaderboard,
+            new Leaderboard(Now, 5, [
+                new(1, "11", "Anna", 5, 5), new(2, "12", "Ben", 3, 3), new(2, "13", "Cleo", 3, 3),
+                new(3, "14", "Dora", 2, 2), new(4, "15", "Emil", 1, 1)]),
+            SiteJson.Default.Leaderboard);
+
+        var cut = Render<Home>();
+
+        cut.WaitForAssertion(() => Assert.Equal(5, cut.FindAll("tbody tr").Count));
+        Assert.Equal(
+            ["trophy rank-1", "trophy rank-2", "trophy rank-2", "trophy rank-3", null],
+            cut.FindAll("tbody tr td:first-child").Select(td => td.QuerySelector("svg")?.GetAttribute("class")));
+        Assert.All(cut.FindAll("svg.trophy"), svg => Assert.Equal("true", svg.GetAttribute("aria-hidden")));
+        Assert.Equal(["1", "2", "2", "3", "4"], cut.FindAll("tbody tr td:first-child").Select(td => td.TextContent.Trim()));
+    }
+
+    [Fact]
     public void The_leaderboard_polls_and_explains_an_empty_game()
     {
         var cut = Render<Home>();
