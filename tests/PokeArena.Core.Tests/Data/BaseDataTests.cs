@@ -59,7 +59,7 @@ public class BaseDataTests
         Assert.Equal("Eich", npcs.ForThreshold(15).Name);
         Assert.Equal(["Bisasam", "Schiggy", "Glumanda", "Raupy", "Hornliu", "Pikachu"], npcs.ForThreshold(15).Team.Select(s => s.Name));
         Assert.Equal([15, 25], npcs.ThresholdsReached(39));
-        Assert.Equal(Enumerable.Range(1, 17), npcs.All.Select(n => n.Tokens));
+        Assert.All(npcs.All, n => Assert.Equal(1, n.Tokens));
     }
 
     [Theory]

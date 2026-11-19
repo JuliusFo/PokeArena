@@ -80,15 +80,15 @@ public class NpcServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task Tokens_rise_with_the_npc()
+    public async Task A_later_npc_gives_one_token_too()
     {
         await RegisterAsync("1", "Ash", "Karpador", 30, unlock: 25);
 
         await Npc().ChallengeAsync(Challenge("1", "Ash"), "rocko", _ct);
 
-        Assert.EndsWith(" und 2 Tokens!", _chat.Sent.Single());
+        Assert.EndsWith(" und 1 Token!", _chat.Sent.Single());
         await using var db = _game.OpenLive();
-        Assert.Equal(2, (await db.Trainers.SingleAsync(_ct)).Tokens);
+        Assert.Equal(1, (await db.Trainers.SingleAsync(_ct)).Tokens);
     }
 
     [Fact]
