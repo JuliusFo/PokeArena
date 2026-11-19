@@ -132,6 +132,27 @@ public class TwitchAuthTests
     }
 
     [Fact]
+    public async Task A_refresh_in_flight_is_not_cancelled_by_its_caller()
+    {
+        var provider = Provider(new TwitchToken("at-1", "rt-1", _time.GetUtcNow().AddHours(1)));
+        _http.On(HttpMethod.Post, Id + "token", HttpStatusCode.OK, """{"access_token":"at-2","expires_in":14400,"refresh_token":"rt-2"}""");
+        var twitch = new TaskCompletionSource();
+        _http.Gate = () => twitch.Task;
+        using var caller = CancellationTokenSource.CreateLinkedTokenSource(_ct);
+
+        var refresh = provider.RefreshAsync("at-1", caller.Token);
+        await Eventually.TrueAsync(() => _http.RequestsTo(Id + "token").Any());
+
+        // The app shuts down while Twitch has already spent the single-use rt-1: only this answer holds the new one
+        // (review 1.0.3 A11, test from review 1.8.1 C4).
+        await caller.CancelAsync();
+        twitch.SetResult();
+
+        Assert.Equal("at-2", await refresh);
+        Assert.Contains("rt-2", _secrets.Get(TwitchTokenProvider.SecretName));
+    }
+
+    [Fact]
     public async Task Rejected_refresh_clears_the_stored_login()
     {
         var provider = Provider(new TwitchToken("at-1", "rt-1", _time.GetUtcNow()));

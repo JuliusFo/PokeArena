@@ -69,10 +69,11 @@ public sealed class FakeHttpHandler : HttpMessageHandler
                 body));
         }
 
-        // Recorded first, then held: a test can see how many requests are in flight at once.
+        // Recorded first, then held: a test can see how many requests are in flight at once. A held request ends when
+        // its caller cancels, like a real one on the network.
         if (Gate is { } gate)
         {
-            await gate();
+            await gate().WaitAsync(ct);
         }
 
         lock (_lock)

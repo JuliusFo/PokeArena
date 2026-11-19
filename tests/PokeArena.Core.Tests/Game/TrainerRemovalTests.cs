@@ -55,6 +55,10 @@ public class TrainerRemovalTests : IDisposable
         Assert.Contains(SitePaths.BattleIndex, queued);
         Assert.Contains(SitePaths.Leaderboard, queued);
 
+        // The name and colour must leave the statistics page too (review 1.8.1, C8).
+        Assert.Contains(SitePaths.Statistics, queued);
+        Assert.Contains(SitePaths.Meta, queued);
+
         Assert.False(await _game.Trainers.DeleteAsync("1001", _ct));
     }
 
@@ -75,6 +79,54 @@ public class TrainerRemovalTests : IDisposable
             "Bestätige innerhalb von 60 Sekunden mit !entfernen @ash ja",
             _chat.Sent[0]);
         Assert.Equal("Ash wurde mit allen Pokémon gelöscht.", _chat.Sent[^1]);
+    }
+
+    [Fact]
+    public async Task A_deletion_that_cannot_be_saved_completely_leaves_the_trainer_whole()
+    {
+        await ArrangeFightAsync();
+        _game.FailOutboxInserts();
+
+        // Specimens, achievements and badges go first, the outbox last: one transaction (review 1.8.1, C2).
+        await Assert.ThrowsAnyAsync<Exception>(() => _game.Trainers.DeleteAsync("1001", _ct));
+
+        await using var db = _game.OpenLive();
+        Assert.True(await TrainerExistsAsync("1001"));
+        Assert.Equal(1, await db.Specimens.CountAsync(s => s.TrainerId == "1001", _ct));
+        Assert.Single(db.AchievementUnlocks);
+        Assert.Single(db.NpcBadges);
+        Assert.Contains("Ash", (await db.Battles.SingleAsync(_ct)).LogJson);
+    }
+
+    [Theory]
+    [InlineData("@ash")]
+    [InlineData("@ash nein")]
+    [InlineData("@ash x")]
+    public async Task Only_the_word_ja_confirms_a_deletion(string second)
+    {
+        await ArrangeFightAsync();
+
+        // A mod who repeats the request (the bot seemed slow) or answers anything else is asked again (review 1.8.1, C1).
+        await _removal.RequestAsync(Mod("9", "Rocko"), "@ash", _ct);
+        await _removal.RequestAsync(Mod("9", "Rocko"), second, _ct);
+
+        Assert.True(await TrainerExistsAsync("1001"));
+        Assert.Equal(2, _chat.Sent.Count(t => t.StartsWith("@Rocko, wirklich Ash", StringComparison.Ordinal)));
+    }
+
+    [Fact]
+    public async Task A_mod_who_confirms_at_once_is_asked_and_can_then_confirm()
+    {
+        await ArrangeFightAsync();
+
+        // „ja“ without a question before only asks; the question must be remembered (review 1.8.1, C11).
+        await _removal.RequestAsync(Mod("9", "Rocko"), "@ash ja", _ct);
+        Assert.True(await TrainerExistsAsync("1001"));
+        Assert.StartsWith("@Rocko, wirklich Ash", _chat.Sent[^1]);
+
+        await _removal.RequestAsync(Mod("9", "Rocko"), "@ash ja", _ct);
+
+        Assert.False(await TrainerExistsAsync("1001"));
     }
 
     [Fact]

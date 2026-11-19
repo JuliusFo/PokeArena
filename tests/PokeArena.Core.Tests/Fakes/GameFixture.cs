@@ -1,4 +1,5 @@
 using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Time.Testing;
 using PokeArena.Core.Data;
@@ -61,6 +62,17 @@ public sealed class GameFixture : IDisposable
 
     /// <summary>A context directly on the live data, bypassing the dry-run switch.</summary>
     public PokeArenaDb OpenLive() => new(PokeArenaDb.Options(LiveConnectionString));
+
+    /// <summary>
+    /// Makes every later insert into the website outbox fail. Every game flow queues its files in its last save, after
+    /// the fight or the deletion was written: a flow that is one transaction must then leave nothing behind
+    /// (review 1.8.1, C2).
+    /// </summary>
+    public void FailOutboxInserts()
+    {
+        using var db = OpenLive();
+        db.Database.ExecuteSqlRaw("CREATE TRIGGER test_fail_outbox BEFORE INSERT ON PublishQueue BEGIN SELECT RAISE(ABORT, 'test: outbox refused'); END;");
+    }
 
     public void Dispose()
     {

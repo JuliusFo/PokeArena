@@ -60,6 +60,23 @@ public class NpcServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task A_fight_that_cannot_be_saved_completely_leaves_nothing_behind()
+    {
+        await RegisterAsync("1", "Ash", "Karpador", 5, unlock: 15);
+        _game.FailOutboxInserts();
+
+        // Fight, badge, tokens and reward are saved first, outbox and cooldown last (review 1.8.1, C2).
+        await Assert.ThrowsAnyAsync<Exception>(() => Npc().ChallengeAsync(Challenge("1", "Ash"), "eich", _ct));
+
+        await using var db = _game.OpenLive();
+        Assert.Empty(db.Battles);
+        Assert.Empty(db.NpcBadges);
+        Assert.Empty(db.Cooldowns);
+        Assert.Equal(0, (await db.Trainers.SingleAsync(_ct)).Tokens);
+        Assert.Empty(db.Specimens.Where(s => s.Origin == SpecimenOrigin.Npc));
+    }
+
+    [Fact]
     public async Task Further_wins_bring_nothing()
     {
         await RegisterAsync("1", "Ash", "Karpador", 5, unlock: 15);

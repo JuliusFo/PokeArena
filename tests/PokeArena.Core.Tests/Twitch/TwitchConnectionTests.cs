@@ -463,24 +463,30 @@ public class TwitchConnectionTests
     public async Task The_sender_splits_long_texts_and_keeps_one_second_between_messages()
     {
         StoreLogin();
-        ArrangeConnect();
         _http.On(HttpMethod.Post, Helix + "chat/messages", HttpStatusCode.OK, """{"data":[{"message_id":"x","is_sent":true,"drop_reason":null}]}""");
-        var sender = new ChatSender(_helix, _connection, new DryRunMode(), _chatLog, _time, NullLogger<ChatSender>.Instance);
+
+        // The sender alone on its own clock: its only timer is the limiter's wait (review 1.8.1, C5 – the old test saw
+        // a missing limiter only when it lost a race).
+        var clock = new TimerCountingTimeProvider();
+        clock.SetUtcNow(_time.GetUtcNow());
+        var targets = new SettableTarget { Target = new ChatTarget("42", "shiyofurball", "2001", "pokearenabot") };
+        var sender = new ChatSender(_helix, targets, new DryRunMode(), _chatLog, clock, NullLogger<ChatSender>.Instance);
         await sender.StartAsync(TestContext.Current.CancellationToken);
-        _connection.Start();
-        (await _sockets.NextAsync()).Push(EventSubFrames.Welcome());
-        await Eventually.TrueAsync(() => _connection.State.Status == TwitchStatus.Connected);
+        int Posted() => _http.RequestsTo(Helix + "chat/messages").Count();
 
         sender.Send(string.Join(' ', Enumerable.Repeat("Pikachu", 75)));
-        await Eventually.TrueAsync(() => _http.RequestsTo(Helix + "chat/messages").Any());
 
-        // The second part waits for the limiter (1 per second), driven by the fake clock.
-        Assert.Single(_http.RequestsTo(Helix + "chat/messages"));
-        await AdvanceUntilAsync(() => _http.RequestsTo(Helix + "chat/messages").Count() == 2, TimeSpan.FromSeconds(1));
+        // Without the limiter the second part goes out at once and no timer is ever armed.
+        await Eventually.TrueAsync(() => Posted() >= 2 || (Posted() == 1 && clock.ActiveTimers > 0));
+        Assert.Equal(1, Posted());
+
+        clock.Advance(TimeSpan.FromMilliseconds(999));
+        Assert.Equal(1, Posted());
+        clock.Advance(TimeSpan.FromMilliseconds(1));
+        await Eventually.TrueAsync(() => Posted() == 2);
         Assert.All(_http.RequestsTo(Helix + "chat/messages"), r => Assert.True(r.Body.Length < ChatText.MaxLength + 200));
 
         await sender.StopAsync(TestContext.Current.CancellationToken);
-        await _connection.DisconnectAsync();
     }
 
     [Fact]

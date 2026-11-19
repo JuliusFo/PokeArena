@@ -189,6 +189,7 @@ public class SiteGeneratorTests : IDisposable
                 new BattleEvent(BattleEventKind.Attack, 1, Fighter: 2, FighterHp: 90, Target: 1, TargetHp: 380, Damage: 20),
                 new BattleEvent(BattleEventKind.Attack, 1, Fighter: 1, FighterHp: 380, Target: 0, TargetHp: 0, Damage: 90),
                 new BattleEvent(BattleEventKind.Fainted, 1, Fighter: 0),
+                new BattleEvent(BattleEventKind.Attack, 1, Fighter: 1, FighterHp: 380, Target: 2, TargetHp: 50, Damage: 40),
             ]);
 
         var page = await BattlePageAsync(new Battle
@@ -199,7 +200,7 @@ public class SiteGeneratorTests : IDisposable
         Assert.Equal([null, "#1E90FF", null], page.Sides.SelectMany(s => s.Fighters).Select(f => f.Color));
         Assert.NotNull(page.Log);
         Assert.Equal(page.Lines, page.Log.Select(l => string.Concat(l.Parts.Select(p => p.Text))));
-        Assert.Equal([true, false, false, false], page.Log.Select(l => l.IsRound));
+        Assert.Equal([true, false, false, false, false], page.Log.Select(l => l.IsRound));
         Assert.Equal(
             [
                 new LogPart("Raupy", 0, 1, IsSpecies: true), new LogPart(" (", 0, 1), new LogPart("Misty", 0, 1, IsOwner: true), new LogPart(", HP 90)", 0, 1), new LogPart(" hat "),
@@ -207,8 +208,10 @@ public class SiteGeneratorTests : IDisposable
                 new LogPart(", HP 400 → 380", 1, 0, IsTargetHp: true), new LogPart(")", 1, 0), new LogPart(" 20 Schaden zugefügt."),
             ],
             page.Log[1].Parts);
-        // Hits name their target by its place on the page: the boss (log index 1) is side 1, Pikachu side 0 fighter 0.
-        Assert.Equal([null, new LogHit(1, 0, 400, 380), new LogHit(0, 0, 70, 0), null], page.Log.Select(l => l.Hit));
+        // Hits name their target by its place on the page: the boss (log index 1) is side 1, Pikachu side 0 fighter 0,
+        // Misty's Raupy (log index 2) side 0 fighter 1 – a fixed fighter index would draw it against Pikachu (review
+        // 1.8.1, C6).
+        Assert.Equal([null, new LogHit(1, 0, 400, 380), new LogHit(0, 0, 70, 0), null, new LogHit(0, 1, 90, 50)], page.Log.Select(l => l.Hit));
         Assert.Equal(
             [new LogPart("Pikachu", 0, 0, IsSpecies: true), new LogPart(" (", 0, 0), new LogPart("Ash", 0, 0, IsOwner: true), new LogPart(")", 0, 0), new LogPart(" wurde besiegt.")],
             page.Log[3].Parts);

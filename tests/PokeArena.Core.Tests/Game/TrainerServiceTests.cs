@@ -29,6 +29,40 @@ public class TrainerServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task A_rename_that_cannot_be_saved_completely_keeps_the_old_login_owner()
+    {
+        await _game.Trainers.RegisterAsync("1", "bob", "Bob", Pikachu, _ct);
+        await _game.Trainers.RegisterAsync("2", "rob", "Rob", Pikachu, _ct);
+        await using (var queue = _game.OpenLive())
+        {
+            // Rows still queued from the registration would only be updated, not inserted.
+            queue.PublishQueue.RemoveRange(queue.PublishQueue);
+            await queue.SaveChangesAsync(_ct);
+        }
+
+        _game.FailOutboxInserts();
+
+        // The login is released from trainer 1 first, the outbox saved last: one transaction (review 1.8.1, C2).
+        await Assert.ThrowsAnyAsync<Exception>(() =>
+            _game.Trainers.ObserveAsync(new ChatMessage("m-1", "2", "bob", "Bob", "hallo", ChatRole.Viewer), _ct));
+
+        await using var db = _game.OpenLive();
+        Assert.Equal(["bob", "rob"], await db.Trainers.OrderBy(t => t.TwitchUserId).Select(t => t.Login).ToListAsync(_ct));
+    }
+
+    [Fact]
+    public async Task A_rename_without_a_colour_keeps_the_stored_colour()
+    {
+        await _game.Trainers.RegisterAsync("1", "bob", "Bob", Pikachu, _ct);
+        await _game.Trainers.ObserveAsync(new ChatMessage("m-1", "1", "bob", "Bob", "hallo", ChatRole.Viewer, Color: "#FF0000"), _ct);
+
+        // Review 1.8.1, C11: a rename message without a colour must not wipe it.
+        await _game.Trainers.ObserveAsync(new ChatMessage("m-2", "1", "bobby", "Bobby", "hallo", ChatRole.Viewer), _ct);
+
+        Assert.Equal("#FF0000", await ColorAsync("1"));
+    }
+
+    [Fact]
     public async Task The_chat_colour_follows_the_latest_message_and_a_message_without_one_keeps_it()
     {
         await _game.Trainers.RegisterAsync("1", "bob", "Bob", Pikachu, _ct);

@@ -73,6 +73,24 @@ public class BossEncounterTests : IDisposable
     }
 
     [Fact]
+    public async Task A_fight_that_cannot_be_saved_completely_leaves_nothing_behind()
+    {
+        var boss = Boss(EasyBoss);
+        await RegisterAsync("1", "Ash", "2", "Misty");
+        await boss.JoinAsync(Boss("1", "Ash"), _ct);
+        await boss.JoinAsync(Boss("2", "Misty"), _ct);
+        _game.FailOutboxInserts();
+
+        // Fight and catches are saved first, outbox and cooldown last: one transaction rolls all back (review 1.8.1, C2).
+        await Assert.ThrowsAnyAsync<Exception>(EndCountdownAsync);
+
+        await using var db = _game.OpenLive();
+        Assert.Empty(db.Battles);
+        Assert.Empty(db.Specimens.Where(s => s.Origin == SpecimenOrigin.Boss));
+        Assert.Empty(db.Cooldowns);
+    }
+
+    [Fact]
     public async Task Too_few_participants_let_the_boss_escape_with_a_short_retry_cooldown()
     {
         var boss = Boss(EasyBoss);
@@ -131,6 +149,55 @@ public class BossEncounterTests : IDisposable
         _game.Time.Advance(TimeSpan.FromSeconds(1));
         await RunQueuedWorkUntilAsync("Boss-Kampf");
         Assert.EndsWith("3 Trainer kämpfen mit.", _chat.Sent[1]);
+    }
+
+    [Fact]
+    public async Task A_newcomer_with_exactly_ten_seconds_left_extends()
+    {
+        var boss = Boss(EasyBoss);
+        await RegisterAsync("1", "Ash", "2", "Misty");
+        await boss.JoinAsync(Boss("1", "Ash"), _ct);
+
+        _game.Time.Advance(BossSettings.Default.Countdown - BossSettings.Default.LateJoinExtension);
+        await boss.JoinAsync(Boss("2", "Misty"), _ct);
+
+        // The original end passes without a fight: Misty alone extended (review 1.8.1, C10).
+        _game.Time.Advance(BossSettings.Default.LateJoinExtension);
+        await RunQueuedWorkUntilAsync("Boss-Kampf");
+        Assert.Single(_chat.Sent);
+
+        _game.Time.Advance(BossSettings.Default.LateJoinExtension);
+        await RunQueuedWorkUntilAsync("Boss-Kampf");
+        Assert.EndsWith("2 Trainer kämpfen mit.", _chat.Sent[1]);
+    }
+
+    [Fact]
+    public async Task A_join_from_the_other_mode_opens_a_new_lobby_at_once()
+    {
+        var boss = Boss(EasyBoss);
+        await RegisterAsync("1", "Ash");
+        await boss.JoinAsync(Boss("1", "Ash"), _ct);
+
+        // The dry run was switched while the live lobby was open: the test viewer must not join it and be dropped
+        // with it silently (review 1.8.1, C10).
+        await boss.JoinAsync(Boss("probelauf:a", "A", simulated: true), _ct);
+
+        Assert.Equal(2, _chat.Sent.Count(t => t.StartsWith("Ein wilder Boss nähert sich!", StringComparison.Ordinal)));
+    }
+
+    [Fact]
+    public async Task Shortening_after_a_restart_schedules_no_ready_announcement()
+    {
+        await RegisterAsync("1", "Ash", "2", "Misty");
+        await RunEncounterAsync(Boss(EasyBoss), ("1", "Ash"), ("2", "Misty"));
+
+        // After a restart no announcement is pending, so none is moved or added (spec §4, review 1.8.1, C10).
+        var restarted = Boss(EasyBoss);
+        await restarted.ReduceCooldownAsync(TimeSpan.FromHours(1), TimeSpan.FromMinutes(10), _ct);
+        Assert.Contains("Der nächste Boss kann schon in", _chat.Sent[^1]);
+
+        _game.Time.Advance(TimeSpan.FromMinutes(15));
+        Assert.False(_inbox.Reader.TryRead(out _));
     }
 
     [Fact]

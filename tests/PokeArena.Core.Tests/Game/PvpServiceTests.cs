@@ -60,6 +60,24 @@ public class PvpServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task A_fight_that_cannot_be_saved_completely_leaves_nothing_behind()
+    {
+        var pvp = Pvp(OneHitKnockouts);
+        await RegisterAsync("1", "Ash", "Mewtu", 5);
+        await RegisterAsync("2", "Misty", "Karpador", 5);
+        await pvp.FightAsync(Fight("1", "Ash"), "@misty", _ct);
+        _game.FailOutboxInserts();
+
+        // The fight and the loot are saved first, the outbox last: one transaction rolls both back (review 1.8.1, C2).
+        await Assert.ThrowsAnyAsync<Exception>(() => pvp.FightAsync(Fight("2", "Misty"), "@Ash", _ct));
+
+        await using var db = _game.OpenLive();
+        Assert.Empty(db.Battles);
+        Assert.Equal(6, await db.Specimens.CountAsync(s => s.TrainerId == "2", _ct));
+        Assert.Equal(6, await db.Specimens.CountAsync(s => s.TrainerId == "1", _ct));
+    }
+
+    [Fact]
     public async Task The_challenged_trainer_can_win_too()
     {
         var pvp = Pvp(BattleSettings.Default);
