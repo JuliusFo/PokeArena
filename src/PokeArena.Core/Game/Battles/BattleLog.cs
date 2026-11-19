@@ -146,7 +146,7 @@ public sealed record BattleLog(IReadOnlyList<LogFighter> Fighters, IReadOnlyList
             }
 
             // An attack always has a target; fighter 0 only keeps a malformed log readable (as before), without a bar.
-            var hit = e is { Kind: BattleEventKind.Attack, Target: { } target } ? new TargetHp(target, targetHpBefore, e.TargetHp) : null;
+            var hit = e is { Kind: BattleEventKind.Attack, Target: { } target } ? new HitTarget(target, targetHpBefore, e.TargetHp) : null;
             lines.Add(new LogText(e.Kind switch
             {
                 BattleEventKind.Attack =>
@@ -222,13 +222,13 @@ public sealed record BattleLog(IReadOnlyList<LogFighter> Fighters, IReadOnlyList
 /// <summary>One rendered log line in parts (see <see cref="BattleLog.ToText"/>).</summary>
 /// <param name="IsRound">A „Runde N“ heading.</param>
 /// <param name="Hit">For a hit: its target and the target's HP before and after it.</param>
-public sealed record LogText(IReadOnlyList<LogSpan> Spans, bool IsRound = false, TargetHp? Hit = null)
+public sealed record LogText(IReadOnlyList<LogSpan> Spans, bool IsRound = false, HitTarget? Hit = null)
 {
     public string Text => string.Concat(Spans.Select(s => s.Text));
 }
 
 /// <summary>A hit's target (index into <see cref="BattleLog.Fighters"/>) with its HP just before and after the hit.</summary>
-public sealed record TargetHp(int Target, int Before, int After);
+public sealed record HitTarget(int Target, int Before, int After);
 
 /// <param name="Fighter">Index into <see cref="BattleLog.Fighters"/> if the text belongs to that fighter's label.</param>
 /// <param name="IsOwner">The text is the fighter's owner.</param>

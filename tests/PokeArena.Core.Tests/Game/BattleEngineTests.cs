@@ -310,7 +310,7 @@ public class BattleEngineTests
         var text = log.ToText(Species);
 
         Assert.Equal(
-            [null, new TargetHp(1, 88, 30), new TargetHp(0, 70, 50), null, new TargetHp(1, 30, 0), null],
+            [null, new HitTarget(1, 88, 30), new HitTarget(0, 70, 50), null, new HitTarget(1, 30, 0), null],
             text.Select(l => l.Hit));
         Assert.Equal([", HP 88 → 30", ", HP 70 → 50", ", HP 30 → 0"], text.SelectMany(l => l.Spans).Where(s => s.IsTargetHp).Select(s => s.Text));
     }
