@@ -61,6 +61,10 @@ public partial class App : Application
 
     private async Task StartAsync(string[] args)
     {
+        // Logs at once, before the configuration is read: a broken settings.json or config value must reach the log
+        // too, not only the message box – on the unattended server nobody sees that (review 1.8.1, A6, ADR-0010).
+        Log.Logger = FileLogger(BootstrapPaths(args));
+
         // Content root = program folder: started from a shortcut, the working directory is anywhere,
         // and appsettings.json would silently not be found.
         var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
@@ -79,16 +83,10 @@ public partial class App : Application
         var websiteOptions = builder.Configuration.GetSection(WebsiteOptions.SectionName).Get<WebsiteOptions>() ?? new();
         var overlayOptions = builder.Configuration.GetSection(OverlayOptions.SectionName).Get<OverlayOptions>() ?? new();
         var updateOptions = builder.Configuration.GetSection(AppUpdateOptions.SectionName).Get<AppUpdateOptions>() ?? new();
-        Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Debug()
-            .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-            // The OBS overlay polls every 2 s; request logs would flood the file.
-            .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
-            .WriteTo.File(
-                Path.Combine(paths.LogsDirectory, "pokearena-.log"),
-                rollingInterval: RollingInterval.Day,
-                retainedFileCountLimit: 14)
-            .CreateLogger();
+
+        // The start logger holds the same file open: close it before the final one opens it.
+        await Log.CloseAndFlushAsync();
+        Log.Logger = FileLogger(paths);
 
         var version = typeof(App).Assembly.GetName().Version?.ToString(3) ?? "?";
 
@@ -204,6 +202,36 @@ public partial class App : Application
         Log.CloseAndFlush();
         _singleInstance?.Dispose();
         base.OnExit(e);
+    }
+
+    private static Serilog.ILogger FileLogger(AppPaths paths) =>
+        new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+            // The OBS overlay polls every 2 s; request logs would flood the file.
+            .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+            .WriteTo.File(
+                Path.Combine(paths.LogsDirectory, "pokearena-.log"),
+                rollingInterval: RollingInterval.Day,
+                retainedFileCountLimit: 14)
+            .CreateLogger();
+
+    /// <summary>
+    /// The data directory before the configuration is read: only <c>--PokeArena:DataDirectory</c> from the command
+    /// line, else the default. A data directory set in a config file applies once the configuration is read.
+    /// </summary>
+    private static AppPaths BootstrapPaths(string[] args)
+    {
+        try
+        {
+            var directory = new ConfigurationBuilder().AddCommandLine(args).Build()[$"{PokeArenaOptions.SectionName}:DataDirectory"];
+            return string.IsNullOrWhiteSpace(directory) ? AppPaths.Default : new AppPaths(directory);
+        }
+        catch (Exception)
+        {
+            // A broken command line is reported by the real configuration in a moment; log there meanwhile.
+            return AppPaths.Default;
+        }
     }
 
     /// <summary>
