@@ -742,14 +742,17 @@ h1.tinted {
   --lost-min: 0px;
 }
 
-/* Text only screen readers (and a copied line) get: the bar's „HP“. */
+/*
+  Text only screen readers (and a copied line) get: the bar's „HP“. `pre`, not `nowrap`: out of the flow its trailing
+  space would collapse and a copied line read „HP576 → 541“ (review).
+*/
 .visually-hidden {
   position: absolute;
   width: 1px;
   height: 1px;
   overflow: hidden;
   clip-path: inset(50%);
-  white-space: nowrap;
+  white-space: pre;
 }
 
 @media (prefers-color-scheme: dark) {

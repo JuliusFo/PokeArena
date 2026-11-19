@@ -366,13 +366,13 @@ public class PageTests : BunitContext
         var bars = cut.FindAll(".log .hit-bar");
         Assert.Equal(
             [
-                ("hp-bar hit-bar", "--hp: 27.5%; --before: 100%", "HP 80 → 22 von 80", " HP 80 → 22"),
-                ("hp-bar hit-bar low", "--hp: 0%; --before: 27.5%", "HP 22 → 0 von 80", " HP 22 → 0"),
-                ("hp-bar hit-bar no-loss", "--hp: 100%; --before: 100%", "HP 80 → 80 von 80", " HP 80 → 80"),
+                ("hp-bar hit-bar", "--hp: 27.5%; --before: 100%", "HP 80 → 22 von 80", "HP 80 → 22"),
+                ("hp-bar hit-bar low", "--hp: 0%; --before: 27.5%", "HP 22 → 0 von 80", "HP 22 → 0"),
+                ("hp-bar hit-bar no-loss", "--hp: 100%; --before: 100%", "HP 80 → 80 von 80", "HP 80 → 80"),
             ],
             bars.Select(b => (b.ClassName, b.GetAttribute("style"), b.GetAttribute("title"), b.QuerySelector(".hp-text")!.TextContent)));
         // „HP“ only for screen readers and a copied line; the bar's copy for the fill stays hidden from them, like on the fight cards.
-        Assert.All(bars, b => Assert.Equal(" HP ", b.QuerySelector(".hp-text .visually-hidden")!.TextContent));
+        Assert.All(bars, b => Assert.Equal("HP ", b.QuerySelector(".hp-text .visually-hidden")!.TextContent));
         Assert.All(bars, b => Assert.Equal("true", b.QuerySelector(".hp-text.on-fill")!.GetAttribute("aria-hidden")));
 
         static LogLine Hit(int before, int after, string outcome) => new(
