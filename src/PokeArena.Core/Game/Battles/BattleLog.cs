@@ -145,13 +145,15 @@ public sealed record BattleLog(IReadOnlyList<LogFighter> Fighters, IReadOnlyList
                 lines.Add(new LogText([new LogSpan($"Runde {round}")], IsRound: true));
             }
 
+            // An attack always has a target; fighter 0 only keeps a malformed log readable (as before), without a bar.
+            var hit = e is { Kind: BattleEventKind.Attack, Target: { } target } ? new TargetHp(target, targetHpBefore, e.TargetHp) : null;
             lines.Add(new LogText(e.Kind switch
             {
                 BattleEventKind.Attack =>
                 [
                     .. Label(species, e.Fighter, Number(e.FighterHp)),
                     new(" hat "),
-                    .. Label(species, e.Target ?? 0, $"{Number(targetHpBefore)} → {Number(e.TargetHp)}"),
+                    .. TargetLabel(species, e.Target ?? 0, targetHpBefore, e.TargetHp),
                     .. Outcome(e),
                 ],
                 BattleEventKind.Fainted => [.. Label(species, e.Fighter), new(" wurde besiegt.")],
@@ -162,7 +164,7 @@ public sealed record BattleLog(IReadOnlyList<LogFighter> Fighters, IReadOnlyList
                 ],
                 BattleEventKind.RoundLimit => [new("Rundenlimit erreicht – die Seite mit mehr verbleibenden HP gewinnt.")],
                 _ => throw new InvalidOperationException($"Unknown event {e.Kind}"),
-            }));
+            }, Hit: hit));
         }
 
         return lines;
@@ -178,6 +180,24 @@ public sealed record BattleLog(IReadOnlyList<LogFighter> Fighters, IReadOnlyList
             new(" (", index),
             new(fighter.Owner, index, IsOwner: true),
             new(hp is null ? ")" : $", HP {hp})", index),
+        ];
+    }
+
+    /// <summary>
+    /// A hit's target „Schiggy (Misty, HP 88 → 30)“: like <see cref="Label"/>, but the HP are a part of their own
+    /// („, HP 88 → 30“, then „)“), so the website can leave them out where it draws them as a bar
+    /// (claude/hp-balken-kampf-log-mockup-de3cfe).
+    /// </summary>
+    private LogSpan[] TargetLabel(SpeciesCatalog species, int index, int before, int after)
+    {
+        var fighter = Fighters[index];
+        return
+        [
+            new(species.Get(fighter.SpeciesId).Name, index, IsSpecies: true),
+            new(" (", index),
+            new(fighter.Owner, index, IsOwner: true),
+            new($", HP {Number(before)} → {Number(after)}", index, IsTargetHp: true),
+            new(")", index),
         ];
     }
 
@@ -201,16 +221,22 @@ public sealed record BattleLog(IReadOnlyList<LogFighter> Fighters, IReadOnlyList
 
 /// <summary>One rendered log line in parts (see <see cref="BattleLog.ToText"/>).</summary>
 /// <param name="IsRound">A „Runde N“ heading.</param>
-public sealed record LogText(IReadOnlyList<LogSpan> Spans, bool IsRound = false)
+/// <param name="Hit">For a hit: its target and the target's HP before and after it.</param>
+public sealed record LogText(IReadOnlyList<LogSpan> Spans, bool IsRound = false, TargetHp? Hit = null)
 {
     public string Text => string.Concat(Spans.Select(s => s.Text));
 }
+
+/// <summary>A hit's target (index into <see cref="BattleLog.Fighters"/>) with its HP just before and after the hit.</summary>
+public sealed record TargetHp(int Target, int Before, int After);
 
 /// <param name="Fighter">Index into <see cref="BattleLog.Fighters"/> if the text belongs to that fighter's label.</param>
 /// <param name="IsOwner">The text is the fighter's owner.</param>
 /// <param name="IsSpecies">The text is the fighter's species name.</param>
 /// <param name="IsCritical">The text is „Volltreffer!“.</param>
-public sealed record LogSpan(string Text, int? Fighter = null, bool IsOwner = false, bool IsSpecies = false, bool IsCritical = false);
+/// <param name="IsTargetHp">The text is a hit target's HP („, HP 88 → 30“).</param>
+public sealed record LogSpan(
+    string Text, int? Fighter = null, bool IsOwner = false, bool IsSpecies = false, bool IsCritical = false, bool IsTargetHp = false);
 
 /// <summary>Records events and tracks HP while an engine runs a fight.</summary>
 internal sealed class BattleRecorder

@@ -203,9 +203,12 @@ public class SiteGeneratorTests : IDisposable
         Assert.Equal(
             [
                 new LogPart("Raupy", 0, 1, IsSpecies: true), new LogPart(" (", 0, 1), new LogPart("Misty", 0, 1, IsOwner: true), new LogPart(", HP 90)", 0, 1), new LogPart(" hat "),
-                new LogPart("Arkani", 1, 0, IsSpecies: true), new LogPart(" (", 1, 0), new LogPart("Boss", 1, 0, IsOwner: true), new LogPart(", HP 400 → 380)", 1, 0), new LogPart(" 20 Schaden zugefügt."),
+                new LogPart("Arkani", 1, 0, IsSpecies: true), new LogPart(" (", 1, 0), new LogPart("Boss", 1, 0, IsOwner: true),
+                new LogPart(", HP 400 → 380", 1, 0, IsTargetHp: true), new LogPart(")", 1, 0), new LogPart(" 20 Schaden zugefügt."),
             ],
             page.Log[1].Parts);
+        // Hits name their target by its place on the page: the boss (log index 1) is side 1, Pikachu side 0 fighter 0.
+        Assert.Equal([null, new LogHit(1, 0, 400, 380), new LogHit(0, 0, 70, 0), null], page.Log.Select(l => l.Hit));
         Assert.Equal(
             [new LogPart("Pikachu", 0, 0, IsSpecies: true), new LogPart(" (", 0, 0), new LogPart("Ash", 0, 0, IsOwner: true), new LogPart(")", 0, 0), new LogPart(" wurde besiegt.")],
             page.Log[3].Parts);
@@ -232,6 +235,10 @@ public class SiteGeneratorTests : IDisposable
         Assert.Contains("""{"text":" (","side":0,"fighter":0}""", json);
         Assert.Contains("""{"text":"Ash","side":0,"fighter":0,"isOwner":true}""", json);
         Assert.DoesNotContain("\"isRound\":false", json);
+        Assert.DoesNotContain("\"isTargetHp\":false", json);
+        Assert.DoesNotContain("\"hit\":null", json);
+        Assert.Contains("""0","side":0,"fighter":0,"isTargetHp":true}""", json);
+        Assert.Contains("\"hit\":{\"side\":0,\"fighter\":0,\"before\":70,\"after\":0}", json);
         Assert.Contains("\"hpLeft\":0", json);
         Assert.Contains("\"won\":false", json);
     }

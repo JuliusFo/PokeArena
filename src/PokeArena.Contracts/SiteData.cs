@@ -90,9 +90,18 @@ public sealed record BattleFighter(
 /// Defaults are left out of the JSON: a big boss fight has hundreds of parts (review feat/fight-log-colours). Only
 /// here — site-wide, „Ignore defaults“ would also drop meaningful zeros such as <c>hpLeft: 0</c>.
 /// </remarks>
+/// <param name="Hit">For a hit: the target and its HP before and after; null for other lines and in older files.</param>
 public sealed record LogLine(
     IReadOnlyList<LogPart> Parts,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool IsRound = false);
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool IsRound = false,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] LogHit? Hit = null);
+
+/// <summary>
+/// A hit's target, <c>Sides[Side].Fighters[Fighter]</c> of the page, with its HP just before and after the hit (the
+/// fight page draws them as a bar, claude/hp-balken-kampf-log-mockup-de3cfe). <paramref name="Before"/> minus <paramref name="After"/>
+/// is what arrived — less than the damage in the text when a hit is more than the target had left.
+/// </summary>
+public sealed record LogHit(int Side, int Fighter, int Before, int After);
 
 /// <summary>
 /// Text, optionally part of one fighter's label („Pikachu (Ash, HP 24)“): <c>Sides[Side].Fighters[Fighter]</c> of the
@@ -101,13 +110,16 @@ public sealed record LogLine(
 /// <param name="IsOwner">The owner within the label („Ash“, „Boss“).</param>
 /// <param name="IsSpecies">The species within the label („Pikachu“); false in older files.</param>
 /// <param name="IsCritical">„Volltreffer!“; false in older files.</param>
+/// <param name="IsTargetHp">A hit target's HP („, HP 88 → 30“), left out where the page draws <see cref="LogLine.Hit"/>;
+/// false in older files.</param>
 public sealed record LogPart(
     string Text,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] int? Side = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] int? Fighter = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool IsOwner = false,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool IsSpecies = false,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool IsCritical = false);
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool IsCritical = false,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool IsTargetHp = false);
 
 /// <summary><c>trainer/&lt;twitch-id&gt;.json</c>: one trainer's collection and history.</summary>
 /// <param name="ProfileImage">

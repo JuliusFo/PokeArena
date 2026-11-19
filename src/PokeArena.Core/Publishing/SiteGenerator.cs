@@ -358,9 +358,12 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
         var parts = text
             .Select(line => new LogLine(
                 [.. line.Spans.Select(s => s.Fighter is { } index
-                    ? new LogPart(s.Text, position[index].Side, position[index].Fighter, s.IsOwner, s.IsSpecies)
+                    ? new LogPart(s.Text, position[index].Side, position[index].Fighter, s.IsOwner, s.IsSpecies, IsTargetHp: s.IsTargetHp)
                     : new LogPart(s.Text, IsCritical: s.IsCritical))],
-                line.IsRound))
+                line.IsRound,
+                line.Hit is { } hit
+                    ? new LogHit(position[hit.Target].Side, position[hit.Target].Fighter, hit.Before, hit.After)
+                    : null))
             .ToList();
         return new BattlePage(
             battle.Id, battle.Kind, battle.FoughtAt, battle.Seed, texts.Headline, texts.Result, sides, [.. text.Select(l => l.Text)], parts);

@@ -294,6 +294,27 @@ public class BattleEngineTests
             lines);
     }
 
+    [Fact]
+    public void Each_hit_carries_its_target_with_the_hp_before_and_after()
+    {
+        // The last hit (45) is more than Schiggy's 30: the hit says 30 → 0, what arrived, for the website's bar (claude/hp-balken-kampf-log-mockup-de3cfe).
+        var log = new BattleLog(
+            [new LogFighter(0, 25, 70, "1", "Ash"), new LogFighter(1, 7, 88, "2", "Misty")],
+            [
+                new BattleEvent(BattleEventKind.Attack, 1, 0, 70, 1, 30, 58),
+                new BattleEvent(BattleEventKind.Attack, 1, 1, 30, 0, 50, 20),
+                new BattleEvent(BattleEventKind.Attack, 2, 0, 50, 1, 0, 45),
+                new BattleEvent(BattleEventKind.Fainted, 2, 1),
+            ]);
+
+        var text = log.ToText(Species);
+
+        Assert.Equal(
+            [null, new TargetHp(1, 88, 30), new TargetHp(0, 70, 50), null, new TargetHp(1, 30, 0), null],
+            text.Select(l => l.Hit));
+        Assert.Equal([", HP 88 → 30", ", HP 70 → 50", ", HP 30 → 0"], text.SelectMany(l => l.Spans).Where(s => s.IsTargetHp).Select(s => s.Text));
+    }
+
     [Theory]
     [InlineData(2.0, " Sehr effektiv!")]
     [InlineData(1.0, null)]
@@ -309,7 +330,8 @@ public class BattleEngineTests
             [
                 new LogSpan("Pikachu", 0, IsSpecies: true), new LogSpan(" (", 0), new LogSpan("Ash", 0, IsOwner: true), new LogSpan(", HP 70)", 0),
                 new LogSpan(" hat "),
-                new LogSpan("Schiggy", 1, IsSpecies: true), new LogSpan(" (", 1), new LogSpan("Boss", 1, IsOwner: true), new LogSpan(", HP 88 → 38)", 1),
+                new LogSpan("Schiggy", 1, IsSpecies: true), new LogSpan(" (", 1), new LogSpan("Boss", 1, IsOwner: true),
+                new LogSpan(", HP 88 → 38", 1, IsTargetHp: true), new LogSpan(")", 1),
                 new LogSpan(" 50 Schaden zugefügt."), new LogSpan(" Volltreffer!", IsCritical: true),
                 .. effect is null ? Array.Empty<LogSpan>() : [new LogSpan(effect)],
             ],
