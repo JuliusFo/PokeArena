@@ -80,11 +80,21 @@ public sealed class OverlayServer(
         }
     }
 
-    private static async Task DisposeQuietlyAsync(WebApplication? app)
+    /// <summary>Cleans up after a failed start; an error here must not fail the bot's start either.</summary>
+    private async Task DisposeQuietlyAsync(WebApplication? app)
     {
-        if (app is not null)
+        if (app is null)
+        {
+            return;
+        }
+
+        try
         {
             await app.DisposeAsync();
+        }
+        catch (Exception ex)
+        {
+            log.LogDebug(ex, "Disposing the overlay after a failed start failed");
         }
     }
 

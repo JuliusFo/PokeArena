@@ -28,3 +28,8 @@ M:System.Threading.SemaphoreSlim.WaitAsync(System.TimeSpan);Real-time timeout: u
 M:System.Threading.SemaphoreSlim.WaitAsync(System.TimeSpan,System.Threading.CancellationToken);Real-time timeout: use a CancellationTokenSource(timeout, timeProvider) (ADR-0004)
 M:System.Threading.SemaphoreSlim.Wait(System.TimeSpan);Real-time timeout: use a CancellationTokenSource(timeout, timeProvider) (ADR-0004)
 P:System.TimeProvider.System;Bypasses the injected TimeProvider; only the host registers it (ADR-0004)
+M:System.Threading.SemaphoreSlim.Wait(System.TimeSpan,System.Threading.CancellationToken);Real-time timeout: use a CancellationTokenSource(timeout, timeProvider) (ADR-0004)
+M:System.Threading.Tasks.Task.Wait(System.TimeSpan);Blocking real-time wait: await with a TimeProvider timeout instead (ADR-0004)
+M:System.Threading.Tasks.Task.Wait(System.Int32);Blocking real-time wait: await with a TimeProvider timeout instead (ADR-0004)
+M:System.Threading.Tasks.Task.Wait(System.TimeSpan,System.Threading.CancellationToken);Blocking real-time wait: await with a TimeProvider timeout instead (ADR-0004)
+M:System.Threading.Tasks.Task.Wait(System.Int32,System.Threading.CancellationToken);Blocking real-time wait: await with a TimeProvider timeout instead (ADR-0004)
