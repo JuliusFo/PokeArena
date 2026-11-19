@@ -3,6 +3,8 @@
 @implements IDisposable
 @inject R2Access R2
 @inject SitePublishWorker Publisher
+@using Microsoft.Extensions.Logging
+@inject ILogger<WebsitePanel> Log
 
 <section class="card">
     <h2>Website</h2>
@@ -62,11 +64,33 @@
             <dt>Zuletzt hochgeladen</dt>
             <dd>@(state.LastUploadAt is { } at ? at.ToLocalTime().ToString("dd.MM. HH:mm:ss") + " Uhr" : "noch nicht")</dd>
         </dl>
-        <div class="actions">
-            <button class="btn" @onclick="RepublishAsync" disabled="@_republishing">Alles neu veröffentlichen</button>
-            <button class="btn btn-quiet" @onclick="R2.DeleteCredentials">Schlüssel entfernen</button>
-        </div>
-        <p class="hint">„Alles neu veröffentlichen“ lädt alle Trainer und Kämpfe noch einmal hoch – zum Beispiel nach dem ersten Einrichten.</p>
+        @if (_republishFailed)
+        {
+            <p class="problem" data-testid="republish-problem">Das hat gerade nicht geklappt. Bitte versuche es später noch einmal.</p>
+        }
+        @if (_confirmingRemoval)
+        {
+            @* One click must not cut the website off: the streamer never had the key (review 1.8.1, A9). *@
+            <div class="confirm-box" data-testid="confirm-removal">
+                <strong>Schlüssel wirklich entfernen?</strong>
+                Die Website wird dann nicht mehr aktualisiert, bis jemand den Schlüssel neu eingibt.
+                <div class="actions">
+                    <button class="btn btn-danger" @onclick="RemoveKey">Ja, entfernen</button>
+                    <button class="btn btn-quiet" @onclick="() => _confirmingRemoval = false">Abbrechen</button>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="actions">
+                <button class="btn" @onclick="RepublishAsync" disabled="@_republishing">Alles neu veröffentlichen</button>
+                <button class="btn btn-quiet" @onclick="() => _confirmingRemoval = true">Schlüssel entfernen</button>
+            </div>
+        }
+        <p class="hint">
+            „Alles neu veröffentlichen“ lädt alle Trainer und Kämpfe noch einmal hoch – zum Beispiel nach dem ersten Einrichten.
+            Nach einem Update macht PokeArena das einmal von selbst.
+        </p>
     }
 </section>
 
@@ -74,6 +98,8 @@
     private string _keyId = "";
     private string _secret = "";
     private bool _republishing;
+    private bool _republishFailed;
+    private bool _confirmingRemoval;
 
     protected override void OnInitialized()
     {
@@ -96,14 +122,28 @@
     private async Task RepublishAsync()
     {
         _republishing = true;
+        _republishFailed = false;
         try
         {
             await Publisher.RepublishEverythingAsync(CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            // Anything the publisher does not turn into a plain reason (a timeout, the SDK, a busy database) would end
+            // in Blazor's error bar and the „unerwarteter Fehler“ box (review 1.8.1, A8).
+            Log.LogWarning(ex, "Republishing everything failed");
+            _republishFailed = true;
         }
         finally
         {
             _republishing = false;
         }
+    }
+
+    private void RemoveKey()
+    {
+        _confirmingRemoval = false;
+        R2.DeleteCredentials();
     }
 
     private void OnChanged() => _ = InvokeAsync(StateHasChanged);

@@ -70,15 +70,54 @@ public class WebsitePanelTests : BunitContext
     }
 
     [Fact]
-    public void Removing_the_key_asks_for_it_again()
+    public void Removing_the_key_asks_first_and_then_asks_for_the_key_again()
     {
         R2.SaveCredentials("key-id", "geheim");
         var cut = Render<WebsitePanel>();
 
+        // One click only asks (review 1.8.1, A9); „Abbrechen“ keeps the key.
         cut.FindAll("button").Single(b => b.TextContent == "Schlüssel entfernen").Click();
+        Assert.Contains("Schlüssel wirklich entfernen?", cut.Find("[data-testid=confirm-removal]").TextContent);
+        Assert.Equal(2, _secrets.Values.Count);
+        cut.FindAll("button").Single(b => b.TextContent == "Abbrechen").Click();
+        Assert.Empty(cut.FindAll("[data-testid=confirm-removal]"));
+        Assert.Equal(2, _secrets.Values.Count);
+
+        cut.FindAll("button").Single(b => b.TextContent == "Schlüssel entfernen").Click();
+        cut.FindAll("button").Single(b => b.TextContent == "Ja, entfernen").Click();
 
         cut.WaitForAssertion(() => Assert.Contains("Schlüssel fehlt", cut.Markup));
         Assert.Empty(_secrets.Values);
+    }
+
+    [Fact]
+    public void A_republish_that_fails_unexpectedly_shows_a_hint_in_the_card()
+    {
+        R2.SaveCredentials("key-id", "geheim");
+        var species = SpeciesCatalog.Load(Path.Combine(AppContext.BaseDirectory, "data", "pokemon.json"));
+        var npcs = NpcCatalog.Load(Path.Combine(AppContext.BaseDirectory, "data", "npcs.json"), species);
+        Services.AddSingleton(new SitePublishWorker(_database, new SiteGenerator(species, npcs), new BrokenBucket(), new FakeTimeProvider(), NullLogger<SitePublishWorker>.Instance));
+        var cut = Render<WebsitePanel>();
+
+        cut.FindAll("button").Single(b => b.TextContent == "Alles neu veröffentlichen").Click();
+
+        // Not a SitePublishException: before review 1.8.1 (A8) it reached Blazor's error UI.
+        cut.WaitForAssertion(() => Assert.Contains("nicht geklappt", cut.Find("[data-testid=republish-problem]").TextContent));
+        Assert.False(cut.FindAll("button").Single(b => b.TextContent == "Alles neu veröffentlichen").HasAttribute("disabled"));
+    }
+
+    /// <summary>A bucket that fails with an error the publisher does not translate.</summary>
+    private sealed class BrokenBucket : ISitePublisherFactory, ISitePublisher
+    {
+        public event Action? Changed { add { } remove { } }
+
+        public ISitePublisher? Create() => this;
+
+        public Task<IReadOnlyList<string>> ListAsync(string prefix, CancellationToken ct) => throw new InvalidOperationException("unexpected");
+
+        public Task PutAsync(string path, SiteFile file, CancellationToken ct) => throw new InvalidOperationException("unexpected");
+
+        public Task DeleteAsync(string path, CancellationToken ct) => throw new InvalidOperationException("unexpected");
     }
 
     protected override void Dispose(bool disposing)

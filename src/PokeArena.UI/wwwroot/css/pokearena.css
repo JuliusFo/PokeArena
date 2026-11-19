@@ -423,12 +423,19 @@ select {
   font-variant-numeric: tabular-nums;
 }
 
-.confirm-delete td {
+.confirm-delete td,
+.confirm-box {
   background: var(--error-bg);
   line-height: 1.5;
 }
 
-.confirm-delete .actions {
+.confirm-box {
+  padding: 10px 12px;
+  border-radius: var(--radius);
+}
+
+.confirm-delete .actions,
+.confirm-box .actions {
   margin-top: 8px;
 }
 
