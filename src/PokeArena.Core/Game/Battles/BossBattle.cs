@@ -59,11 +59,17 @@ public sealed class BossBattle(DamageCalculator damage)
     /// <summary>
     /// How many participants the boss hits in <paramref name="round"/> (1-based): N / d per round on average, the
     /// remainder carried over and rounded up first, ⌈r·N/d⌉ − ⌈(r−1)·N/d⌉. With N = 4 and d = 3 that is 2, 1, 1, 2,
-    /// 1, 1 …; a whole multiple of d hits N / d every round. Until 1.7 the boss hit ⌈N / d⌉ every round, so groups of
-    /// 2, 4, 5 and 7 lost more often than 3 and 6 (ADR-0006 addendum 2026-11-19).
+    /// 1, 1 …; a whole multiple of d hits N / d every round. Before this rule the boss hit ⌈N / d⌉ every round, so in
+    /// the simulator groups of 2, 4, 5 and 7 lost more often than 3 and 6 — on stream groups of 4 by far
+    /// (ADR-0006 addendum 2026-11-19).
     /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">A count, divisor or round below 1: the ceiling division
+    /// truncates towards zero and would be wrong for negative values.</exception>
     public static int TargetsInRound(int participants, int targetDivisor, int round)
     {
+        ArgumentOutOfRangeException.ThrowIfLessThan(participants, 1);
+        ArgumentOutOfRangeException.ThrowIfLessThan(targetDivisor, 1);
+        ArgumentOutOfRangeException.ThrowIfLessThan(round, 1);
         int CeilDiv(int value) => (value + targetDivisor - 1) / targetDivisor;
         return CeilDiv(round * participants) - CeilDiv((round - 1) * participants);
     }
