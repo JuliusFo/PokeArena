@@ -119,13 +119,15 @@ public sealed class UpdateCheck(IAppUpdater updater, IUpdateGate gate, TimeProvi
             var found = await updater.FindNewerAsync(ct);
             if (found is null)
             {
-                // A version downloaded earlier stays ready even if the release was withdrawn meanwhile.
-                if (State != UpdateState.Ready)
+                // Also drops a version downloaded earlier: deleting a release tagged by mistake must stop its install
+                // after the stream (review 1.8.1, A5). Only a failed check keeps the download (below).
+                if (State == UpdateState.Ready)
                 {
-                    State = UpdateState.Current;
-                    NewerVersion = null;
+                    log.LogInformation("Update check: version {Version} is no longer offered, it will not be installed", NewerVersion);
                 }
 
+                State = UpdateState.Current;
+                NewerVersion = null;
                 return UpdateCheckResult.UpToDate;
             }
 

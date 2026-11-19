@@ -100,6 +100,23 @@ public class UpdateCheckTests : IDisposable
     }
 
     [Fact]
+    public async Task A_withdrawn_release_is_not_installed()
+    {
+        _updater.Newer = "1.6.1";
+        Assert.Equal(UpdateCheckResult.Newer, await _check.CheckNowAsync(_ct));
+        Assert.Equal(UpdateState.Ready, _check.State);
+
+        // The release was deleted (tagged by mistake): the next check that works finds nothing (review 1.8.1, A5).
+        _updater.Newer = null;
+        Assert.Equal(UpdateCheckResult.UpToDate, await _check.CheckNowAsync(_ct));
+
+        Assert.Equal(UpdateState.Current, _check.State);
+        Assert.Null(_check.NewerVersion);
+        Assert.False(_check.InstallNow());
+        Assert.Equal(0, _updater.Installs);
+    }
+
+    [Fact]
     public async Task A_copy_that_cannot_update_itself_only_shows_the_hint()
     {
         _updater.SelfUpdate = false;
