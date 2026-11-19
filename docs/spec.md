@@ -387,7 +387,9 @@ has no access to the bot's configuration or base data. A release that
 changes one of them updates `Pages/Guide.razor` as well.
 
 Data files (all derived — fully regenerable from the DB; the UI has a
-"republish everything" action):
+"republish everything" action, and the bot re-renders every file once by itself
+on the first start of a new version — upload only, nothing deleted, marker
+`website-version.txt` in the data directory, review 1.8.1):
 
 | File                       | Content                                              |
 |----------------------------|------------------------------------------------------|
@@ -494,7 +496,7 @@ loaded lazily) and every name in the trainer's chat colour; the trainer page
 shows its heading in that colour. The colour is darkened like on the fight
 page (³). A new or lost picture and a chat colour change republish the
 leaderboard and the trainer page; pages written before the change get the
-colour with „Alles neu veröffentlichen“ (once after updating) or the
+colour with the re-render after an update (by itself since R2) or the
 trainer's next fight. The fight lists („Kämpfe“, „Letzte
 Kämpfe“) stay plain: their names sit inside a sentence the bot writes (user
 decision „Ohne Kampfliste“, backlog).

@@ -6,8 +6,9 @@ namespace PokeArena.Core.Publishing;
 public static class WebsiteServiceCollectionExtensions
 {
     /// <summary>
-    /// Website publishing (spec §9): links for chat, the file generator, the R2 access, the upload worker and the
-    /// profile picture mirror. The host must provide an <see cref="Secrets.ISecretStore"/> and register
+    /// Website publishing (spec §9): links for chat, the file generator, the R2 access, the upload worker, the
+    /// profile picture mirror and the re-render after an update (<see cref="RepublishAfterUpdate"/>). The host must
+    /// provide an <see cref="Secrets.ISecretStore"/>, <see cref="AppInfo"/> and <see cref="AppPaths"/>, and register
     /// <c>AddPokeArenaGame</c> and <c>AddPokeArenaChat</c>.
     /// </summary>
     public static IServiceCollection AddPokeArenaWebsite(this IServiceCollection services, WebsiteOptions options)

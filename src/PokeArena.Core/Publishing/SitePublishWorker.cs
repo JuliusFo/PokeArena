@@ -77,6 +77,27 @@ public sealed class SitePublishWorker(
         log.LogInformation("Queued every site file for upload ({InBucket} found in the bucket)", inBucket.Count);
     }
 
+    /// <summary>
+    /// Queues every file of the live database again — the gentle part of <see cref="RepublishEverythingAsync"/>: no
+    /// bucket listing, nothing deleted, no fight ids raised. For runs nobody decided on (after an update): a wrong data
+    /// directory must never empty the public site (review 1.8.1, second pass).
+    /// </summary>
+    /// <returns>False without trainers: nothing worth re-rendering, and an empty leaderboard must not replace a full one.</returns>
+    public async Task<bool> RequeueDatabaseFilesAsync(CancellationToken ct)
+    {
+        await using var db = database.OpenLive();
+        if (!await db.Trainers.AnyAsync(ct))
+        {
+            return false;
+        }
+
+        await using var transaction = await db.Database.BeginTransactionAsync(ct);
+        await SiteOutbox.EnqueueEverythingAsync(db, [], time.GetUtcNow(), ct);
+        await db.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
+        return true;
+    }
+
     /// <summary>One round: uploads the files that are due. Public for tests; the service calls it in a loop.</summary>
     public async Task PublishDueAsync(CancellationToken ct)
     {

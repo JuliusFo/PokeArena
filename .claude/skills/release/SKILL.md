@@ -74,7 +74,7 @@ Stop on any failure.
   allowed to deploy to github-pages", the environment lacks the tag rule `v*` (`docs/website-setup.md` §3). If
   `SiteMeta.CurrentFormatVersion` was raised, tell the user: the site is now live with the new
   format, the streamer's bot writes the old one until they update — until then the site shows „Die Daten werden
-  gerade umgestellt“; after the update the streamer clicks „Alles neu veröffentlichen“.
+  gerade umgestellt“; after its update the bot re-renders every file once by itself (`RepublishAfterUpdate`, R2).
 - List merged local branches and worktrees that could go; delete them only after the user confirms the list.
 
 ## 7. Finish

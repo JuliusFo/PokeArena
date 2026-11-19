@@ -4,10 +4,12 @@ using Microsoft.Extensions.Logging;
 namespace PokeArena.Core.Publishing;
 
 /// <summary>
-/// „Alles neu veröffentlichen“ once on the first start of a new version (review 1.8.1, A7): most releases change how
-/// older fights or trainer pages look, and the update installs unattended after the stream, so nobody would click.
-/// The version last published this way is kept in a small file in the data directory; without an R2 key nothing
-/// happens and the next start tries again. New fights still go first (the worker's order, review 1.0.3 A7).
+/// Re-renders every site file once on the first start of a new version (review 1.8.1, A7): most releases change how
+/// older fights or trainer pages look, and the update installs unattended after the stream, so nobody would click
+/// „Alles neu veröffentlichen“. Only the upload half of that button: no bucket listing, nothing deleted, nothing at all
+/// without trainers — a run nobody decided on must never empty the public site (second pass). The version last
+/// published this way is kept in a small file in the data directory; without an R2 key nothing happens and the next
+/// start tries again. New fights still go first (the worker's order, review 1.0.3 A7).
 /// </summary>
 public sealed class RepublishAfterUpdate(
     SitePublishWorker worker,
@@ -35,11 +37,15 @@ public sealed class RepublishAfterUpdate(
             return false;
         }
 
-        await worker.RepublishEverythingAsync(ct);
+        var queued = await worker.RequeueDatabaseFilesAsync(ct);
         Directory.CreateDirectory(paths.Root);
         await File.WriteAllTextAsync(MarkerPath, app.Version, ct);
-        log.LogInformation("Version {Version} republishes the website once", app.Version);
-        return true;
+        if (queued)
+        {
+            log.LogInformation("Version {Version} republishes the website once", app.Version);
+        }
+
+        return queued;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)

@@ -155,9 +155,10 @@ knowledge. Areas:
 - Built (WP-06), area "Bot": "Website" card (R2 key entry, upload status with
   a plain-German reason, „Alles neu veröffentlichen“) and "OBS-Overlay" card
   with the browser source address. Since R2 (review 1.8.1): removing the key asks
-  first, and `RepublishAfterUpdate` runs „Alles neu veröffentlichen“ once on the
-  first start of a new version (marker `website-version.txt` in the data
-  directory).
+  first, and `RepublishAfterUpdate` queues every file of the live database once
+  on the first start of a new version (marker `website-version.txt` in the data
+  directory) — the upload half of „Alles neu veröffentlichen“ only: no bucket
+  listing, nothing deleted, nothing without trainers.
 - Built (WP-07): live state and „Auch ohne Stream“ switch in the Twitch card.
 - Built (WP-08): „Löschen“ with an inline confirmation per trainer row
   (queued work on the command queue); „Sicherung“ card (last backup, folder,
