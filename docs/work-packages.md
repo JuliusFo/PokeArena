@@ -941,6 +941,28 @@ in [roadmap.md](roadmap.md).
   not only on scroll.
 - Deliberately not done (→ backlog): —
 
+### Boss targets and HP from stream data — user request (2026-11-19, branch feat/boss-balancing)
+- Built: an evaluation of the 182 published boss fights (50.5 % group wins,
+  37.7 % catches per participant, N = 4 34 %; script kept outside the repo,
+  numbers in the ADR-0006 addendum). Simulator part 4 (`--part 4`): campaigns
+  in which 12 trainers own a starter and only the bosses they survived, lobby
+  size and joins as on stream — it reproduces the stream (57 % / 44 %), parts 2
+  and 3 overrate the group (≈ 80 %); options `--part`, `--campaigns`,
+  `--encounters`, boss HP per tier. Core: `BossBattle.TargetsInRound` —
+  `⌈r·N/3⌉ − ⌈(r−1)·N/3⌉` targets in round r instead of `⌈N/3⌉`;
+  `BossHpPerParticipant` 1.3. Part 4 now: 75 % group wins, 61 % catches,
+  70–77 % for every N. Spec §4/§13, ADR-0006 addendum, roadmap WP-09.
+- User decisions: „B2 mit 1.3“ (carry-over rounding up first, HP 1.3) after
+  comparing the rarity HP bonus (user idea), HP compensation by target share,
+  carry-over rounding down and random rounding (all in the ADR table).
+- Addenda: version 1.8.0 is a proposal (not confirmed) — it is the WP-09
+  balancing number. The „Neuigkeiten“ test allows one undated section, so the
+  unreleased 1.7.2 lines of `main` moved under „Version 1.8.0“; `/release` decides.
+- Pitfalls: the published fight files are rate-limited by Cloudflare — fetch
+  them a few at a time.
+- Deliberately not done (→ roadmap WP-09): a boss HP that follows the boss's
+  strength; PvP loot and NPC difficulty.
+
 Template per entry:
 
 ```
