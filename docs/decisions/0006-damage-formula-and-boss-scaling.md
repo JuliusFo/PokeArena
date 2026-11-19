@@ -34,9 +34,11 @@ multiple boss targets with linear HP; target difficulty ≈ 75 %.
   `k = Damping` (default 50). Special is both special attack and special
   defense, as in Gen 1.
 - Boss HP = base HP × `HpFactor` × `BossHpPerParticipant` (1.8; 1.5 since the
-  addendum 2026-11-04) × `N`.
+  addendum 2026-11-04; 1.3 since the addendum 2026-11-19, planned for 1.8.0)
+  × `N`.
 - The boss attacks `⌈N / BossTargetDivisor⌉` (3) distinct random living
-  participants per round.
+  participants per round — `N / BossTargetDivisor` on average, the remainder
+  carried over, since the addendum 2026-11-19.
 - The per-species field `bossZiele` is dropped; it was never set in the data.
 
 Deliberately **not**: per-species boss tuning, separate special attack and
@@ -128,55 +130,69 @@ fights).
 
 Part 4 of the simulator (`dotnet run tools/BalancingSimulator.cs -- --part 4`)
 replays whole campaigns: 12 trainers start with a random starter and add the
-boss whenever they survive a won fight; lobby size and who joins follow the
-stream fights; PvP transfers and NPC rewards are left out. With the defaults
-(HP 1.5, divisor 3; 500 campaigns × 500 fights):
+boss whenever they survive a won fight; lobby sizes follow the stream fights;
+PvP transfers and NPC rewards are left out. Who joins is a model of a small
+channel, not the stream's per-viewer counts (no player data in the
+repository, ADR-0003): every trainer joins 0.85 × as often as the one before,
+a round decay not fitted to anyone, scaled to the mean lobby size and
+calibrated, because drawing a lobby one by one by weight evens the rates out
+(review feat/boss-balancing). With the target rule before 1.8.0 (`⌈N/3⌉`,
+below) and HP 1.5, divisor 3; 500 campaigns × 500 fights:
 
 | Fights | Group wins | Catch/participant | Stat sum fielded / boss | Species owned |
 |---|---|---|---|---|
-| 1–50 | 53 % | 41 % | 212 / 271 | 8.0 |
-| 51–100 | 57 % | 44 % | 220 / 270 | 14.8 |
-| 101–182 | 59 % | 46 % | 224 / 271 | 24.8 |
-| 183–300 | 62 % | 48 % | 229 / 270 | 36.9 |
-| 301–500 | 63 % | 49 % | 234 / 270 | 52.6 |
+| 1–50 | 53 % | 40 % | 210 / 270 | 8.0 |
+| 51–100 | 57 % | 44 % | 219 / 270 | 14.9 |
+| 101–182 | 59 % | 45 % | 224 / 270 | 25.0 |
+| 183–300 | 61 % | 47 % | 228 / 270 | 37.5 |
+| 301–500 | 63 % | 49 % | 233 / 270 | 54.3 |
 
-First 182 fights by N: 48 / 65 / 50 / 58 / 64 / 55 / 58 % group wins, 57.0 %
-overall, 44.0 % catches per participant. That is close to the stream (one
+First 182 fights by N: 49 / 65 / 50 / 58 / 64 / 53 / 59 % group wins, 56.8 %
+overall, 43.6 % catches per participant. That is close to the stream (one
 standard error of 182 fights is ≈ 3.7 points); the rest of the gap likely
 comes from the specimen pick up to 1.4.0 and PvP losses. Balancing variants
 for WP-09 are compared with part 4 from now on; parts 2 and 3 overrate the
-group.
+group. The repository's simulator runs the current rule; this table was
+computed with the old rule restored locally for the run. Earlier versions of
+part 4 drew the joins from the stream's per-viewer participation and from a
+model fitted to it; their numbers differed by at most one point.
 
 ## Addendum 2026-11-19 (WP-09, boss targets and HP)
 
 User decision („B2 mit 1.3“): the boss attacks `N / BossTargetDivisor`
 participants per round **on average** — the remainder carried over, rounded up
-first, `⌈r·N/3⌉ − ⌈(r−1)·N/3⌉` in round `r` (`BossBattle.TargetsInRound`) —
-instead of `⌈N/3⌉` every round, and `BossHpPerParticipant` goes from 1.5 to
-**1.3**. Released with 1.8.0.
+first, `⌈r·N/d⌉ − ⌈(r−1)·N/d⌉` in round `r` with `d` = `BossTargetDivisor`
+(`BossBattle.TargetsInRound`) — instead of `⌈N/d⌉` every round, and
+`BossHpPerParticipant` goes from 1.5 to **1.3**. Planned for 1.8.0 (proposal,
+not confirmed).
 
 Cause of the `N = 4` dip: boss HP grows linearly with `N`, but `⌈N/3⌉` hits
 1/2, 1/3, 1/2, 2/5, 1/3, 3/7 of the group per round for N = 2 … 7 — the
-groups' win rates follow that share almost exactly. The carry-over keeps the
-share at one third for every `N`.
+groups' win rates in the simulator follow that share almost exactly (on
+stream only N = 4 stood out; 14 fights at N = 2 are too few to tell). The
+carry-over keeps the share at one third for every `N`.
 
-Simulator part 4 (`--part 4 --campaigns 300`), first 182 fights, group wins
-by N = 2 / 3 / 4 / 5 / 6 / 7 / 8, overall and catches per participant:
+Simulator part 4, first 182 fights, group wins by N = 2 / 3 / 4 / 5 / 6 / 7 /
+8, overall and catches per participant:
 
 | Variant | N = 2 … 8 | Group wins | Catch/participant |
 |---|---|---|---|
-| ⌈N/3⌉, HP 1.5 (until 1.7) | 49 / 65 / 50 / 58 / 64 / 55 / 58 % | 57.0 % | 43.8 % |
-| ⌈N/3⌉, HP 1.3 | 59 / 73 / 61 / 68 / 75 / 66 / 67 % | 67.1 % | 53.7 % |
-| Rarity bonus 1.15 / 1.30 / 1.40 (common / rare / legendary) | 64 / 78 / 66 / 74 / 79 / 70 / 73 % | 72.1 % | 59.0 % |
-| HP × (N/3) / ⌈N/3⌉, HP 1.5 | 71 / 69 / 73 / 71 / 69 / 71 / 67 % | 70.8 % | 56.9 % |
-| Carry-over rounding down, HP 1.5 | 72 / 69 / 73 / 71 / 68 / 69 / 69 % | 70.7 % | 56.9 % |
-| Carry-over rounding up, HP 1.5 | 63 / 68 / 66 / 66 / 67 / 66 / 67 % | 66.4 % | 52.1 % |
-| Random rounding, HP 1.5 | 69 / 68 / 69 / 68 / 69 / 67 / 66 % | 68.5 % | 54.6 % |
-| Carry-over rounding down, HP 1.3 | 80 / 77 / 80 / 79 / 78 / 78 / 76 % | 78.7 % | 65.5 % |
-| **Carry-over rounding up, HP 1.3 (new)** | 70 / 75 / 75 / 75 / 77 / 76 / 74 % | **75.0 %** | **61.2 %** |
-| Random rounding, HP 1.3 | 76 / 77 / 78 / 77 / 77 / 77 / 74 % | 77.0 % | 63.6 % |
+| ⌈N/3⌉, HP 1.5 (before 1.8.0) ‡ | 49 / 65 / 50 / 58 / 64 / 53 / 59 % | 56.8 % | 43.6 % |
+| ⌈N/3⌉, HP 1.3 ‡ | 59 / 74 / 61 / 68 / 74 / 64 / 69 % | 67.0 % | 53.5 % |
+| Rarity bonus 1.15 / 1.30 / 1.40 (common / rare / legendary), ⌈N/3⌉ † | 64 / 78 / 66 / 74 / 79 / 70 / 73 % | 72.1 % | 59.0 % |
+| HP × (N/3) / ⌈N/3⌉, HP 1.5 † | 71 / 69 / 73 / 71 / 69 / 71 / 67 % | 70.8 % | 56.9 % |
+| Carry-over rounding down, HP 1.5 † | 72 / 69 / 73 / 71 / 68 / 69 / 69 % | 70.7 % | 56.9 % |
+| Carry-over rounding up, HP 1.5 | 62 / 67 / 66 / 66 / 67 / 65 / 66 % | 66.1 % | 51.9 % |
+| Random rounding, HP 1.5 † | 69 / 68 / 69 / 68 / 69 / 67 / 66 % | 68.5 % | 54.6 % |
+| Carry-over rounding down, HP 1.3 † | 80 / 77 / 80 / 79 / 78 / 78 / 76 % | 78.7 % | 65.5 % |
+| **Carry-over rounding up, HP 1.3 (new)** | 70 / 76 / 75 / 74 / 75 / 74 / 73 % | **74.6 %** | **60.6 %** |
+| Random rounding, HP 1.3 † | 76 / 77 / 78 / 77 / 77 / 77 / 74 % | 77.0 % | 63.6 % |
 
-(The new defaults with the full 500 campaigns; the other rows with 300.)
+Unmarked rows: `--part 4` (with `--boss-hp 1.5`) as the repository runs it,
+500 campaigns. ‡ the old rule restored locally for the run, otherwise the
+same. † not reproducible from the repository: temporary engine or simulator
+variants, 300 campaigns and the first participation profile — the rows
+recomputed with the model moved by at most one point.
 
 - Rounding up first lets the boss strike fully in round 1 and keeps the group
   sizes closest together; rounding down would leave a 2-player boss idle in
@@ -188,9 +204,9 @@ by N = 2 / 3 / 4 / 5 / 6 / 7 / 8, overall and catches per participant:
   weaker than a 3-player one (4.0 × base HP vs. 4.5), visible on the fight
   page.
 - With the new defaults, part 4 by phase: fights 1–50 71 %, 51–100 75 %,
-  101–182 77 %, 183–300 78 %, 301–500 80 % group wins; by the boss's stat sum
-  below 250 / 250–329 / 330–399 / from 400: 96 / 75 / 43 / 17 %; by tier
-  common / rare / legendary 82 / 65 / 11 %. Part 2 (collections drawn like
+  101–182 77 %, 183–300 78 %, 301–500 79 % group wins; by the boss's stat sum
+  below 250 / 250–329 / 330–399 / from 400: 96 / 75 / 42 / 15 %; by tier
+  common / rare / legendary 82 / 64 / 9 %. Part 2 (collections drawn like
   bosses, `--duels 1 --bosses 3000`): 79–89 % group wins, 70–75 % catches.
 - The simulator ran ≈ 6 points above the stream with the old defaults, so
   the stream should land around 69 % group wins. Check after a few streams.

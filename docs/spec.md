@@ -112,11 +112,12 @@ Boss draw (after the lobby closes, so participant count is known):
   (defaults 10 % + 2 %/player, cap 40 %),
   remainder → common. Within a tier the species is drawn uniformly.
 - Boss HP = base HP × `HpFactor` × `BossHpPerParticipant` × `N` (default 1.3
-  since 1.8.0, 1.5 before, 1.8 until 1.0.0).
+  planned for 1.8.0 — proposal, not confirmed; 1.5 before, 1.8 until 1.0.0).
   Other stats are the base values. Together with the target count below this
   keeps the group's win rate about the same for any `N`: ≈ 75 % in the first
-  180 fights of trainers who own only what they caught, ≈ 87 % with
-  collections drawn like the bosses (ADR-0006 addendum 2026-11-19).
+  182 fights of trainers who own only what they caught, 79–89 % with
+  collections drawn like the bosses (N = 2 lowest) (ADR-0006 addendum
+  2026-11-19).
 
 Fight (resolved **instantly** when the lobby closes — no interaction is
 possible, so no artificial pacing):
@@ -129,12 +130,13 @@ possible, so no artificial pacing):
 - Per round: all living participant Pokemon attack the boss once, in
   seed-random order; then the boss attacks different random living
   participant Pokemon — all of them if fewer are alive. `N` is the participant
-  count at the start. It attacks `N / BossTargetDivisor` (default 3) per round
-  on average, the remainder carried over and rounded up first: in round `r`
-  `⌈r·N/3⌉ − ⌈(r−1)·N/3⌉`, so N = 2 attacks 1, 1, 0, 1, 1, 0 …, N = 4
-  2, 1, 1, 2, 1, 1 …, N = 3 and 6 always 1 and 2 (since 1.8.0, user decision
-  2026-11-19; until then `⌈N / BossTargetDivisor⌉` every round, which made
-  groups of 2 and 4 lose noticeably more often).
+  count at the start. It attacks `N / d` per round on average
+  (`d` = `BossTargetDivisor`, default 3), the remainder carried over and
+  rounded up first: in round `r` `⌈r·N/d⌉ − ⌈(r−1)·N/d⌉`, so with `d` = 3
+  N = 2 attacks 1, 1, 0, 1, 1, 0 …, N = 4 2, 1, 1, 2, 1, 1 …, N = 3 and 6
+  always 1 and 2 (user decision 2026-11-19, planned for 1.8.0; until then
+  `⌈N / d⌉` every round, which in the simulator made groups of 2, 4, 5 and 7
+  lose more often than 3 and 6 — on stream groups of 4 by far).
 - Boss HP reaches 0 → **every participant whose Pokemon is still alive
   catches the boss** (one new specimen each). No dice roll — survival is the
   catch condition.

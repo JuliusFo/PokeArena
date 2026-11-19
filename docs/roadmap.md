@@ -73,7 +73,7 @@ Demo: `!boss` playable end-to-end.
 - User decisions (2026-10-11, ADR-0006): damped damage ratio with best of
   physical/special (`k` = 50); boss attacks `⌈N/3⌉` targets, HP =
   base HP × 1.8 × N; target group win rate ≈ 75 % (targets and HP changed
-  in 1.8.0, see WP-09).
+  planned for 1.8.0, see WP-09).
 - Every species has a rarity tier, so all 151 can appear as boss — the
   achievements 150/151 are reachable.
 - Build a Monte Carlo balancing simulator (≈ 0.5 day) on the real engine:
@@ -540,7 +540,7 @@ Standard“); a whole leaderboard in chat colours shows it more than a few names
 in the fight log. If it does not read well, the lighter dark-theme variant of
 1.6.0 returns for names.
 
-## Fight log: HP before the hit (`fix/battle-log-hp-before`) → v1.7.2 (proposal)
+## Fight log: HP before the hit (`fix/battle-log-hp-before`) → v1.7.2 or, with `feat/boss-balancing`, v1.8.0 (proposal)
 
 Viewer feedback (2026-11-18, on a duel): „Owei (…, HP 52) hat Digda (…, HP 0)
 46 Schaden zugefügt“ shows the target's HP after the hit, so every knockout
@@ -565,23 +565,23 @@ Demo: measured win rates per NPC and boss group size, adjusted values.
   1.5 for a higher catch chance (≈ 57–70 % per participant instead of
   50–64 %), ADR-0006 addendum. Next step if still too stingy: 1.3.
 - Stream data (2026-11-19, ADR-0006 addendum): 182 boss fights won 50.5 %
-  (target ≈ 80 %), 37.7 % catches per participant, N = 4 only 34 %.
+  (target then ≈ 80 %), 37.7 % catches per participant, N = 4 only 34 %.
   Collections hold mostly the weak bosses a group could beat (fielded stat sum
   202 vs. bosses 265). Simulator part 4 (campaigns from starter + real
-  catches) reproduces this (57 % / 44 %); compare balancing variants with
+  catches) reproduces this (≈ 57 % / 44 %); compare balancing variants with
   `--part 4`.
 - Done ahead of WP-09 (user decision 2026-11-19, „B2 mit 1.3“,
-  `feat/boss-balancing`): the boss attacks N / 3 targets per round on
+  `feat/boss-balancing`, planned for 1.8.0): the boss attacks N / 3 targets per round on
   average (remainder carried over, rounded up first) instead of `⌈N/3⌉`, and
   `BossHpPerParticipant` 1.5 → 1.3. Part 4: 57 → 75 % group wins, 44 → 61 %
-  catches per participant, every N between 70 and 77 % — the `N = 4` dip is
+  catches per participant, every N between 70 and 76 % — the `N = 4` dip is
   gone. Not chosen (simulated, ADR-0006 addendum 2026-11-19): a boss HP bonus
   by rarity (1.3 + −0.15…+0.20), HP compensation by target share, the
   carry-over rounding down first, random rounding of the targets.
   Proposal (not confirmed): a boss HP that follows the boss's strength (stat
   sum) — strong bosses still win far more often (part 4: 96 % group wins
-  below a stat sum of 250, 17 % from 400); look at it again after a few
-  streams with 1.8.0.
+  below a stat sum of 250, 15 % from 400); look at it again after a few
+  streams with the new rule.
 - No runtime balancing editor (spec §13): `Scaling`, `k` etc. are jargon
   for the streamer and every change should go through the simulator. At most
   the streamer-facing values (boss cooldown, countdown) may get a setting.
