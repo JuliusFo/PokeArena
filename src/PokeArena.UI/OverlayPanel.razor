@@ -17,6 +17,13 @@
             Schließe das andere Programm und starte PokeArena neu.
         </p>
     }
+    else if (Status.Failed)
+    {
+        <p class="problem" data-testid="overlay-problem">
+            Das Overlay konnte nicht starten. Der Bot läuft trotzdem. Starte PokeArena neu; klappt es dann immer noch
+            nicht, steht der Grund im Protokoll.
+        </p>
+    }
     else
     {
         <p class="hint">Füge in OBS eine Browserquelle mit dieser Adresse hinzu. Sie zeigt den letzten Kampf und die besten fünf Trainer.</p>

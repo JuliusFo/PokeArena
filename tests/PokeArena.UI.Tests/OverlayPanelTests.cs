@@ -32,4 +32,16 @@ public class OverlayPanelTests : BunitContext
         cut.WaitForAssertion(() => Assert.Contains("konnte nicht starten", cut.Find("[data-testid=overlay-problem]").TextContent));
         Assert.Empty(cut.FindAll("[data-testid=overlay-url]"));
     }
+
+    [Fact]
+    public void Another_start_error_is_reported_without_blaming_another_program()
+    {
+        var cut = Render<OverlayPanel>();
+
+        _status.ReportFailed();
+
+        cut.WaitForAssertion(() => Assert.Contains("Der Bot läuft trotzdem", cut.Find("[data-testid=overlay-problem]").TextContent));
+        Assert.DoesNotContain("anderes Programm", cut.Markup);
+        Assert.Empty(cut.FindAll("[data-testid=overlay-url]"));
+    }
 }

@@ -91,13 +91,26 @@ public sealed class OverlayServerTests : IAsyncDisposable
 
             await server.StartAsync(_ct);
 
-            Assert.False(server.IsRunning);
             Assert.True(_status.PortInUse);
+            Assert.False(_status.Failed);
         }
         finally
         {
             blocker.Stop();
         }
+    }
+
+    [Fact]
+    public async Task Any_other_start_error_disables_only_the_overlay()
+    {
+        // A port out of range stands in for a port Windows reserved: both are no IOException (review 1.8.1, A1).
+        await using var server = Server(new OverlayOptions { Port = 70000 });
+
+        await server.StartAsync(_ct);
+
+        Assert.True(_status.Failed);
+        Assert.False(_status.PortInUse);
+        await server.StopAsync(_ct);
     }
 
     private OverlayServer Server(OverlayOptions options) =>

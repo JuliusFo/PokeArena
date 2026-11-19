@@ -38,9 +38,6 @@ public sealed class OverlayServer(
     private Cached? _cached;
     private int _generation;
 
-    /// <summary>False if the overlay is switched off or its port was taken.</summary>
-    public bool IsRunning => _app is not null;
-
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         if (!options.Enabled)
@@ -52,16 +49,17 @@ public sealed class OverlayServer(
         trainers.Changed += Invalidate;
         battles.Changed += Invalidate;
 
-        var builder = WebApplication.CreateSlimBuilder();
-        builder.Services.AddSerilog();
-        builder.WebHost.ConfigureKestrel(kestrel => kestrel.Listen(IPAddress.Loopback, options.Port));
-        var app = builder.Build();
-        app.MapGet("/overlay", () => Results.Content(Page.Value, "text/html; charset=utf-8"));
-        app.MapGet("/overlay/state", async (CancellationToken ct) =>
-            Results.Text(await StateJsonAsync(ct), "application/json; charset=utf-8"));
-
+        WebApplication? app = null;
         try
         {
+            var builder = WebApplication.CreateSlimBuilder();
+            builder.Services.AddSerilog();
+            builder.WebHost.ConfigureKestrel(kestrel => kestrel.Listen(IPAddress.Loopback, options.Port));
+            app = builder.Build();
+            app.MapGet("/overlay", () => Results.Content(Page.Value, "text/html; charset=utf-8"));
+            app.MapGet("/overlay/state", async (CancellationToken ct) =>
+                Results.Text(await StateJsonAsync(ct), "application/json; charset=utf-8"));
+
             await app.StartAsync(cancellationToken);
             _app = app;
             log.LogInformation("OBS overlay at {Url}", options.Url);
@@ -70,6 +68,22 @@ public sealed class OverlayServer(
         {
             log.LogWarning(ex, "OBS overlay disabled: port {Port} is in use", options.Port);
             status.ReportPortInUse();
+            await DisposeQuietlyAsync(app);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // Not only a taken port: a port Windows reserved (Hyper-V, WSL, Docker; access denied) or a port number out
+            // of range must not stop the bot from starting (review 1.8.1, A1).
+            log.LogWarning(ex, "OBS overlay disabled: it could not start on port {Port}", options.Port);
+            status.ReportFailed();
+            await DisposeQuietlyAsync(app);
+        }
+    }
+
+    private static async Task DisposeQuietlyAsync(WebApplication? app)
+    {
+        if (app is not null)
+        {
             await app.DisposeAsync();
         }
     }
