@@ -1020,6 +1020,10 @@ in [roadmap.md](roadmap.md).
     §9: fixed (pitfall line, footnote ⁸).
   - L4 bronze handles faint on the dark page (edge ≈ 2 : 1): fixed, the
     handles take the metal colour in the dark theme.
+  - Second pass: the four fixes hold; one new point. L5 spec footnote ⁸
+    said „exactly three“ and that the documented sort breaks every tie (only
+    the unstated Twitch id tiebreak does): fixed (id named in the sort,
+    „at most three“).
 
 Template per entry:
 
