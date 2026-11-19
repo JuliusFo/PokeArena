@@ -54,7 +54,6 @@ tagged `vX.Y.Z` once its section is complete.
   clicked: the pictures arrive by themselves while the bot is connected to
   Twitch.
 
-
 ### Fixed
 - After a release a browser could keep the old stylesheet from its cache next
   to the new website code; after 1.6.0 Firefox showed the HP numbers inside the
@@ -89,7 +88,6 @@ tagged `vX.Y.Z` once its section is complete.
   inside. Only damage that arrived counts. Fight files carry the damage per
   fighter as a new optional field; older fights show the box after „Alles neu
   veröffentlichen“.
-
 
 ### Fixed
 - The HP numbers inside a fight page's HP bar look crisp again instead of thin
@@ -144,7 +142,6 @@ tagged `vX.Y.Z` once its section is complete.
 - On wide screens a fight page's two cards (trainers and opponent) are wider
   (1008 px instead of 868 px); header and text keep their width.
 
-
 ### Fixed
 - A long Pokémon or trainer name on a fight page no longer pushes the HP bar
   onto a line of its own: only the name wraps, all bars stay lined up on the
@@ -163,7 +160,6 @@ tagged `vX.Y.Z` once its section is complete.
 - In a boss fight every species a trainer owns is equally likely to be sent
   in, however many of it they have — three Digda no longer push out the one
   Arkani.
-
 
 ### Fixed
 - The numbers in a fight page's „Kampfverlauf“ no longer skip one at every
@@ -217,7 +213,6 @@ tagged `vX.Y.Z` once its section is complete.
 - Lead moderators can use `!entfernen` and `!bossreset`.
 - Durations read the same in every reply („1 Stunde 30 Minuten“).
 
-
 ### Fixed
 - The bot reconnects after more kinds of Twitch errors instead of staying
   offline until „Erneut versuchen“, and it no longer hangs when a connection
@@ -243,7 +238,6 @@ tagged `vX.Y.Z` once its section is complete.
 - The bot tells the chat when the next boss can be called, 30 minutes after a
   boss fight („Der Boss ist wieder bereit …“).
 - `!version` answers like `!pokearena`: the bot is online, with its version.
-
 
 ### Fixed
 - The NPC table on the „So geht's“ page no longer stretches across the whole

@@ -909,12 +909,15 @@ in [roadmap.md](roadmap.md).
   entry an id in `history.state` (spread next to Blazor's `_index` and
   `userState`), remembers its position on scroll, input and `pagehide`
   (memory + `sessionStorage`, last 100 entries) and after `popstate` or a
-  reload applies it on every resize of `body` until the visitor scrolls,
-  clicks or types, another page opens, or 15 s pass. A link click still opens
-  the next page at the top (Blazor's own reset). Checked in the preview: list
-  of fights back and forward, with the data fetch delayed by 1.2 s, reload,
-  menu link to the same page goes to the top. No automated test: bUnit does
-  not run the page's JS, and UI automation is out (`CLAUDE.md` §4).
+  reload applies it on every resize of `body`, clamped by the browser, until
+  the visitor scrolls, clicks or types, another page opens, or 15 s pass; an
+  entry without a position goes to the top at once (with manual restoring
+  nobody else does). A link click still opens the next page at the top
+  (Blazor's own reset, only when the path changes). Checked in the preview:
+  list of fights back and forward, with the data fetch delayed by 1.2 s,
+  reload, the menu link from a fight page to the list goes to the top, back to
+  a page that was at the top. No automated test: bUnit does not run the
+  page's JS, and UI automation is out (`CLAUDE.md` §4).
 - User decisions: —
 - Addenda: version 1.7.2 is a proposal (not confirmed); `/release` decides.
 - Pitfalls: in a hidden browser pane no frames render, so scroll events and

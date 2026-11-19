@@ -21,7 +21,9 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   pairs a cached old stylesheet with new markup (HP numbers twice in Firefox after 1.6.0, fix/css-cache-busting).
   Keep the link exactly `href="css/site.css"` — the workflow fails if it cannot find it.
 - „Zurück“ keeps the scroll position through the inline script at the end of `index.html` (feat/back-keeps-scroll):
-  an id per history entry in `history.state`, applied again on every resize after back/forward. Never replace
+  an id per history entry in `history.state`, applied again on every resize after back/forward. With manual
+  `scrollRestoration` neither the browser nor Blazor scrolls on popstate: the script itself sends an entry without a
+  position to the top, or it opens where the page before was scrolled (review feat/back-keeps-scroll). Never replace
   `history.state` without spreading it — Blazor reads `_index` and `userState` from it — and never scroll a page to the
   top on load yourself (`window.scrollTo(0, 0)`), or the restored position is lost.
 - `Pages/News.razor` („Neuigkeiten“) is hand-written for players, not the CHANGELOG: a new section goes on top as
