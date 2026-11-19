@@ -165,10 +165,15 @@ public sealed class ProfileImageRefresher(
             paths.Add(SitePaths.Leaderboard);
         }
 
-        await SiteOutbox.EnqueueAsync(db, paths, now, ct);
         try
         {
+            // Queue and save in one transaction, only around these two steps (never around the downloads): the
+            // publish worker must not delete a queue row between the read in EnqueueAsync and the save (review
+            // 1.8.1, A3 – as review 1.0.3, A25).
+            await using var transaction = await db.Database.BeginTransactionAsync(ct);
+            await SiteOutbox.EnqueueAsync(db, paths, now, ct);
             await db.SaveChangesAsync(ct);
+            await transaction.CommitAsync(ct);
         }
         catch (DbUpdateException ex)
         {

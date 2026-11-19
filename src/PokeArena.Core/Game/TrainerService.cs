@@ -179,10 +179,13 @@ public sealed class TrainerService
         {
             // Fight pages pick the colour up with the next fight or „Alles neu veröffentlichen“; the statistics, the
             // leaderboard and the trainer page show it right away (review feat/statistics-page,
-            // feat/leaderboard-profile-colours). One save, so the colour and the queued files land together.
+            // feat/leaderboard-profile-colours). One transaction like the rename above: the publish worker must not
+            // delete a queue row between the read in EnqueueAsync and the save (review 1.8.1, A3).
+            await using var transaction = await db.Database.BeginTransactionAsync(ct);
             trainer.ChatColor = color;
             await SiteOutbox.EnqueueAsync(db, SiteOutbox.ForTrainers([trainer.TwitchUserId]), _time.GetUtcNow(), ct);
             await db.SaveChangesAsync(ct);
+            await transaction.CommitAsync(ct);
         }
 
         _known[message.UserId] = new KnownNames(trainer.DisplayName, trainer.Login, trainer.ChatColor);
