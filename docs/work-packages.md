@@ -35,10 +35,13 @@ in [roadmap.md](roadmap.md).
 | – | „Statistik“ page on the website (user idea, `feat/statistics-page`, before WP-09) | 1.7.0 | done 2026-11-11 |
 | – | Profile picture on the trainer page (user idea, `feat/trainer-profile-image`) | 1.7.0 | done 2026-11-11 |
 | – | Leaderboard pictures and chat colours (user request, `feat/leaderboard-profile-colours`) | 1.7.1 | done 2026-11-11 |
-| – | Fight log: HP before the hit (viewer feedback, `fix/battle-log-hp-before`) | 1.7.2 (proposal) | done 2026-11-18 |
+| – | Fight log: HP before the hit (viewer feedback, `fix/battle-log-hp-before`) | 1.8.0 | done 2026-11-18 |
 | – | Flaky EventSub keepalive test (found in a code review, `fix/flaky-keepalive-test`) | – (tests only) | done 2026-11-19 |
-| – | „Zurück“ keeps the scroll position on the website (streamer feedback, `feat/back-keeps-scroll`) | 1.7.2 (proposal) | done 2026-11-19 |
-| WP-09 | Balancing after the first streams | 1.8.0 | planned |
+| – | „Zurück“ keeps the scroll position on the website (streamer feedback, `feat/back-keeps-scroll`) | 1.8.0 | done 2026-11-19 |
+| – | Boss targets and HP from stream data (user request, `feat/boss-balancing`) | 1.8.0 | done 2026-11-19 |
+| – | Leaderboard trophies (user request, `claude/ranking-trophy-icons-458526`) | 1.8.0 | done 2026-11-19 |
+| – | One token per NPC (streamer feedback, `claude/npc-token-scaling-4763c0`) | 1.8.0 | done 2026-11-19 |
+| WP-09 | Balancing after the first streams | 1.9.0 (proposal) | planned |
 
 ## Log
 

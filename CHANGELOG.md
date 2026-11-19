@@ -7,6 +7,8 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-11-19
+
 ### Added
 - The leaderboard shows a small trophy before ranks 1 to 3 — gold, silver
   and bronze. Drawn by the site itself (no emoji, no official asset),
@@ -17,12 +19,12 @@ tagged `vX.Y.Z` once its section is complete.
   attacks a third of the group per round on average (the remainder carried
   into the next rounds, e.g. 2, 1, 1 with four trainers) instead of
   ⌈N / 3⌉ every round, and boss HP per participant drops from 1.5 to 1.3.
-- The first win against an NPC gives 1 token for every NPC instead of a
-  staggered 1 (Eich) … 17 (Ash), on the streamer's request. Balances already
-  earned are not changed.
   On stream 182 boss fights up to 2026-11-18 won only 50.5 %, groups of four
   34 %; the simulator's new campaign mode (trainers own only what they
   caught) expects ≈ 75 % for every group size instead of 57 %.
+- The first win against an NPC gives 1 token for every NPC instead of a
+  staggered 1 (Eich) … 17 (Ash), on the streamer's request. Balances already
+  earned are not changed.
 - Going back in the browser returns to the same spot of the website: after
   scrolling down the list of fights, opening one and going back, the list is
   where it was instead of at the top. The same holds for the leaderboard,

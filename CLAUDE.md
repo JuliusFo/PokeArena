@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-11-11 · v1.7.1 released (profile pictures and chat colours on the leaderboard, coloured trainer name) · next WP-09 (→ 1.8.0) after a few streams
+Status: 2026-11-19 · v1.8.0 released (boss balancing from stream data, „Zurück“ keeps the scroll position, leaderboard trophies, HP before the hit, one token per NPC) · next WP-09 (→ 1.9.0, proposal) after a few streams
 
 ## 1. Where to find what
 
@@ -55,7 +55,8 @@ shows leaderboard, trainer pages and battle logs.
 | 1.6.2 | Thin black outline for the white „Schaden“ bar text | feat/damage-text-outline |
 | 1.7.0 | Website page „Statistik“: boss participations, PvP fights, bad-luck streaks, rarities, rivals, boss record; trainer page shows the Twitch profile picture, mirrored to R2; stylesheet cache busting | feat/statistics-page, feat/trainer-profile-image, fix/css-cache-busting |
 | 1.7.1 | Leaderboard shows small profile pictures and names in the chat colour; trainer page name in the chat colour | feat/leaderboard-profile-colours |
-| 1.8.0 | Balancing with real stream data | WP-09 |
+| 1.8.0 | Boss attacks a third of the group per round on average, boss HP 1.3; „Zurück“ keeps the scroll position; leaderboard trophies; fight log HP before and after a hit; one token per NPC | feat/boss-balancing, feat/back-keeps-scroll, claude/ranking-trophy-icons-458526, fix/battle-log-hp-before, claude/npc-token-scaling-4763c0 |
+| 1.9.0 | Balancing with real stream data (proposal: version not confirmed) | WP-09 |
 | 2.0.0 | Parked: website and overlay served from the bot's server (roadmap.md) | — |
 
 **Invariants — never weaken:**
@@ -193,6 +194,13 @@ PokeArena.slnx
 
 ## 9. Next
 
+1.8.0 is released (2026-11-19): boss balancing from 182 stream fights (`feat/boss-balancing`: the boss attacks a
+third of the group per round on average, boss HP per participant 1.3 — simulator part 4 expects ≈ 75 % group wins
+for every group size), „Zurück“ keeps the scroll position on the website (`feat/back-keeps-scroll`), trophies before
+ranks 1–3 on the leaderboard, the fight log shows a target's HP before and after a hit (`fix/battle-log-hp-before`)
+and every NPC gives one token for the first win (streamer feedback; earned balances stay, open question in
+roadmap.md). After updating the streamer clicks „Alles neu veröffentlichen“ once (fight log text). To watch on
+stream: boss win rates with the new rule.
 1.7.1 is released (2026-11-11, `feat/leaderboard-profile-colours`): the leaderboard shows the profile pictures small
 before the names and every name in the trainer's chat colour, the trainer page its heading in that colour (fight
 lists stay plain, backlog). After updating the streamer clicks „Alles neu veröffentlichen“ once; open test with the
@@ -224,7 +232,7 @@ boss pick uniform over distinct species and showed trainers in their Twitch chat
 colour in the fight log; 1.3.0 brought the
 „Neuigkeiten“ page (WP-10), 1.2.0 the fight page's end state, 1.1.0 R1 (fixes
 of the whole review 1.0.3, docs/review-1.0.3.md) and the boss lobby. Next:
-after a few streams WP-09 balancing (1.8.0)
+after a few streams WP-09 balancing (1.9.0, proposal)
 (`N = 4` dip, PvP loot preferring missing species, NPC difficulty; no runtime
 balancing editor). Parked for version 2: website and overlay served from the
 bot's server through a Cloudflare Tunnel instead of GitHub Pages + R2. Ideas

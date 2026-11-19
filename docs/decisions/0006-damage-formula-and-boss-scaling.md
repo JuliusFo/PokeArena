@@ -34,7 +34,7 @@ multiple boss targets with linear HP; target difficulty ≈ 75 %.
   `k = Damping` (default 50). Special is both special attack and special
   defense, as in Gen 1.
 - Boss HP = base HP × `HpFactor` × `BossHpPerParticipant` (1.8; 1.5 since the
-  addendum 2026-11-04; 1.3 since the addendum 2026-11-19, planned for 1.8.0)
+  addendum 2026-11-04; 1.3 since the addendum 2026-11-19, released in 1.8.0)
   × `N`.
 - The boss attacks `⌈N / BossTargetDivisor⌉` (3) distinct random living
   participants per round — `N / BossTargetDivisor` on average, the remainder
@@ -163,8 +163,7 @@ User decision („B2 mit 1.3“): the boss attacks `N / BossTargetDivisor`
 participants per round **on average** — the remainder carried over, rounded up
 first, `⌈r·N/d⌉ − ⌈(r−1)·N/d⌉` in round `r` with `d` = `BossTargetDivisor`
 (`BossBattle.TargetsInRound`) — instead of `⌈N/d⌉` every round, and
-`BossHpPerParticipant` goes from 1.5 to **1.3**. Planned for 1.8.0 (proposal,
-not confirmed).
+`BossHpPerParticipant` goes from 1.5 to **1.3**. Released in 1.8.0.
 
 Cause of the `N = 4` dip: boss HP grows linearly with `N`, but `⌈N/3⌉` hits
 1/2, 1/3, 1/2, 2/5, 1/3, 3/7 of the group per round for N = 2 … 7 — the
