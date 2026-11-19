@@ -29,7 +29,7 @@
         // Every history entry gets an id in history.state (next to Blazor's _index and userState, which stay as they
         // are); its last scroll position lives in memory and in sessionStorage (for a reload or a way back from
         // another site). After back/forward the position is applied again whenever the page grows, until the visitor
-        // scrolls, clicks or types, another page opens, or 15 s are over.
+        // scrolls, clicks or types, another page opens, or 15 s are over; an entry without a position opens at the top.
         (function () {
             if (!('scrollRestoration' in history) || !('ResizeObserver' in window)) return;
             history.scrollRestoration = 'manual';
@@ -51,23 +51,42 @@
             function restore() {
                 var id = entryId(false);
                 var y = id ? positions[id] : 0;
-                pending = y > 0 ? { id: id, y: y, until: Date.now() + 15000 } : null;
-                apply();
+                if (y > 0) {
+                    pending = { id: id, y: y, until: Date.now() + 15000 };
+                    apply();
+                } else {
+                    // With manual restoring nobody else resets the position on back/forward: without this a page that
+                    // was at the top would open where the page before it was scrolled (review feat/back-keeps-scroll).
+                    pending = null;
+                    scrollTo(0, 0);
+                }
+            }
+
+            // A restore runs until another entry is current or its time is over — checked on every use, not only on
+            // a resize, or an expired restore would keep blocking remember() (review feat/back-keeps-scroll).
+            function active() {
+                if (pending && (entryId(false) !== pending.id || Date.now() > pending.until)) pending = null;
+                return pending !== null;
             }
 
             function apply() {
-                if (!pending) return;
-                if (entryId(false) !== pending.id || Date.now() > pending.until) { pending = null; return; }
                 // Not done after the first success: right after popstate the old page may still be tall enough, and
                 // the new one shrinks to „Lädt …“ before its data arrives — every resize applies the position again.
-                if (document.documentElement.scrollHeight - innerHeight >= pending.y) scrollTo(0, pending.y);
+                // No check against the page height: a page that came back a few pixels shorter (a new fight, other
+                // line breaks, a mobile address bar) still ends as close as it can instead of at the top.
+                if (active()) scrollTo(0, pending.y);
             }
 
             // Also called on input and pagehide: a scroll event waits for the next frame, a click on a link does not.
             function remember() {
-                if (pending) return;
+                if (active()) return;
                 var id = entryId(true);
                 if (id) positions[id] = Math.round(scrollY);
+            }
+
+            function cancel() {
+                pending = null;
+                remember();
             }
 
             function save() {
@@ -77,14 +96,16 @@
                 try { sessionStorage.setItem(storageKey, JSON.stringify(positions)); } catch (e) { }
             }
 
-            addEventListener('scroll', function () {
-                if (pending && entryId(false) === pending.id) return; // our own scrolling, or the page still loading
-                pending = null;
-                remember();
-            }, { passive: true });
-            ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach(function (type) {
-                addEventListener(type, function () { pending = null; remember(); }, { passive: true, capture: true });
+            // While a restore is active the scrolling is ours, or the page is still loading.
+            addEventListener('scroll', remember, { passive: true });
+            // click: a link opened without mousedown (screen readers) still records the page it leaves.
+            ['touchstart', 'keydown', 'mousedown', 'pointerdown', 'click'].forEach(function (type) {
+                addEventListener(type, cancel, { passive: true, capture: true });
             });
+            // Only vertical wheel turns: a trackpad swipe back may send horizontal ones after its own popstate.
+            addEventListener('wheel', function (e) {
+                if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) cancel();
+            }, { passive: true, capture: true });
             addEventListener('popstate', restore);
             addEventListener('pagehide', save);
             document.addEventListener('visibilitychange', function () { if (document.hidden) save(); });
