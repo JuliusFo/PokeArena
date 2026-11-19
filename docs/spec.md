@@ -187,8 +187,9 @@ Used by boss, PvP and NPC fights.
 - **Determinism:** the RNG is injected; every battle stores its seed. The
   full log is still persisted verbatim (replaying a seed after a balancing
   change would yield a different outcome, so logs are data, not derived).
-- Log lines (German, owner and HP after the hit in brackets): `Runde 1` /
-  `Pikachu (Ash, HP 35) hat Arkani (Boss, HP 120) 40 Schaden zugefügt.`
+- Log lines (German, owner and HP in brackets — the attacker's current HP, the
+  target's HP before and after the hit): `Runde 1` /
+  `Pikachu (Ash, HP 35) hat Arkani (Boss, HP 160 → 120) 40 Schaden zugefügt.`
   plus ` Volltreffer!`, ` Sehr effektiv!` or ` Nicht sehr effektiv.` /
   `Arkani (Boss) wurde besiegt.` / `Misty schickt Karpador in den Kampf.`
 
@@ -400,7 +401,7 @@ same (ADR-0009).
 ³ Colours on the fight page (user decision 2026-11-10): in the „Kampfverlauf“
 a trainer's name („Anna“ in „Bisasam (Anna, HP 90)“) and the owner links in
 the fighter list show the trainer's Twitch chat colour; in a boss fight the
-boss's name („Relaxo“ in „Relaxo (Boss, HP 541)“, not the brackets — user
+boss's name („Relaxo“ in „Relaxo (Boss, HP 503)“, not the brackets — user
 decision 2026-11-10, replacing the whole label) shows the colour of its first
 type — the Pokémon is the element. „Volltreffer!“ is bold on a gold background (dark
 text, the same in both themes). Species and HP of trainers' Pokémon, NPCs and
