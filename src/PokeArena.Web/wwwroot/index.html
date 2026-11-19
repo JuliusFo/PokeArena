@@ -99,9 +99,16 @@
             // While a restore is active the scrolling is ours, or the page is still loading.
             addEventListener('scroll', remember, { passive: true });
             // click: a link opened without mousedown (screen readers) still records the page it leaves.
-            ['touchstart', 'keydown', 'mousedown', 'pointerdown', 'click'].forEach(function (type) {
+            ['touchstart', 'keydown', 'mousedown', 'pointerdown'].forEach(function (type) {
                 addEventListener(type, cancel, { passive: true, capture: true });
             });
+            // After the click Blazor has pushed the new entry: give it its starting position. A link to the same path
+            // gets no scroll from Blazor, so without this a forward to that entry would go to the top; on a new path
+            // Blazor's reset to the top overwrites it with 0 (review feat/back-keeps-scroll).
+            addEventListener('click', function () {
+                cancel();
+                setTimeout(remember, 0);
+            }, { passive: true, capture: true });
             // Only vertical wheel turns: a trackpad swipe back may send horizontal ones after its own popstate.
             addEventListener('wheel', function (e) {
                 if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) cancel();
