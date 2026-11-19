@@ -279,8 +279,9 @@ Used by boss, PvP and NPC fights.
 - Reward (E22, user decisions 2026-10-21): only the **first win** against an
   NPC brings a reward —
   - its badge,
-  - its tokens, staggered per NPC (`tokens` in `npcs.json`; default rising
-    with the threshold: Eich 1 … Ash 17),
+  - its tokens (`tokens` in `npcs.json`, configurable per NPC): 1 for every
+    NPC (user decision 2026-11-19 after the streamer's feedback; until 1.7.x
+    staggered Eich 1 … Ash 17),
   - one specimen of the NPC's team: a random species the trainer does not own
     yet, or a random team species if they own all six. It counts for
     achievements like a catch.

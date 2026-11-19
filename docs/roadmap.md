@@ -136,6 +136,12 @@ Demo: `!challenge Eich` playable.
   trainer lacks. (Briefly decided as tokens for every win, corrected the same
   day.) Both cooldowns stay as specified. Redeeming tokens is not part of
   WP-05 (backlog).
+- User decision (2026-11-19, streamer feedback): every NPC gives 1 token for
+  the first win, no staggering any more (`npcs.json`, → 1.8.0). Balances
+  already earned stay as they are.
+  Open question: should trainers who already beat a higher NPC keep the extra
+  tokens (current behaviour) or be corrected down? Matters only once tokens
+  can be redeemed.
 - Plan (agreed 2026-10-21, ≈ 3 days): cooldowns in the `Cooldown` table
   (key `npc:<trainer>:<npc>`); `BattleKind.Npc` with `Battle.NpcId`; new
   `NpcBadge` table (first win, permanent); `Trainer.Tokens` as a plain
