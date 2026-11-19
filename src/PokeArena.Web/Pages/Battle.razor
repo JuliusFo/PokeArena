@@ -78,12 +78,14 @@
                            fill up to the HP after the hit, the lost piece hatched up to the HP before it. *@
                         var hit = line.Hit!;
                         var hpText = $"{hit.Before} → {hit.After}";
+                        var barClass = "hp-bar hit-bar" + (hit.After * 4 <= target.MaxHp ? " low" : "") + (hit.Before == hit.After ? " no-loss" : "");
                         <span class="hit">
                             <span class="hit-text">@Parts(battle, line, withoutTargetHp: true)</span>
-                            <span class="hp-bar hit-bar@(hit.After * 4 <= target.MaxHp ? " low" : "")"
+                            @* „HP“ for screen readers and a copied line, which would otherwise read „… zugefügt.80 → 22“ (review). *@
+                            <span class="@barClass"
                                   style="--hp: @Percent(hit.After, target.MaxHp)%; --before: @Percent(hit.Before, target.MaxHp)%"
                                   title="HP @hpText von @target.MaxHp">
-                                <span class="hp-text">@hpText</span>
+                                <span class="hp-text"><span class="visually-hidden">@(" HP ")</span>@hpText</span>
                                 <span class="hp-text on-fill" aria-hidden="true">@hpText</span>
                             </span>
                         </span>

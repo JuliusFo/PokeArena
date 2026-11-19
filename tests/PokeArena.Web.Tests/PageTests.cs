@@ -332,7 +332,8 @@ public class PageTests : BunitContext
     [Fact]
     public void A_hit_shows_the_targets_hp_as_a_bar_instead_of_in_the_sentence()
     {
-        // Two hits: the first leaves 22 of 80, the second is more than the 22 left (the bar loses 22, the text keeps 31).
+        // The first hit leaves 22 of 80, the second is more than the 22 left (the bar loses 22, the text keeps 31), the
+        // third took nothing (no minimum-width lost piece then).
         Put(
             SitePaths.Battle(8),
             BattlePage(8) with
@@ -346,25 +347,32 @@ public class PageTests : BunitContext
                 [
                     "Bisasam (Ash, HP 90) hat Raupy (Misty, HP 80 → 22) 58 Schaden zugefügt. Sehr effektiv!",
                     "Bisasam (Ash, HP 90) hat Raupy (Misty, HP 22 → 0) 31 Schaden zugefügt.",
+                    "Bisasam (Ash, HP 90) hat Raupy (Misty, HP 80 → 80) 0 Schaden zugefügt.",
                 ],
-                Log = [Hit(80, 22, " 58 Schaden zugefügt. Sehr effektiv!"), Hit(22, 0, " 31 Schaden zugefügt.")],
+                Log = [Hit(80, 22, " 58 Schaden zugefügt. Sehr effektiv!"), Hit(22, 0, " 31 Schaden zugefügt."), Hit(80, 80, " 0 Schaden zugefügt.")],
             },
             SiteJson.Default.BattlePage);
 
         var cut = Render<Battle>(p => p.Add(b => b.Id, 8));
 
-        cut.WaitForAssertion(() => Assert.Equal(2, cut.FindAll(".log li").Count));
+        cut.WaitForAssertion(() => Assert.Equal(3, cut.FindAll(".log li").Count));
         Assert.Equal(
-            ["Bisasam (Ash, HP 90) hat Raupy (Misty) 58 Schaden zugefügt. Sehr effektiv!", "Bisasam (Ash, HP 90) hat Raupy (Misty) 31 Schaden zugefügt."],
+            [
+                "Bisasam (Ash, HP 90) hat Raupy (Misty) 58 Schaden zugefügt. Sehr effektiv!",
+                "Bisasam (Ash, HP 90) hat Raupy (Misty) 31 Schaden zugefügt.",
+                "Bisasam (Ash, HP 90) hat Raupy (Misty) 0 Schaden zugefügt.",
+            ],
             cut.FindAll(".log .hit-text").Select(t => t.TextContent));
         var bars = cut.FindAll(".log .hit-bar");
         Assert.Equal(
             [
-                ("hp-bar hit-bar", "--hp: 27.5%; --before: 100%", "HP 80 → 22 von 80", "80 → 22"),
-                ("hp-bar hit-bar low", "--hp: 0%; --before: 27.5%", "HP 22 → 0 von 80", "22 → 0"),
+                ("hp-bar hit-bar", "--hp: 27.5%; --before: 100%", "HP 80 → 22 von 80", " HP 80 → 22"),
+                ("hp-bar hit-bar low", "--hp: 0%; --before: 27.5%", "HP 22 → 0 von 80", " HP 22 → 0"),
+                ("hp-bar hit-bar no-loss", "--hp: 100%; --before: 100%", "HP 80 → 80 von 80", " HP 80 → 80"),
             ],
             bars.Select(b => (b.ClassName, b.GetAttribute("style"), b.GetAttribute("title"), b.QuerySelector(".hp-text")!.TextContent)));
-        // The bar's copy for the fill stays hidden from screen readers, like on the fight cards.
+        // „HP“ only for screen readers and a copied line; the bar's copy for the fill stays hidden from them, like on the fight cards.
+        Assert.All(bars, b => Assert.Equal(" HP ", b.QuerySelector(".hp-text .visually-hidden")!.TextContent));
         Assert.All(bars, b => Assert.Equal("true", b.QuerySelector(".hp-text.on-fill")!.GetAttribute("aria-hidden")));
 
         static LogLine Hit(int before, int after, string outcome) => new(

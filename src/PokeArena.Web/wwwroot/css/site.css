@@ -711,25 +711,45 @@ h1.tinted {
   gap: 12px;
 }
 
+/* A 25-character name without a space would otherwise run over the bar on a phone (review). */
 .log .hit-text {
   flex: 1 1 0;
   min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 /*
   The fight cards' .hp-bar with the lost piece: fill up to --hp (after the hit), hatched red from there to --before,
-  the empty track after that. Narrower than on the cards — „999 → 999“ is shorter than „999 / 999 HP“. The text over
-  the hatching stays --text (≥ 8 : 1 on both stripe colours, light and dark).
+  the empty track after that. The lost piece is at least 4 px wide, or a small hit on a boss with 1000+ HP would be a
+  1 px sliver nobody sees (user decision „mindestbreite“, review); a hit that took nothing (.no-loss) shows none.
+  11ch fits „2028 → 1988“ of a big boss with room for wider system fonts. The text over the hatching stays --text
+  (≥ 8 : 1 on both stripe colours, light and dark).
 */
 .log .hit-bar {
   --lost-a: #f4b4a4;
   --lost-b: #fbd9d0;
+  --lost-min: 4px;
+  --lost-end: max(var(--before), calc(var(--hp) + var(--lost-min)));
   flex: none;
-  width: calc(10ch + 16px);
+  width: calc(11ch + 16px);
   background:
-    linear-gradient(to right, var(--hp-color) var(--hp), transparent var(--hp) var(--before), var(--border) var(--before)),
+    linear-gradient(to right, var(--hp-color) var(--hp), transparent var(--hp) var(--lost-end), var(--border) var(--lost-end)),
     repeating-linear-gradient(135deg, var(--lost-a) 0 3px, var(--lost-b) 3px 6px);
   font-variant-numeric: tabular-nums;
+}
+
+.log .hit-bar.no-loss {
+  --lost-min: 0px;
+}
+
+/* Text only screen readers (and a copied line) get: the bar's „HP“. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 @media (prefers-color-scheme: dark) {
