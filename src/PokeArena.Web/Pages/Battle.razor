@@ -72,24 +72,25 @@
             @foreach (var line in log)
             {
                 <li class="@(line.IsRound ? "round" : null)">
-                    @foreach (var part in line.Parts)
+                    @if (TargetOf(battle, line) is { } target)
                     {
-                        // Text may be missing in a file that is not ours (no null check in SiteJson): plain text then.
-                        if (part.IsCritical && (part.Text ?? "").TrimStart() is { Length: > 0 } word)
-                        {
-                            // The leading space stays outside the gold background.
-                            var space = part.Text![..^word.Length];
-                            @space
-                            <strong class="critical">@word</strong>
-                        }
-                        else if (FighterOf(battle, part) is { } fighter && Tint.Style(Tint.Of(battle, part, fighter)) is { } tint)
-                        {
-                            <span class="tinted" style="@tint">@part.Text</span>
-                        }
-                        else
-                        {
-                            @part.Text
-                        }
+                        @* The target's HP move from the sentence into a bar on the right (claude/hp-balken-kampf-log-mockup-de3cfe): the
+                           fill up to the HP after the hit, the lost piece hatched up to the HP before it. *@
+                        var hit = line.Hit!;
+                        var hpText = $"{hit.Before} → {hit.After}";
+                        <span class="hit">
+                            <span class="hit-text">@Parts(battle, line, withoutTargetHp: true)</span>
+                            <span class="hp-bar hit-bar@(hit.After * 4 <= target.MaxHp ? " low" : "")"
+                                  style="--hp: @Percent(hit.After, target.MaxHp)%; --before: @Percent(hit.Before, target.MaxHp)%"
+                                  title="HP @hpText von @target.MaxHp">
+                                <span class="hp-text">@hpText</span>
+                                <span class="hp-text on-fill" aria-hidden="true">@hpText</span>
+                            </span>
+                        </span>
+                    }
+                    else
+                    {
+                        @Parts(battle, line, withoutTargetHp: false)
                     }
                 </li>
             }
@@ -160,8 +161,51 @@ else
             ? battle.Sides[side].Fighters[index]
             : null;
 
-    private static string HpPercent(BattleFighter fighter) =>
-        (100.0 * (fighter.HpLeft ?? 0) / Math.Max(1, fighter.MaxHp)).ToString("0.#", CultureInfo.InvariantCulture);
+    private static string HpPercent(BattleFighter fighter) => Percent(fighter.HpLeft ?? 0, fighter.MaxHp);
+
+    private static string Percent(int hp, int max) =>
+        (100.0 * Math.Clamp(hp, 0, Math.Max(1, max)) / Math.Max(1, max)).ToString("0.#", CultureInfo.InvariantCulture);
+
+    /// <summary>
+    /// The fighter a hit's bar belongs to, or null: no hit (other lines, older files), or values the page cannot draw
+    /// (an index or HP that is not ours) — the line then shows its full text as before.
+    /// </summary>
+    private static BattleFighter? TargetOf(BattlePage battle, LogLine line) =>
+        line.Hit is { } hit && hit.Side >= 0 && hit.Side < battle.Sides.Count &&
+        hit.Fighter >= 0 && hit.Fighter < battle.Sides[hit.Side].Fighters.Count &&
+        battle.Sides[hit.Side].Fighters[hit.Fighter] is { MaxHp: > 0 } fighter &&
+        hit.After >= 0 && hit.After <= hit.Before && hit.Before <= fighter.MaxHp
+            ? fighter
+            : null;
+
+    /// <summary>A log line's parts: names in their colour, „Volltreffer!“ on gold, the target's HP left out where a bar shows them.</summary>
+    private static RenderFragment Parts(BattlePage battle, LogLine line, bool withoutTargetHp) => __builder =>
+    {
+        foreach (var part in line.Parts)
+        {
+            if (withoutTargetHp && part.IsTargetHp)
+            {
+                continue;
+            }
+
+            // Text may be missing in a file that is not ours (no null check in SiteJson): plain text then.
+            if (part.IsCritical && (part.Text ?? "").TrimStart() is { Length: > 0 } word)
+            {
+                // The leading space stays outside the gold background.
+                var space = part.Text![..^word.Length];
+                @space
+                <strong class="critical">@word</strong>
+            }
+            else if (FighterOf(battle, part) is { } fighter && Tint.Style(Tint.Of(battle, part, fighter)) is { } tint)
+            {
+                <span class="tinted" style="@tint">@part.Text</span>
+            }
+            else
+            {
+                @part.Text
+            }
+        }
+    };
 
     protected override async Task OnParametersSetAsync()
     {

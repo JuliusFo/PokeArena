@@ -330,6 +330,84 @@ public class PageTests : BunitContext
     }
 
     [Fact]
+    public void A_hit_shows_the_targets_hp_as_a_bar_instead_of_in_the_sentence()
+    {
+        // Two hits: the first leaves 22 of 80, the second is more than the 22 left (the bar loses 22, the text keeps 31).
+        Put(
+            SitePaths.Battle(8),
+            BattlePage(8) with
+            {
+                Sides =
+                [
+                    new BattleSide("Ash", true, [new BattleFighter(Bisasam, "Ash", "11", 90, Color: "#FFFF00")]),
+                    new BattleSide("Misty", false, [new BattleFighter(Raupy, "Misty", "12", 80)]),
+                ],
+                Lines =
+                [
+                    "Bisasam (Ash, HP 90) hat Raupy (Misty, HP 80 → 22) 58 Schaden zugefügt. Sehr effektiv!",
+                    "Bisasam (Ash, HP 90) hat Raupy (Misty, HP 22 → 0) 31 Schaden zugefügt.",
+                ],
+                Log = [Hit(80, 22, " 58 Schaden zugefügt. Sehr effektiv!"), Hit(22, 0, " 31 Schaden zugefügt.")],
+            },
+            SiteJson.Default.BattlePage);
+
+        var cut = Render<Battle>(p => p.Add(b => b.Id, 8));
+
+        cut.WaitForAssertion(() => Assert.Equal(2, cut.FindAll(".log li").Count));
+        Assert.Equal(
+            ["Bisasam (Ash, HP 90) hat Raupy (Misty) 58 Schaden zugefügt. Sehr effektiv!", "Bisasam (Ash, HP 90) hat Raupy (Misty) 31 Schaden zugefügt."],
+            cut.FindAll(".log .hit-text").Select(t => t.TextContent));
+        var bars = cut.FindAll(".log .hit-bar");
+        Assert.Equal(
+            [
+                ("hp-bar hit-bar", "--hp: 27.5%; --before: 100%", "HP 80 → 22 von 80", "80 → 22"),
+                ("hp-bar hit-bar low", "--hp: 0%; --before: 27.5%", "HP 22 → 0 von 80", "22 → 0"),
+            ],
+            bars.Select(b => (b.ClassName, b.GetAttribute("style"), b.GetAttribute("title"), b.QuerySelector(".hp-text")!.TextContent)));
+        // The bar's copy for the fill stays hidden from screen readers, like on the fight cards.
+        Assert.All(bars, b => Assert.Equal("true", b.QuerySelector(".hp-text.on-fill")!.GetAttribute("aria-hidden")));
+
+        static LogLine Hit(int before, int after, string outcome) => new(
+            [
+                new LogPart("Bisasam", 0, 0, IsSpecies: true), new LogPart(" (", 0, 0), new LogPart("Ash", 0, 0, IsOwner: true), new LogPart(", HP 90)", 0, 0), new LogPart(" hat "),
+                new LogPart("Raupy", 1, 0, IsSpecies: true), new LogPart(" (", 1, 0), new LogPart("Misty", 1, 0, IsOwner: true),
+                new LogPart($", HP {before} → {after}", 1, 0, IsTargetHp: true), new LogPart(")", 1, 0), new LogPart(outcome),
+            ],
+            Hit: new LogHit(1, 0, before, after));
+    }
+
+    [Theory]
+    [InlineData(1, 5, 30, 10)] // a fighter the page does not have
+    [InlineData(1, 0, 90, 10)] // more HP before than the target has
+    [InlineData(1, 0, 10, 20)] // more HP after than before
+    public void A_hit_the_page_cannot_draw_keeps_its_full_sentence(int side, int fighter, int before, int after)
+    {
+        Put(
+            SitePaths.Battle(9),
+            BattlePage(9) with
+            {
+                Sides =
+                [
+                    new BattleSide("Ash", true, [new BattleFighter(Bisasam, "Ash", "11", 90)]),
+                    new BattleSide("Misty", false, [new BattleFighter(Raupy, "Misty", "12", 80)]),
+                ],
+                Lines = ["Raupy (Misty, HP 30 → 10) 20 Schaden."],
+                Log =
+                [
+                    new LogLine(
+                        [new LogPart("Raupy", 1, 0, IsSpecies: true), new LogPart(" (Misty"), new LogPart(", HP 30 → 10", 1, 0, IsTargetHp: true), new LogPart(") 20 Schaden.")],
+                        Hit: new LogHit(side, fighter, before, after)),
+                ],
+            },
+            SiteJson.Default.BattlePage);
+
+        var cut = Render<Battle>(p => p.Add(b => b.Id, 9));
+
+        cut.WaitForAssertion(() => Assert.Equal("Raupy (Misty, HP 30 → 10) 20 Schaden.", cut.Find(".log li").TextContent));
+        Assert.Empty(cut.FindAll(".log .hit-bar"));
+    }
+
+    [Fact]
     public void A_critical_hit_part_without_text_renders_as_plain_text()
     {
         _host.Files[SitePaths.Battle(7)] = """

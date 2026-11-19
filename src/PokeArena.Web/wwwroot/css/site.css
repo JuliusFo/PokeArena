@@ -701,6 +701,44 @@ h1.tinted {
   font-weight: 700;
 }
 
+/*
+  A hit in the log (claude/hp-balken-kampf-log-mockup-de3cfe, user pick „B“ from the mockups): the sentence on the left, the target's HP
+  as a bar on the right, so the bars of all hits line up. The li stays a list item (line numbers); the row is inside.
+*/
+.log .hit {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.log .hit-text {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/*
+  The fight cards' .hp-bar with the lost piece: fill up to --hp (after the hit), hatched red from there to --before,
+  the empty track after that. Narrower than on the cards — „999 → 999“ is shorter than „999 / 999 HP“. The text over
+  the hatching stays --text (≥ 8 : 1 on both stripe colours, light and dark).
+*/
+.log .hit-bar {
+  --lost-a: #f4b4a4;
+  --lost-b: #fbd9d0;
+  flex: none;
+  width: calc(10ch + 16px);
+  background:
+    linear-gradient(to right, var(--hp-color) var(--hp), transparent var(--hp) var(--before), var(--border) var(--before)),
+    repeating-linear-gradient(135deg, var(--lost-a) 0 3px, var(--lost-b) 3px 6px);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-color-scheme: dark) {
+  .log .hit-bar {
+    --lost-a: #7a2c1c;
+    --lost-b: #4e2219;
+  }
+}
+
 /* Trainer page */
 
 .stats {

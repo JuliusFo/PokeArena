@@ -59,6 +59,9 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   decision variant „B“ (fix/hp-bar-dark-mode). The numbers are two stacked copies, each clipped to its part
   (`clip-path`, not overlapping, or the dark copy fringes the white one); never `background-clip: text` — it loses
   subpixel antialiasing and the numbers looked thin and grey (fix/hp-text-crisp).
+  The fight log reuses it as `.hit-bar` (claude/hp-balken-kampf-log-mockup-de3cfe, mockup „B“): a second edge at `--before`, the
+  lost piece hatched under the track. Parts marked `IsTargetHp` are left out only where `TargetOf` accepts the hit;
+  anything it rejects (older files, foreign values) keeps the full sentence.
 - „Schaden“ box (`Shared/DamageBox.razor`, logic in `Services/DamageMeter.cs`, feat/damage-meter): a bar has the
   colour of the trainer's name (`Tint.Darkened`, the colour of `Tint.Style`; a test keeps them equal; yellow turns
   olive) and white text over the fill like the HP numbers, in both themes like the HP bar's dark fills — user requests
