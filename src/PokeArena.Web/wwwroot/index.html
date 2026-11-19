@@ -23,6 +23,75 @@
         Da ist etwas schiefgelaufen.
         <a href="." class="reload">Neu laden</a>
     </div>
+    <script>
+        // „Zurück“ keeps the scroll position (feat/back-keeps-scroll). Blazor renders a page anew on back/forward and
+        // the page loads its data first, so the browser's own restoring finds only „Lädt …“ and ends at the top.
+        // Every history entry gets an id in history.state (next to Blazor's _index and userState, which stay as they
+        // are); its last scroll position lives in memory and in sessionStorage (for a reload or a way back from
+        // another site). After back/forward the position is applied again whenever the page grows, until the visitor
+        // scrolls, clicks or types, another page opens, or 15 s are over.
+        (function () {
+            if (!('scrollRestoration' in history) || !('ResizeObserver' in window)) return;
+            history.scrollRestoration = 'manual';
+            var storageKey = 'pokearena-scroll';
+            var maxEntries = 100;
+            var positions = {};
+            try { positions = JSON.parse(sessionStorage.getItem(storageKey)) || {}; } catch (e) { }
+            var pending = null; // { id, y, until }
+
+            function entryId(create) {
+                var state = history.state;
+                if (state && typeof state.scrollId === 'string') return state.scrollId;
+                if (!create || (state !== null && typeof state !== 'object')) return null;
+                var id = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+                try { history.replaceState(Object.assign({}, state, { scrollId: id }), ''); } catch (e) { return null; }
+                return id;
+            }
+
+            function restore() {
+                var id = entryId(false);
+                var y = id ? positions[id] : 0;
+                pending = y > 0 ? { id: id, y: y, until: Date.now() + 15000 } : null;
+                apply();
+            }
+
+            function apply() {
+                if (!pending) return;
+                if (entryId(false) !== pending.id || Date.now() > pending.until) { pending = null; return; }
+                // Not done after the first success: right after popstate the old page may still be tall enough, and
+                // the new one shrinks to „Lädt …“ before its data arrives — every resize applies the position again.
+                if (document.documentElement.scrollHeight - innerHeight >= pending.y) scrollTo(0, pending.y);
+            }
+
+            // Also called on input and pagehide: a scroll event waits for the next frame, a click on a link does not.
+            function remember() {
+                if (pending) return;
+                var id = entryId(true);
+                if (id) positions[id] = Math.round(scrollY);
+            }
+
+            function save() {
+                remember();
+                var ids = Object.keys(positions);
+                for (var i = 0; i < ids.length - maxEntries; i++) delete positions[ids[i]];
+                try { sessionStorage.setItem(storageKey, JSON.stringify(positions)); } catch (e) { }
+            }
+
+            addEventListener('scroll', function () {
+                if (pending && entryId(false) === pending.id) return; // our own scrolling, or the page still loading
+                pending = null;
+                remember();
+            }, { passive: true });
+            ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach(function (type) {
+                addEventListener(type, function () { pending = null; remember(); }, { passive: true, capture: true });
+            });
+            addEventListener('popstate', restore);
+            addEventListener('pagehide', save);
+            document.addEventListener('visibilitychange', function () { if (document.hidden) save(); });
+            new ResizeObserver(apply).observe(document.body);
+            restore();
+        })();
+    </script>
     <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
 </body>
 
