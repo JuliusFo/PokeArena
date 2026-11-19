@@ -998,6 +998,19 @@ in [roadmap.md](roadmap.md).
 - Deliberately not done (→ roadmap WP-09): a boss HP that follows the boss's
   strength; PvP loot and NPC difficulty.
 
+### Leaderboard trophies — user request (2026-11-19, branch claude/ranking-trophy-icons-458526)
+- Built: `Shared/Trophy.razor`, an 18 px inline SVG (cup, handles, stem,
+  base) before the rank number of ranks 1–3 on the leaderboard, gold, silver
+  and bronze through CSS custom properties (`.trophy.rank-N`), each with a
+  darker edge so silver stays visible on white; same colours in both themes,
+  `aria-hidden` (the number carries the rank). Shared ranks share the trophy.
+  bUnit test (ranks 1, 2, 2, 3, 4), CHANGELOG, „Neuigkeiten“.
+- User decisions: —
+- Addenda: —
+- Pitfalls: no emoji — 🏆/🥇 render differently per system and only the gold
+  cup exists as a trophy emoji.
+- Deliberately not done (→ backlog): —
+
 Template per entry:
 
 ```
