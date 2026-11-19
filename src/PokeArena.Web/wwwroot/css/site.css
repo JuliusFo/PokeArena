@@ -246,7 +246,8 @@ h1.tinted {
 
 /*
   Trophies before ranks 1–3 (Shared/Trophy.razor): the same metal colours in both themes, each with a darker edge so
-  silver does not vanish on white. Decorative — the rank number carries the information.
+  silver does not vanish on white; in the dark theme the handles take the metal. Decorative — the rank number
+  carries the information.
 */
 .trophy {
   width: 18px;
@@ -282,6 +283,13 @@ h1.tinted {
 .trophy.rank-3 {
   --metal: #cd7f3a;
   --metal-edge: #7a4519;
+}
+
+/* The handles are only a stroke: the dark edges nearly vanish on the dark surface (bronze ≈ 2 : 1), the metal does not. */
+@media (prefers-color-scheme: dark) {
+  .trophy .handles {
+    stroke: var(--metal);
+  }
 }
 
 .table tbody tr:last-child td {
