@@ -19,7 +19,9 @@
   (`source_broadcaster_user_id`). Some clients append U+E0000 to repeated messages; `ParsedCommand` strips it.
 - Timers in async loops: `Task.Delay(delay, timeProvider, ct)` and `new CancellationTokenSource(timeout,
   timeProvider)`, so tests drive them with `FakeTimeProvider.Advance`. The overloads without a `TimeProvider`
-  (and `Stopwatch`, `CancelAfter`) break the build since review 1.0.3.
+  (and `Stopwatch`, `CancelAfter`) break the build since review 1.0.3. A test that advances the clock after a loop
+  handled something must first wait until the loop armed its next timer (`TimerCountingTimeProvider.ActiveTimers`):
+  advancing earlier skips the timer and the test hangs now and then (fix/flaky-keepalive-test).
 - Downloads with `HttpCompletionOption.ResponseHeadersRead`: `HttpClient.Timeout` ends with the headers — bound the
   body with a `TimeProvider` token. Never log URLs that can carry a login; name the trainer by id
   (review feat/trainer-profile-image).

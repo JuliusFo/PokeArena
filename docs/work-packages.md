@@ -36,6 +36,7 @@ in [roadmap.md](roadmap.md).
 | – | Profile picture on the trainer page (user idea, `feat/trainer-profile-image`) | 1.7.0 | done 2026-11-11 |
 | – | Leaderboard pictures and chat colours (user request, `feat/leaderboard-profile-colours`) | 1.7.1 | done 2026-11-11 |
 | – | Fight log: HP before the hit (viewer feedback, `fix/battle-log-hp-before`) | 1.7.2 (proposal) | done 2026-11-18 |
+| – | Flaky EventSub keepalive test (found in a code review, `fix/flaky-keepalive-test`) | – (tests only) | done 2026-11-19 |
 | – | „Zurück“ keeps the scroll position on the website (streamer feedback, `feat/back-keeps-scroll`) | 1.7.2 (proposal) | done 2026-11-19 |
 | WP-09 | Balancing after the first streams | 1.8.0 | planned |
 
@@ -900,6 +901,21 @@ in [roadmap.md](roadmap.md).
   difference visible.
 - Deliberately not done (→ backlog): HP bars per line, shorter lines, duel
   sections, effectiveness badges, boss log filter.
+
+### Flaky EventSub keepalive test — code review finding (2026-11-19, branch fix/flaky-keepalive-test)
+- Built: `TimerCountingTimeProvider` (tests, a `FakeTimeProvider` that counts
+  timers not yet disposed); `Missing_keepalive_ends_the_session_as_connection_lost`
+  waits before each `Advance` until the session armed its next keepalive wait.
+  Test code only — no CHANGELOG, no „Neuigkeiten“, no release needed.
+- Cause: the session creates its keepalive timer only after the handler
+  returned. The test saw the handler's text, advanced the clock before the new
+  timer existed, the timer then started at the later time and never fired —
+  `TimeoutException` after 5 s in roughly 2 of 35 Core runs (reviewer of
+  fix/battle-log-hp-before). Reproduced every time with a 200 ms delay in the
+  test handler; with the fix the class passes with that delay, the test 150
+  times on its own and the whole Core suite 40 times in a row.
+- User decisions: fixed in this session („Do this task here“).
+- Pitfalls: the rule went to `src/PokeArena.Core/CLAUDE.md` (timers bullet).
 
 ### „Zurück“ keeps the scroll position — streamer feedback (2026-11-19, branch feat/back-keeps-scroll)
 - Built: an inline script in `wwwroot/index.html` (before Blazor). Cause: on
