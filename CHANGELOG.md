@@ -7,6 +7,8 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+## [1.8.1] - 2026-11-19
+
 ### Changed
 - The fight page's „Kampfverlauf“ shows the hit Pokémon's HP as a small bar
   to the right of every hit: filled up to the HP after the hit, the piece the

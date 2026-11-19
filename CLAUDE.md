@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-11-19 · v1.8.0 released (boss balancing from stream data, „Zurück“ keeps the scroll position, leaderboard trophies, HP before the hit, one token per NPC) · 1.8.1 (proposal) built: HP bar per hit in the fight log, PR open · next WP-09 (→ 1.9.0, proposal) after a few streams
+Status: 2026-11-19 · v1.8.1 released (HP bar per hit in the fight log; 1.8.0: boss balancing from stream data, „Zurück“ keeps the scroll position, leaderboard trophies, HP before the hit, one token per NPC) · next WP-09 (→ 1.9.0, proposal) after a few streams
 
 ## 1. Where to find what
 
@@ -56,7 +56,7 @@ shows leaderboard, trainer pages and battle logs.
 | 1.7.0 | Website page „Statistik“: boss participations, PvP fights, bad-luck streaks, rarities, rivals, boss record; trainer page shows the Twitch profile picture, mirrored to R2; stylesheet cache busting | feat/statistics-page, feat/trainer-profile-image, fix/css-cache-busting |
 | 1.7.1 | Leaderboard shows small profile pictures and names in the chat colour; trainer page name in the chat colour | feat/leaderboard-profile-colours |
 | 1.8.0 | Boss attacks a third of the group per round on average, boss HP 1.3; „Zurück“ keeps the scroll position; leaderboard trophies; fight log HP before and after a hit; one token per NPC | feat/boss-balancing, feat/back-keeps-scroll, claude/ranking-trophy-icons-458526, fix/battle-log-hp-before, claude/npc-token-scaling-4763c0 |
-| 1.8.1 | Fight log: HP bar per hit, the target's HP move from the sentence into it (proposal: version not confirmed) | claude/hp-balken-kampf-log-mockup-de3cfe |
+| 1.8.1 | Fight log: HP bar per hit, the target's HP move from the sentence into it | claude/hp-balken-kampf-log-mockup-de3cfe |
 | 1.9.0 | Balancing with real stream data (proposal: version not confirmed) | WP-09 |
 | 2.0.0 | Parked: website and overlay served from the bot's server (roadmap.md) | — |
 
@@ -195,7 +195,7 @@ PokeArena.slnx
 
 ## 9. Next
 
-1.8.1 (proposal) is built (`claude/hp-balken-kampf-log-mockup-de3cfe`): every hit in the fight log shows the target's
+1.8.1 is released (2026-11-19, `claude/hp-balken-kampf-log-mockup-de3cfe`): every hit in the fight log shows the target's
 HP as a small bar on the right (mockup „B“); after updating the streamer clicks „Alles neu veröffentlichen“ once.
 1.8.0 is released (2026-11-19): boss balancing from 182 stream fights (`feat/boss-balancing`: the boss attacks a
 third of the group per round on average, boss HP per participant 1.3 — simulator part 4 expects ≈ 75 % group wins

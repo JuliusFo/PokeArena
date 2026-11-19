@@ -41,7 +41,7 @@ in [roadmap.md](roadmap.md).
 | – | Boss targets and HP from stream data (user request, `feat/boss-balancing`) | 1.8.0 | done 2026-11-19 |
 | – | Leaderboard trophies (user request, `claude/ranking-trophy-icons-458526`) | 1.8.0 | done 2026-11-19 |
 | – | One token per NPC (streamer feedback, `claude/npc-token-scaling-4763c0`) | 1.8.0 | done 2026-11-19 |
-| – | HP bar per hit in the fight log (user pick from the backlog, `claude/hp-balken-kampf-log-mockup-de3cfe`) | 1.8.1 (proposal) | done 2026-11-19 |
+| – | HP bar per hit in the fight log (user pick from the backlog, `claude/hp-balken-kampf-log-mockup-de3cfe`) | 1.8.1 | done 2026-11-19 |
 | WP-09 | Balancing after the first streams | 1.9.0 (proposal) | planned |
 
 ## Log
@@ -1060,8 +1060,9 @@ in [roadmap.md](roadmap.md).
   and „C“ (B plus the other backlog ideas); „Ja, loslegen“ on the plan;
   code review: „Alle, 3 mindestenbreite“ — all seven findings fixed, the lost
   piece gets a minimum width (details in the PR).
-- Addenda: version 1.8.1 and working on the session branch instead of
-  `feat/…` are proposals (not confirmed).
+- Addenda: version 1.8.1 confirmed at `/release` (user pick, 2026-11-19);
+  working on the session branch instead of `feat/…` is a proposal (not
+  confirmed).
 - Pitfalls: Core's hit record (`HitTarget`, log indexes) must not be called
   `LogHit` like the Contracts one (page positions), or `SiteGenerator` sees an
   ambiguous name. „→“ is written as `\u2192` in the generated JSON — tests must
