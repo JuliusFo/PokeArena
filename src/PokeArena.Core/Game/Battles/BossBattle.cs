@@ -12,8 +12,8 @@ public sealed record BossBattleResult(
 
 /// <summary>
 /// The group fight against a boss (spec §4). Per round all living participants hit the boss once in random order;
-/// then the boss hits ⌈N / BossTargetDivisor⌉ distinct random living participants (all, if fewer are left). N is
-/// the participant count at the start. A fainted participant stays out.
+/// then the boss hits <see cref="TargetsInRound"/> distinct random living participants (all, if fewer are left) —
+/// N / BossTargetDivisor on average, N being the participant count at the start. A fainted participant stays out.
 /// </summary>
 public sealed class BossBattle(DamageCalculator damage)
 {
@@ -26,7 +26,6 @@ public sealed class BossBattle(DamageCalculator damage)
 
         var recorder = new BattleRecorder([.. party.Select(p => (p, 0)), (boss, 1)]);
         var bossIndex = party.Count;
-        var targetsPerRound = (party.Count + targetDivisor - 1) / targetDivisor;
         var maxRounds = damage.Settings.MaxRounds;
 
         for (var round = 1; round <= maxRounds; round++)
@@ -39,7 +38,8 @@ public sealed class BossBattle(DamageCalculator damage)
                 }
             }
 
-            foreach (var target in random.Shuffled(Living(recorder, party.Count)).Take(targetsPerRound))
+            var targets = TargetsInRound(party.Count, targetDivisor, round);
+            foreach (var target in random.Shuffled(Living(recorder, party.Count)).Take(targets))
             {
                 recorder.Attack(round, bossIndex, target, damage, random);
             }
@@ -54,6 +54,18 @@ public sealed class BossBattle(DamageCalculator damage)
         recorder.Add(new BattleEvent(BattleEventKind.RoundLimit, maxRounds));
         var partyHp = Living(recorder, party.Count).Sum(i => recorder.Hp[i]);
         return Result(recorder, party.Count, partyHp > recorder.Hp[bossIndex], maxRounds, hitRoundLimit: true);
+    }
+
+    /// <summary>
+    /// How many participants the boss hits in <paramref name="round"/> (1-based): N / d per round on average, the
+    /// remainder carried over and rounded up first, ⌈r·N/d⌉ − ⌈(r−1)·N/d⌉. With N = 4 and d = 3 that is 2, 1, 1, 2,
+    /// 1, 1 …; a whole multiple of d hits N / d every round. Until 1.7 the boss hit ⌈N / d⌉ every round, so groups of
+    /// 2, 4, 5 and 7 lost more often than 3 and 6 (ADR-0006 addendum 2026-11-19).
+    /// </summary>
+    public static int TargetsInRound(int participants, int targetDivisor, int round)
+    {
+        int CeilDiv(int value) => (value + targetDivisor - 1) / targetDivisor;
+        return CeilDiv(round * participants) - CeilDiv((round - 1) * participants);
     }
 
     private static IEnumerable<int> Living(BattleRecorder recorder, int partySize) =>
