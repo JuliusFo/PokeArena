@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-11-19 · v1.8.1 released (HP bar per hit in the fight log; 1.8.0: boss balancing from stream data, „Zurück“ keeps the scroll position, leaderboard trophies, HP before the hit, one token per NPC) · next WP-09 (→ 1.9.0, proposal) after a few streams
+Status: 2026-11-19 · v1.8.1 released · R2 (review 1.8.1 fixes, → 1.8.2, proposal) in progress · next WP-09 (→ 1.9.0, proposal) after a few streams
 
 ## 1. Where to find what
 
@@ -33,32 +33,9 @@ shows leaderboard, trainer pages and battle logs.
 
 ## 3. Versions and invariants
 
-| Version | Content | Packages |
-|---|---|---|
-| 0.1.0 | Scaffold, CI, bot answers a test command in chat | WP-00, WP-01 |
-| 0.2.0 | Registration, persistent data | WP-02 |
-| 0.3.0 | Battle engine, `!boss` playable | WP-03 |
-| 0.4.0 | PvP `!fight` | WP-04 |
-| 0.5.0 | NPC fights `!challenge` | WP-05 |
-| 0.6.0 | Public website + OBS overlay | WP-06 |
-| 0.7.0 | Commands only while the stream is live | WP-07 |
-| 1.0.0 | Stream-ready: mod commands, deletion, backup | WP-08 |
-| 1.1.0 | Review 1.0.3 fixes, boss lobby (2 min, late-join extension, HP left) | R1, feat/boss-lobby |
-| 1.2.0 | Fight page shows how each Pokémon ended | feat/battle-end-state |
-| 1.3.0 | Website page „Neuigkeiten“ (player-visible changes per version) | WP-10 |
-| 1.4.0 | Boss pick uniform over distinct species, fight log in chat colours, log numbering and HP bar fixes | feat/boss-pick-per-species, feat/fight-log-colours, fix/battle-log-numbering, feat/hp-bar-alignment |
-| 1.4.1 | Fight log colours only the boss's name, critical hits on gold, fighter rows keep the HP bar on the right | feat/fight-log-boss-name-crit, fix/fighter-row-wrap |
-| 1.4.2 | Fight cards as wide as the page again (1.4.1 widening reverted) | fix/fight-card-width |
-| 1.5.0 | Mods shorten the boss cooldown for up to 24 h (`!bosscooldown`); desktop app updates itself from the GitHub releases | feat/boss-cooldown-reduced, WP-11 |
-| 1.6.0 | Fight page „Schaden“ box (damage per side and ranking in chat colours), crisp HP numbers | feat/damage-meter, fix/hp-text-crisp |
-| 1.6.1 | „Schaden“ bars in the darkened name colour with white text, names in that colour in both themes | feat/damage-text-white |
-| 1.6.2 | Thin black outline for the white „Schaden“ bar text | feat/damage-text-outline |
-| 1.7.0 | Website page „Statistik“: boss participations, PvP fights, bad-luck streaks, rarities, rivals, boss record; trainer page shows the Twitch profile picture, mirrored to R2; stylesheet cache busting | feat/statistics-page, feat/trainer-profile-image, fix/css-cache-busting |
-| 1.7.1 | Leaderboard shows small profile pictures and names in the chat colour; trainer page name in the chat colour | feat/leaderboard-profile-colours |
-| 1.8.0 | Boss attacks a third of the group per round on average, boss HP 1.3; „Zurück“ keeps the scroll position; leaderboard trophies; fight log HP before and after a hit; one token per NPC | feat/boss-balancing, feat/back-keeps-scroll, claude/ranking-trophy-icons-458526, fix/battle-log-hp-before, claude/npc-token-scaling-4763c0 |
-| 1.8.1 | Fight log: HP bar per hit, the target's HP move from the sentence into it | claude/hp-balken-kampf-log-mockup-de3cfe |
-| 1.9.0 | Balancing with real stream data (proposal: version not confirmed) | WP-09 |
-| 2.0.0 | Parked: website and overlay served from the bot's server (roadmap.md) | — |
+Released versions and their content: `CHANGELOG.md`; which package went into which version: the table in
+`docs/work-packages.md`. Planned: 1.9.0 WP-09 balancing (proposal, version not confirmed); 2.0.0 parked (website and
+overlay served from the bot's server, roadmap.md). The version table that stood here was cut (review 1.8.1, D1).
 
 **Invariants — never weaken:**
 
@@ -195,48 +172,13 @@ PokeArena.slnx
 
 ## 9. Next
 
-1.8.1 is released (2026-11-19, `claude/hp-balken-kampf-log-mockup-de3cfe`): every hit in the fight log shows the target's
-HP as a small bar on the right (mockup „B“); after updating the streamer clicks „Alles neu veröffentlichen“ once.
-1.8.0 is released (2026-11-19): boss balancing from 182 stream fights (`feat/boss-balancing`: the boss attacks a
-third of the group per round on average, boss HP per participant 1.3 — simulator part 4 expects ≈ 75 % group wins
-for every group size), „Zurück“ keeps the scroll position on the website (`feat/back-keeps-scroll`), trophies before
-ranks 1–3 on the leaderboard, the fight log shows a target's HP before and after a hit (`fix/battle-log-hp-before`)
-and every NPC gives one token for the first win (streamer feedback; earned balances stay, open question in
-roadmap.md). After updating the streamer clicks „Alles neu veröffentlichen“ once (fight log text). To watch on
-stream: boss win rates with the new rule.
-1.7.1 is released (2026-11-11, `feat/leaderboard-profile-colours`): the leaderboard shows the profile pictures small
-before the names and every name in the trainer's chat colour, the trainer page its heading in that colour (fight
-lists stay plain, backlog). After updating the streamer clicks „Alles neu veröffentlichen“ once; open test with the
-streamer: whether the darkened names read well on the dark page (≈ 3.2 : 1, roadmap.md).
-1.7.0 is released (2026-11-11): the „Statistik“ page (`feat/statistics-page`: `statistik.json` and `/statistik`
-with bars like the „Schaden“ box; after updating the streamer clicks „Alles neu veröffentlichen“ once), stylesheet
-cache busting on deploy (`fix/css-cache-busting`) and the profile picture (`feat/trainer-profile-image`): the
-trainer page shows the Twitch profile picture left of the name. `ProfileImageRefresher` mirrors it every 15 min (each picture checked daily) into
-SQLite and the bucket (`profilbild/<id>.png|.jpg`, ADR-0003 addendum); to test on stream: pictures appear for
-registered trainers within 15 minutes after the update, while Twitch is connected.
-1.6.2 (`feat/damage-text-outline`): the white „Schaden“ bar text has a 1 px black outline.
-1.6.1 (`feat/damage-text-white`): the „Schaden“ bars take the darkened name colour with white text like the HP
-numbers, and names keep that colour in the dark theme too — a test with the streamer whether names stay readable on
-the dark page; if not, the lighter dark-theme variant of 1.6.0 comes back for names.
-1.6.0 is released: a „Schaden“ box on the fight page (`feat/damage-meter`: side totals and a ranking in the
-trainers' chat colours, damage that arrived from the stored log) and crisp HP numbers (`fix/hp-text-crisp`);
-after updating the streamer clicks „Alles neu veröffentlichen“ once so older fights get the box.
-1.5.0 (installation: README, „Installing and running“):
-`!bosscooldown` (`feat/boss-cooldown-reduced`: mods shorten the boss cooldown
-for up to 24 hours, half by default), WP-11 automatic update (ADR-0010:
-Velopack, installs 10 min after the stream) and HP numbers inside the fight
-page's HP bar. 1.5.0 is the one-time switch: install it with `Setup.exe` as the
-same Windows user on the server; from 1.5.1 on releases arrive by themselves.
-1.4.2 made the fight cards as wide as the page again; 1.4.1 coloured only the
-boss's name in the fight log, put critical hits on gold and kept long names
-from pushing a fighter's HP bar onto its own line — after updating to 1.4.1 or
-later the streamer clicks „Alles neu veröffentlichen“ once. 1.4.0 made the
-boss pick uniform over distinct species and showed trainers in their Twitch chat
-colour in the fight log; 1.3.0 brought the
-„Neuigkeiten“ page (WP-10), 1.2.0 the fight page's end state, 1.1.0 R1 (fixes
-of the whole review 1.0.3, docs/review-1.0.3.md) and the boss lobby. Next:
-after a few streams WP-09 balancing (1.9.0, proposal)
-(`N = 4` dip, PvP loot preferring missing species, NPC difficulty; no runtime
-balancing editor). Parked for version 2: website and overlay served from the
-bot's server through a Cloudflare Tunnel instead of GitHub Pages + R2. Ideas
-meanwhile go to docs/backlog.md. Details: docs/roadmap.md.
+Replace this section at every release or package; history belongs in CHANGELOG.md and docs/work-packages/.
+
+- 1.8.1 released 2026-11-19. In progress: R2, the fixes of whole review 1.8.1 (`wp/r2-review-1.8.1`,
+  docs/review-1.8.1.md) → 1.8.2 (proposal). From R2 on the bot republishes the website once by itself after an
+  update; the Cloudflare WAF rule and the R2 billing alert (docs/website-setup.md §2) are for the user to set.
+- To watch on stream: boss win rates with the 1.8.0 rule (≈ 75 % group wins expected); whether the darkened
+  names read well on the dark page (roadmap.md).
+- Next: WP-09 balancing after a few streams (1.9.0, proposal): PvP loot preferring missing species, NPC difficulty;
+  no runtime balancing editor. Parked for version 2: website and overlay served from the bot's server.
+  Ideas go to docs/backlog.md; details in docs/roadmap.md.

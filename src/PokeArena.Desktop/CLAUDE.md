@@ -11,7 +11,8 @@ Thin WPF host around a `BlazorWebView` (ADR-0007). UI belongs in PokeArena.UI, l
   otherwise); its colors must match `--bg` in `PokeArena.UI/wwwroot/css/pokearena.css`.
 - Single-instance mutex: two running bots would answer every chat command twice — don't remove it.
 - Exceptions before the host is built are only visible via `Log.*` (static Serilog) and the start-failure
-  message box; keep both. All message box texts are German (the streamer reads them).
+  message box; keep both. A start logger writes to the log file before the configuration is read, and closes before
+  the final one opens the same file (review 1.8.1, A6). All message box texts are German (the streamer reads them).
 - Credentials are stored as `PokeArena:<name>`; integration tests use `integration-test:<guid>` names and
   delete them again.
 - Twitch settings live in `appsettings.json` under `PokeArena:Twitch` (client ID is public, ADR-0002). The
@@ -24,7 +25,8 @@ Thin WPF host around a `BlazorWebView` (ADR-0007). UI belongs in PokeArena.UI, l
 - Smoke tests without touching the real chat: `--PokeArena:DataDirectory=<scratch> --PokeArena:Twitch:Channel=`
   (empty channel = not configured, the bot stays offline).
 - The OBS overlay (`OverlayServer`) is a second, slim Kestrel host on the loopback interface (`PokeArena:Overlay:Port`,
-  default 5299; 0 = off). A busy port only disables the overlay. `Microsoft.AspNetCore` logs at Warning, else the
+  default 5299; 0 = off). Any start error only disables the overlay — not only a busy port (`IOException`): a port
+  Windows reserved fails with `SocketException` and once stopped the whole bot (review 1.8.1, A1). `Microsoft.AspNetCore` logs at Warning, else the
   2-second polling floods the log file.
 - Website settings live under `PokeArena:Website` (site URL, R2 endpoint, bucket — not secret); the R2 key is in the
   Credential Manager as `PokeArena:r2-access-key-id` / `PokeArena:r2-secret-access-key` (docs/website-setup.md).

@@ -1,9 +1,8 @@
 # Roadmap
 
-Planned work packages up to v1.0.0, plus the packages after it (WP-10 news
-page, then WP-11 automatic update, then the profile picture, then the
-statistics page, then WP-09
-with its version still open) and a parked idea for version 2. Read the package before starting it and agree the plan with
+Work packages up to v1.0.0, the packages and branches after it (all released
+up to 1.8.1; the index is docs/work-packages.md), WP-09 as the next planned
+one (1.9.0, proposal) and a parked idea for version 2. Read the package before starting it and agree the plan with
 the user. Estimates: solo, "day" = one focused person-day; total ≈ 25–31
 days. Every package ends in a state that could run on stream.
 
@@ -90,8 +89,8 @@ Demo: `!boss` playable end-to-end.
   the user waived the separate channel test. See the log in work-packages.md.
 - User decision (2026-10-19, ADR-0006 addendum): `Scaling` 20 instead of
   25 (13 % one-hit KOs, first strike wins 57.5 %); `k` stays 50.
-- Open: the `N = 4` dip (≈ 64 % group wins vs. ≈ 75 % target) — watch on
-  stream whether players notice it. → WP-09 (user decision 2026-11-04).
+- Closed: the `N = 4` dip (≈ 64 % group wins vs. ≈ 75 % target) — gone with
+  the boss balancing of 1.8.0 (`feat/boss-balancing`, see WP-09 below).
 - Runtime balancing editor: user decision (2026-11-04) — not in v1; values
   stay code defaults and change by release (spec §13 adjusted). See WP-09.
 - Open: progression length. Expected catches for k distinct species (uniform
@@ -332,8 +331,9 @@ the boss too, with the trainers summed.
   that arrived counts; boss fight ranks the trainers with their share of the
   boss's HP, PvP/NPC rank every Pokémon sent in; equal damage shares a rank;
   the boss and NPC Pokémon in their first type's colour, no colour → grey,
-  a side of several colours → the HP bar's green; the raw chat colour also in
-  the dark theme (bright colours like yellow stand out there).
+  a side of several colours → the HP bar's green. The raw chat colour in the
+  dark theme was dropped: user decision „die Balken-Farbe zum Standard“ (1.6.1),
+  darkened in both themes.
 - User decision (2026-11-10, release): released as 1.6.0 together with the
   crisp HP numbers („1.6.0, Test ok“); WP-09 moves to 1.7.0.
 
@@ -539,6 +539,8 @@ User decisions (2026-11-11):
 
 - Released as 1.7.1 like the earlier look-only changes (1.4.1, 1.6.1), so
   WP-09 stays 1.8.0 (user decision 2026-11-11 at the release, „1.7.1“).
+  Superseded: 1.8.0 became the boss balancing ahead of WP-09, WP-09 is 1.9.0
+  (proposal).
 
 Open question for the streamer test: in the dark theme the darkened colours
 reach only about 3.2 : 1 on the table (the open 1.6.1 test, „Balken-Farbe zum
@@ -554,7 +556,7 @@ reads „HP 0“; the viewer suggested the HP before the hit.
 
 - User decision (2026-11-18): the small fix first, the fight log redesign later
   (ideas in backlog.md, „Fight log redesign“).
-- Proposal (not confirmed): the target shows both, „HP 10 → 0“, so a 46 on 10
+- Decided by release 1.8.0 and the 1.8.1 pick (mockup „B“, „80 → 22“ in the bar): the target shows both, „HP 10 → 0“, so a 46 on 10
   HP left explains itself; the attacker keeps one number (its HP does not
   change by its own hit). The text is rendered from the stored events, so older
   fights change after „Alles neu veröffentlichen“.
@@ -661,7 +663,5 @@ Open before starting:
 
 ## Open UX questions
 
-- Done: exact German wording of all chat messages — reviewed 2026-11-04
-  (docs/chat-texts.md).
-- First start for the streamer: decided 2026-11-04 — no guided setup, the
-  user configures the PC once (see WP-08).
+None. Decided earlier: the German chat wording (2026-11-04, docs/chat-texts.md)
+and no guided first start (2026-11-04, WP-08).

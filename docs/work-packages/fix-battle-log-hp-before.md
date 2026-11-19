@@ -12,8 +12,9 @@
 - User decisions: the small fix first, the fight log redesign later (ideas in
   backlog.md, „Fight log redesign“).
 - Addenda: the format „HP 10 → 0“ (both numbers rather than only the HP
-  before, as the viewer suggested) and version 1.7.2 are proposals
-  (roadmap.md).
+  before, as the viewer suggested) and version 1.7.2 were proposals
+  (roadmap.md). Decided: released as 1.8.0 (user, 2026-11-19 at `/release`); the
+  format lives on in 1.8.1 inside the user-picked hit bar („80 → 22“).
 - Pitfalls: the damage in the text stays the full hit (46 on 10 HP left);
   the „Schaden“ box counts only what arrived — the arrow makes the
   difference visible.

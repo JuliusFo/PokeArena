@@ -33,8 +33,10 @@ only runs it in order.
 - `Pages/News.razor` („Neuigkeiten“, WP-10): if the release has player-visible changes, its section is headed
   „Version X.Y.Z – D. Monat YYYY“ with today's date; add missing lines from the new `[X.Y.Z]` section in simple
   German (`feat/…` and `fix/…` branches do not run `/ship-wp`). No player-visible change, no section.
-- Update the status line and "Next" in `CLAUDE.md` (version, what is done) and the package table in
+- Replace the status line and "Next" in `CLAUDE.md` with the current state (version, what is open; history stays in the CHANGELOG and the log, review 1.8.1 D1) and the package table in
   `docs/work-packages.md` if a package is released.
+- List the "Proposal (not confirmed)" addenda in the log files of this release's packages (`docs/work-packages/`), ask
+  the user once which hold, and mark them decided or dropped with the date (review 1.8.1, D4).
 - `git diff --stat` to check, then one commit `docs: prepare X.Y.Z`.
 
 ## 3. Build and test

@@ -27,18 +27,16 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   `history.state` without spreading it — Blazor reads `_index` and `userState` from it — and never scroll a page to the
   top on load yourself (`window.scrollTo(0, 0)`), or the restored position is lost.
 - `Pages/News.razor` („Neuigkeiten“) is hand-written for players, not the CHANGELOG: a new section goes on top as
-  `<h2>Version X.Y.Z…</h2>` inside `.news` — the bUnit test parses that heading. At 375 px the menu already wraps to
-  a second line with four items; links never break inside (`nowrap`, WP-10).
+  `<h2>Version X.Y.Z…</h2>` inside `.news` — the bUnit test parses that heading. At 375 px the menu wraps to a second
+  line; links never break inside (`nowrap`, WP-10).
 - Contrast (WCAG AA 4.5 : 1): never fade text that carries information with `opacity`, and `--accent` on white is
   only ≈ 4.4 : 1 — fine for links, not for small status text. Measure light and dark in the preview
   (feat/battle-end-state).
 - Colours nobody chose for readability (chat colours, type colours as text) go through `Tint.Style` + class `tinted`,
-  never straight into `color`. `Tint.Style` gives one colour for both themes, darkened until it reads on white — the
-  same as the „Schaden“ bars: user decision „die Balken-Farbe zum Standard“, a test whether names stay readable on
-  the dark page, where dark colours (blue) fall below 4.5 : 1 (feat/damage-text-white; until 1.6.0 a lighter dark-theme
-  variant). `Tint.TypeColors` and the light surface mirror site.css; `TintTests` fails if they drift
-  (feat/fight-log-colours). Yellow/gold as text turns brown on white at 4.5 : 1 — use it as a background with dark
-  text (`.log .critical`, review feat/fight-log-boss-name-crit).
+  never straight into `color`: one colour for both themes, darkened until it reads on white, like the „Schaden“ bars
+  (feat/damage-text-white). `Tint.TypeColors` and the light surface mirror site.css; `TintTests` fails if they drift
+  (feat/fight-log-colours). Yellow/gold as text turns brown at 4.5 : 1 — use it as a background with dark text
+  (`.log .critical`, review feat/fight-log-boss-name-crit).
 - Names in the chat colour: fight page, statistics, leaderboard and trainer heading (feat/leaderboard-profile-colours).
   On a link the tint goes on the `<a>` itself, or the underline stays `--accent`; `.tinted` sets weight 600, so
   `h1.tinted` restores 700. The leaderboard's 24 px pictures load lazily inside an always-rendered
@@ -52,28 +50,19 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   names push the HP bar onto its own line again (a bUnit test checks the children) (fix/fighter-row-wrap).
   The fight cards stay inside the page's 868 px content: `.sides` reaching past it looked lopsided next to the
   narrower header and log, user decision „Breitenänderung wieder Rückgängig“ (fix/fight-card-width).
-- The HP numbers sit inside `.hp-bar` (fixed width): bar fill and `.hp-text` colour share one hard gradient edge at
-  `--hp`. No horizontal padding or border on `.hp-bar` itself, or the edges drift apart; the fills are darker
-  than `--ok`/`--accent` because white text on those is under 4.5 : 1 (feat/hp-text-in-bar). Both themes use the
-  same dark fills with white text: bright `--ok` with dark text glared in the dark theme despite 8 : 1, user
-  decision variant „B“ (fix/hp-bar-dark-mode). The numbers are two stacked copies, each clipped to its part
-  (`clip-path`, not overlapping, or the dark copy fringes the white one); never `background-clip: text` — it loses
-  subpixel antialiasing and the numbers looked thin and grey (fix/hp-text-crisp).
-  The fight log reuses it as `.hit-bar` (claude/hp-balken-kampf-log-mockup-de3cfe, mockup „B“): the lost piece is
-  hatched under the track up to `--lost-end` = `max(--before, --hp + 4px)` (minimum width, user decision; `.no-loss`
-  drops it), a `.visually-hidden` „HP“ (`white-space: pre`, or its space collapses) for screen readers, and the
-  sentence next to it needs `overflow-wrap: anywhere`, or a long name runs over the bar on a phone. Parts marked
-  `IsTargetHp` are left out only where `TargetOf` accepts the hit; anything else (older files, foreign values) keeps
-  the full sentence.
-- „Schaden“ box (`Shared/DamageBox.razor`, logic in `Services/DamageMeter.cs`, feat/damage-meter): a bar has the
-  colour of the trainer's name (`Tint.Darkened`, the colour of `Tint.Style`; a test keeps them equal; yellow turns
-  olive) and white text over the fill like the HP numbers, in both themes like the HP bar's dark fills — user requests
-  „Text-Farbe wie bei den HP“, „die abgedunkelte Version, wie vorher die Namen“, „die Balken-Farbe zum Standard“
-  (feat/damage-text-white; tried and dropped: raw colours everywhere). The white copy has a 1 px black outline
-  (`text-shadow` in eight directions; user pick „1B“ over 1.5 px, 2 px and `-webkit-text-stroke`, which closes the
-  counters at 13 px — feat/damage-text-outline). `--text` over the rest, two clipped copies. A bar that stops short
-  ends in a 2 px `--text` edge (review feat/damage-meter). Only colours that pass `Tint.IsColor` go into the inline
-  style. No box when any fighter lacks `Damage` (older files).
+- HP bars are one component, `Shared/HpBar.razor` (fight cards and every hit in the log, review 1.8.1 B1): the numbers
+  sit inside `.hp-bar` (fixed width) as two copies, each clipped to its part (`clip-path`; never `background-clip:
+  text`, the numbers turn thin and grey — fix/hp-text-crisp). Fill and text colour share one hard edge at `--hp`: no
+  horizontal padding or border on `.hp-bar` (feat/hp-text-in-bar). Dark fills with white text in both themes
+  (fix/hp-bar-dark-mode). The log's `.hit-bar` hatches the lost piece up to `max(--before, --hp + 4px)` (`.no-loss`
+  drops it), hides „HP “ for screen readers (`white-space: pre`), and its sentence needs `overflow-wrap: anywhere`
+  (claude/hp-balken-kampf-log-mockup-de3cfe). Parts marked `IsTargetHp` are left out only where `TargetOf` accepts the
+  hit; anything else keeps the full sentence.
+- „Schaden“ box (`Shared/DamageBox.razor`, `Services/DamageMeter.cs`, feat/damage-meter): a bar has the colour of
+  the trainer's name (`Tint.Darkened`, a test keeps it equal to `Tint.Style`) and white text with a 1 px black
+  `text-shadow` outline over the fill, `--text` over the rest, two clipped copies (feat/damage-text-white,
+  feat/damage-text-outline; `-webkit-text-stroke` closes the counters at 13 px). A bar that stops short ends in a 2 px
+  `--text` edge. Only colours that pass `Tint.IsColor` go into the style. No box when any fighter lacks `Damage`.
 - Ranking bars are one component, `Shared/BarList.razor` with `Services/Bar.cs` (`Bar.Make` checks the colour and
   darkens it): the „Schaden“ box and the statistics page (`Pages/Stats.razor`, bars in `Services/StatisticsBars.cs`)
   share them, so a change to the bars shows on both. A bar's name can be a link; it sits in both clipped copies

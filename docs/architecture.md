@@ -1,9 +1,9 @@
 # Architecture
 
 Gameplay rules live in [spec.md](spec.md); this file describes how the code is
-organised around them. Everything described here is built (WP-00 to WP-08,
-review 1.0.3); balancing after the first streams (WP-09) changes values, not
-structure.
+organised around them. Everything described here is built (released up to
+1.8.1, the packages in docs/work-packages.md); balancing after the first
+streams (WP-09) changes values, not structure.
 
 ## Core modules (`PokeArena.Core`)
 
@@ -29,8 +29,10 @@ fresh in-memory sandbox database, and real chat messages are logged but not
 processed (WP-02 decision). Outside the dry run `CommandProcessor` also asks
 `StreamStatus` whether the channel is live (WP-07): `TwitchConnection` keeps it
 current from `stream.online` / `stream.offline` on the same EventSub session
-plus Helix `GET /streams` on every new session and with the hourly token
-check; the streamer's „Auch ohne Stream“ switch overrides it in memory.
+plus Helix `GET /streams` on every new session, every 2 minutes for 10 minutes
+after a start that found the channel offline, and with the hourly token check;
+a Helix answer never overrides a stream event of the last 10 minutes (review
+1.0.3, A3). The streamer's „Auch ohne Stream“ switch overrides it in memory.
 
 ## Data model
 
@@ -152,7 +154,10 @@ knowledge. Areas:
   team (`DryRunTrainers`, queued work, sandbox only).
 - Built (WP-06), area "Bot": "Website" card (R2 key entry, upload status with
   a plain-German reason, „Alles neu veröffentlichen“) and "OBS-Overlay" card
-  with the browser source address.
+  with the browser source address. Since R2 (review 1.8.1): removing the key asks
+  first, and `RepublishAfterUpdate` runs „Alles neu veröffentlichen“ once on the
+  first start of a new version (marker `website-version.txt` in the data
+  directory).
 - Built (WP-07): live state and „Auch ohne Stream“ switch in the Twitch card.
 - Built (WP-08): „Löschen“ with an inline confirmation per trainer row
   (queued work on the command queue); „Sicherung“ card (last backup, folder,

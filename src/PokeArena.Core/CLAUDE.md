@@ -25,8 +25,6 @@
 - Downloads with `HttpCompletionOption.ResponseHeadersRead`: `HttpClient.Timeout` ends with the headers — bound the
   body with a `TimeProvider` token. Never log URLs that can carry a login; name the trainer by id
   (review feat/trainer-profile-image).
-- SQLite (WP-02/08): copying the database file while it is open loses the WAL content — back up with
-  `VACUUM INTO` or the SQLite backup API.
 - The `boss` cooldown row is shared by a fight's cooldown and the failed-lobby retry; only `Cooldown.Length` (null for the
   retry) tells them apart and gives the length to shrink from — never derive it from `Until` or the current settings
   (review feat/boss-cooldown-reduced).
@@ -55,10 +53,11 @@
 - Website (WP-06): every change a viewer could see on the site queues its paths with `SiteOutbox.EnqueueAsync` in
   the **same** context/transaction as the change (`SiteOutbox.ForBattle` / `ForTrainers`). Forgetting it leaves
   the site stale until "republish everything". The battle id exists only after the first `SaveChangesAsync`.
-  A site file that shows the chat colour must also be queued in `TrainerService`'s colour-only branch — a colour
-  change is not a rename and does not go through `ForTrainers` (review feat/statistics-page). Since
-  feat/leaderboard-profile-colours that branch queues `ForTrainers` itself (leaderboard and trainer page show the
-  colour), and `ProfileImageRefresher` queues the leaderboard with every picture change.
+  `TrainerService`'s colour-only branch queues `ForTrainers` itself (a colour change is not a rename), and
+  `ProfileImageRefresher` queues the leaderboard with every picture change. Every enqueue runs inside
+  `BeginTransactionAsync` (BEGIN IMMEDIATE), also for a single save: `EnqueueAsync` updates tracked rows the worker
+  may delete in between (review 1.0.3 A25, review 1.8.1 A3). Tests prove a flow is one transaction with
+  `GameFixture.FailOutboxInserts()` (review 1.8.1, C2).
 - The publish worker, backups and `ProfileImageRefresher` read `GameDatabase.OpenLive()` — the only exceptions to
   `Open()`: the sandbox is never published, and pictures belong to the live trainers (feat/trainer-profile-image).
   A path from a stored `ContentType` goes through `SitePaths.TryProfileImage` (an unknown format is no picture, never
@@ -66,7 +65,8 @@
 - Live gate (WP-07): `CommandProcessor` drops real messages while `StreamStatus.AcceptsCommands` is false — new
   `CommandProcessor` tests must report the stream live first. Stream events only report changes: whenever a new
   EventSub session starts, ask `HelixClient.IsLiveAsync` **after** subscribing, or a change in between is lost.
-- Backups (WP-08): `DatabaseBackup` uses `VACUUM INTO` on `OpenLive()`. From an in-memory database it writes the
+- Backups (WP-08): copying the open database file loses the WAL content, so `DatabaseBackup` uses `VACUUM INTO` on
+  `OpenLive()`. From an in-memory database it writes the
   copy into memory (memdb VFS), so its tests run on a real file in Integration.Tests.
 - Error and hint replies to one viewer (unknown name, too few Pokémon, cooldown …) go through
   `IChatSender.SendHint(viewerId, command, …)`, throttled per viewer and command (not in the dry run); fight results and announcements use `Send`. A name a
@@ -76,4 +76,7 @@
   `BattleTexts` helper (feat/boss-lobby).
 - Twitch: only 403 (and a missing channel or a wrong account) stops the connection for good; every other refusal
   is retried with backoff. A Helix `GET /streams` answer never overrides a stream event of the last 10 minutes
-  (review 1.0.3).
+  (review 1.0.3). The shared `HttpClient`'s timeout arrives as a cancellation, not as `HttpRequestException`: decide
+  "try again" with `TwitchConnection.IsTransient` (review 1.8.1, A4).
+- Achievement unlocks are stored by threshold: `NpcCatalog` refuses thresholds other than spec §1's — changing one
+  needs a data migration first, or achievements are silently revoked (review 1.8.1, A11).

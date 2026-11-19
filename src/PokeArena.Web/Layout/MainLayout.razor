@@ -49,8 +49,8 @@
             {
                 _newerData = meta.FormatVersion > SiteMeta.CurrentFormatVersion;
 
-                // The normal order after a format change: the site deploys on merge, the bot follows with the next
-                // update of the streamer's app (review 1.0.3, A33).
+                // The normal order after a format change: the site deploys with the release tag, the bot follows
+                // when it updates itself after the next stream (review 1.0.3 A33, review 1.8.1 D9).
                 _olderData = meta.FormatVersion < SiteMeta.CurrentFormatVersion;
             }
         }

@@ -1,7 +1,7 @@
 # PokeArena — Game Specification (v1)
 
 A persistent Pokemon collecting and battling game played through Twitch chat.
-The bot runs as a WPF desktop application on the streamer's machine; viewers
+The bot runs as a WPF desktop application on a Windows machine; viewers
 play entirely via chat commands. A static Blazor website shows the leaderboard,
 trainer pages and battle logs.
 
@@ -377,8 +377,9 @@ by the website (below).
 
 The news page is static text for players: per version only what they notice
 (commands, rules, durations, odds, website), newest first — not a copy of
-`CHANGELOG.md`. It deploys with the site on merge, so it can be ahead of the
-streamer's app; entries name the version and the page points to `!version`.
+`CHANGELOG.md`. It deploys with the site on the release tag, while the bot
+updates itself only after the next stream, so it can be ahead of the bot for
+some hours; entries name the version and the page points to `!version`.
 
 The player guide is static text: it repeats the defaults of §13 (countdown,
 minimum team size, cooldowns) and the NPC thresholds of §7, because the site

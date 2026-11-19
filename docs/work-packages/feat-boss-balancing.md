@@ -13,7 +13,7 @@
 - User decisions: „B2 mit 1.3“ (carry-over rounding up first, HP 1.3) after
   comparing the rarity HP bonus (user idea), HP compensation by target share,
   carry-over rounding down and random rounding (all in the ADR table).
-- Addenda: version 1.8.0 is a proposal (not confirmed) — it is the WP-09
+- Addenda: version 1.8.0 was a proposal, confirmed at `/release` (2026-11-19) — it was the WP-09
   balancing number. The „Neuigkeiten“ test allows one undated section, so the
   unreleased 1.7.2 lines of `main` moved under „Version 1.8.0“; `/release` decides.
 - Code review (2026-11-19): „Alle beheben“.

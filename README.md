@@ -5,14 +5,13 @@
 A persistent Pokémon collecting and battling game played through Twitch chat.
 Viewers register with a starter, team up against bosses, challenge each other
 and work their way through 17 NPC trainers, all via chat commands. A desktop
-app on the streamer's PC runs the bot; a static website shows the leaderboard,
+app on a Windows machine runs the bot; a static website shows the leaderboard,
 statistics, trainer pages and battle logs.
 
-> **Status:** stream-ready since 1.0.0 (WP-08); see the
-> [releases](https://github.com/JuliusFo/PokeArena/releases) for the current
-> version. Automatic updates came with 1.5.0, balancing with data from real
-> streams follows in 1.8.0. See the
-> [roadmap](#roadmap).
+> **Status:** stream-ready since 1.0.0 (WP-08), updating itself since 1.5.0;
+> see the [releases](https://github.com/JuliusFo/PokeArena/releases) for the
+> current version. Next: further balancing with data from real streams
+> (WP-09). See the [roadmap](#roadmap).
 
 ## How it plays
 
@@ -209,28 +208,13 @@ don't edit it by hand.
 
 ## Roadmap
 
-| Version | Content | Status |
-|---|---|---|
-| 0.1.0 | Scaffold, CI, bot answers a test command in chat | done |
-| 0.2.0 | Registration, persistent data | done |
-| 0.3.0 | Battle engine, `!boss` playable | done |
-| 0.4.0 | PvP `!fight` | done |
-| 0.5.0 | NPC fights `!challenge` | done |
-| 0.6.0 | Public website and OBS overlay | done |
-| 0.7.0 | Commands only while the stream is live | done |
-| 1.0.0 | Stream-ready: mod commands, deletion, backup | done |
-| 1.1.0 | Review fixes, longer boss lobby with late-join extension, boss HP left | done |
-| 1.2.0 | Fight page shows how each Pokémon ended | done |
-| 1.3.0 | Website page „Neuigkeiten“ with player-visible changes | done |
-| 1.4.0 | Boss pick per species, fight log in chat colours | done |
-| 1.5.0 | Mods shorten the boss cooldown for a while (`!bosscooldown`); the desktop app updates itself | done |
-| 1.6.0 | Fight page shows who dealt how much damage | done |
-| 1.7.0 | Website page „Statistik“ with rankings beyond the leaderboard; trainer pages show the Twitch profile picture | done |
-| 1.8.0 | Balancing with real stream data | planned |
+Released versions and what they changed: [CHANGELOG.md](CHANGELOG.md) and the
+[releases](https://github.com/JuliusFo/PokeArena/releases). Planned next: WP-09,
+balancing with real stream data (1.9.0, proposal); parked for version 2: website
+and overlay served from the bot's server.
 
 Details per work package: [docs/roadmap.md](docs/roadmap.md) ·
-log: [docs/work-packages.md](docs/work-packages.md) ·
-changes: [CHANGELOG.md](CHANGELOG.md).
+package index and logs: [docs/work-packages.md](docs/work-packages.md).
 
 ## Documentation
 

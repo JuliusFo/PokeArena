@@ -17,7 +17,7 @@
   a page that was at the top. No automated test: bUnit does not run the
   page's JS, and UI automation is out (`CLAUDE.md` §4).
 - User decisions: —
-- Addenda: version 1.7.2 is a proposal (not confirmed); `/release` decides.
+- Addenda: version 1.7.2 was a proposal; decided at `/release`: released as 1.8.0 (2026-11-19).
 - Pitfalls: in a hidden browser pane no frames render, so scroll events and
   `ResizeObserver` wait — remember the position on input and `pagehide` too,
   not only on scroll.
