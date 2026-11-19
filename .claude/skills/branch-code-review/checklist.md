@@ -17,7 +17,7 @@ feat/boss-lobby, K1, K3", the original review 1.0.3).
 
 ## Invariants (`CLAUDE.md` §3)
 
-- A trainer is found by Twitch user id, never by display name; names are only looked up (`FindByNameAsync`: login
+- A trainer is found by Twitch user id, never by display name; names are only looked up (`ResolveNameAsync`: login
   first, then display name) and never used as a key, file name or foreign key.
 - SQLite is the only source of truth: no state that exists only in a JSON file, in memory across restarts (except the
   documented short-lived lobby and challenges) or in the website.

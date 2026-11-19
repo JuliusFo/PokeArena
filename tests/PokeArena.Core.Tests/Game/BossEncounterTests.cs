@@ -28,7 +28,7 @@ public class BossEncounterTests : IDisposable
     private readonly ChatInbox _inbox = new();
     private readonly RecordingSender _chat = new();
     private readonly StreamStatus _stream = Live();
-    private SiteLinks _links = SiteLinks.None;
+    private SiteLinks _links = NoSite.Links;
     private readonly CancellationToken _ct = TestContext.Current.CancellationToken;
 
     private static SpeciesCatalog Species => GameFixture.Species;

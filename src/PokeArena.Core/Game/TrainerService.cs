@@ -194,12 +194,9 @@ public sealed class TrainerService
 
     /// <summary>
     /// Resolves a chat mention (<c>@name</c> or <c>name</c>) to a trainer: by login first, then by display name,
-    /// both case-insensitive. Names are only as current as the trainer's last chat message.
+    /// both case-insensitive, and says whether a miss was because several trainers matched. Names are only as
+    /// current as the trainer's last chat message.
     /// </summary>
-    public async Task<TrainerName?> FindByNameAsync(string mention, CancellationToken ct) =>
-        (await ResolveNameAsync(mention, ct)).Trainer;
-
-    /// <summary>Like <see cref="FindByNameAsync"/>, and says whether a miss was because several trainers matched.</summary>
     public async Task<NameMatch> ResolveNameAsync(string mention, CancellationToken ct)
     {
         var name = mention.Trim().TrimStart('@').ToLowerInvariant();

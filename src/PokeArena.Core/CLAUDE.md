@@ -50,7 +50,7 @@
   `GameDatabase.Switched` other than by a generation counter (`Interlocked`); drop stale entries on the command
   queue (see `PvpService`). The UI switches the dry run with `DryRunMode.SwitchOnQueue`, so `Switched` fires
   between two commands (review 1.0.3).
-- Chat mentions (`@name`) resolve by `Trainer.Login` first, then by display name (`TrainerService.FindByNameAsync`);
+- Chat mentions (`@name`) resolve by `Trainer.Login` first, then by display name (`TrainerService.ResolveNameAsync`; several matches are never guessed between);
   the bot's own replies should mention the login when the viewer has to type it (`!fight @login`).
 - Website (WP-06): every change a viewer could see on the site queues its paths with `SiteOutbox.EnqueueAsync` in
   the **same** context/transaction as the change (`SiteOutbox.ForBattle` / `ForTrainers`). Forgetting it leaves

@@ -23,7 +23,7 @@ public class TrainerServiceTests : IDisposable
         // Twitch user 2 now has the login "bob"; trainer 1 renamed and has not chatted since.
         await _game.Trainers.ObserveAsync(new ChatMessage("m-1", "2", "bob", "Bob", "hallo", ChatRole.Viewer), _ct);
 
-        Assert.Equal("2", (await _game.Trainers.FindByNameAsync("@bob", _ct))?.TwitchUserId);
+        Assert.Equal("2", (await _game.Trainers.ResolveNameAsync("@bob", _ct)).Trainer?.TwitchUserId);
         await using var db = _game.OpenLive();
         Assert.Equal("", (await db.Trainers.SingleAsync(t => t.TwitchUserId == "1", _ct)).Login);
     }
@@ -86,8 +86,8 @@ public class TrainerServiceTests : IDisposable
         await _game.Trainers.RegisterAsync("1", "ash_one", "Ash", Pikachu, _ct);
         await _game.Trainers.RegisterAsync("2", "ash_two", "Ash", Pikachu, _ct);
 
-        Assert.Null(await _game.Trainers.FindByNameAsync("@Ash", _ct));
-        Assert.Equal("2", (await _game.Trainers.FindByNameAsync("@ash_two", _ct))?.TwitchUserId);
+        Assert.Null((await _game.Trainers.ResolveNameAsync("@Ash", _ct)).Trainer);
+        Assert.Equal("2", (await _game.Trainers.ResolveNameAsync("@ash_two", _ct)).Trainer?.TwitchUserId);
     }
 
     [Fact]
@@ -169,7 +169,7 @@ public class TrainerServiceTests : IDisposable
     {
         await _game.Trainers.RegisterAsync("1001", "satoshi", "サトシ", Pikachu, _ct);
 
-        Assert.Equal(new TrainerName("1001", "サトシ", "satoshi"), await _game.Trainers.FindByNameAsync(mention, _ct));
+        Assert.Equal(new TrainerName("1001", "サトシ", "satoshi"), (await _game.Trainers.ResolveNameAsync(mention, _ct)).Trainer);
     }
 
     [Fact]
@@ -178,9 +178,9 @@ public class TrainerServiceTests : IDisposable
         await _game.Trainers.RegisterAsync("1", "misty", "Rocko", Pikachu, _ct);
         await _game.Trainers.RegisterAsync("2", "rocko", "RockoDerEchte", Pikachu, _ct);
 
-        Assert.Equal("2", (await _game.Trainers.FindByNameAsync("@Rocko", _ct))?.TwitchUserId);
-        Assert.Null(await _game.Trainers.FindByNameAsync("@gary", _ct));
-        Assert.Null(await _game.Trainers.FindByNameAsync("@", _ct));
+        Assert.Equal("2", (await _game.Trainers.ResolveNameAsync("@Rocko", _ct)).Trainer?.TwitchUserId);
+        Assert.Null((await _game.Trainers.ResolveNameAsync("@gary", _ct)).Trainer);
+        Assert.Null((await _game.Trainers.ResolveNameAsync("@", _ct)).Trainer);
     }
 
     [Fact]

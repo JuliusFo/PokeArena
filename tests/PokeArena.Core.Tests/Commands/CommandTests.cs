@@ -70,7 +70,7 @@ public class CommandTests : IDisposable
     public async Task Arena_posts_the_link_with_the_status_cooldown_or_says_the_site_is_missing()
     {
         var withSite = new ArenaCommand(new SiteLinks(new WebsiteOptions { SiteUrl = "https://arena.example.de" }), _time);
-        var withoutSite = new ArenaCommand(SiteLinks.None, _time);
+        var withoutSite = new ArenaCommand(NoSite.Links, _time);
 
         await withSite.ExecuteAsync(Context("!arena"), _ct);
         await withSite.ExecuteAsync(Context("!arena"), _ct);
@@ -118,7 +118,7 @@ public class CommandTests : IDisposable
         await processor.ProcessAsync(Message("!entfernen @misty ja"), _ct);
 
         Assert.Empty(_chat.Sent);
-        Assert.NotNull(await _game.Trainers.FindByNameAsync("misty", _ct));
+        Assert.NotNull((await _game.Trainers.ResolveNameAsync("misty", _ct)).Trainer);
     }
 
     [Fact]

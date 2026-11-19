@@ -23,7 +23,7 @@ public class PvpServiceTests : IDisposable
 
     private readonly GameFixture _game = new();
     private readonly RecordingSender _chat = new();
-    private SiteLinks _links = SiteLinks.None;
+    private SiteLinks _links = NoSite.Links;
     private readonly CancellationToken _ct = TestContext.Current.CancellationToken;
 
     private static SpeciesCatalog Species => GameFixture.Species;

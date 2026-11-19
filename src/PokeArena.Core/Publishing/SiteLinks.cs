@@ -5,8 +5,6 @@ namespace PokeArena.Core.Publishing;
 /// <summary>Links to the public website for chat messages (spec §9). Without a configured site there are none.</summary>
 public sealed class SiteLinks(WebsiteOptions options)
 {
-    public static SiteLinks None { get; } = new(new WebsiteOptions());
-
     /// <summary>The site's start page, or null if no site is configured.</summary>
     public string? Home => options.HasSite ? options.SiteUrl.TrimEnd('/') : null;
 
