@@ -93,11 +93,10 @@ Left out of the first version (feat/trainer-profile-image, 2026-11-11):
 ## Fight log redesign
 
 The user plans to rework the „Kampfverlauf“ on the fight page; ideas from
-2026-11-18 (viewer feedback on a duel, fix/battle-log-hp-before), none
-decided yet:
+2026-11-18 (viewer feedback on a duel, fix/battle-log-hp-before). The HP bar
+per hit is built (1.8.1, claude/hp-balken-kampf-log-mockup-de3cfe, mockup „B“; mockup „C“
+showed it together with the ideas below); the rest is not decided yet:
 
-- A small HP bar per hit with the lost piece set apart, like the bars on the
-  fight cards (needs HP before, after and max per line in `LogLine`).
 - Shorter lines in duels: the owner's name is clear from the side and its chat
   colour, e.g. „Owei → Digda · 46 Schaden · sehr effektiv“.
 - The knockout inside the hit's line, set apart, instead of a line of its own.

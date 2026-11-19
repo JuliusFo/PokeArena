@@ -7,6 +7,15 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+### Changed
+- The fight page's „Kampfverlauf“ shows the hit Pokémon's HP as a small bar
+  to the right of every hit: filled up to the HP after the hit, the piece the
+  hit took hatched in red, the numbers („80 → 22“) inside. The sentence no
+  longer repeats them, so the lines are shorter; the attacker keeps its HP in
+  the sentence. Desktop lists and chat are unchanged. After updating, the
+  streamer clicks „Alles neu veröffentlichen“ once so older fights get the
+  bars; until then they show the old sentences.
+
 ## [1.8.0] - 2026-11-19
 
 ### Added

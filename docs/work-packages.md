@@ -41,6 +41,7 @@ in [roadmap.md](roadmap.md).
 | – | Boss targets and HP from stream data (user request, `feat/boss-balancing`) | 1.8.0 | done 2026-11-19 |
 | – | Leaderboard trophies (user request, `claude/ranking-trophy-icons-458526`) | 1.8.0 | done 2026-11-19 |
 | – | One token per NPC (streamer feedback, `claude/npc-token-scaling-4763c0`) | 1.8.0 | done 2026-11-19 |
+| – | HP bar per hit in the fight log (user pick from the backlog, `claude/hp-balken-kampf-log-mockup-de3cfe`) | 1.8.1 (proposal) | done 2026-11-19 |
 | WP-09 | Balancing after the first streams | 1.9.0 (proposal) | planned |
 
 ## Log
@@ -1037,6 +1038,33 @@ in [roadmap.md](roadmap.md).
 - Pitfalls: —
 - Deliberately not done: earned balances are not corrected (open question in
   roadmap.md WP-05).
+
+### HP bar per hit in the fight log — user pick (2026-11-19, branch claude/hp-balken-kampf-log-mockup-de3cfe)
+- Built: `BattleLog.ToText` gives every hit a `TargetHp` (target, HP before
+  and after, from the same replay as the „Schaden“ box) and splits the target's
+  „, HP 88 → 30“ off its „)“ as a span marked `IsTargetHp`; the text stays the
+  same, so desktop lists, `Lines` and chat are unchanged. Contracts:
+  `LogLine.Hit` (`LogHit`: side, fighter on the page, before, after) and
+  `LogPart.IsTargetHp`, both left out of the JSON when unset — older files stay
+  valid and show the full sentence. Fight page: a hit is a row with the
+  sentence (without the target's HP) and the fight cards' `.hp-bar` as
+  `.hit-bar` on the right: fill up to the HP after, hatched red up to the HP
+  before, „80 → 22“ inside as two clipped copies, red at ≤ 25 %. A hit the page
+  cannot draw (unknown fighter, HP out of range) keeps the full sentence.
+  Tests: spans and hits incl. a hit beyond the HP left, generator positions and
+  JSON, bUnit for bars, text and the fallback. Sample fight 1 follows the format.
+  Spec §5, CHANGELOG, „Neuigkeiten“.
+- User decisions: mockup variant „B“ (target HP from the sentence into the bar,
+  the attacker keeps its number) over „A“ (bar next to the unchanged sentence)
+  and „C“ (B plus the other backlog ideas); „Ja, loslegen“ on the plan.
+- Addenda: version 1.8.1 and working on the session branch instead of
+  `feat/…` are proposals (not confirmed).
+- Pitfalls: `LogHit` exists twice — Contracts (page positions) and Core
+  (`TargetHp`, log indexes); the Core one is named differently, or
+  `SiteGenerator` sees an ambiguous name. „→“ is escaped (`→`) in the
+  generated JSON — tests must not search for it literally.
+- Deliberately not done (→ backlog): shorter duel lines, knockout in the hit's
+  line, duel sections, effectiveness badges, boss log filter.
 
 Template per entry:
 

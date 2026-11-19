@@ -200,6 +200,12 @@ Used by boss, PvP and NPC fights.
   `Pikachu (Ash, HP 35) hat Arkani (Boss, HP 160 → 120) 40 Schaden zugefügt.`
   plus ` Volltreffer!`, ` Sehr effektiv!` or ` Nicht sehr effektiv.` /
   `Arkani (Boss) wurde besiegt.` / `Misty schickt Karpador in den Kampf.`
+  On the fight page a hit's target HP are not in the sentence but a small bar
+  on the right (user pick „B“ from the mockups, 2026-11-19): filled up to the HP
+  after the hit, the lost piece hatched in red up to the HP before it, „160 →
+  120“ inside, red fill at a quarter or less like on the fight cards. Desktop
+  lists keep the full sentence. Older fight files show the full sentence until
+  „Alles neu veröffentlichen“.
 
 ## 6. PvP (`!fight`)
 
