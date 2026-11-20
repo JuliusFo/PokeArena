@@ -25,5 +25,6 @@
   the default, the number is the damage that arrived (the mockup's 112 on
   64 → 0 shows 64, like the bars and the „Schaden“ box).
 - Addenda: version 1.8.3 is a proposal (not confirmed).
-- Pitfalls: bUnit's `JSInterop` is strict by default — every fight page test
-  would fail on the `localStorage.getItem` call; `WebTestContext` sets it loose.
+- Pitfalls: bUnit's `JSInterop` is strict — every fight page test would fail
+  on the `localStorage.getItem` call; `WebTestContext` plans `getItem` and
+  `setItem` and stays strict (a test's own later `Setup` wins).
