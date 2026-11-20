@@ -62,6 +62,13 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   show their `TextWithBar` („ trifft “, „.“) — only when `LogHit.Damage` is set and not negative; a 1.8.1 file keeps
   the number in the sentence (claude/kampflog-hp-balken-feedback-808390, mockup „A“). Its red is lighter in the dark
   theme: `--hp-low` as text on the dark surface is under 3 : 1.
+- The log has two views, „Balken“ (default) and „Text“, picked per viewer in `localStorage`
+  (`Battle.ViewKey`, read in `OnInitializedAsync`, every JS call in `try`/`catch JSException` — blocked storage
+  means bars and a pick for this page only). The text view (`TextParts`) words a hit itself where a part is marked
+  `IsDamage` („ und verursacht 20 Schaden.“, the damage that arrived) and colours parts marked `IsHp` and the
+  target's HP from `LogHit` (`.log-hp` high / mid / low at the bars' thresholds, ≥ 5 : 1 light and dark). Files
+  without `IsDamage` keep their wording. bUnit runs `JSInterop` loose in `WebTestContext`, so an unplanned
+  `getItem` is null (the bars) (claude/kampflog-design-options-cb7042).
 - „Schaden“ box (`Shared/DamageBox.razor`, `Services/DamageMeter.cs`, feat/damage-meter): a bar has the colour of
   the trainer's name (`Tint.Darkened`, a test keeps it equal to `Tint.Style`) and white text with a 1 px black
   `text-shadow` outline over the fill, `--text` over the rest, two clipped copies (feat/damage-text-white,
