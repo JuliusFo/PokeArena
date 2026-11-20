@@ -76,7 +76,9 @@
                            from the sentence to the bar's left (claude/kampflog-hp-balken-feedback-808390, mockup „A“), so
                            a hit's numbers are in one place; older files without it keep it in the sentence. *@
                         var hit = line.Hit!;
-                        var damage = hit.Damage is >= 0 ? hit.Damage : null;
+                        @* The number is what arrived, like the bar and the „Schaden“ box: a knockout of 77 on 70 HP left
+                           shows −70 (user decision in the review of claude/kampflog-hp-balken-feedback-808390). *@
+                        int? damage = hit.Damage is >= 0 ? hit.Before - hit.After : null;
                         var hpText = $"{hit.Before} → {hit.After}";
                         var barClass = "hp-bar hit-bar" + (hit.After * 4 <= target.MaxHp ? " low" : "") + (hit.Before == hit.After ? " no-loss" : "");
                         <span class="hit">

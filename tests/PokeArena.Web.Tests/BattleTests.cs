@@ -265,7 +265,8 @@ public class BattleTests : WebTestContext
     [Fact]
     public void A_hit_with_its_damage_shows_the_number_next_to_the_bar_and_a_short_sentence()
     {
-        // The second hit is more than the 22 left: the number says 31, the bar 22 → 0, as the sentence did before.
+        // The second hit is more than the 22 left: the number says what arrived (−22), like the bar and the „Schaden“
+        // box — not the 31 of the sentence (review claude/kampflog-hp-balken-feedback-808390).
         Put(
             SitePaths.Battle(10),
             BattlePage(10) with
@@ -296,7 +297,7 @@ public class BattleTests : WebTestContext
             cut.FindAll(".log .hit-text").Select(t => t.TextContent));
         Assert.Equal("Volltreffer!", cut.Find(".log .critical").TextContent);
         // The number left of the bar, inside one box with it; „Schaden“ only for screen readers and a copied line.
-        Assert.Equal([" −58 Schaden, ", " −31 Schaden, "], cut.FindAll(".log .hit-damage").Select(d => d.TextContent));
+        Assert.Equal([" −58 Schaden, ", " −22 Schaden, "], cut.FindAll(".log .hit-damage").Select(d => d.TextContent));
         Assert.All(cut.FindAll(".log .hit-damage .visually-hidden"), h => Assert.NotEqual("", h.TextContent));
         Assert.Equal(4, cut.FindAll(".log .hit-damage .visually-hidden").Count);
         Assert.All(cut.FindAll(".log .hit-numbers"), n => Assert.Equal("hit-damage", n.Children[0].ClassName));
@@ -368,8 +369,8 @@ public class BattleTests : WebTestContext
                 Log =
                 [
                     new LogLine(
-                        [new LogPart("Raupy", 1, 0, IsSpecies: true), new LogPart(" (Misty"), new LogPart(", HP 30 → 10", 1, 0, IsTargetHp: true), new LogPart(") 20 Schaden.")],
-                        Hit: new LogHit(side, fighter, before, after)),
+                        [new LogPart("Raupy", 1, 0, IsSpecies: true), new LogPart(" (Misty"), new LogPart(", HP 30 → 10", 1, 0, IsTargetHp: true), new LogPart(") 20 Schaden.", TextWithBar: ").")],
+                        Hit: new LogHit(side, fighter, before, after, 20)),
                 ],
             },
             SiteJson.Default.BattlePage);

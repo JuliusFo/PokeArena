@@ -102,8 +102,9 @@ public sealed record LogLine(
 /// is what arrived — less than <paramref name="Damage"/> when a hit is more than the target had left.
 /// </summary>
 /// <param name="Damage">
-/// The hit's damage, shown next to the bar instead of in the sentence (claude/kampflog-hp-balken-feedback-808390);
-/// null in older files, whose sentence keeps it.
+/// The hit's full damage (claude/kampflog-hp-balken-feedback-808390); null in older files, whose sentence keeps the
+/// number. When set, the page shows what arrived (<paramref name="Before"/> minus <paramref name="After"/>) next to
+/// the bar instead of in the sentence.
 /// </param>
 public sealed record LogHit(
     int Side,
