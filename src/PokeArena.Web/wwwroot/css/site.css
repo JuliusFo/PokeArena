@@ -743,6 +743,29 @@ h1.tinted {
 }
 
 /*
+  The damage left of the bar (claude/kampflog-hp-balken-feedback-808390, mockup „A“): viewers read the number in the
+  sentence and the HP on the right, so both moved together. Right-aligned against the bar; the red is --hp-low on
+  white (5.6 : 1) and a lighter red on the dark surface (≈ 6.9 : 1), since --hp-low there is under 3 : 1.
+*/
+.log .hit-numbers {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+}
+
+.log .hit-damage {
+  --damage: #c42d0b;
+  min-width: 4.5ch;
+  color: var(--damage);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/*
   Text only screen readers (and a copied line) get: the bar's „HP“. `pre`, not `nowrap`: out of the flow its trailing
   space would collapse and a copied line read „HP576 → 541“ (review).
 */
@@ -759,6 +782,10 @@ h1.tinted {
   .log .hit-bar {
     --lost-a: #7a2c1c;
     --lost-b: #4e2219;
+  }
+
+  .log .hit-damage {
+    --damage: #ff8a6e;
   }
 }
 

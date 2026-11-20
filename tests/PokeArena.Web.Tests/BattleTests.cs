@@ -250,6 +250,8 @@ public class BattleTests : WebTestContext
         // „HP“ only for screen readers and a copied line; the bar's copy for the fill stays hidden from them, like on the fight cards.
         Assert.All(bars, b => Assert.Equal("HP ", b.QuerySelector(".hp-text .visually-hidden")!.TextContent));
         Assert.All(bars, b => Assert.Equal("true", b.QuerySelector(".hp-text.on-fill")!.GetAttribute("aria-hidden")));
+        // A 1.8.1 file has no damage on its hits: the number stays in the sentence, none next to the bar.
+        Assert.Empty(cut.FindAll(".log .hit-damage"));
 
         static LogLine Hit(int before, int after, string outcome) => new(
             [
@@ -258,6 +260,89 @@ public class BattleTests : WebTestContext
                 new LogPart($", HP {before} → {after}", 1, 0, IsTargetHp: true), new LogPart(")", 1, 0), new LogPart(outcome),
             ],
             Hit: new LogHit(1, 0, before, after));
+    }
+
+    [Fact]
+    public void A_hit_with_its_damage_shows_the_number_next_to_the_bar_and_a_short_sentence()
+    {
+        // The second hit is more than the 22 left: the number says 31, the bar 22 → 0, as the sentence did before.
+        Put(
+            SitePaths.Battle(10),
+            BattlePage(10) with
+            {
+                Sides =
+                [
+                    new BattleSide("Ash", true, [new BattleFighter(Bisasam, "Ash", "11", 90)]),
+                    new BattleSide("Misty", false, [new BattleFighter(Raupy, "Misty", "12", 80)]),
+                ],
+                Lines =
+                [
+                    "Bisasam (Ash, HP 90) hat Raupy (Misty, HP 80 → 22) 58 Schaden zugefügt. Volltreffer! Sehr effektiv!",
+                    "Bisasam (Ash, HP 90) hat Raupy (Misty, HP 22 → 0) 31 Schaden zugefügt.",
+                ],
+                Log =
+                [
+                    Hit(80, 22, 58, new LogPart(" Volltreffer!", IsCritical: true), new LogPart(" Sehr effektiv!")),
+                    Hit(22, 0, 31),
+                ],
+            },
+            SiteJson.Default.BattlePage);
+
+        var cut = Render<Battle>(p => p.Add(b => b.Id, 10));
+
+        cut.WaitForAssertion(() => Assert.Equal(2, cut.FindAll(".log .hit-damage").Count));
+        Assert.Equal(
+            ["Bisasam (Ash, HP 90) trifft Raupy (Misty). Volltreffer! Sehr effektiv!", "Bisasam (Ash, HP 90) trifft Raupy (Misty)."],
+            cut.FindAll(".log .hit-text").Select(t => t.TextContent));
+        Assert.Equal("Volltreffer!", cut.Find(".log .critical").TextContent);
+        // The number left of the bar, inside one box with it; „Schaden“ only for screen readers and a copied line.
+        Assert.Equal([" −58 Schaden, ", " −31 Schaden, "], cut.FindAll(".log .hit-damage").Select(d => d.TextContent));
+        Assert.All(cut.FindAll(".log .hit-damage .visually-hidden"), h => Assert.NotEqual("", h.TextContent));
+        Assert.Equal(4, cut.FindAll(".log .hit-damage .visually-hidden").Count);
+        Assert.All(cut.FindAll(".log .hit-numbers"), n => Assert.Equal("hit-damage", n.Children[0].ClassName));
+        Assert.All(cut.FindAll(".log .hit-numbers"), n => Assert.StartsWith("hp-bar hit-bar", n.Children[1].ClassName));
+
+        static LogLine Hit(int before, int after, int damage, params LogPart[] extras) => new(
+            [
+                new LogPart("Bisasam", 0, 0, IsSpecies: true), new LogPart(" (", 0, 0), new LogPart("Ash", 0, 0, IsOwner: true), new LogPart(", HP 90)", 0, 0),
+                new LogPart(" hat ", TextWithBar: " trifft "),
+                new LogPart("Raupy", 1, 0, IsSpecies: true), new LogPart(" (", 1, 0), new LogPart("Misty", 1, 0, IsOwner: true),
+                new LogPart($", HP {before} → {after}", 1, 0, IsTargetHp: true), new LogPart(")", 1, 0),
+                new LogPart($" {damage} Schaden zugefügt.", TextWithBar: "."), .. extras,
+            ],
+            Hit: new LogHit(1, 0, before, after, damage));
+    }
+
+    [Fact]
+    public void A_hit_with_a_damage_the_page_cannot_show_keeps_the_number_in_the_sentence()
+    {
+        Put(
+            SitePaths.Battle(11),
+            BattlePage(11) with
+            {
+                Sides =
+                [
+                    new BattleSide("Ash", true, [new BattleFighter(Bisasam, "Ash", "11", 90)]),
+                    new BattleSide("Misty", false, [new BattleFighter(Raupy, "Misty", "12", 80)]),
+                ],
+                Lines = ["Ash hat Raupy (Misty, HP 30 → 10) 20 Schaden zugefügt."],
+                Log =
+                [
+                    new LogLine(
+                        [
+                            new LogPart("Ash"), new LogPart(" hat ", TextWithBar: " trifft "), new LogPart("Raupy", 1, 0, IsSpecies: true), new LogPart(" (Misty"),
+                            new LogPart(", HP 30 → 10", 1, 0, IsTargetHp: true), new LogPart(")"), new LogPart(" 20 Schaden zugefügt.", TextWithBar: "."),
+                        ],
+                        Hit: new LogHit(1, 0, 30, 10, -20)),
+                ],
+            },
+            SiteJson.Default.BattlePage);
+
+        var cut = Render<Battle>(p => p.Add(b => b.Id, 11));
+
+        cut.WaitForAssertion(() => Assert.Equal("Ash hat Raupy (Misty) 20 Schaden zugefügt.", cut.Find(".log .hit-text").TextContent));
+        Assert.Empty(cut.FindAll(".log .hit-damage"));
+        Assert.Single(cut.FindAll(".log .hit-bar"));
     }
 
     [Theory]

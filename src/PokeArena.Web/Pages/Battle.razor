@@ -72,23 +72,33 @@
                     @if (TargetOf(battle, line) is { } target)
                     {
                         @* The target's HP move from the sentence into a bar on the right (claude/hp-balken-kampf-log-mockup-de3cfe): the
-                           fill up to the HP after the hit, the lost piece hatched up to the HP before it. *@
+                           fill up to the HP after the hit, the lost piece hatched up to the HP before it. The damage moves
+                           from the sentence to the bar's left (claude/kampflog-hp-balken-feedback-808390, mockup „A“), so
+                           a hit's numbers are in one place; older files without it keep it in the sentence. *@
                         var hit = line.Hit!;
+                        var damage = hit.Damage is >= 0 ? hit.Damage : null;
                         var hpText = $"{hit.Before} → {hit.After}";
                         var barClass = "hp-bar hit-bar" + (hit.After * 4 <= target.MaxHp ? " low" : "") + (hit.Before == hit.After ? " no-loss" : "");
                         <span class="hit">
-                            <span class="hit-text">@Parts(battle, line, withoutTargetHp: true)</span>
-                            @* „HP“ for screen readers, who would otherwise hear only „80 Pfeil 22“ (review). *@
-                            <HpBar Class="@barClass"
-                                   Style="@($"--hp: {Percent(hit.After, target.MaxHp)}%; --before: {Percent(hit.Before, target.MaxHp)}%")"
-                                   Title="@($"HP {hpText} von {target.MaxHp}")"
-                                   HiddenPrefix="HP "
-                                   Text="@hpText" />
+                            <span class="hit-text">@Parts(battle, line, withoutTargetHp: true, damageAtBar: damage is not null)</span>
+                            <span class="hit-numbers">
+                                @if (damage is { } dealt)
+                                {
+                                    @* „Schaden“ for screen readers and a copied line, like the bar's „HP“. *@
+                                    <span class="hit-damage"><span class="visually-hidden">@(" ")</span>−@dealt.ToString(CultureInfo.InvariantCulture)<span class="visually-hidden">@(" Schaden, ")</span></span>
+                                }
+                                @* „HP“ for screen readers, who would otherwise hear only „80 Pfeil 22“ (review). *@
+                                <HpBar Class="@barClass"
+                                       Style="@($"--hp: {Percent(hit.After, target.MaxHp)}%; --before: {Percent(hit.Before, target.MaxHp)}%")"
+                                       Title="@($"HP {hpText} von {target.MaxHp}")"
+                                       HiddenPrefix="HP "
+                                       Text="@hpText" />
+                            </span>
                         </span>
                     }
                     else
                     {
-                        @Parts(battle, line, withoutTargetHp: false)
+                        @Parts(battle, line, withoutTargetHp: false, damageAtBar: false)
                     }
                 </li>
             }
@@ -177,8 +187,11 @@ else
             ? fighter
             : null;
 
-    /// <summary>A log line's parts: names in their colour, „Volltreffer!“ on gold, the target's HP left out where a bar shows them.</summary>
-    private static RenderFragment Parts(BattlePage battle, LogLine line, bool withoutTargetHp) => __builder =>
+    /// <summary>
+    /// A log line's parts: names in their colour, „Volltreffer!“ on gold, the target's HP left out where a bar shows
+    /// them, and each part's <see cref="LogPart.TextWithBar"/> where the damage stands next to the bar.
+    /// </summary>
+    private static RenderFragment Parts(BattlePage battle, LogLine line, bool withoutTargetHp, bool damageAtBar) => __builder =>
     {
         foreach (var part in line.Parts)
         {
@@ -188,20 +201,21 @@ else
             }
 
             // Text may be missing in a file that is not ours (no null check in SiteJson): plain text then.
-            if (part.IsCritical && (part.Text ?? "").TrimStart() is { Length: > 0 } word)
+            var text = damageAtBar && part.TextWithBar is { } withBar ? withBar : part.Text ?? "";
+            if (part.IsCritical && text.TrimStart() is { Length: > 0 } word)
             {
                 // The leading space stays outside the gold background.
-                var space = part.Text![..^word.Length];
+                var space = text[..^word.Length];
                 @space
                 <strong class="critical">@word</strong>
             }
             else if (FighterOf(battle, part) is { } fighter && Tint.Style(Tint.Of(battle, part, fighter)) is { } tint)
             {
-                <span class="tinted" style="@tint">@part.Text</span>
+                <span class="tinted" style="@tint">@text</span>
             }
             else
             {
-                @part.Text
+                @text
             }
         }
     };
