@@ -310,9 +310,31 @@ public class BattleEngineTests
         var text = log.ToText(Species);
 
         Assert.Equal(
-            [null, new HitTarget(1, 88, 30), new HitTarget(0, 70, 50), null, new HitTarget(1, 30, 0), null],
+            [null, new HitTarget(1, 88, 30, 58), new HitTarget(0, 70, 50, 20), null, new HitTarget(1, 30, 0, 45), null],
             text.Select(l => l.Hit));
         Assert.Equal([", HP 88 → 30", ", HP 70 → 50", ", HP 30 → 0"], text.SelectMany(l => l.Spans).Where(s => s.IsTargetHp).Select(s => s.Text));
+    }
+
+    [Fact]
+    public void A_hit_reads_as_a_short_sentence_where_the_website_shows_its_numbers_next_to_the_bar()
+    {
+        // The website leaves the target's HP out and takes each part's TextWithBar (claude/kampflog-hp-balken-feedback-808390).
+        var log = new BattleLog(
+            [new LogFighter(0, 25, 70, "1", "Ash"), new LogFighter(1, 7, 88, "2", "Misty")],
+            [
+                new BattleEvent(BattleEventKind.Attack, 1, 0, 70, 1, 30, 58, Critical: true, TypeFactor: 0.5),
+                new BattleEvent(BattleEventKind.Attack, 1, 1, 30, 0, 50, 20),
+            ]);
+
+        var text = log.ToText(Species);
+
+        Assert.Equal(
+            ["Pikachu (Ash, HP 70) trifft Schiggy (Misty). Volltreffer! Nicht sehr effektiv.", "Schiggy (Misty, HP 30) trifft Pikachu (Ash)."],
+            text.Where(l => l.Hit is not null).Select(l => string.Concat(l.Spans.Where(s => !s.IsTargetHp).Select(s => s.TextWithBar ?? s.Text))));
+        // Everywhere else the sentence stays as it was.
+        Assert.Equal(
+            "Pikachu (Ash, HP 70) hat Schiggy (Misty, HP 88 → 30) 58 Schaden zugefügt. Volltreffer! Nicht sehr effektiv.",
+            text[1].Text);
     }
 
     [Theory]
@@ -329,10 +351,10 @@ public class BattleEngineTests
         Assert.Equal(
             [
                 new LogSpan("Pikachu", 0, IsSpecies: true), new LogSpan(" (", 0), new LogSpan("Ash", 0, IsOwner: true), new LogSpan(", HP 70)", 0),
-                new LogSpan(" hat "),
+                new LogSpan(" hat ", TextWithBar: " trifft "),
                 new LogSpan("Schiggy", 1, IsSpecies: true), new LogSpan(" (", 1), new LogSpan("Boss", 1, IsOwner: true),
                 new LogSpan(", HP 88 → 38", 1, IsTargetHp: true), new LogSpan(")", 1),
-                new LogSpan(" 50 Schaden zugefügt."), new LogSpan(" Volltreffer!", IsCritical: true),
+                new LogSpan(" 50 Schaden zugefügt.", TextWithBar: "."), new LogSpan(" Volltreffer!", IsCritical: true),
                 .. effect is null ? Array.Empty<LogSpan>() : [new LogSpan(effect)],
             ],
             spans);

@@ -99,9 +99,18 @@ public sealed record LogLine(
 /// <summary>
 /// A hit's target, <c>Sides[Side].Fighters[Fighter]</c> of the page, with its HP just before and after the hit (the
 /// fight page draws them as a bar, claude/hp-balken-kampf-log-mockup-de3cfe). <paramref name="Before"/> minus <paramref name="After"/>
-/// is what arrived — less than the damage in the text when a hit is more than the target had left.
+/// is what arrived — less than <paramref name="Damage"/> when a hit is more than the target had left.
 /// </summary>
-public sealed record LogHit(int Side, int Fighter, int Before, int After);
+/// <param name="Damage">
+/// The hit's damage, shown next to the bar instead of in the sentence (claude/kampflog-hp-balken-feedback-808390);
+/// null in older files, whose sentence keeps it.
+/// </param>
+public sealed record LogHit(
+    int Side,
+    int Fighter,
+    int Before,
+    int After,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] int? Damage = null);
 
 /// <summary>
 /// Text, optionally part of one fighter's label („Pikachu (Ash, HP 24)“): <c>Sides[Side].Fighters[Fighter]</c> of the
@@ -112,6 +121,10 @@ public sealed record LogHit(int Side, int Fighter, int Before, int After);
 /// <param name="IsCritical">„Volltreffer!“; false in older files.</param>
 /// <param name="IsTargetHp">A hit target's HP („, HP 88 → 30“), left out where the page draws <see cref="LogLine.Hit"/>;
 /// false in older files.</param>
+/// <param name="TextWithBar">
+/// The text where the page draws <see cref="LogLine.Hit"/> with its damage: „ trifft “ for „ hat “, „.“ for
+/// „ 20 Schaden zugefügt.“; null = <paramref name="Text"/> (and in older files).
+/// </param>
 public sealed record LogPart(
     string Text,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] int? Side = null,
@@ -119,7 +132,8 @@ public sealed record LogPart(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool IsOwner = false,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool IsSpecies = false,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool IsCritical = false,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool IsTargetHp = false);
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool IsTargetHp = false,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? TextWithBar = null);
 
 /// <summary><c>trainer/&lt;twitch-id&gt;.json</c>: one trainer's collection and history.</summary>
 /// <param name="ProfileImage">

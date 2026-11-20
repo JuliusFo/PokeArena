@@ -146,13 +146,13 @@ public sealed record BattleLog(IReadOnlyList<LogFighter> Fighters, IReadOnlyList
             }
 
             // An attack always has a target; fighter 0 only keeps a malformed log readable (as before), without a bar.
-            var hit = e is { Kind: BattleEventKind.Attack, Target: { } target } ? new HitTarget(target, targetHpBefore, e.TargetHp) : null;
+            var hit = e is { Kind: BattleEventKind.Attack, Target: { } target } ? new HitTarget(target, targetHpBefore, e.TargetHp, e.Damage) : null;
             lines.Add(new LogText(e.Kind switch
             {
                 BattleEventKind.Attack =>
                 [
                     .. Label(species, e.Fighter, Number(e.FighterHp)),
-                    new(" hat "),
+                    new(" hat ", TextWithBar: " trifft "),
                     .. TargetLabel(species, e.Target ?? 0, targetHpBefore, e.TargetHp),
                     .. Outcome(e),
                 ],
@@ -203,40 +203,48 @@ public sealed record BattleLog(IReadOnlyList<LogFighter> Fighters, IReadOnlyList
 
     private static string Number(int value) => value.ToString(CultureInfo.InvariantCulture);
 
-    /// <summary>„ 20 Schaden zugefügt. Volltreffer! Sehr effektiv!“ — „Volltreffer!“ as a part of its own, so it can stand out.</summary>
+    /// <summary>
+    /// „ 20 Schaden zugefügt. Volltreffer! Sehr effektiv!“ in parts: the damage (only „.“ where the website shows the
+    /// number next to the hit's bar), „Volltreffer!“ so it can stand out, the effectiveness.
+    /// </summary>
     private static LogSpan[] Outcome(BattleEvent e)
     {
-        var damage = $" {e.Damage.ToString(CultureInfo.InvariantCulture)} Schaden zugefügt.";
-        var effect = e.TypeFactor > 1.0 ? " Sehr effektiv!" : e.TypeFactor < 1.0 ? " Nicht sehr effektiv." : "";
-        if (!e.Critical)
-        {
-            return [new(damage + effect)];
-        }
-
-        return effect.Length > 0
-            ? [new(damage), new(" Volltreffer!", IsCritical: true), new(effect)]
-            : [new(damage), new(" Volltreffer!", IsCritical: true)];
+        var effect = e.TypeFactor > 1.0 ? " Sehr effektiv!" : e.TypeFactor < 1.0 ? " Nicht sehr effektiv." : null;
+        return
+        [
+            new($" {Number(e.Damage)} Schaden zugefügt.", TextWithBar: "."),
+            .. e.Critical ? [new LogSpan(" Volltreffer!", IsCritical: true)] : Array.Empty<LogSpan>(),
+            .. effect is null ? Array.Empty<LogSpan>() : [new LogSpan(effect)],
+        ];
     }
 }
 
 /// <summary>One rendered log line in parts (see <see cref="BattleLog.ToText"/>).</summary>
 /// <param name="IsRound">A „Runde N“ heading.</param>
-/// <param name="Hit">For a hit: its target and the target's HP before and after it.</param>
+/// <param name="Hit">For a hit: its target, the target's HP before and after it and the damage.</param>
 public sealed record LogText(IReadOnlyList<LogSpan> Spans, bool IsRound = false, HitTarget? Hit = null)
 {
     public string Text => string.Concat(Spans.Select(s => s.Text));
 }
 
-/// <summary>A hit's target (index into <see cref="BattleLog.Fighters"/>) with its HP just before and after the hit.</summary>
-public sealed record HitTarget(int Target, int Before, int After);
+/// <summary>
+/// A hit's target (index into <see cref="BattleLog.Fighters"/>) with its HP just before and after the hit, and the
+/// hit's damage — more than <paramref name="Before"/> minus <paramref name="After"/> when the target had less left.
+/// </summary>
+public sealed record HitTarget(int Target, int Before, int After, int Damage);
 
 /// <param name="Fighter">Index into <see cref="BattleLog.Fighters"/> if the text belongs to that fighter's label.</param>
 /// <param name="IsOwner">The text is the fighter's owner.</param>
 /// <param name="IsSpecies">The text is the fighter's species name.</param>
 /// <param name="IsCritical">The text is „Volltreffer!“.</param>
 /// <param name="IsTargetHp">The text is a hit target's HP („, HP 88 → 30“).</param>
+/// <param name="TextWithBar">
+/// The text where the website draws the hit's HP as a bar with the damage next to it: „ trifft “ for „ hat “, „.“
+/// for „ 20 Schaden zugefügt.“ (claude/kampflog-hp-balken-feedback-808390); null = <paramref name="Text"/>.
+/// </param>
 public sealed record LogSpan(
-    string Text, int? Fighter = null, bool IsOwner = false, bool IsSpecies = false, bool IsCritical = false, bool IsTargetHp = false);
+    string Text, int? Fighter = null, bool IsOwner = false, bool IsSpecies = false, bool IsCritical = false, bool IsTargetHp = false,
+    string? TextWithBar = null);
 
 /// <summary>Records events and tracks HP while an engine runs a fight.</summary>
 internal sealed class BattleRecorder
