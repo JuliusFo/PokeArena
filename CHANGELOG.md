@@ -10,6 +10,12 @@ tagged `vX.Y.Z` once its section is complete.
 Fixes of the whole review 1.8.1 (R2, `docs/review-1.8.1.md`).
 
 ### Changed
+- The fight page's „Kampfverlauf“ shows each hit's damage („−38“) right
+  before its HP bar instead of in the sentence, after viewer feedback that
+  reading the damage on the left and the HP on the right was tiring. The
+  sentence gets shorter: „Glumanda (Clara, HP 78) trifft Relaxo (Boss).
+  Volltreffer!“. Desktop lists and chat are unchanged. Older fights get the
+  new look once the bot has uploaded the website again after its update.
 - After an update the bot uploads every page of the website once by itself, so
   older fights and trainer pages pick up the new look without anyone clicking
   „Alles neu veröffentlichen“ (the button still also cleans up the bucket).

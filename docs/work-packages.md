@@ -45,7 +45,8 @@ code of a package lives: read the logs of earlier packages in the same area befo
 | – | [Leaderboard trophies (user request)](work-packages/claude-ranking-trophy-icons-458526.md) | 1.8.0 | 2026-11-19 | Web Home, Trophy |
 | – | [One token per NPC (streamer feedback)](work-packages/claude-npc-token-scaling-4763c0.md) | 1.8.0 | 2026-11-19 | npcs.json, guide page |
 | – | [HP bar per hit in the fight log (user pick)](work-packages/claude-hp-balken-kampf-log-mockup-de3cfe.md) | 1.8.1 | 2026-11-19 | BattleLog hits, Contracts LogHit, Web .hit-bar |
-| R2 | [Review 1.8.1 fixes](work-packages/wp-r2-review-1.8.1.md) ([review-1.8.1.md](review-1.8.1.md)) | 1.8.2 (proposal) | in progress | whole solution |
+| R2 | [Review 1.8.1 fixes](work-packages/wp-r2-review-1.8.1.md) ([review-1.8.1.md](review-1.8.1.md)) | 1.8.2 (proposal) | 2026-11-19 | whole solution |
+| – | [Damage next to the hit bar (viewer feedback)](work-packages/claude-kampflog-hp-balken-feedback-808390.md) | 1.8.2 (proposal) | 2026-11-20 | BattleLog spans, Contracts LogHit.Damage, Web .hit-numbers |
 | WP-09 | Balancing after the first streams | 1.9.0 (proposal) | planned | BossSettings, PvP loot, NPC strength |
 
 ## Adding a package

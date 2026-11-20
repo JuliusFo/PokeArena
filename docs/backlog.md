@@ -103,6 +103,12 @@ showed it together with the ideas below); the rest is not decided yet:
 - Duel sections: „Tentacha gegen Owei“ as a sub-heading instead of „… schickt …
   in den Kampf“, rounds as quiet separators.
 - „Sehr effektiv“ / „Nicht sehr effektiv“ as badges, like „Volltreffer“ in gold.
+- Hit bars after the damage moved next to them (1.8.2 proposal,
+  claude/kampflog-hp-balken-feedback-808390, mockup „A“), from the same
+  feedback: one HP column per side, so the boss's HP fall down one column
+  without the trainers' bars in between (mockup „B“; narrow on a phone); a
+  thin edge in the target's colour on the bar; „Volltreffer“ as gold behind
+  the number instead of a word in the sentence.
 - Boss fights: filter „nur meine Pokémon“ or collapsible rounds — the logs get
   long there.
 - Fight cards: the survivor's `.hp-bar` (`12ch + 16px`) is probably too narrow

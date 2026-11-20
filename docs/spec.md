@@ -203,7 +203,10 @@ Used by boss, PvP and NPC fights.
   On the fight page a hit's target HP are not in the sentence but a small bar
   on the right (user pick „B“ from the mockups, 2026-11-19): filled up to the HP
   after the hit, the lost piece hatched in red up to the HP before it, „160 →
-  120“ inside, red fill at a quarter or less like on the fight cards. Desktop
+  120“ inside, red fill at a quarter or less like on the fight cards. The
+  damage stands as „−40“ right before the bar, and the sentence reads
+  `Pikachu (Ash, HP 35) trifft Arkani (Boss).` plus the same additions
+  (user pick „A“ from the mockups, 2026-11-20, after viewer feedback). Desktop
   lists keep the full sentence. Older fight files show the full sentence until
   „Alles neu veröffentlichen“.
 
