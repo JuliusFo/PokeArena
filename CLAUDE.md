@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-11-20 · v1.8.1 released · built, unreleased: R2 (review 1.8.1 fixes) and damage next to the fight log's hit bar (→ 1.8.2, proposal) · next WP-09 (→ 1.9.0, proposal) after a few streams
+Status: 2026-11-20 · v1.8.2 released (R2: review 1.8.1 fixes, website republished once after an update; damage before the fight log's hit bar) · next WP-09 (→ 1.9.0, proposal) after a few streams
 
 ## 1. Where to find what
 
@@ -174,12 +174,12 @@ PokeArena.slnx
 
 Replace this section at every release or package; history belongs in CHANGELOG.md and docs/work-packages/.
 
-- 1.8.1 released 2026-11-19. Built, not released (→ 1.8.2, proposal): R2, the fixes of whole review 1.8.1
-  (`wp/r2-review-1.8.1`, docs/review-1.8.1.md), and the damage („−38“) before each hit bar in the fight log with a
-  shorter sentence (`claude/kampflog-hp-balken-feedback-808390`, viewer feedback on 1.8.1, mockup „A“; parked from
-  the same feedback: one HP column per side, backlog). From R2 on the bot republishes the website once by itself
-  after an update; the Cloudflare WAF rule and the R2 billing alert (docs/website-setup.md §2) are for the user to
-  set.
+- 1.8.2 released 2026-11-20: R2, the fixes of whole review 1.8.1 (`wp/r2-review-1.8.1`, docs/review-1.8.1.md),
+  and the damage („−38“) before each hit bar in the fight log with a shorter sentence
+  (`claude/kampflog-hp-balken-feedback-808390`, viewer feedback on 1.8.1, mockup „A“; parked from the same feedback:
+  one HP column per side, backlog). From 1.8.2 on the bot republishes the website once by itself after an update —
+  no „Alles neu veröffentlichen“ click needed. Still for the user to set by hand: the Cloudflare WAF rule and the R2
+  billing alert (docs/website-setup.md §2).
 - To watch on stream: boss win rates with the 1.8.0 rule (≈ 75 % group wins expected); whether the darkened
   names read well on the dark page (roadmap.md).
 - Next: WP-09 balancing after a few streams (1.9.0, proposal): PvP loot preferring missing species, NPC difficulty;

@@ -7,6 +7,8 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+## [1.8.2] - 2026-11-20
+
 Fixes of the whole review 1.8.1 (R2, `docs/review-1.8.1.md`).
 
 ### Changed
