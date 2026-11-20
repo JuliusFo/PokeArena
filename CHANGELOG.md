@@ -7,6 +7,17 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+### Added
+- A switch „Balken / Text“ over the fight page's „Kampfverlauf“, after viewer
+  feedback that not everyone likes the hit bars. „Text“ shows every hit as one
+  sentence again, with coloured numbers: „Glumanda (Clara, HP 78) trifft Relaxo
+  (Boss, HP 541 → 503) und verursacht 38 Schaden.“ — HP green, orange or red by
+  what is left, the damage (what arrived) in bold red. Each viewer's browser
+  remembers the pick; the bars stay the default. Log parts mark the attacker's
+  HP (`isHp`) and the damage (`isDamage`); desktop lists and chat are
+  unchanged. Older fights get the new wording once the bot has uploaded the
+  website again after its update.
+
 ## [1.8.2] - 2026-11-20
 
 Fixes of the whole review 1.8.1 (R2, `docs/review-1.8.1.md`).

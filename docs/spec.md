@@ -211,6 +211,15 @@ Used by boss, PvP and NPC fights.
   (user pick „A“ from the mockups, 2026-11-20, after viewer feedback). Desktop
   lists keep the full sentence. Older fight files show the full sentence until
   „Alles neu veröffentlichen“.
+  A switch „Balken / Text“ over the log lets each viewer pick between that and
+  a text view (user request 2026-11-21, viewer feedback on the bars; the browser
+  remembers the pick, bars by default): every hit as one sentence
+  `Pikachu (Ash, HP 35) trifft Arkani (Boss, HP 160 → 120) und verursacht 40 Schaden.`
+  plus the same additions, the HP green above half, orange above a quarter, red
+  at a quarter or less of the fighter's maximum, the damage in bold red — again
+  the damage that arrived. Fight files from 1.8.2 and older keep their own
+  wording there (only the target's HP are coloured) until the bot has uploaded
+  the website again after its update.
 
 ## 6. PvP (`!fight`)
 
