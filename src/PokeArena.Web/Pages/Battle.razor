@@ -280,7 +280,10 @@ else
         }
     };
 
-    /// <summary>HP in the text view: green above half, orange above a quarter, red at a quarter or less (like the bars).</summary>
+    /// <summary>
+    /// HP in the text view: red at a quarter or less (the bars' „low“), orange at half or less (the text view's own
+    /// step), green above.
+    /// </summary>
     private static RenderFragment Hp(int hp, int max) => __builder =>
     {
         var level = hp * 4 <= max ? "low" : hp * 2 <= max ? "mid" : "high";
