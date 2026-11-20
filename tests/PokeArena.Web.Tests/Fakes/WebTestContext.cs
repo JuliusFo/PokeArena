@@ -23,6 +23,8 @@ public abstract class WebTestContext : BunitContext
 
     protected WebTestContext()
     {
+        // The fight page reads the viewer's log view from localStorage: unplanned calls return null (the bars).
+        JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<TimeProvider>(_time);
         Services.AddSingleton(new SiteData(new HttpClient(_host) { BaseAddress = new Uri("https://daten.example/") }));
     }

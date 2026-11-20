@@ -346,6 +346,160 @@ public class BattleTests : WebTestContext
         Assert.Single(cut.FindAll(".log .hit-bar"));
     }
 
+    /// <summary>A fight with two hits in the current format: the attacker's HP and the damage are parts of their own.</summary>
+    private void PutTextViewBattle(long id)
+    {
+        Put(
+            SitePaths.Battle(id),
+            BattlePage(id) with
+            {
+                Sides =
+                [
+                    new BattleSide("Ash", true, [new BattleFighter(Bisasam, "Ash", "11", 90)]),
+                    new BattleSide("Misty", false, [new BattleFighter(Raupy, "Misty", "12", 80)]),
+                ],
+                Lines =
+                [
+                    "Runde 1",
+                    "Bisasam (Ash, HP 40) hat Raupy (Misty, HP 80 → 22) 58 Schaden zugefügt. Volltreffer! Sehr effektiv!",
+                    "Bisasam (Ash, HP 90) hat Raupy (Misty, HP 22 → 0) 31 Schaden zugefügt.",
+                ],
+                Log =
+                [
+                    new LogLine([new LogPart("Runde 1")], IsRound: true),
+                    Hit(40, 80, 22, 58, new LogPart(" Volltreffer!", IsCritical: true), new LogPart(" Sehr effektiv!")),
+                    Hit(90, 22, 0, 31),
+                ],
+            },
+            SiteJson.Default.BattlePage);
+
+        static LogLine Hit(int attackerHp, int before, int after, int damage, params LogPart[] extras) => new(
+            [
+                new LogPart("Bisasam", 0, 0, IsSpecies: true), new LogPart(" (", 0, 0), new LogPart("Ash", 0, 0, IsOwner: true),
+                new LogPart(", HP ", 0, 0), new LogPart($"{attackerHp}", 0, 0, IsHp: true), new LogPart(")", 0, 0),
+                new LogPart(" hat ", TextWithBar: " trifft "),
+                new LogPart("Raupy", 1, 0, IsSpecies: true), new LogPart(" (", 1, 0), new LogPart("Misty", 1, 0, IsOwner: true),
+                new LogPart($", HP {before} → {after}", 1, 0, IsTargetHp: true), new LogPart(")", 1, 0),
+                new LogPart($" {damage} Schaden zugefügt.", TextWithBar: ".", IsDamage: true), .. extras,
+            ],
+            Hit: new LogHit(1, 0, before, after, damage));
+    }
+
+    [Fact]
+    public void The_text_view_shows_each_hit_as_one_sentence_with_coloured_numbers()
+    {
+        // The viewer picked the text view before (claude/kampflog-design-options-cb7042). The knockout says what
+        // arrived (22), like the bars and the „Schaden“ box, not the 31 of the hit.
+        JSInterop.Setup<string?>("localStorage.getItem", Battle.ViewKey).SetResult("text");
+        PutTextViewBattle(20);
+
+        var cut = Render<Battle>(p => p.Add(b => b.Id, 20));
+
+        cut.WaitForAssertion(() => Assert.Equal(3, cut.FindAll(".log li").Count));
+        Assert.Equal(
+            [
+                "Runde 1",
+                "Bisasam (Ash, HP 40) trifft Raupy (Misty, HP 80 → 22) und verursacht 58 Schaden. Volltreffer! Sehr effektiv!",
+                "Bisasam (Ash, HP 90) trifft Raupy (Misty, HP 22 → 0) und verursacht 22 Schaden.",
+            ],
+            cut.FindAll(".log li").Select(li => li.TextContent));
+        Assert.Empty(cut.FindAll(".log .hit-bar"));
+        Assert.Empty(cut.FindAll(".log .hit-damage"));
+        // 40 of 90 is under half, 80 of 80 full, 22 of 80 above a quarter, 0 low; the fighters' own maximum counts.
+        Assert.Equal(
+            [("40", "log-hp mid"), ("80", "log-hp high"), ("22", "log-hp mid"), ("90", "log-hp high"), ("22", "log-hp mid"), ("0", "log-hp low")],
+            cut.FindAll(".log .log-hp").Select(s => (s.TextContent, s.ClassName)));
+        Assert.Equal(["58", "22"], cut.FindAll(".log strong.log-damage").Select(s => s.TextContent));
+        Assert.Equal("Volltreffer!", cut.Find(".log .critical").TextContent);
+        Assert.Equal("true", cut.Find(".view-switch button:last-child").GetAttribute("aria-pressed"));
+    }
+
+    [Fact]
+    public void The_switch_changes_the_view_and_the_browser_remembers_it()
+    {
+        PutTextViewBattle(21);
+        var cut = Render<Battle>(p => p.Add(b => b.Id, 21));
+
+        // Without a pick: the bars.
+        cut.WaitForAssertion(() => Assert.Equal(2, cut.FindAll(".log .hit-bar").Count));
+        var buttons = cut.FindAll(".view-switch button");
+        Assert.Equal([("Balken", "true"), ("Text", "false")], buttons.Select(b => (b.TextContent, b.GetAttribute("aria-pressed"))));
+
+        cut.Find(".view-switch button:last-child").Click();
+
+        Assert.Empty(cut.FindAll(".log .hit-bar"));
+        Assert.Equal(2, cut.FindAll(".log strong.log-damage").Count);
+        Assert.Equal([Battle.ViewKey, "text"], JSInterop.VerifyInvoke("localStorage.setItem").Arguments);
+
+        cut.Find(".view-switch button:first-child").Click();
+
+        Assert.Equal(2, cut.FindAll(".log .hit-bar").Count);
+        Assert.Equal([Battle.ViewKey, "balken"], JSInterop.VerifyInvoke("localStorage.setItem", calledTimes: 2)[1].Arguments);
+    }
+
+    [Fact]
+    public void Blocked_storage_starts_with_the_bars_and_the_switch_still_works()
+    {
+        JSInterop.Setup<string?>("localStorage.getItem", Battle.ViewKey).SetException(new Microsoft.JSInterop.JSException("SecurityError"));
+        JSInterop.SetupVoid("localStorage.setItem", _ => true).SetException(new Microsoft.JSInterop.JSException("SecurityError"));
+        PutTextViewBattle(22);
+
+        var cut = Render<Battle>(p => p.Add(b => b.Id, 22));
+
+        cut.WaitForAssertion(() => Assert.Equal(2, cut.FindAll(".log .hit-bar").Count));
+        cut.Find(".view-switch button:last-child").Click();
+        Assert.Empty(cut.FindAll(".log .hit-bar"));
+    }
+
+    [Fact]
+    public void The_text_view_keeps_the_wording_of_an_older_file()
+    {
+        // 1.8.2 and older: no damage part marked, the attacker's HP inside the label's last part. The sentence stays
+        // as written; only the target's HP get their colour.
+        JSInterop.Setup<string?>("localStorage.getItem", Battle.ViewKey).SetResult("text");
+        Put(
+            SitePaths.Battle(23),
+            BattlePage(23) with
+            {
+                Sides =
+                [
+                    new BattleSide("Ash", true, [new BattleFighter(Bisasam, "Ash", "11", 90)]),
+                    new BattleSide("Misty", false, [new BattleFighter(Raupy, "Misty", "12", 80)]),
+                ],
+                Lines = ["Bisasam (Ash, HP 90) hat Raupy (Misty, HP 80 → 22) 58 Schaden zugefügt."],
+                Log =
+                [
+                    new LogLine(
+                        [
+                            new LogPart("Bisasam", 0, 0, IsSpecies: true), new LogPart(" (", 0, 0), new LogPart("Ash", 0, 0, IsOwner: true), new LogPart(", HP 90)", 0, 0),
+                            new LogPart(" hat ", TextWithBar: " trifft "),
+                            new LogPart("Raupy", 1, 0, IsSpecies: true), new LogPart(" (", 1, 0), new LogPart("Misty", 1, 0, IsOwner: true),
+                            new LogPart(", HP 80 → 22", 1, 0, IsTargetHp: true), new LogPart(")", 1, 0),
+                            new LogPart(" 58 Schaden zugefügt.", TextWithBar: "."),
+                        ],
+                        Hit: new LogHit(1, 0, 80, 22, 58)),
+                ],
+            },
+            SiteJson.Default.BattlePage);
+
+        var cut = Render<Battle>(p => p.Add(b => b.Id, 23));
+
+        cut.WaitForAssertion(() => Assert.Equal("Bisasam (Ash, HP 90) hat Raupy (Misty, HP 80 → 22) 58 Schaden zugefügt.", cut.Find(".log li").TextContent));
+        Assert.Equal(["80", "22"], cut.FindAll(".log .log-hp").Select(s => s.TextContent));
+        Assert.Empty(cut.FindAll(".log .log-damage"));
+    }
+
+    [Fact]
+    public void A_log_without_hits_has_no_view_switch()
+    {
+        Put(SitePaths.Battle(24), BattlePage(24), SiteJson.Default.BattlePage);
+
+        var cut = Render<Battle>(p => p.Add(b => b.Id, 24));
+
+        cut.WaitForAssertion(() => Assert.Contains("Kampfverlauf", cut.Markup));
+        Assert.Empty(cut.FindAll(".view-switch"));
+    }
+
     [Theory]
     [InlineData(1, 5, 30, 10)] // a fighter the page does not have
     [InlineData(1, 0, 90, 10)] // more HP before than the target has

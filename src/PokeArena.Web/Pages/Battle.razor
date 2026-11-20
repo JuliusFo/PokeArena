@@ -2,6 +2,8 @@
 @implements IDisposable
 @inject SiteData Data
 @inject TimeProvider Time
+@inject IJSRuntime JS
+@using Microsoft.JSInterop
 
 <PageTitle>@(_battle?.Headline ?? "Kampf") – PokeArena</PageTitle>
 
@@ -62,14 +64,28 @@
 
     <DamageBox Battle="battle" />
 
-    <h2>Kampfverlauf</h2>
+    <div class="log-head">
+        <h2>Kampfverlauf</h2>
+        @if (battle.Log?.Any(l => l.Hit is not null) == true)
+        {
+            @* Viewers disagreed on the hit bars: each picks a view, the browser remembers it (claude/kampflog-design-options-cb7042). *@
+            <div class="view-switch" role="group" aria-label="Ansicht des Kampfverlaufs">
+                <button type="button" aria-pressed="@(_textView ? "false" : "true")" @onclick="() => SetViewAsync(textView: false)">Balken</button>
+                <button type="button" aria-pressed="@(_textView ? "true" : "false")" @onclick="() => SetViewAsync(textView: true)">Text</button>
+            </div>
+        }
+    </div>
     <ol class="log">
         @if (battle.Log is { } log)
         {
             @foreach (var line in log)
             {
                 <li class="@(line.IsRound ? "round" : null)">
-                    @if (TargetOf(battle, line) is { } target)
+                    @if (_textView && TargetOf(battle, line) is { } textTarget)
+                    {
+                        @TextParts(battle, line, textTarget)
+                    }
+                    else if (TargetOf(battle, line) is { } target)
                     {
                         @* The target's HP move from the sentence into a bar on the right (claude/hp-balken-kampf-log-mockup-de3cfe): the
                            fill up to the HP after the hit, the lost piece hatched up to the HP before it. The damage moves
@@ -203,24 +219,107 @@ else
             }
 
             // Text may be missing in a file that is not ours (no null check in SiteJson): plain text then.
-            var text = damageAtBar && part.TextWithBar is { } withBar ? withBar : part.Text ?? "";
-            if (part.IsCritical && text.TrimStart() is { Length: > 0 } word)
+            @Part(battle, part, damageAtBar && part.TextWithBar is { } withBar ? withBar : part.Text ?? "")
+        }
+    };
+
+    /// <summary>One part: „Volltreffer!“ on gold, a name in its colour, anything else as plain text.</summary>
+    private static RenderFragment Part(BattlePage battle, LogPart part, string text) => __builder =>
+    {
+        if (part.IsCritical && text.TrimStart() is { Length: > 0 } word)
+        {
+            // The leading space stays outside the gold background.
+            var space = text[..^word.Length];
+            @space
+            <strong class="critical">@word</strong>
+        }
+        else if (FighterOf(battle, part) is { } fighter && Tint.Style(Tint.Of(battle, part, fighter)) is { } tint)
+        {
+            <span class="tinted" style="@tint">@text</span>
+        }
+        else
+        {
+            @text
+        }
+    };
+
+    /// <summary>
+    /// A hit in the text view (claude/kampflog-design-options-cb7042, viewer feedback on the bars): the whole sentence
+    /// „Pikachu (Ash, HP 24) trifft Schiggy (Misty, HP 88 → 30) und verursacht 58 Schaden.“ with the HP coloured by
+    /// what is left and the damage in bold red. The damage is what arrived, like the bar and the „Schaden“ box. A file
+    /// without a marked damage (1.8.2 and older) keeps its own wording; only the target's HP get their colour there.
+    /// </summary>
+    private static RenderFragment TextParts(BattlePage battle, LogLine line, BattleFighter target) => __builder =>
+    {
+        var hit = line.Hit!;
+        var reworded = line.Parts.Any(p => p.IsDamage);
+        foreach (var part in line.Parts)
+        {
+            if (part.IsTargetHp)
             {
-                // The leading space stays outside the gold background.
-                var space = text[..^word.Length];
-                @space
-                <strong class="critical">@word</strong>
+                @(", HP ")
+                @Hp(hit.Before, target.MaxHp)
+                @(" → ")
+                @Hp(hit.After, target.MaxHp)
             }
-            else if (FighterOf(battle, part) is { } fighter && Tint.Style(Tint.Of(battle, part, fighter)) is { } tint)
+            else if (reworded && part.IsDamage)
             {
-                <span class="tinted" style="@tint">@text</span>
+                @(" und verursacht ")
+                <strong class="log-damage">@((hit.Before - hit.After).ToString(CultureInfo.InvariantCulture))</strong>
+                @(" Schaden.")
+            }
+            else if (part.IsHp && FighterOf(battle, part) is { MaxHp: > 0 } fighter &&
+                     int.TryParse(part.Text, NumberStyles.None, CultureInfo.InvariantCulture, out var hp) && hp <= fighter.MaxHp)
+            {
+                @Hp(hp, fighter.MaxHp)
             }
             else
             {
-                @text
+                @Part(battle, part, reworded && part.TextWithBar is { } withBar ? withBar : part.Text ?? "")
             }
         }
     };
+
+    /// <summary>HP in the text view: green above half, orange above a quarter, red at a quarter or less (like the bars).</summary>
+    private static RenderFragment Hp(int hp, int max) => __builder =>
+    {
+        var level = hp * 4 <= max ? "low" : hp * 2 <= max ? "mid" : "high";
+        <span class="log-hp @level">@hp.ToString(CultureInfo.InvariantCulture)</span>
+    };
+
+    /// <summary>localStorage key of the viewer's pick; „text“ or „balken“.</summary>
+    public const string ViewKey = "pokearena.kampfverlauf";
+
+    private bool _textView;
+
+    /// <summary>
+    /// The viewer's last pick. Storage may be blocked (private windows, strict settings): the page then starts with the
+    /// bars and the switch still works until the page is left.
+    /// </summary>
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _textView = await JS.InvokeAsync<string?>("localStorage.getItem", ViewKey) == "text";
+        }
+        catch (JSException)
+        {
+            // Storage blocked: bars.
+        }
+    }
+
+    private async Task SetViewAsync(bool textView)
+    {
+        _textView = textView;
+        try
+        {
+            await JS.InvokeVoidAsync("localStorage.setItem", ViewKey, textView ? "text" : "balken");
+        }
+        catch (JSException)
+        {
+            // Storage blocked: the pick holds for this page only.
+        }
+    }
 
     protected override async Task OnParametersSetAsync()
     {
