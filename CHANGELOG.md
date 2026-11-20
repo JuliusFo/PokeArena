@@ -11,7 +11,8 @@ Fixes of the whole review 1.8.1 (R2, `docs/review-1.8.1.md`).
 
 ### Changed
 - The fight page's „Kampfverlauf“ shows each hit's damage („−38“) right
-  before its HP bar instead of in the sentence, after viewer feedback that
+  before its HP bar instead of in the sentence (the damage that arrived, so
+  a knockout matches the bar and the „Schaden“ box), after viewer feedback that
   reading the damage on the left and the HP on the right was tiring. The
   sentence gets shorter: „Glumanda (Clara, HP 78) trifft Relaxo (Boss).
   Volltreffer!“. Desktop lists and chat are unchanged. Older fights get the

@@ -17,9 +17,7 @@
   „Neuigkeiten“ (under 1.8.2, proposal).
 - User decisions: mockup „A“ (damage moves to the bar) over „B“ (one HP
   column per side) and „C“ (bar inside the sentence) — „A umsetzen“.
-- Addenda: version 1.8.2 is a proposal (not confirmed). The number is the
-  hit's full damage, like the sentence before — on a knockout more than the
-  bar loses (77 on 70 HP left).
+- Addenda: version 1.8.2 is a proposal (not confirmed).
 - Pitfalls: the dark theme's `--hp-low` is under 3 : 1 as text on the dark
   surface, so `.hit-damage` uses a lighter red there.
 - Deliberately not done (→ backlog): one HP column per side (mockup „B“),

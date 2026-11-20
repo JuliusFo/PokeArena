@@ -57,10 +57,11 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   (fix/hp-bar-dark-mode). The log's `.hit-bar` hatches the lost piece up to `max(--before, --hp + 4px)` (`.no-loss`
   drops it), hides „HP “ for screen readers (`white-space: pre`), and its sentence needs `overflow-wrap: anywhere`
   (claude/hp-balken-kampf-log-mockup-de3cfe). Parts marked `IsTargetHp` are left out only where `TargetOf` accepts the
-  hit; anything else keeps the full sentence. The hit's damage stands as „−20“ in `.hit-numbers` before the bar and the
-  parts show their `TextWithBar` („ trifft “, „.“) — only when `LogHit.Damage` is set and not negative; a 1.8.1 file
-  keeps the number in the sentence (claude/kampflog-hp-balken-feedback-808390, mockup „A“). Its red is lighter in the
-  dark theme: `--hp-low` as text on the dark surface is under 3 : 1.
+  hit; anything else keeps the full sentence. The damage that arrived (`Before − After`, not `LogHit.Damage`: it stays
+  equal to the bar and the „Schaden“ box on a knockout) stands as „−20“ in `.hit-numbers` before the bar and the parts
+  show their `TextWithBar` („ trifft “, „.“) — only when `LogHit.Damage` is set and not negative; a 1.8.1 file keeps
+  the number in the sentence (claude/kampflog-hp-balken-feedback-808390, mockup „A“). Its red is lighter in the dark
+  theme: `--hp-low` as text on the dark surface is under 3 : 1.
 - „Schaden“ box (`Shared/DamageBox.razor`, `Services/DamageMeter.cs`, feat/damage-meter): a bar has the colour of
   the trainer's name (`Tint.Darkened`, a test keeps it equal to `Tint.Style`) and white text with a 1 px black
   `text-shadow` outline over the fill, `--text` over the rest, two clipped copies (feat/damage-text-white,
