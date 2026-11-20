@@ -170,7 +170,11 @@ public sealed record BattleLog(IReadOnlyList<LogFighter> Fighters, IReadOnlyList
         return lines;
     }
 
-    /// <summary>„Pikachu (Ash, HP 24)“ in four parts that all name the fighter: species, „ (“, owner, the rest.</summary>
+    /// <summary>
+    /// „Pikachu (Ash, HP 24)“ in parts that all name the fighter: species, „ (“, owner, „)“ — with HP also „, HP “ and
+    /// the number „24“ as a part of its own before the „)“, so the website's text view can colour it
+    /// (claude/kampflog-design-options-cb7042).
+    /// </summary>
     private LogSpan[] Label(SpeciesCatalog species, int index, string? hp = null)
     {
         var fighter = Fighters[index];
@@ -179,7 +183,8 @@ public sealed record BattleLog(IReadOnlyList<LogFighter> Fighters, IReadOnlyList
             new(species.Get(fighter.SpeciesId).Name, index, IsSpecies: true),
             new(" (", index),
             new(fighter.Owner, index, IsOwner: true),
-            new(hp is null ? ")" : $", HP {hp})", index),
+            .. hp is null ? Array.Empty<LogSpan>() : [new LogSpan(", HP ", index), new LogSpan(hp, index, IsHp: true)],
+            new(")", index),
         ];
     }
 
@@ -212,7 +217,7 @@ public sealed record BattleLog(IReadOnlyList<LogFighter> Fighters, IReadOnlyList
         var effect = e.TypeFactor > 1.0 ? " Sehr effektiv!" : e.TypeFactor < 1.0 ? " Nicht sehr effektiv." : null;
         return
         [
-            new($" {Number(e.Damage)} Schaden zugefügt.", TextWithBar: "."),
+            new($" {Number(e.Damage)} Schaden zugefügt.", TextWithBar: ".", IsDamage: true),
             .. e.Critical ? [new LogSpan(" Volltreffer!", IsCritical: true)] : Array.Empty<LogSpan>(),
             .. effect is null ? Array.Empty<LogSpan>() : [new LogSpan(effect)],
         ];
@@ -242,9 +247,11 @@ public sealed record HitTarget(int Target, int Before, int After, int Damage);
 /// The text where the website draws the hit's HP as a bar with the damage next to it: „ trifft “ for „ hat “, „.“
 /// for „ 20 Schaden zugefügt.“ (claude/kampflog-hp-balken-feedback-808390); null = <paramref name="Text"/>.
 /// </param>
+/// <param name="IsHp">The text is an attacker's HP, „24“ of „Pikachu (Ash, HP 24)“ (claude/kampflog-design-options-cb7042).</param>
+/// <param name="IsDamage">The text is a hit's damage, „ 20 Schaden zugefügt.“ (claude/kampflog-design-options-cb7042).</param>
 public sealed record LogSpan(
     string Text, int? Fighter = null, bool IsOwner = false, bool IsSpecies = false, bool IsCritical = false, bool IsTargetHp = false,
-    string? TextWithBar = null);
+    string? TextWithBar = null, bool IsHp = false, bool IsDamage = false);
 
 /// <summary>Records events and tracks HP while an engine runs a fight.</summary>
 internal sealed class BattleRecorder

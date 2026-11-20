@@ -126,6 +126,11 @@ public sealed record LogHit(
 /// The text where the page draws <see cref="LogLine.Hit"/> with its damage: „ trifft “ for „ hat “, „.“ for
 /// „ 20 Schaden zugefügt.“; null = <paramref name="Text"/> (and in older files).
 /// </param>
+/// <param name="IsHp">
+/// An attacker's HP („24“ of „Pikachu (Ash, HP 24)“), coloured in the page's text view
+/// (claude/kampflog-design-options-cb7042); false in older files, whose number sits inside the label's last part.
+/// </param>
+/// <param name="IsDamage">A hit's damage („ 20 Schaden zugefügt.“), worded by the page's text view; false in older files.</param>
 public sealed record LogPart(
     string Text,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] int? Side = null,
@@ -134,7 +139,9 @@ public sealed record LogPart(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool IsSpecies = false,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool IsCritical = false,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool IsTargetHp = false,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? TextWithBar = null);
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? TextWithBar = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool IsHp = false,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool IsDamage = false);
 
 /// <summary><c>trainer/&lt;twitch-id&gt;.json</c>: one trainer's collection and history.</summary>
 /// <param name="ProfileImage">

@@ -203,9 +203,10 @@ public class SiteGeneratorTests : IDisposable
         Assert.Equal([true, false, false, false, false], page.Log.Select(l => l.IsRound));
         Assert.Equal(
             [
-                new LogPart("Raupy", 0, 1, IsSpecies: true), new LogPart(" (", 0, 1), new LogPart("Misty", 0, 1, IsOwner: true), new LogPart(", HP 90)", 0, 1), new LogPart(" hat ", TextWithBar: " trifft "),
+                new LogPart("Raupy", 0, 1, IsSpecies: true), new LogPart(" (", 0, 1), new LogPart("Misty", 0, 1, IsOwner: true), new LogPart(", HP ", 0, 1), new LogPart("90", 0, 1, IsHp: true), new LogPart(")", 0, 1),
+                new LogPart(" hat ", TextWithBar: " trifft "),
                 new LogPart("Arkani", 1, 0, IsSpecies: true), new LogPart(" (", 1, 0), new LogPart("Boss", 1, 0, IsOwner: true),
-                new LogPart(", HP 400 → 380", 1, 0, IsTargetHp: true), new LogPart(")", 1, 0), new LogPart(" 20 Schaden zugefügt.", TextWithBar: "."),
+                new LogPart(", HP 400 → 380", 1, 0, IsTargetHp: true), new LogPart(")", 1, 0), new LogPart(" 20 Schaden zugefügt.", TextWithBar: ".", IsDamage: true),
             ],
             page.Log[1].Parts);
         // Hits name their target by its place on the page: the boss (log index 1) is side 1, Pikachu side 0 fighter 0,
@@ -234,7 +235,10 @@ public class SiteGeneratorTests : IDisposable
         var json = System.Text.Encoding.UTF8.GetString((await _generator.RenderAsync(db, SitePaths.Battle(battle.Id), Start, _ct))!.Content);
 
         Assert.Contains("""{"text":" hat ","textWithBar":" trifft "}""", json);
-        Assert.Contains("""gt.","textWithBar":"."}""", json);
+        Assert.Contains("""gt.","textWithBar":".","isDamage":true}""", json);
+        Assert.Contains("""{"text":"400","side":1,"fighter":0,"isHp":true}""", json);
+        Assert.DoesNotContain("\"isHp\":false", json);
+        Assert.DoesNotContain("\"isDamage\":false", json);
         Assert.DoesNotContain("\"textWithBar\":null", json);
         Assert.Contains("""{"text":"Pikachu","side":0,"fighter":0,"isSpecies":true}""", json);
         Assert.Contains("""{"text":" (","side":0,"fighter":0}""", json);
