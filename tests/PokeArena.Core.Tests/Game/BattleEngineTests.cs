@@ -350,11 +350,12 @@ public class BattleEngineTests
 
         Assert.Equal(
             [
-                new LogSpan("Pikachu", 0, IsSpecies: true), new LogSpan(" (", 0), new LogSpan("Ash", 0, IsOwner: true), new LogSpan(", HP 70)", 0),
+                new LogSpan("Pikachu", 0, IsSpecies: true), new LogSpan(" (", 0), new LogSpan("Ash", 0, IsOwner: true),
+                new LogSpan(", HP ", 0), new LogSpan("70", 0, IsHp: true), new LogSpan(")", 0),
                 new LogSpan(" hat ", TextWithBar: " trifft "),
                 new LogSpan("Schiggy", 1, IsSpecies: true), new LogSpan(" (", 1), new LogSpan("Boss", 1, IsOwner: true),
                 new LogSpan(", HP 88 → 38", 1, IsTargetHp: true), new LogSpan(")", 1),
-                new LogSpan(" 50 Schaden zugefügt.", TextWithBar: "."), new LogSpan(" Volltreffer!", IsCritical: true),
+                new LogSpan(" 50 Schaden zugefügt.", TextWithBar: ".", IsDamage: true), new LogSpan(" Volltreffer!", IsCritical: true),
                 .. effect is null ? Array.Empty<LogSpan>() : [new LogSpan(effect)],
             ],
             spans);
