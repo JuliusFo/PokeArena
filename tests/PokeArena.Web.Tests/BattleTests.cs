@@ -489,6 +489,82 @@ public class BattleTests : WebTestContext
         Assert.Empty(cut.FindAll(".log .log-damage"));
     }
 
+    [Theory]
+    [InlineData("abc", 0)] // not a number
+    [InlineData("-5", 0)] // negative
+    [InlineData("95", 0)] // more than the 90 the fighter has
+    [InlineData("40", 5)] // a fighter the page does not have
+    public void The_text_view_shows_an_attacker_hp_it_cannot_read_as_plain_text(string hp, int fighter)
+    {
+        // A file not ours (review claude/kampflog-design-options-cb7042): the part stays as written, uncoloured; the
+        // target's HP and the damage still come from the hit the page accepted.
+        JSInterop.Setup<string?>("localStorage.getItem", Battle.ViewKey).SetResult("text");
+        Put(
+            SitePaths.Battle(25),
+            BattlePage(25) with
+            {
+                Sides =
+                [
+                    new BattleSide("Ash", true, [new BattleFighter(Bisasam, "Ash", "11", 90)]),
+                    new BattleSide("Misty", false, [new BattleFighter(Raupy, "Misty", "12", 80)]),
+                ],
+                Lines = [$"Bisasam (Ash, HP {hp}) hat Raupy (Misty, HP 80 → 22) 58 Schaden zugefügt."],
+                Log =
+                [
+                    new LogLine(
+                        [
+                            new LogPart("Bisasam", 0, 0, IsSpecies: true), new LogPart(" (Ash, HP ", 0, 0), new LogPart(hp, 0, fighter, IsHp: true),
+                            new LogPart(")", 0, 0), new LogPart(" hat ", TextWithBar: " trifft "),
+                            new LogPart("Raupy", 1, 0, IsSpecies: true), new LogPart(" (Misty", 1, 0),
+                            new LogPart(", HP 80 → 22", 1, 0, IsTargetHp: true), new LogPart(")", 1, 0),
+                            new LogPart(" 58 Schaden zugefügt.", TextWithBar: ".", IsDamage: true),
+                        ],
+                        Hit: new LogHit(1, 0, 80, 22, 58)),
+                ],
+            },
+            SiteJson.Default.BattlePage);
+
+        var cut = Render<Battle>(p => p.Add(b => b.Id, 25));
+
+        cut.WaitForAssertion(() => Assert.Equal(
+            $"Bisasam (Ash, HP {hp}) trifft Raupy (Misty, HP 80 → 22) und verursacht 58 Schaden.", cut.Find(".log li").TextContent));
+        Assert.Equal(["80", "22"], cut.FindAll(".log .log-hp").Select(s => s.TextContent));
+    }
+
+    [Fact]
+    public void The_text_view_keeps_the_full_sentence_of_a_hit_the_page_cannot_draw()
+    {
+        // The hit names a fighter the page does not have: no colours, no new wording — the sentence as written, like
+        // the bar view's fallback (review claude/kampflog-design-options-cb7042).
+        JSInterop.Setup<string?>("localStorage.getItem", Battle.ViewKey).SetResult("text");
+        Put(
+            SitePaths.Battle(26),
+            BattlePage(26) with
+            {
+                Lines = ["Bisasam (Ash, HP 40) hat Raupy (Misty, HP 30 → 10) 20 Schaden zugefügt."],
+                Log =
+                [
+                    new LogLine(
+                        [
+                            new LogPart("Bisasam", 0, 0, IsSpecies: true), new LogPart(" (Ash, HP ", 0, 0), new LogPart("40", 0, 0, IsHp: true),
+                            new LogPart(")", 0, 0), new LogPart(" hat ", TextWithBar: " trifft "),
+                            new LogPart("Raupy (Misty"), new LogPart(", HP 30 → 10", 1, 5, IsTargetHp: true), new LogPart(")"),
+                            new LogPart(" 20 Schaden zugefügt.", TextWithBar: ".", IsDamage: true),
+                        ],
+                        Hit: new LogHit(1, 5, 30, 10, 20)),
+                ],
+            },
+            SiteJson.Default.BattlePage);
+
+        var cut = Render<Battle>(p => p.Add(b => b.Id, 26));
+
+        cut.WaitForAssertion(() => Assert.Equal(
+            "Bisasam (Ash, HP 40) hat Raupy (Misty, HP 30 → 10) 20 Schaden zugefügt.", cut.Find(".log li").TextContent));
+        Assert.Empty(cut.FindAll(".log .log-hp"));
+        Assert.Empty(cut.FindAll(".log .log-damage"));
+        Assert.Empty(cut.FindAll(".log .hit-bar"));
+    }
+
     [Fact]
     public void A_log_without_hits_has_no_view_switch()
     {
