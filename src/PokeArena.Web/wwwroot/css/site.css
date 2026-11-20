@@ -766,6 +766,80 @@ h1.tinted {
 }
 
 /*
+  The switch between bars and text over the log (claude/kampflog-design-options-cb7042): two buttons, the pressed one
+  filled. It sits on the heading's line and wraps below it on a narrow phone.
+*/
+.log-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0 12px;
+  margin: 28px 0 10px;
+}
+
+.log-head h2 {
+  margin: 0;
+}
+
+.view-switch {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.view-switch button {
+  padding: 4px 12px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.view-switch button[aria-pressed="true"] {
+  background: var(--chip-bg);
+  color: var(--chip-text);
+}
+
+.view-switch button:focus-visible {
+  outline: 2px solid var(--chip-text);
+  outline-offset: 1px;
+}
+
+/*
+  The text view: HP coloured by what is left (the bars' thresholds: above half, above a quarter, a quarter or less) and
+  the damage in bold red. All at least 4.5 : 1 on the surface, light and dark.
+*/
+.log .log-hp {
+  font-variant-numeric: tabular-nums;
+}
+
+.log .log-hp.high {
+  color: var(--log-hp-high);
+}
+
+.log .log-hp.mid {
+  color: var(--log-hp-mid);
+}
+
+.log .log-hp.low,
+.log .log-damage {
+  color: var(--log-hp-low);
+}
+
+.log {
+  --log-hp-high: #1b7f45;
+  --log-hp-mid: #a35200;
+  --log-hp-low: #c42d0b;
+}
+
+/*
   Text only screen readers (and a copied line) get: the bar's „HP“. `pre`, not `nowrap`: out of the flow its trailing
   space would collapse and a copied line read „HP576 → 541“ (review).
 */
@@ -786,6 +860,12 @@ h1.tinted {
 
   .log .hit-damage {
     --damage: #ff8a6e;
+  }
+
+  .log {
+    --log-hp-high: #4cc283;
+    --log-hp-mid: #f0a04b;
+    --log-hp-low: #ff8a6e;
   }
 }
 
