@@ -28,3 +28,15 @@
 - Pitfalls: bUnit's `JSInterop` is strict — every fight page test would fail
   on the `localStorage.getItem` call; `WebTestContext` plans `getItem` and
   `setItem` and stays strict (a test's own later `Setup` wins).
+- Code review (2026-11-21): „Alle“.
+  - L: `WebTestContext` set bUnit's JS interop loose for every web test, so a
+    stray JS call anywhere would pass unnoticed — fixed, strict again with only
+    `localStorage.getItem` / `setItem` planned (a test's later setup wins).
+  - L: no test for the text view's fallbacks (unreadable attacker HP, a hit the
+    page cannot draw) — fixed, theory and fact; removing the `MaxHp` check fails
+    the theory.
+  - L: comments called the text view's thresholds „like the bars“ although the
+    orange step is its own — fixed in Battle.razor, site.css and Web CLAUDE.md.
+  - Second pass: all three covered, nothing new. Noted, not changed: the
+    blocked-storage test does not prove on its own that the `setItem` exception
+    path runs (it relies on bUnit's „later setup wins“, shown for `getItem`).
