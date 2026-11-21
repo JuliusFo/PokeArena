@@ -15,17 +15,22 @@
         // Light or dark (claude/settings-page-design-00654c): data-theme on <html> before the first paint — Blazor starts
         // too late, the page would flash in the wrong colours. The viewer's pick from „Einstellungen“ lives in
         // localStorage („auto“, „hell“, „dunkel“); „auto“ follows the device, also when it switches while the page is
-        // open. Blocked storage: the device decides, a pick holds until the page is reloaded. The settings page calls
-        // pokeArenaTheme.get() / .set(pick).
+        // open. A pick made in another tab applies here at once (storage event; an open „Einstellungen“ page there keeps
+        // its pressed button until it is opened again). Blocked storage: the device decides, a pick holds until the page
+        // is reloaded. The settings page calls pokeArenaTheme.get() / .set(pick).
         (function () {
             var storageKey = 'pokearena.aussehen';
             var root = document.documentElement;
             var device = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : null;
             var pick = 'auto';
-            try {
-                var stored = localStorage.getItem(storageKey);
-                if (stored === 'hell' || stored === 'dunkel') pick = stored;
-            } catch (e) { }
+
+            function read() {
+                pick = 'auto';
+                try {
+                    var stored = localStorage.getItem(storageKey);
+                    if (stored === 'hell' || stored === 'dunkel') pick = stored;
+                } catch (e) { }
+            }
 
             function apply() {
                 var dark = pick === 'dunkel' || (pick === 'auto' && device !== null && device.matches);
@@ -48,6 +53,14 @@
                 if (device.addEventListener) device.addEventListener('change', apply);
                 else if (device.addListener) device.addListener(apply);
             }
+            // Fires only in the other tabs of this site; key null means the storage was cleared.
+            addEventListener('storage', function (e) {
+                if (e.key === storageKey || e.key === null) {
+                    read();
+                    apply();
+                }
+            });
+            read();
             apply();
         })();
     </script>
