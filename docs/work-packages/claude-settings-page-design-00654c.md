@@ -35,3 +35,15 @@
   event (not even for a fresh listener), so switching the device while the
   page is open was not testable there.
 - Deliberately not done (→ backlog): nothing.
+- Code review (2026-11-21): „Alle“.
+  - L: a look picked in another tab did not reach tabs already open (read
+    once at load) — fixed, the script listens to `storage` (the key or a
+    cleared storage) and applies again; checked with two tabs in the preview.
+    Accepted limit: an open „Einstellungen“ page there keeps its pressed
+    button until it is opened again (a click sends what the viewer sees).
+  - L: the theme values and the `pokeArenaTheme.get` / `.set` names lived in
+    the script and in `ViewerSettings` with no test tying them (bUnit fakes
+    both calls) — fixed, a file test; a renamed value in the script fails it.
+  - L: two test comments still named `prefers-color-scheme` and only the
+    fight page — fixed.
+  - Second pass: all three covered, nothing new.
