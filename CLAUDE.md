@@ -34,7 +34,8 @@ shows leaderboard, trainer pages and battle logs.
 ## 3. Versions and invariants
 
 Released versions and their content: `CHANGELOG.md`; which package went into which version: the table in
-`docs/work-packages.md`. Planned: 1.9.0 WP-09 balancing (proposal, version not confirmed); 2.0.0 parked (website and
+`docs/work-packages.md`. Planned: 1.9.0 WP-09 balancing (proposal, version not confirmed); 1.10.0 WP-12 English website
+(user decision 2026-11-21, after WP-09); 2.0.0 parked (website and
 overlay served from the bot's server, roadmap.md). The version table that stood here was cut (review 1.8.1, D1).
 
 **Invariants — never weaken:**
@@ -187,5 +188,6 @@ Replace this section at every release or package; history belongs in CHANGELOG.m
 - To watch on stream: boss win rates with the 1.8.0 rule (≈ 75 % group wins expected); whether the darkened
   names read well on the dark page (roadmap.md).
 - Next: WP-09 balancing after a few streams (1.9.0, proposal): PvP loot preferring missing species, NPC difficulty;
-  no runtime balancing editor. Parked for version 2: website and overlay served from the bot's server.
+  no runtime balancing editor. After it WP-12 English website (1.10.0): language from the browser or „Einstellungen“,
+  website only, English species/NPC names (roadmap.md). Parked for version 2: website and overlay served from the bot's server.
   Ideas go to docs/backlog.md; details in docs/roadmap.md.

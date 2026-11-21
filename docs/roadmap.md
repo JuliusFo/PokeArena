@@ -620,6 +620,70 @@ Demo: measured win rates per NPC and boss group size, adjusted values.
   become a streamer setting, the page has to word them loosely („kurz“, „etwa
   eine halbe Stunde“) or the values have to be published in `meta.json`.
 
+## WP-12 — English website (≈ 2–3 days) → v1.10.0 (proposal)
+
+Viewer feedback (2026-11-21): „Spracheinstellung zw. Deutsch und Englisch.
+Automatisch gewählt durch Browserlanguage und dann halt selbst festlegbar.
+Deutsch > Deutsch, Rest > Englisch.“ Branch `wp/12-english-website`.
+Demo: a browser set to English opens the site in English, fight logs and
+species included; „Einstellungen“ switches back to German at once.
+
+User decisions (2026-11-21):
+
+- Own work package, after WP-09 (WP-09 stays 1.9.0, this one 1.10.0).
+- Website only. Chat texts and the desktop app stay German.
+- The English site shows English species, type and NPC names (Bulbasaur,
+  Fire, Brock).
+- „Datenschutz“ is translated; „Neuigkeiten“ stays German, with a short
+  English note on top for English viewers (no second text per release).
+
+Plan — Proposal (not confirmed):
+
+- Language pick: a third section „Sprache“ on „Einstellungen“ with
+  „Automatisch / Deutsch / English“, kept in `localStorage`
+  (`pokearena.sprache`) like the look. „Automatisch“: `navigator.language`
+  starting with `de` → German (de-AT, de-CH too), anything else → English.
+  The script at the top of `index.html` sets `<html lang>` before the first
+  paint; Blazor reads the language once at start and switches live through a
+  cascading value. Routes stay German (`/kampf/12`), so chat links keep working.
+- Site texts: one typed text class per language (an interface or record, both
+  checked by the compiler), no `.resx` — the web project runs with
+  `InvariantGlobalization`, where `de`/`en` cultures cannot be created, and
+  turning it off ships ICU data. English dates as „21 Nov 2026, 18:30“, still
+  German time.
+- Text rendered by the bot (`Headline`, `Result`, `Lines`, `Log` parts in
+  `BattleTexts`/`SiteGenerator`): the bot writes each file with text once per
+  language — German at today's paths, English under `en/` (`en/kampf/12.json`,
+  `en/kaempfe.json`, `en/trainer/…`, `en/statistik.json`); `meta.json`,
+  `rangliste.json` and profile pictures stay shared. The contracts stay as they
+  are (no `FormatVersion` bump); the site falls back to the German file on a
+  404, so it works before the bot's update. Fight logs are stored as events,
+  so the republish after the update renders old fights in English too. Cost:
+  about twice the R2 uploads and twice as long „Alles neu veröffentlichen“ —
+  fine at a few hundred trainers. Needs an ADR (addendum to ADR-0003/0009).
+  Not chosen: both languages in one file (a big boss fight has hundreds of
+  parts, contract break); the site wording the log itself from events (moves
+  the battle text from Core to Web, large rebuild).
+- Names: `tools/GeneratePokemonData.cs` also takes the English name from
+  PokeAPI (`name_en` in `pokemon.json`); English type names as a fixed table;
+  `npcs.json` gets an English name per NPC (Eich → Oak, Rocko → Brock, Bob →
+  Lt. Surge, Pyro → Blaine, Agathe → Agatha, Siegfried → Lance, Garry → Gary).
+  Type names in the data stay the German keys — `Format.TypeClass` builds the
+  CSS classes from them — and the site shows the label of the language.
+- Chat commands keep the German names (`!registrieren bisasam`,
+  `!challenge Eich`): the English „How to play“ page names the German word for
+  every command argument. English names as chat aliases are a backlog idea,
+  not part of this package.
+- Tests: bUnit tests keep German as default; new tests for the English texts,
+  the detection rule, the switch and the 404 fallback; a test that both text
+  classes cover every key (the compiler does that if it is an interface).
+
+Open before starting:
+
+- English page title and brand line („PokeArena“ stays); whether the
+  menu/footer shows a small DE/EN switch besides the gear page.
+- Who checks the English wording (simple English for casual viewers).
+
 ## Version 2 — website served from the bot's server (parked) → v2.0.0
 
 User decision (2026-11-10): remember this for version 2; nothing of it is
