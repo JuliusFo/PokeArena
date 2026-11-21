@@ -17,6 +17,12 @@ tagged `vX.Y.Z` once its section is complete.
   HP (`isHp`) and the damage (`isDamage`); desktop lists and chat are
   unchanged. Older fights get the new wording once the bot has uploaded the
   website again after its update.
+- A website page „Einstellungen“ (`/einstellungen`, gear icon at the end of the
+  menu): the look „Automatisch“ (default, follows the device), „Hell“ or
+  „Dunkel“, and the fight log's „Balken / Text“. Both picks stay in the
+  viewer's browser. The dark colours now hang on `data-theme` on `<html>`, set
+  by a small script in `index.html` before the first paint, instead of on
+  `prefers-color-scheme`.
 
 ## [1.8.2] - 2026-11-20
 

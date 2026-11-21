@@ -63,13 +63,23 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   the number in the sentence (claude/kampflog-hp-balken-feedback-808390, mockup „A“). Its red is lighter in the dark
   theme: `--hp-low` as text on the dark surface is under 3 : 1.
 - The log has two views, „Balken“ (default) and „Text“, picked per viewer in `localStorage`
-  (`Battle.ViewKey`, read in `OnInitializedAsync`, every JS call in `try`/`catch JSException` — blocked storage
-  means bars and a pick for this page only). The text view (`TextParts`) words a hit itself where a part is marked
+  (`ViewerSettings.LogViewKey`, shared with „Einstellungen“; `ViewerSettings` wraps every JS call in `try`/`catch
+  JSException` — blocked storage means bars and a pick for this page only). The text view (`TextParts`) words a hit itself where a part is marked
   `IsDamage` („ und verursacht 20 Schaden.“, the damage that arrived) and colours parts marked `IsHp` and the
   target's HP from `LogHit` (`.log-hp` low at the bars' quarter, mid at half — a step the bars lack — high above;
   ≥ 5 : 1 light and dark). Files without `IsDamage` keep their wording. bUnit stays strict: `WebTestContext` plans
   only `localStorage.getItem` (null = bars) and `setItem`; a test's own `Setup` is added later and wins
   (claude/kampflog-design-options-cb7042, review).
+- Light or dark is the viewer's pick on „Einstellungen“ (`Pages/Settings.razor`): „auto“ (default, follows the
+  device), „hell“, „dunkel“. The inline script at the top of `index.html` sets `data-theme="light|dark"` on `<html>`
+  before the first paint (Blazor starts too late — the page would flash), keeps the pick (`pokearena.aussehen`) and
+  follows the device's `change` while on „auto“; the page only calls `pokeArenaTheme.get` / `.set`. Every dark rule in
+  site.css hangs on `:root[data-theme="dark"]` — never `@media (prefers-color-scheme: dark)`, it would ignore „Hell“
+  (`SettingsTests` checks it). No `light-dark()`: browsers before 2024 (iOS < 17.5) would lose every colour. The
+  preview's colour-scheme emulation fires no `change` event: live switching is only testable on a real device. Only
+  `SettingsTests` plans the two theme calls; the rest of the web tests stay strict without them. The menu's gear
+  (`Shared/GearIcon.razor`, own SVG like the trophies) sits at the end of `nav`, which grows with basis `auto` — with
+  basis 0 the menu squeezes in next to the brand at 375 px and wraps into three lines (claude/settings-page-design-00654c).
 - „Schaden“ box (`Shared/DamageBox.razor`, `Services/DamageMeter.cs`, feat/damage-meter): a bar has the colour of
   the trainer's name (`Tint.Darkened`, a test keeps it equal to `Tint.Style`) and white text with a 1 px black
   `text-shadow` outline over the fill, `--text` over the rest, two clipped copies (feat/damage-text-white,
