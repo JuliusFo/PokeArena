@@ -23,7 +23,8 @@ public abstract class WebTestContext : BunitContext
 
     protected WebTestContext()
     {
-        // The fight page's log view in localStorage: no pick (the bars), saving works. Only these two calls are planned —
+        // The log view in localStorage (fight page and „Einstellungen“): no pick (the bars), saving works. Only these two
+        // calls are planned (SettingsTests adds the theme script's) —
         // any other JS call still fails a test (strict mode, review claude/kampflog-design-options-cb7042). A test's own
         // setup is added later and wins.
         JSInterop.Setup<string?>("localStorage.getItem", ViewerSettings.LogViewKey).SetResult(null);

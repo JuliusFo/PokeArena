@@ -73,7 +73,7 @@ public partial class TintTests
         var chips = TypeRule().Matches(css).ToDictionary(m => m.Groups[1].Value, m => m.Groups[2].Value);
 
         Assert.Equal(chips.OrderBy(c => c.Key), Tint.TypeColors.OrderBy(c => c.Key));
-        // The light theme's surface comes first; the dark one follows under prefers-color-scheme.
+        // The light theme's surface comes first; the dark one follows under :root[data-theme="dark"].
         Assert.Equal(Tint.LightSurface, Regex.Match(css, @"--surface: (#[0-9a-f]{6});").Groups[1].Value);
         // A damage box side of several colours takes the HP bar's green (review feat/damage-meter).
         Assert.Equal(Bar.Mixed, Regex.Match(css, @"--hp-fill: (#[0-9a-f]{6});").Groups[1].Value);
