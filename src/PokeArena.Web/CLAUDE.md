@@ -73,7 +73,9 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
 - Light or dark is the viewer's pick on „Einstellungen“ (`Pages/Settings.razor`): „auto“ (default, follows the
   device), „hell“, „dunkel“. The inline script at the top of `index.html` sets `data-theme="light|dark"` on `<html>`
   before the first paint (Blazor starts too late — the page would flash), keeps the pick (`pokearena.aussehen`) and
-  follows the device's `change` while on „auto“; the page only calls `pokeArenaTheme.get` / `.set`. Every dark rule in
+  follows the device's `change` while on „auto“ and other tabs' picks (`storage` event); the page only calls
+  `pokeArenaTheme.get` / `.set`. The values live twice, in the script and in `ViewerSettings` — a value the script does
+  not know turns into „auto“ silently; `SettingsTests` ties the two (review claude/settings-page-design-00654c). Every dark rule in
   site.css hangs on `:root[data-theme="dark"]` — never `@media (prefers-color-scheme: dark)`, it would ignore „Hell“
   (`SettingsTests` checks it). No `light-dark()`: browsers before 2024 (iOS < 17.5) would lose every colour. The
   preview's colour-scheme emulation fires no `change` event: live switching is only testable on a real device. Only
