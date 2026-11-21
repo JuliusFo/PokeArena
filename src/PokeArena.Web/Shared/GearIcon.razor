@@ -1,0 +1,11 @@
+@*
+    The menu's „Einstellungen“ link: an own gear, never an emoji (it differs per system) or an image file — like the
+    trophies. Decorative; the link carries the name. It takes the link's colour (currentColor).
+*@
+<svg class="gear" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    @for (var tooth = 0; tooth < 8; tooth++)
+    {
+        <rect x="10.25" y="1.5" width="3.5" height="5" rx="1" transform="rotate(@(tooth * 45) 12 12)" />
+    }
+    <path fill-rule="evenodd" d="M12 4.5a7.5 7.5 0 1 0 0 15a7.5 7.5 0 1 0 0-15z M12 8.75a3.25 3.25 0 1 1 0 6.5a3.25 3.25 0 1 1 0-6.5z" />
+</svg>

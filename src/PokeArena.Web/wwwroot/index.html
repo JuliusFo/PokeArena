@@ -11,6 +11,46 @@
     <link rel="icon" href="data:," />
     <link rel="preload" id="webassembly" />
     <link rel="stylesheet" href="css/site.css" />
+    <script>
+        // Light or dark (claude/settings-page-design-00654c): data-theme on <html> before the first paint — Blazor starts
+        // too late, the page would flash in the wrong colours. The viewer's pick from „Einstellungen“ lives in
+        // localStorage („auto“, „hell“, „dunkel“); „auto“ follows the device, also when it switches while the page is
+        // open. Blocked storage: the device decides, a pick holds until the page is reloaded. The settings page calls
+        // pokeArenaTheme.get() / .set(pick).
+        (function () {
+            var storageKey = 'pokearena.aussehen';
+            var root = document.documentElement;
+            var device = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : null;
+            var pick = 'auto';
+            try {
+                var stored = localStorage.getItem(storageKey);
+                if (stored === 'hell' || stored === 'dunkel') pick = stored;
+            } catch (e) { }
+
+            function apply() {
+                var dark = pick === 'dunkel' || (pick === 'auto' && device !== null && device.matches);
+                root.setAttribute('data-theme', dark ? 'dark' : 'light');
+            }
+
+            window.pokeArenaTheme = {
+                get: function () { return pick; },
+                set: function (value) {
+                    pick = value === 'hell' || value === 'dunkel' ? value : 'auto';
+                    apply();
+                    try {
+                        if (pick === 'auto') localStorage.removeItem(storageKey);
+                        else localStorage.setItem(storageKey, pick);
+                    } catch (e) { }
+                }
+            };
+
+            if (device !== null) {
+                if (device.addEventListener) device.addEventListener('change', apply);
+                else if (device.addListener) device.addListener(apply);
+            }
+            apply();
+        })();
+    </script>
     <script type="importmap"></script>
 </head>
 

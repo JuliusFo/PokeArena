@@ -290,38 +290,18 @@ else
         <span class="log-hp @level">@hp.ToString(CultureInfo.InvariantCulture)</span>
     };
 
-    /// <summary>localStorage key of the viewer's pick; „text“ or „balken“.</summary>
-    public const string ViewKey = "pokearena.kampfverlauf";
-
     private bool _textView;
 
     /// <summary>
-    /// The viewer's last pick. Storage may be blocked (private windows, strict settings): the page then starts with the
-    /// bars and the switch still works until the page is left.
+    /// The viewer's last pick, here or on „Einstellungen“. Storage may be blocked (private windows, strict settings): the
+    /// page then starts with the bars and the switch still works until the page is left.
     /// </summary>
-    protected override async Task OnInitializedAsync()
-    {
-        try
-        {
-            _textView = await JS.InvokeAsync<string?>("localStorage.getItem", ViewKey) == "text";
-        }
-        catch (JSException)
-        {
-            // Storage blocked: bars.
-        }
-    }
+    protected override async Task OnInitializedAsync() => _textView = await ViewerSettings.TextViewAsync(JS);
 
     private async Task SetViewAsync(bool textView)
     {
         _textView = textView;
-        try
-        {
-            await JS.InvokeVoidAsync("localStorage.setItem", ViewKey, textView ? "text" : "balken");
-        }
-        catch (JSException)
-        {
-            // Storage blocked: the pick holds for this page only.
-        }
+        await ViewerSettings.SaveLogViewAsync(JS, textView);
     }
 
     protected override async Task OnParametersSetAsync()
