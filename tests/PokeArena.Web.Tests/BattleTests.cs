@@ -390,7 +390,7 @@ public class BattleTests : WebTestContext
     {
         // The viewer picked the text view before (claude/kampflog-design-options-cb7042). The knockout says what
         // arrived (22), like the bars and the „Schaden“ box, not the 31 of the hit.
-        JSInterop.Setup<string?>("localStorage.getItem", Battle.ViewKey).SetResult("text");
+        JSInterop.Setup<string?>("localStorage.getItem", ViewerSettings.LogViewKey).SetResult("text");
         PutTextViewBattle(20);
 
         var cut = Render<Battle>(p => p.Add(b => b.Id, 20));
@@ -429,18 +429,18 @@ public class BattleTests : WebTestContext
 
         Assert.Empty(cut.FindAll(".log .hit-bar"));
         Assert.Equal(2, cut.FindAll(".log strong.log-damage").Count);
-        Assert.Equal([Battle.ViewKey, "text"], JSInterop.VerifyInvoke("localStorage.setItem").Arguments);
+        Assert.Equal([ViewerSettings.LogViewKey, "text"], JSInterop.VerifyInvoke("localStorage.setItem").Arguments);
 
         cut.Find(".view-switch button:first-child").Click();
 
         Assert.Equal(2, cut.FindAll(".log .hit-bar").Count);
-        Assert.Equal([Battle.ViewKey, "balken"], JSInterop.VerifyInvoke("localStorage.setItem", calledTimes: 2)[1].Arguments);
+        Assert.Equal([ViewerSettings.LogViewKey, "balken"], JSInterop.VerifyInvoke("localStorage.setItem", calledTimes: 2)[1].Arguments);
     }
 
     [Fact]
     public void Blocked_storage_starts_with_the_bars_and_the_switch_still_works()
     {
-        JSInterop.Setup<string?>("localStorage.getItem", Battle.ViewKey).SetException(new Microsoft.JSInterop.JSException("SecurityError"));
+        JSInterop.Setup<string?>("localStorage.getItem", ViewerSettings.LogViewKey).SetException(new Microsoft.JSInterop.JSException("SecurityError"));
         JSInterop.SetupVoid("localStorage.setItem", _ => true).SetException(new Microsoft.JSInterop.JSException("SecurityError"));
         PutTextViewBattle(22);
 
@@ -456,7 +456,7 @@ public class BattleTests : WebTestContext
     {
         // 1.8.2 and older: no damage part marked, the attacker's HP inside the label's last part. The sentence stays
         // as written; only the target's HP get their colour.
-        JSInterop.Setup<string?>("localStorage.getItem", Battle.ViewKey).SetResult("text");
+        JSInterop.Setup<string?>("localStorage.getItem", ViewerSettings.LogViewKey).SetResult("text");
         Put(
             SitePaths.Battle(23),
             BattlePage(23) with
@@ -498,7 +498,7 @@ public class BattleTests : WebTestContext
     {
         // A file not ours (review claude/kampflog-design-options-cb7042): the part stays as written, uncoloured; the
         // target's HP and the damage still come from the hit the page accepted.
-        JSInterop.Setup<string?>("localStorage.getItem", Battle.ViewKey).SetResult("text");
+        JSInterop.Setup<string?>("localStorage.getItem", ViewerSettings.LogViewKey).SetResult("text");
         Put(
             SitePaths.Battle(25),
             BattlePage(25) with
@@ -536,7 +536,7 @@ public class BattleTests : WebTestContext
     {
         // The hit names a fighter the page does not have: no colours, no new wording — the sentence as written, like
         // the bar view's fallback (review claude/kampflog-design-options-cb7042).
-        JSInterop.Setup<string?>("localStorage.getItem", Battle.ViewKey).SetResult("text");
+        JSInterop.Setup<string?>("localStorage.getItem", ViewerSettings.LogViewKey).SetResult("text");
         Put(
             SitePaths.Battle(26),
             BattlePage(26) with

@@ -17,22 +17,26 @@
   color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #17171b;
-    --surface: #222228;
-    --text: #ececf0;
-    --muted: #a0a1ab;
-    --border: #34343c;
-    --accent: #ff6a45;
-    --accent-soft: #3a231e;
-    --ok: #4cc283;
-    --notice-bg: #3a3020;
-    --notice-text: #f3d9a0;
-    --chip-bg: #2e2b4a;
-    --chip-text: #c9c3ff;
-    color-scheme: dark;
-  }
+/*
+  The dark theme hangs on data-theme="dark", never on @media (prefers-color-scheme): the script at the top of
+  index.html sets it from the viewer's pick on „Einstellungen“ (Automatisch / Hell / Dunkel) and follows the device
+  while the pick is „Automatisch“. A dark rule behind the media query would ignore a viewer who picked „Hell“
+  (claude/settings-page-design-00654c; a test keeps the media query out of this file).
+*/
+:root[data-theme="dark"] {
+  --bg: #17171b;
+  --surface: #222228;
+  --text: #ececf0;
+  --muted: #a0a1ab;
+  --border: #34343c;
+  --accent: #ff6a45;
+  --accent-soft: #3a231e;
+  --ok: #4cc283;
+  --notice-bg: #3a3020;
+  --notice-text: #f3d9a0;
+  --chip-bg: #2e2b4a;
+  --chip-text: #c9c3ff;
+  color-scheme: dark;
 }
 
 * {
@@ -167,8 +171,13 @@ h1.tinted {
   text-decoration: none;
 }
 
+/*
+  Growing lets the gear sit at the header's right edge, also at the end of the menu's wrapped line at 375 px. The basis
+  stays auto: with 0 the menu would squeeze in next to the brand and wrap into three lines instead of moving below it.
+*/
 .site-header nav {
   display: flex;
+  flex: 1 1 auto;
   flex-wrap: wrap;
   gap: 4px;
 }
@@ -179,6 +188,19 @@ h1.tinted {
   color: var(--text);
   text-decoration: none;
   white-space: nowrap;
+}
+
+.site-header nav a.settings-link {
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+  padding: 6px 8px;
+}
+
+.gear {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
 }
 
 .site-header nav a.active {
@@ -286,10 +308,8 @@ h1.tinted {
 }
 
 /* The handles are only a stroke: the dark edges nearly vanish on the dark surface (bronze ≈ 2 : 1), the metal does not. */
-@media (prefers-color-scheme: dark) {
-  .trophy .handles {
-    stroke: var(--metal);
-  }
+:root[data-theme="dark"] .trophy .handles {
+  stroke: var(--metal);
 }
 
 .table tbody tr:last-child td {
@@ -812,6 +832,16 @@ h1.tinted {
   outline-offset: 1px;
 }
 
+/* „Einstellungen“: the same switches, a little larger — the page has room and fingers need it. */
+.setting p {
+  margin: 0 0 10px;
+}
+
+.setting .view-switch button {
+  padding: 6px 14px;
+  font-size: 15px;
+}
+
 /*
   The text view: HP coloured by what is left — red at a quarter or less (the bars' „low“), orange at half or less (a
   step the bars do not have), green above — and the damage in bold red. All at least 4.5 : 1 on the surface, light
@@ -853,21 +883,19 @@ h1.tinted {
   white-space: pre;
 }
 
-@media (prefers-color-scheme: dark) {
-  .log .hit-bar {
-    --lost-a: #7a2c1c;
-    --lost-b: #4e2219;
-  }
+:root[data-theme="dark"] .log .hit-bar {
+  --lost-a: #7a2c1c;
+  --lost-b: #4e2219;
+}
 
-  .log .hit-damage {
-    --damage: #ff8a6e;
-  }
+:root[data-theme="dark"] .log .hit-damage {
+  --damage: #ff8a6e;
+}
 
-  .log {
-    --log-hp-high: #4cc283;
-    --log-hp-mid: #f0a04b;
-    --log-hp-low: #ff8a6e;
-  }
+:root[data-theme="dark"] .log {
+  --log-hp-high: #4cc283;
+  --log-hp-mid: #f0a04b;
+  --log-hp-low: #ff8a6e;
 }
 
 /* Trainer page */

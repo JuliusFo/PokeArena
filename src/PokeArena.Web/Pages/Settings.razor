@@ -1,0 +1,67 @@
+@page "/einstellungen"
+@inject IJSRuntime JS
+@using Microsoft.JSInterop
+
+@*
+    A viewer's own picks, kept only in their browser (ViewerSettings, privacy page). The log view's switch also stays
+    over the fight log, where viewers need it; both read and write the same key (claude/settings-page-design-00654c).
+*@
+
+<PageTitle>Einstellungen – PokeArena</PageTitle>
+
+<h1>Einstellungen</h1>
+
+<p class="muted">Deine Wahl merkt sich nur dieser Browser. Auf einem anderen Gerät stellst du sie dort neu ein.</p>
+
+<section class="setting">
+    <h2 id="aussehen">Aussehen</h2>
+    <p>„Automatisch“ richtet sich danach, ob dein Gerät hell oder dunkel eingestellt ist.</p>
+    <div class="view-switch" role="group" aria-labelledby="aussehen">
+        @foreach (var (value, label) in Themes)
+        {
+            <button type="button" aria-pressed="@(_theme == value ? "true" : "false")" @onclick="() => SetThemeAsync(value)">@label</button>
+        }
+    </div>
+</section>
+
+<section class="setting">
+    <h2 id="kampfverlauf">Kampfverlauf</h2>
+    <p>
+        „Balken“ zeigt bei jedem Treffer einen HP-Balken. „Text“ zeigt jeden Treffer als ganzen Satz mit bunten Zahlen.
+        Umschalten kannst du auch direkt über dem Kampfverlauf.
+    </p>
+    <div class="view-switch" role="group" aria-labelledby="kampfverlauf">
+        <button type="button" aria-pressed="@(_textView ? "false" : "true")" @onclick="() => SetLogViewAsync(textView: false)">Balken</button>
+        <button type="button" aria-pressed="@(_textView ? "true" : "false")" @onclick="() => SetLogViewAsync(textView: true)">Text</button>
+    </div>
+</section>
+
+@code {
+    private static readonly (string Value, string Label)[] Themes =
+    [
+        (ViewerSettings.ThemeAuto, "Automatisch"),
+        (ViewerSettings.ThemeLight, "Hell"),
+        (ViewerSettings.ThemeDark, "Dunkel"),
+    ];
+
+    private string _theme = ViewerSettings.ThemeAuto;
+    private bool _textView;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _theme = await ViewerSettings.ThemeAsync(JS);
+        _textView = await ViewerSettings.TextViewAsync(JS);
+    }
+
+    private async Task SetThemeAsync(string theme)
+    {
+        _theme = theme;
+        await ViewerSettings.SaveThemeAsync(JS, theme);
+    }
+
+    private async Task SetLogViewAsync(bool textView)
+    {
+        _textView = textView;
+        await ViewerSettings.SaveLogViewAsync(JS, textView);
+    }
+}

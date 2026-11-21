@@ -44,4 +44,16 @@ public class LayoutTests : WebTestContext
         Assert.Contains("anleitung", links);
         Assert.Contains("neuigkeiten", links);
     }
+
+    [Fact]
+    public void The_menu_ends_with_a_named_gear_for_the_settings()
+    {
+        var cut = Render<MainLayout>(p => p.Add(l => l.Body, b => b.AddContent(0, "Inhalt")));
+
+        var gear = cut.FindAll(".site-header nav a").Last();
+        Assert.Equal("einstellungen", gear.GetAttribute("href"));
+        Assert.Equal("Einstellungen", gear.GetAttribute("aria-label"));
+        Assert.Equal("true", gear.QuerySelector("svg")!.GetAttribute("aria-hidden"));
+        Assert.Equal("", gear.TextContent.Trim());
+    }
 }

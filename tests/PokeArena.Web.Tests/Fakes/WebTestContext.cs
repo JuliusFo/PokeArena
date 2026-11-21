@@ -26,7 +26,7 @@ public abstract class WebTestContext : BunitContext
         // The fight page's log view in localStorage: no pick (the bars), saving works. Only these two calls are planned —
         // any other JS call still fails a test (strict mode, review claude/kampflog-design-options-cb7042). A test's own
         // setup is added later and wins.
-        JSInterop.Setup<string?>("localStorage.getItem", Battle.ViewKey).SetResult(null);
+        JSInterop.Setup<string?>("localStorage.getItem", ViewerSettings.LogViewKey).SetResult(null);
         JSInterop.SetupVoid("localStorage.setItem", _ => true).SetVoidResult();
         Services.AddSingleton<TimeProvider>(_time);
         Services.AddSingleton(new SiteData(new HttpClient(_host) { BaseAddress = new Uri("https://daten.example/") }));
