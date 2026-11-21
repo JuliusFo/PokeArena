@@ -108,6 +108,28 @@ public class SettingsTests : WebTestContext
         Assert.True(themeScript > 0 && themeScript < html.IndexOf("</head>", StringComparison.Ordinal), "the theme script must run in <head>, before the first paint");
     }
 
+    [Fact]
+    public void The_theme_script_speaks_the_pages_values()
+    {
+        // The bUnit tests fake both JS calls: only this keeps the script and ViewerSettings on the same words — a value
+        // the script does not know turns into „auto“ without a sound (review claude/settings-page-design-00654c).
+        var html = File.ReadAllText(Path.Combine(RepositoryRoot(), "src", "PokeArena.Web", "wwwroot", "index.html"));
+
+        foreach (var value in new[] { ViewerSettings.ThemeAuto, ViewerSettings.ThemeLight, ViewerSettings.ThemeDark })
+        {
+            Assert.Contains($"'{value}'", html, StringComparison.Ordinal);
+        }
+
+        var (api, get) = (ViewerSettings.ThemeGet.Split('.')[0], ViewerSettings.ThemeGet.Split('.')[1]);
+        Assert.Equal(ViewerSettings.ThemeSet, $"{api}.set");
+        Assert.Contains($"window.{api} = {{", html, StringComparison.Ordinal);
+        Assert.Contains($"{get}: function", html, StringComparison.Ordinal);
+        Assert.Contains("set: function", html, StringComparison.Ordinal);
+
+        // A pick in another tab applies here too.
+        Assert.Contains("addEventListener('storage'", html, StringComparison.Ordinal);
+    }
+
     private static List<(string, string?)> Pressed(IRenderedComponent<Settings> cut, string group) =>
         cut.FindAll($"[aria-labelledby='{group}'] button").Select(b => (b.TextContent, b.GetAttribute("aria-pressed"))).ToList();
 
