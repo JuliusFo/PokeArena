@@ -181,7 +181,9 @@ Replace this section at every release or package; history belongs in CHANGELOG.m
   no „Alles neu veröffentlichen“ click needed. Still for the user to set by hand: the Cloudflare WAF rule and the R2
   billing alert (docs/website-setup.md §2).
 - Ready for the next release (1.8.3, proposal): a switch „Balken / Text“ over the fight log, per viewer in the browser,
-  after viewer feedback that not everyone likes the hit bars (`claude/kampflog-design-options-cb7042`).
+  after viewer feedback that not everyone likes the hit bars (`claude/kampflog-design-options-cb7042`); a website page
+  „Einstellungen“ (gear in the menu) with light / dark / automatic and the same log view
+  (`claude/settings-page-design-00654c`).
 - To watch on stream: boss win rates with the 1.8.0 rule (≈ 75 % group wins expected); whether the darkened
   names read well on the dark page (roadmap.md).
 - Next: WP-09 balancing after a few streams (1.9.0, proposal): PvP loot preferring missing species, NPC difficulty;

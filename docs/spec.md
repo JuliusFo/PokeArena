@@ -386,8 +386,18 @@ would keep deleted trainers' names forever (see §11).
 Pages (v1): leaderboard, list of fights, battle log per fight, trainer detail
 page, privacy note, player guide („So geht's“, `/anleitung`), news
 („Neuigkeiten“, `/neuigkeiten`, since 1.3.0), statistics („Statistik“,
-`/statistik`, since 1.7.0)⁵. The OBS overlay is served by the desktop app, not
-by the website (below).
+`/statistik`, since 1.7.0)⁵, settings („Einstellungen“, `/einstellungen`, since
+1.8.3, proposal). The OBS overlay is served by the desktop app, not by the
+website (below).
+
+The settings page (user request 2026-11-21) holds a viewer's own picks, kept
+only in their browser (`localStorage`, never sent anywhere): the look —
+„Automatisch“ (default, follows the device, also when it switches while the
+page is open), „Hell“ or „Dunkel“ — and the fight log's view „Balken / Text“
+(§5; the switch over the log stays, both show the same pick). The menu reaches
+it through a gear icon at its end (own SVG, no word: a sixth one would wrap the
+menu once more on a phone). The look is applied before the page is drawn, so
+it never flashes in the other one.
 
 The news page is static text for players: per version only what they notice
 (commands, rules, durations, odds, website), newest first — not a copy of
