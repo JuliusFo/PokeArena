@@ -1,8 +1,8 @@
 # Roadmap
 
 Work packages up to v1.0.0, the packages and branches after it (all released
-up to 1.8.1; the index is docs/work-packages.md), WP-09 as the next planned
-one (1.9.0, proposal) and a parked idea for version 2. Read the package before starting it and agree the plan with
+up to 1.9.0; the index is docs/work-packages.md), WP-09 as the next planned
+one (1.10.0, proposal) and a parked idea for version 2. Read the package before starting it and agree the plan with
 the user. Estimates: solo, "day" = one focused person-day; total ≈ 25–31
 days. Every package ends in a state that could run on stream.
 
@@ -561,7 +561,10 @@ reads „HP 0“; the viewer suggested the HP before the hit.
   change by its own hit). The text is rendered from the stored events, so older
   fights change after „Alles neu veröffentlichen“.
 
-## WP-09 — Balancing after the first streams (≈ 2 days) → v1.9.0 (proposal)
+## WP-09 — Balancing after the first streams (≈ 2 days) → v1.10.0 (proposal)
+
+1.9.0 went to the fight log's text view and the „Einstellungen“ page (user pick
+at the release, 2026-11-22), so WP-09 and WP-12 each move up one version.
 
 Tuning with real stream data and the Monte Carlo simulator instead of
 guesses. Starts after 1.0 has run on a few streams.
@@ -620,7 +623,7 @@ Demo: measured win rates per NPC and boss group size, adjusted values.
   become a streamer setting, the page has to word them loosely („kurz“, „etwa
   eine halbe Stunde“) or the values have to be published in `meta.json`.
 
-## WP-12 — English website (≈ 2–3 days) → v1.10.0 (proposal)
+## WP-12 — English website (≈ 2–3 days) → v1.11.0 (proposal)
 
 Viewer feedback (2026-11-21): „Spracheinstellung zw. Deutsch und Englisch.
 Automatisch gewählt durch Browserlanguage und dann halt selbst festlegbar.
@@ -631,6 +634,9 @@ species included; „Einstellungen“ switches back to German at once.
 User decisions (2026-11-21):
 
 - Own work package, after WP-09 (WP-09 stays 1.9.0, this one 1.10.0).
+  Addendum 2026-11-22: 1.9.0 was released with the fight log's text view and
+  the settings page, so the numbers became 1.10.0 and 1.11.0 (proposal, not
+  confirmed); the order stays.
 - Website only. Chat texts and the desktop app stay German.
 - The English site shows English species, type and NPC names (Bulbasaur,
   Fire, Brock).

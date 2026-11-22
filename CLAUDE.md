@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-11-20 · v1.8.2 released (R2: review 1.8.1 fixes, website republished once after an update; damage before the fight log's hit bar) · next WP-09 (→ 1.9.0, proposal) after a few streams
+Status: 2026-11-22 · v1.9.0 released (fight log „Balken / Text“, website page „Einstellungen“ with light / dark / automatic) · next WP-09 (→ 1.10.0, proposal) after a few streams
 
 ## 1. Where to find what
 
@@ -34,8 +34,9 @@ shows leaderboard, trainer pages and battle logs.
 ## 3. Versions and invariants
 
 Released versions and their content: `CHANGELOG.md`; which package went into which version: the table in
-`docs/work-packages.md`. Planned: 1.9.0 WP-09 balancing (proposal, version not confirmed); 1.10.0 WP-12 English website
-(user decision 2026-11-21, after WP-09); 2.0.0 parked (website and
+`docs/work-packages.md`. Planned: 1.10.0 WP-09 balancing (proposal, version not confirmed); 1.11.0 WP-12 English website
+(after WP-09 is a user decision 2026-11-21; the version moved up one because the user released the
+log view and settings page as 1.9.0 — proposal, not confirmed); 2.0.0 parked (website and
 overlay served from the bot's server, roadmap.md). The version table that stood here was cut (review 1.8.1, D1).
 
 **Invariants — never weaken:**
@@ -175,19 +176,15 @@ PokeArena.slnx
 
 Replace this section at every release or package; history belongs in CHANGELOG.md and docs/work-packages/.
 
-- 1.8.2 released 2026-11-20: R2, the fixes of whole review 1.8.1 (`wp/r2-review-1.8.1`, docs/review-1.8.1.md),
-  and the damage („−38“) before each hit bar in the fight log with a shorter sentence
-  (`claude/kampflog-hp-balken-feedback-808390`, viewer feedback on 1.8.1, mockup „A“; parked from the same feedback:
-  one HP column per side, backlog). From 1.8.2 on the bot republishes the website once by itself after an update —
-  no „Alles neu veröffentlichen“ click needed. Still for the user to set by hand: the Cloudflare WAF rule and the R2
-  billing alert (docs/website-setup.md §2).
-- Ready for the next release (1.8.3, proposal): a switch „Balken / Text“ over the fight log, per viewer in the browser,
-  after viewer feedback that not everyone likes the hit bars (`claude/kampflog-design-options-cb7042`); a website page
-  „Einstellungen“ (gear in the menu) with light / dark / automatic and the same log view
-  (`claude/settings-page-design-00654c`).
+- 1.9.0 released 2026-11-22 (user pick over the proposed 1.8.3): a switch „Balken / Text“ over the fight log, per
+  viewer in the browser, after viewer feedback that not everyone likes the hit bars
+  (`claude/kampflog-design-options-cb7042`); a website page „Einstellungen“ (gear in the menu) with light / dark /
+  automatic and the same log view (`claude/settings-page-design-00654c`). Older fights get the text view's wording
+  once the updated bot has republished the website by itself (since 1.8.2). Still for the user to set by hand: the
+  Cloudflare WAF rule and the R2 billing alert (docs/website-setup.md §2).
 - To watch on stream: boss win rates with the 1.8.0 rule (≈ 75 % group wins expected); whether the darkened
   names read well on the dark page (roadmap.md).
-- Next: WP-09 balancing after a few streams (1.9.0, proposal): PvP loot preferring missing species, NPC difficulty;
-  no runtime balancing editor. After it WP-12 English website (1.10.0): language from the browser or „Einstellungen“,
+- Next: WP-09 balancing after a few streams (1.10.0, proposal): PvP loot preferring missing species, NPC difficulty;
+  no runtime balancing editor. After it WP-12 English website (1.11.0, proposal): language from the browser or „Einstellungen“,
   website only, English species/NPC names (roadmap.md). Parked for version 2: website and overlay served from the bot's server.
   Ideas go to docs/backlog.md; details in docs/roadmap.md.

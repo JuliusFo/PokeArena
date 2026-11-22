@@ -387,7 +387,7 @@ Pages (v1): leaderboard, list of fights, battle log per fight, trainer detail
 page, privacy note, player guide („So geht's“, `/anleitung`), news
 („Neuigkeiten“, `/neuigkeiten`, since 1.3.0), statistics („Statistik“,
 `/statistik`, since 1.7.0)⁵, settings („Einstellungen“, `/einstellungen`, since
-1.8.3, proposal). The OBS overlay is served by the desktop app, not by the
+1.9.0). The OBS overlay is served by the desktop app, not by the
 website (below).
 
 The settings page (user request 2026-11-21) holds a viewer's own picks, kept

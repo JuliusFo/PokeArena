@@ -28,7 +28,8 @@
   stays over the log, gear in the menu, simplest variant).
 - Addenda: `data-theme` set by the script instead of the proposed CSS
   `light-dark()` — browsers before 2024 (iOS < 17.5) would lose every colour
-  of the page. Version 1.8.3 is a proposal (not confirmed).
+  of the page. Version 1.8.3 was a proposal; the user released it as 1.9.0
+  (2026-11-22).
 - Pitfalls: the first header CSS used `flex: 1` on `nav`; at 375 px the menu
   then stayed next to the brand in three lines — basis `auto` keeps it on its
   own line below. The preview's colour-scheme emulation fires no `change`

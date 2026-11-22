@@ -7,6 +7,8 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-11-22
+
 ### Added
 - A switch „Balken / Text“ over the fight page's „Kampfverlauf“, after viewer
   feedback that not everyone likes the hit bars. „Text“ shows every hit as one
