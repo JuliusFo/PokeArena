@@ -8,10 +8,13 @@ tagged `vX.Y.Z` once its section is complete.
 ## [Unreleased]
 
 ### Fixed
-- The desktop app draws its window without the graphics card (WPF software
-  rendering). On the server without a real GPU, or in a disconnected remote
-  desktop session, the window stayed empty and showed one error box after the
-  other with „0x8876086A“.
+- An empty desktop window with two boxes „Ein unerwarteter Fehler ist
+  aufgetreten: 0x8876086A“ after the app restarted while nobody was connected
+  to the server (likely the automatic update): the window content needs a
+  graphics device, which a disconnected remote desktop session does not have.
+  The app now opens its window only once someone connects (the bot runs
+  before that), and if the content still fails to load, it shows no box and
+  loads it again at the next connection.
 
 ## [1.10.0] - 2026-11-23
 
