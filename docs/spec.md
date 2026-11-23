@@ -547,7 +547,8 @@ do not own now — stand greyed with the word „gesehen“; their box shows nam
 and types only. All others are „????????“. A switch „Alle / Nur gefangene“
 over the list (remembered in the viewer's browser like the settings page's
 picks), and a hidden search: a click on „Name“ turns it into a field that
-finds caught and seen species by name or number, never unknown ones. The bot
+finds caught and seen species by name or number, never unknown ones; „×“,
+Escape or a click on free space (not on a row, button or link) close it. The bot
 keeps the seen species in its database, written with each fight (filled once
 from the stored logs on the first start with it) and deleted with the trainer. Names and base values of species the trainer has not caught
 come from `arten.json`: while it is missing (after the release, before the

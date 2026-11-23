@@ -107,7 +107,10 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   On a phone the box's content is rendered a second time below the selected row (`.dex-inline`, hidden on desktop) —
   tests read `.dex-box`. The search field is `type="text"` (`search` draws a second „×“). „Alle / Nur gefangene“ is
   kept in `localStorage` (`ViewerSettings.PokedexViewKey`, „gefangen“/„alle“; `WebTestContext` plans its `getItem`)
-  (claude/pokedex-toggle-persistence-c87bd9).
+  (claude/pokedex-toggle-persistence-c87bd9). Closing the search moves the focus back to „Name“ only when it was
+  opened by keyboard (`detail` 0): a script focus after Escape draws the focus ring for mouse users too. A click on
+  free space closes it through `pokeArenaDex` in `index.html` (`WebTestContext` plans its two calls); bUnit's
+  `Click()` sends `detail` 1 (claude/pokedex-search-ui-fixes-79cb0c).
 - An awaited JS call in `OnInitializedAsync` (e.g. `localStorage.getItem`) does not finish synchronously in WASM:
   Blazor renders once before `OnParametersSet`. Build what the markup needs in `OnInitialized` first; bUnit only sees
   this with a `Setup` that has no result yet (review claude/pokedex-toggle-persistence-c87bd9).
