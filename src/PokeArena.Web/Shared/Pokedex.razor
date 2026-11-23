@@ -13,6 +13,7 @@
     </div>
 </div>
 
+@{ var rows = Rows().ToList(); }
 <div class="dex">
     <div class="dex-list">
         <div class="dex-columns">
@@ -27,23 +28,23 @@
             }
             else
             {
-                @* Hidden feature (viewer request): a click on „Name“ turns it into a search. *@
-                <button type="button" class="dex-search-open" title="Suchen" @onclick="OpenSearch">Name</button>
+                @* Hidden feature (viewer request): a click on „Name“ turns it into a search. The label keeps the word
+                   „Name“ first, so speech input still finds it. *@
+                <button @ref="_searchOpener" type="button" class="dex-search-open" title="Suchen" aria-label="Name – Suche öffnen"
+                        @onclick="OpenSearch">Name</button>
             }
             <span class="dex-count">Anzahl</span>
         </div>
         <ul class="dex-rows">
-            @{ var shown = 0; }
-            @foreach (var row in Rows())
+            @foreach (var row in rows)
             {
-                shown++;
                 var selected = row.Id == _selected;
                 <li @key="row.Id" class="dex-row @row.Kind.ToString().ToLowerInvariant() @(selected ? "selected" : null)">
                     @if (row.Kind == RowKind.Unknown)
                     {
                         <div class="dex-pick">
                             <span class="dex-number">@Number(row.Id)</span>
-                            <span class="dex-unknown">????????</span>
+                            <span class="dex-unknown"><span aria-hidden="true">????????</span><span class="visually-hidden">unbekannt</span></span>
                         </div>
                     }
                     else
@@ -70,20 +71,30 @@
                     <li class="dex-inline">@Detail(row)</li>
                 }
             }
-            @if (shown == 0)
+            @if (rows.Count == 0)
             {
                 <li class="dex-empty">Kein Pokémon gefunden.</li>
             }
         </ul>
     </div>
-    @if (Find(_selected) is { } current)
-    {
-        <div class="dex-box">@Detail(current)</div>
-    }
+    @* Only while its row is in the list: a filter or search that hides it hides the box too, like on a phone. *@
+    <div class="dex-box" aria-live="polite">
+        @if (rows.FirstOrDefault(r => r.Id == _selected) is { } current)
+        {
+            @Detail(current)
+        }
+        else
+        {
+            <p class="muted">Klick auf ein Pokémon in der Liste.</p>
+        }
+    </div>
 </div>
 
 @code {
-    /// <summary>The last species of Gen 1, when arten.json is missing.</summary>
+    /// <summary>
+    /// The last species of Gen 1. Fixed, never taken from the files: they come from the data host, and an id from
+    /// there must not set how many rows the page draws (review: an id of 2³¹ − 1 would never end the loop).
+    /// </summary>
     private const int LastSpecies = 151;
 
     private static readonly IReadOnlyList<(string Label, Func<SpeciesData, int> Value)> BaseValues =
@@ -97,13 +108,14 @@
     private Dictionary<int, PokedexEntry> _caught = [];
     private Dictionary<int, SpeciesData> _species = [];
     private HashSet<int> _seen = [];
-    private int _last = LastSpecies;
     private int? _selected;
     private bool _onlyCaught;
     private bool _searching;
     private bool _focusSearch;
+    private bool _focusOpener;
     private string _query = "";
     private ElementReference _searchField;
+    private ElementReference _searchOpener;
     private TrainerPage? _shownFor;
 
     [Parameter, EditorRequired]
@@ -124,12 +136,19 @@
 
     protected override void OnParametersSet()
     {
-        _caught = Trainer.Pokedex.GroupBy(e => e.Species.Id).ToDictionary(g => g.Key, g => g.First());
-        _species = Species?.Species.GroupBy(s => s.Id).ToDictionary(g => g.Key, g => g.First()) ?? [];
+        // Both files come from the data host: the JSON reader does not enforce non-null fields, so an entry without a
+        // name or types, or outside Gen 1, is left out instead of breaking the page (review).
+        _caught = (Trainer.Pokedex ?? [])
+            .Where(e => e?.Species is { Name: not null, Types: not null } s && InRange(s.Id))
+            .GroupBy(e => e.Species.Id)
+            .ToDictionary(g => g.Key, g => g.First());
+        _species = (Species?.Species ?? [])
+            .Where(s => s is { Name: not null, Types: not null } && InRange(s.Id))
+            .GroupBy(s => s.Id)
+            .ToDictionary(g => g.Key, g => g.First());
 
         // A seen species needs its name from arten.json; without it, it stays unknown.
         _seen = [.. (Trainer.Seen ?? []).Where(id => _species.ContainsKey(id) && !_caught.ContainsKey(id))];
-        _last = Math.Max(_species.Count == 0 ? LastSpecies : _species.Keys.Max(), _caught.Count == 0 ? 0 : _caught.Keys.Max());
         if (!ReferenceEquals(_shownFor, Trainer))
         {
             // Another trainer (or a new load): start at their first catch.
@@ -145,12 +164,18 @@
             _focusSearch = false;
             await _searchField.FocusAsync();
         }
+        else if (_focusOpener)
+        {
+            // The field is gone after „×“ or Escape: keyboard users continue where the search started.
+            _focusOpener = false;
+            await _searchOpener.FocusAsync();
+        }
     }
 
     private IEnumerable<Row> Rows()
     {
         var query = _query.Trim();
-        for (var id = 1; id <= _last; id++)
+        for (var id = 1; id <= LastSpecies; id++)
         {
             var row = Find(id)!;
             if (_onlyCaught && row.Kind != RowKind.Caught)
@@ -235,6 +260,8 @@
         }
     };
 
+    private static bool InRange(int id) => id is >= 1 and <= LastSpecies;
+
     private static string Number(int id) => "#" + id.ToString("000", CultureInfo.InvariantCulture);
 
     private void OpenSearch()
@@ -247,6 +274,7 @@
     {
         _searching = false;
         _query = "";
+        _focusOpener = true;
     }
 
     private void OnSearchKeyAsync(KeyboardEventArgs e)

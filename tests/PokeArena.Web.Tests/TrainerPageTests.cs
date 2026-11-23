@@ -82,7 +82,7 @@ public class TrainerPageTests : WebTestContext
         var raupy = cut.FindAll(".dex-row")[9];
         Assert.Contains("seen", raupy.ClassList);
         Assert.Equal("gesehen", raupy.QuerySelector(".dex-seen")!.TextContent);
-        Assert.Equal("????????", cut.FindAll(".dex-row")[1].QuerySelector(".dex-unknown")!.TextContent);
+        Assert.Equal("????????", cut.FindAll(".dex-row")[1].QuerySelector(".dex-unknown [aria-hidden]")!.TextContent);
         Assert.Empty(cut.FindAll(".dex-row")[1].QuerySelectorAll("button"));
         Assert.Equal("× 2", cut.FindAll(".dex-row")[0].QuerySelector(".dex-count")!.TextContent);
     }
@@ -185,6 +185,59 @@ public class TrainerPageTests : WebTestContext
 
         cut.WaitForAssertion(() => Assert.Equal("Bisasam", cut.Find(".dex-box h3").TextContent));
         Assert.Empty(cut.FindAll(".dex-box .dex-values"));
+    }
+
+    [Theory]
+    [InlineData("{\"species\":null}")]
+    [InlineData("{\"species\":[null,{\"id\":10,\"name\":null,\"types\":[\"Käfer\"]},{\"id\":25,\"name\":\"Pikachu\",\"types\":null}]}")]
+    [InlineData("{\"species\":[{\"id\":2147483647,\"name\":\"Riese\",\"types\":[]},{\"id\":0,\"name\":\"Null\",\"types\":[]},{\"id\":-5,\"name\":\"Minus\",\"types\":[]}]}")]
+    public void A_species_file_with_empty_fields_or_ids_outside_gen_1_does_not_break_the_page(string json)
+    {
+        // Readable JSON the reader accepts although fields are null — and ids that must not set how many rows are drawn.
+        Put(
+            SitePaths.Trainer("11"),
+            new TrainerPage("11", "Anna", Now, Now, 1, 1, 0, 0, 0, [new(Bisasam, 1, true)], [], [], [], Seen: [10, 25, 2147483647, 0, -5]),
+            SiteJson.Default.TrainerPage);
+        _host.Files[SitePaths.Species] = json;
+
+        var cut = Render<Trainer>(p => p.Add(t => t.Key, "11"));
+
+        cut.WaitForAssertion(() => Assert.Equal("Bisasam", cut.Find(".dex-box h3").TextContent));
+        Assert.Equal(151, cut.FindAll(".dex-row").Count);
+        Assert.Empty(cut.FindAll(".dex-row.seen"));
+    }
+
+    [Fact]
+    public void A_filter_that_hides_the_selected_row_hides_its_box_too()
+    {
+        PutPokedex(seen: [10]);
+        var cut = Render<Trainer>(p => p.Add(t => t.Key, "11"));
+        cut.WaitForAssertion(() => Assert.Equal(151, cut.FindAll(".dex-row").Count));
+        cut.FindAll(".dex-row")[9].QuerySelector("button")!.Click();
+
+        cut.FindAll(".dex-head .view-switch button").Single(b => b.TextContent == "Nur gefangene").Click();
+
+        Assert.Empty(cut.FindAll(".dex-box h3"));
+        Assert.Contains("Klick auf ein Pokémon", cut.Find(".dex-box").TextContent);
+        cut.FindAll(".dex-head .view-switch button").Single(b => b.TextContent == "Alle").Click();
+        Assert.Equal("Raupy", cut.Find(".dex-box h3").TextContent);
+    }
+
+    [Fact]
+    public void Closing_the_search_puts_the_focus_back_on_name()
+    {
+        PutPokedex(seen: [10]);
+        var cut = Render<Trainer>(p => p.Add(t => t.Key, "11"));
+        cut.WaitForAssertion(() => Assert.Equal(151, cut.FindAll(".dex-row").Count));
+        cut.Find(".dex-search-open").Click();
+
+        cut.Find(".dex-search-close").Click();
+
+        // FocusAsync goes through Blazor's own JS call; the last one aims at the „Name“ button again.
+        var focus = JSInterop.Invocations.Where(i => i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase)).ToList();
+        Assert.Equal(2, focus.Count);
+        Assert.Equal("Name – Suche öffnen", cut.Find(".dex-search-open").GetAttribute("aria-label"));
+        Assert.Equal("unbekannt", cut.FindAll(".dex-row")[1].QuerySelector(".visually-hidden")!.TextContent);
     }
 
     /// <summary>Anna: two Bisasam (one the starter); arten.json with Bisasam's Gen-1 values and Raupy.</summary>

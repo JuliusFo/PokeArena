@@ -1132,6 +1132,12 @@ button.dex-pick:focus-visible,
   font-weight: 400;
 }
 
+/* The browsers' own placeholder grey is below 4.5 : 1 on --bg (Chrome ≈ 2.2 : 1). */
+.dex-search input::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
 .dex-search-close {
   padding: 0 6px;
   border: none;
