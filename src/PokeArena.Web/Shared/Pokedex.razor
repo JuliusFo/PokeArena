@@ -3,13 +3,16 @@
     („gesehen“, greyed with a mark) and unknown („????????“) — next to a box with the selected one. Names, types and
     base values of species the trainer has not caught come from arten.json; without it (between the release and the
     bot's update) the list shows the caught ones from the trainer file alone and the box no base values.
+    „Alle / Nur gefangene“ is kept per viewer in localStorage (ViewerSettings.PokedexViewKey).
 *@
+@inject IJSRuntime JS
+@using Microsoft.JSInterop
 
 <div class="dex-head">
     <h2>Pokédex</h2>
     <div class="view-switch" role="group" aria-label="Welche Pokémon">
-        <button type="button" aria-pressed="@(_onlyCaught ? "false" : "true")" @onclick="() => _onlyCaught = false">Alle</button>
-        <button type="button" aria-pressed="@(_onlyCaught ? "true" : "false")" @onclick="() => _onlyCaught = true">Nur gefangene</button>
+        <button type="button" aria-pressed="@(_onlyCaught ? "false" : "true")" @onclick="() => SetOnlyCaughtAsync(false)">Alle</button>
+        <button type="button" aria-pressed="@(_onlyCaught ? "true" : "false")" @onclick="() => SetOnlyCaughtAsync(true)">Nur gefangene</button>
     </div>
 </div>
 
@@ -133,6 +136,18 @@
     }
 
     private sealed record Row(int Id, RowKind Kind, SpeciesInfo? Species, PokedexEntry? Entry, SpeciesData? Data);
+
+    /// <summary>
+    /// The viewer's last pick, for every trainer page. Storage may be blocked: the Pokédex then starts with „Alle“ and
+    /// the switch still works until the page is left.
+    /// </summary>
+    protected override async Task OnInitializedAsync() => _onlyCaught = await ViewerSettings.OnlyCaughtAsync(JS);
+
+    private async Task SetOnlyCaughtAsync(bool onlyCaught)
+    {
+        _onlyCaught = onlyCaught;
+        await ViewerSettings.SavePokedexViewAsync(JS, onlyCaught);
+    }
 
     protected override void OnParametersSet()
     {

@@ -4,13 +4,16 @@ namespace PokeArena.Web.Services;
 
 /// <summary>
 /// What a viewer picked on „Einstellungen“, kept only in their own browser (privacy page): the look (light, dark or the
-/// device's) and the fight log's view. Storage may be blocked (private windows, strict settings): every call catches
+/// device's) and the fight log's view — plus the Pokédex filter, picked on the trainer page itself. Storage may be blocked (private windows, strict settings): every call catches
 /// <see cref="JSException"/>, reading then gives the default and a pick holds until the page is left.
 /// </summary>
 public static class ViewerSettings
 {
     /// <summary>localStorage key of the fight log's view; „text“ or „balken“.</summary>
     public const string LogViewKey = "pokearena.kampfverlauf";
+
+    /// <summary>localStorage key of the Pokédex filter on the trainer page; „gefangen“ or „alle“.</summary>
+    public const string PokedexViewKey = "pokearena.pokedex";
 
     /// <summary>The look follows the device (default).</summary>
     public const string ThemeAuto = "auto";
@@ -52,7 +55,32 @@ public static class ViewerSettings
         }
     }
 
-    /// <summary>The viewer's look: <see cref="ThemeAuto"/>, <see cref="ThemeLight"/> or <see cref="ThemeDark"/>.</summary>
+    /// <summary>Whether the viewer picked „Nur gefangene“ in the Pokédex; „Alle“ when nothing or nothing readable is stored.</summary>
+    public static async Task<bool> OnlyCaughtAsync(IJSRuntime js)
+    {
+        try
+        {
+            return await js.InvokeAsync<string?>("localStorage.getItem", PokedexViewKey) == "gefangen";
+        }
+        catch (JSException)
+        {
+            return false;
+        }
+    }
+
+    public static async Task SavePokedexViewAsync(IJSRuntime js, bool onlyCaught)
+    {
+        try
+        {
+            await js.InvokeVoidAsync("localStorage.setItem", PokedexViewKey, onlyCaught ? "gefangen" : "alle");
+        }
+        catch (JSException)
+        {
+            // Storage blocked: the pick holds for this page only.
+        }
+    }
+
+    /// <summary>The viewer's look:<see cref="ThemeAuto"/>, <see cref="ThemeLight"/> or <see cref="ThemeDark"/>.</summary>
     public static async Task<string> ThemeAsync(IJSRuntime js)
     {
         try

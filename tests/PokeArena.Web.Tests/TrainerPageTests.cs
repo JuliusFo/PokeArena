@@ -123,6 +123,45 @@ public class TrainerPageTests : WebTestContext
         Assert.Equal(151, cut.FindAll(".dex-row").Count);
     }
 
+    [Fact]
+    public void The_switch_is_remembered_in_the_browser()
+    {
+        PutPokedex(seen: [10]);
+        var cut = Render<Trainer>(p => p.Add(t => t.Key, "11"));
+        cut.WaitForAssertion(() => Assert.Equal(151, cut.FindAll(".dex-row").Count));
+
+        cut.FindAll(".dex-head .view-switch button").Single(b => b.TextContent == "Nur gefangene").Click();
+        Assert.Equal([ViewerSettings.PokedexViewKey, "gefangen"], JSInterop.VerifyInvoke("localStorage.setItem").Arguments);
+        cut.FindAll(".dex-head .view-switch button").Single(b => b.TextContent == "Alle").Click();
+        Assert.Equal([ViewerSettings.PokedexViewKey, "alle"], JSInterop.VerifyInvoke("localStorage.setItem", calledTimes: 2)[1].Arguments);
+    }
+
+    [Fact]
+    public void A_stored_pick_opens_the_pokedex_with_the_caught_ones_only()
+    {
+        JSInterop.Setup<string?>("localStorage.getItem", ViewerSettings.PokedexViewKey).SetResult("gefangen");
+        PutPokedex(seen: [10]);
+
+        var cut = Render<Trainer>(p => p.Add(t => t.Key, "11"));
+
+        cut.WaitForAssertion(() => Assert.Equal(["#001"], cut.FindAll(".dex-row .dex-number").Select(n => n.TextContent)));
+        Assert.Equal("true", cut.FindAll(".dex-head .view-switch button").Single(b => b.TextContent == "Nur gefangene").GetAttribute("aria-pressed"));
+    }
+
+    [Fact]
+    public void Blocked_storage_starts_with_all_and_the_switch_still_works()
+    {
+        JSInterop.Setup<string?>("localStorage.getItem", ViewerSettings.PokedexViewKey).SetException(new Microsoft.JSInterop.JSException("SecurityError"));
+        JSInterop.SetupVoid("localStorage.setItem", _ => true).SetException(new Microsoft.JSInterop.JSException("SecurityError"));
+        PutPokedex(seen: [10]);
+        var cut = Render<Trainer>(p => p.Add(t => t.Key, "11"));
+        cut.WaitForAssertion(() => Assert.Equal(151, cut.FindAll(".dex-row").Count));
+
+        cut.FindAll(".dex-head .view-switch button").Single(b => b.TextContent == "Nur gefangene").Click();
+
+        Assert.Equal(["#001"], cut.FindAll(".dex-row .dex-number").Select(n => n.TextContent));
+    }
+
     [Theory]
     [InlineData("raU", new[] { "#010" })]
     [InlineData("#1", new[] { "#001" })]
