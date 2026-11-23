@@ -401,15 +401,13 @@ h1.tinted {
   font-size: 17px;
 }
 
-.fighters,
-.pokedex {
+.fighters {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.fighters li,
-.pokedex li {
+.fighters li {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -418,8 +416,7 @@ h1.tinted {
   border-bottom: 1px solid var(--border);
 }
 
-.fighters li:last-child,
-.pokedex li:last-child {
+.fighters li:last-child {
   border-bottom: none;
 }
 
@@ -959,16 +956,250 @@ h1.tinted {
   color: var(--accent);
 }
 
-.pokedex {
-  padding: 4px 16px;
+/*
+  Pokédex (Shared/Pokedex.razor): the list of all species scrolls inside its own box; next to it the box of the
+  selected one, equally high (grid stretch), its content at the top. On a phone the side box goes and the same
+  content opens below the selected row (.dex-inline). Seen and unknown rows are --muted, never faded with opacity.
+*/
+.dex-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  margin: 28px 0 10px;
+}
+
+.dex-head h2 {
+  margin: 0;
+}
+
+.dex {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 16px;
+}
+
+.dex-list {
+  display: flex;
+  flex-direction: column;
+  height: 470px;
+  border: 1px solid var(--border);
   border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.dex-columns,
+.dex-pick {
+  display: grid;
+  grid-template-columns: 3.4em minmax(0, 1fr) 4em;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+}
+
+.dex-columns {
+  min-height: 44px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.dex-columns .dex-number,
+.dex-columns .dex-count {
+  color: inherit;
+}
+
+.dex-rows {
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-y: auto;
+}
+
+.dex-row {
+  border-bottom: 1px solid var(--border);
+}
+
+.dex-pick {
+  width: 100%;
+  min-height: 42px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+button.dex-pick {
+  cursor: pointer;
+}
+
+button.dex-pick:hover {
+  background: var(--bg);
+}
+
+button.dex-pick:focus-visible,
+.dex-search-open:focus-visible,
+.dex-search-close:focus-visible {
+  outline: 2px solid var(--chip-text);
+  outline-offset: -2px;
+}
+
+.dex-row.selected .dex-pick {
+  background: var(--chip-bg);
+  box-shadow: inset 3px 0 0 var(--chip-text);
+}
+
+/* The „Starter“ chip has the selection's colour: it would vanish into it. */
+.dex-row.selected .chip {
   background: var(--surface);
 }
 
 .dex-number {
-  min-width: 3.2em;
   color: var(--muted);
   font-variant-numeric: tabular-nums;
+}
+
+.dex-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+}
+
+.dex-count {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.dex-unknown {
+  color: var(--muted);
+  font-style: italic;
+  letter-spacing: 1px;
+}
+
+.dex-row.seen .species-name {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+/* The mark says it in words — grey alone would not (colour-blind viewers, contrast). */
+.dex-seen {
+  padding: 0 7px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.dex-empty {
+  padding: 12px 14px;
+  color: var(--muted);
+}
+
+/* The hidden search: „Name“ looks like the other column heads until it is clicked. */
+.dex-search-open {
+  justify-self: start;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.dex-search {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dex-search input {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-weight: 400;
+}
+
+.dex-search-close {
+  padding: 0 6px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.dex-box {
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.dex-box h3,
+.dex-inline h3 {
+  margin: 0 0 6px;
+  font-size: 22px;
+}
+
+.dex-box h4,
+.dex-inline h4 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.dex-types {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 14px;
+}
+
+.dex-types .type {
+  font-size: 12px;
+}
+
+.dex-values {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+
+.dex-values div {
+  display: flex;
+  justify-content: space-between;
+  padding: 7px 12px;
+  border-radius: 8px;
+  background: var(--bg);
+}
+
+.dex-values dt {
+  color: var(--muted);
+}
+
+.dex-values dd {
+  margin: 0;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.dex-inline {
+  display: none;
 }
 
 /* Species as text with type colours */
@@ -1035,5 +1266,31 @@ h1.tinted {
   .table th,
   .table td {
     padding: 8px 6px;
+  }
+}
+
+/* Pokédex: list and box do not fit side by side — the box opens below the selected row instead. */
+@media (max-width: 640px) {
+  .dex {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dex-box {
+    display: none;
+  }
+
+  .dex-list {
+    height: 540px;
+  }
+
+  .dex-inline {
+    display: block;
+    padding: 12px 14px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+
+  .dex-inline .dex-values div {
+    background: var(--surface);
   }
 }

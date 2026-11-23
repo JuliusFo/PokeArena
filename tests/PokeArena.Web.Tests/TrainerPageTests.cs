@@ -71,6 +71,145 @@ public class TrainerPageTests : WebTestContext
     }
 
     [Fact]
+    public void The_pokedex_lists_every_species_caught_seen_and_unknown()
+    {
+        PutPokedex(seen: [10]);
+
+        var cut = Render<Trainer>(p => p.Add(t => t.Key, "11"));
+
+        cut.WaitForAssertion(() => Assert.Equal(151, cut.FindAll(".dex-row").Count));
+        Assert.Equal(["caught", "unknown", "unknown"], cut.FindAll(".dex-row").Take(3).Select(r => r.ClassList.First(c => c != "dex-row")));
+        var raupy = cut.FindAll(".dex-row")[9];
+        Assert.Contains("seen", raupy.ClassList);
+        Assert.Equal("gesehen", raupy.QuerySelector(".dex-seen")!.TextContent);
+        Assert.Equal("????????", cut.FindAll(".dex-row")[1].QuerySelector(".dex-unknown")!.TextContent);
+        Assert.Empty(cut.FindAll(".dex-row")[1].QuerySelectorAll("button"));
+        Assert.Equal("× 2", cut.FindAll(".dex-row")[0].QuerySelector(".dex-count")!.TextContent);
+    }
+
+    [Fact]
+    public void The_first_catch_is_selected_and_the_box_shows_its_base_values()
+    {
+        PutPokedex(seen: [10]);
+
+        var cut = Render<Trainer>(p => p.Add(t => t.Key, "11"));
+
+        cut.WaitForAssertion(() => Assert.Equal("Bisasam", cut.Find(".dex-box h3").TextContent));
+        Assert.Equal(
+            ["HP 45", "ATK 49", "DEF 49", "SPEZ 65"],
+            cut.FindAll(".dex-box .dex-values div").Select(d => d.QuerySelector("dt")!.TextContent + " " + d.QuerySelector("dd")!.TextContent));
+        Assert.Contains("Starter", cut.Find(".dex-box").TextContent);
+
+        // A seen species shows name and types, its base values only once caught.
+        cut.FindAll(".dex-row")[9].QuerySelector("button")!.Click();
+        Assert.Equal("Raupy", cut.Find(".dex-box h3").TextContent);
+        Assert.Contains("noch nicht gefangen", cut.Find(".dex-box").TextContent);
+        Assert.Empty(cut.FindAll(".dex-box .dex-values"));
+        Assert.Equal("true", cut.FindAll(".dex-row")[9].QuerySelector("button")!.GetAttribute("aria-current"));
+    }
+
+    [Fact]
+    public void The_switch_hides_everything_not_caught()
+    {
+        PutPokedex(seen: [10]);
+        var cut = Render<Trainer>(p => p.Add(t => t.Key, "11"));
+        cut.WaitForAssertion(() => Assert.Equal(151, cut.FindAll(".dex-row").Count));
+
+        cut.FindAll(".dex-head .view-switch button").Single(b => b.TextContent == "Nur gefangene").Click();
+
+        Assert.Equal(["#001"], cut.FindAll(".dex-row .dex-number").Select(n => n.TextContent));
+        cut.FindAll(".dex-head .view-switch button").Single(b => b.TextContent == "Alle").Click();
+        Assert.Equal(151, cut.FindAll(".dex-row").Count);
+    }
+
+    [Theory]
+    [InlineData("raU", new[] { "#010" })]
+    [InlineData("#1", new[] { "#001" })]
+    [InlineData("10", new[] { "#010" })]
+    [InlineData("Pikachu", new string[0])]
+    [InlineData("2", new string[0])]
+    public void The_hidden_search_finds_caught_and_seen_species_only(string query, string[] expected)
+    {
+        PutPokedex(seen: [10]);
+        var cut = Render<Trainer>(p => p.Add(t => t.Key, "11"));
+        cut.WaitForAssertion(() => Assert.Equal(151, cut.FindAll(".dex-row").Count));
+
+        cut.Find(".dex-search-open").Click();
+        cut.Find(".dex-search input").Input(query);
+
+        Assert.Equal(expected, cut.FindAll(".dex-row .dex-number").Select(n => n.TextContent));
+        Assert.Equal(expected.Length == 0, cut.FindAll(".dex-empty").Count == 1);
+    }
+
+    [Fact]
+    public void Escape_closes_the_search_and_shows_everything_again()
+    {
+        PutPokedex(seen: [10]);
+        var cut = Render<Trainer>(p => p.Add(t => t.Key, "11"));
+        cut.WaitForAssertion(() => Assert.Equal(151, cut.FindAll(".dex-row").Count));
+        cut.Find(".dex-search-open").Click();
+        cut.Find(".dex-search input").Input("raupy");
+
+        cut.Find(".dex-search input").KeyDown("Escape");
+
+        Assert.Equal(151, cut.FindAll(".dex-row").Count);
+        Assert.Empty(cut.FindAll(".dex-search input"));
+        cut.Find(".dex-search-open").Click();
+        Assert.Equal("", cut.Find(".dex-search input").GetAttribute("value") ?? "");
+    }
+
+    [Fact]
+    public void Without_the_species_file_the_pokedex_shows_the_catches_without_base_values()
+    {
+        // Between the release and the bot's update arten.json is missing; „gesehen“ needs its names.
+        Put(
+            SitePaths.Trainer("11"),
+            new TrainerPage("11", "Anna", Now, Now, 1, 2, 0, 0, 0, [new(Bisasam, 2, true)], [], [], [], Seen: [10]),
+            SiteJson.Default.TrainerPage);
+
+        var cut = Render<Trainer>(p => p.Add(t => t.Key, "11"));
+
+        cut.WaitForAssertion(() => Assert.Equal("Bisasam", cut.Find(".dex-box h3").TextContent));
+        Assert.Equal(151, cut.FindAll(".dex-row").Count);
+        Assert.Empty(cut.FindAll(".dex-row.seen"));
+        Assert.Empty(cut.FindAll(".dex-box .dex-values"));
+    }
+
+    [Fact]
+    public void A_broken_species_file_does_not_break_the_trainer_page()
+    {
+        Put(SitePaths.Trainer("11"), new TrainerPage("11", "Anna", Now, Now, 1, 1, 0, 0, 0, [new(Bisasam, 1, true)], [], [], []), SiteJson.Default.TrainerPage);
+        _host.Files[SitePaths.Species] = "{ kaputt";
+
+        var cut = Render<Trainer>(p => p.Add(t => t.Key, "11"));
+
+        cut.WaitForAssertion(() => Assert.Equal("Bisasam", cut.Find(".dex-box h3").TextContent));
+        Assert.Empty(cut.FindAll(".dex-box .dex-values"));
+    }
+
+    /// <summary>Anna: two Bisasam (one the starter); arten.json with Bisasam's Gen-1 values and Raupy.</summary>
+    private void PutPokedex(IReadOnlyList<int>? seen)
+    {
+        Put(
+            SitePaths.Trainer("11"),
+            new TrainerPage("11", "Anna", Now, Now, 1, 2, 0, 0, 0, [new(Bisasam, 2, true)], [], [], [], Seen: seen),
+            SiteJson.Default.TrainerPage);
+        Put(
+            SitePaths.Species,
+            new SpeciesList(
+            [
+                .. Enumerable.Range(1, 151).Select(id => id switch
+                {
+                    1 => new SpeciesData(1, "Bisasam", ["Pflanze", "Gift"], 45, 49, 49, 65),
+                    10 => new SpeciesData(10, "Raupy", ["Käfer"], 45, 30, 35, 20),
+                    25 => new SpeciesData(25, "Pikachu", ["Elektro"], 35, 55, 30, 50),
+                    _ => new SpeciesData(id, $"Art {id}", ["Normal"], 50, 50, 50, 50),
+                }),
+            ]),
+            SiteJson.Default.SpeciesList);
+    }
+
+    [Fact]
     public void An_unknown_trainer_is_reported()
     {
         var cut = Render<Trainer>(p => p.Add(t => t.Key, "999"));

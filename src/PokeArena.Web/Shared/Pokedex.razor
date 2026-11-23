@@ -1,0 +1,259 @@
+@*
+    The trainer page's Pokédex (claude/pokedex-trainer-page-improve-a4a504): all species as a list — caught, seen
+    („gesehen“, greyed with a mark) and unknown („????????“) — next to a box with the selected one. Names, types and
+    base values of species the trainer has not caught come from arten.json; without it (between the release and the
+    bot's update) the list shows the caught ones from the trainer file alone and the box no base values.
+*@
+
+<div class="dex-head">
+    <h2>Pokédex</h2>
+    <div class="view-switch" role="group" aria-label="Welche Pokémon">
+        <button type="button" aria-pressed="@(_onlyCaught ? "false" : "true")" @onclick="() => _onlyCaught = false">Alle</button>
+        <button type="button" aria-pressed="@(_onlyCaught ? "true" : "false")" @onclick="() => _onlyCaught = true">Nur gefangene</button>
+    </div>
+</div>
+
+<div class="dex">
+    <div class="dex-list">
+        <div class="dex-columns">
+            <span class="dex-number">#</span>
+            @if (_searching)
+            {
+                <span class="dex-search">
+                    <input @ref="_searchField" type="text" autocomplete="off" placeholder="Name oder Nummer" aria-label="Pokédex durchsuchen"
+                           @bind="_query" @bind:event="oninput" @onkeydown="OnSearchKeyAsync" />
+                    <button type="button" class="dex-search-close" aria-label="Suche schließen" @onclick="CloseSearch">×</button>
+                </span>
+            }
+            else
+            {
+                @* Hidden feature (viewer request): a click on „Name“ turns it into a search. *@
+                <button type="button" class="dex-search-open" title="Suchen" @onclick="OpenSearch">Name</button>
+            }
+            <span class="dex-count">Anzahl</span>
+        </div>
+        <ul class="dex-rows">
+            @{ var shown = 0; }
+            @foreach (var row in Rows())
+            {
+                shown++;
+                var selected = row.Id == _selected;
+                <li @key="row.Id" class="dex-row @row.Kind.ToString().ToLowerInvariant() @(selected ? "selected" : null)">
+                    @if (row.Kind == RowKind.Unknown)
+                    {
+                        <div class="dex-pick">
+                            <span class="dex-number">@Number(row.Id)</span>
+                            <span class="dex-unknown">????????</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <button type="button" class="dex-pick" aria-current="@(selected ? "true" : null)" @onclick="() => _selected = row.Id">
+                            <span class="dex-number">@Number(row.Id)</span>
+                            <span class="dex-name">
+                                <SpeciesName Species="row.Species!" />
+                                @if (row.Kind == RowKind.Seen)
+                                {
+                                    <span class="dex-seen">gesehen</span>
+                                }
+                                @if (row.Entry?.HasStarter == true)
+                                {
+                                    <span class="chip">Starter</span>
+                                }
+                            </span>
+                            <span class="dex-count">@(row.Entry is { Count: > 1 } entry ? $"× {entry.Count}" : null)</span>
+                        </button>
+                    }
+                </li>
+                @if (selected)
+                {
+                    <li class="dex-inline">@Detail(row)</li>
+                }
+            }
+            @if (shown == 0)
+            {
+                <li class="dex-empty">Kein Pokémon gefunden.</li>
+            }
+        </ul>
+    </div>
+    @if (Find(_selected) is { } current)
+    {
+        <div class="dex-box">@Detail(current)</div>
+    }
+</div>
+
+@code {
+    /// <summary>The last species of Gen 1, when arten.json is missing.</summary>
+    private const int LastSpecies = 151;
+
+    private static readonly IReadOnlyList<(string Label, Func<SpeciesData, int> Value)> BaseValues =
+    [
+        ("HP", s => s.Hp),
+        ("ATK", s => s.Atk),
+        ("DEF", s => s.Def),
+        ("SPEZ", s => s.Spez),
+    ];
+
+    private Dictionary<int, PokedexEntry> _caught = [];
+    private Dictionary<int, SpeciesData> _species = [];
+    private HashSet<int> _seen = [];
+    private int _last = LastSpecies;
+    private int? _selected;
+    private bool _onlyCaught;
+    private bool _searching;
+    private bool _focusSearch;
+    private string _query = "";
+    private ElementReference _searchField;
+    private TrainerPage? _shownFor;
+
+    [Parameter, EditorRequired]
+    public TrainerPage Trainer { get; set; } = null!;
+
+    /// <summary>arten.json; null while it is missing.</summary>
+    [Parameter]
+    public SpeciesList? Species { get; set; }
+
+    private enum RowKind
+    {
+        Caught,
+        Seen,
+        Unknown,
+    }
+
+    private sealed record Row(int Id, RowKind Kind, SpeciesInfo? Species, PokedexEntry? Entry, SpeciesData? Data);
+
+    protected override void OnParametersSet()
+    {
+        _caught = Trainer.Pokedex.GroupBy(e => e.Species.Id).ToDictionary(g => g.Key, g => g.First());
+        _species = Species?.Species.GroupBy(s => s.Id).ToDictionary(g => g.Key, g => g.First()) ?? [];
+
+        // A seen species needs its name from arten.json; without it, it stays unknown.
+        _seen = [.. (Trainer.Seen ?? []).Where(id => _species.ContainsKey(id) && !_caught.ContainsKey(id))];
+        _last = Math.Max(_species.Count == 0 ? LastSpecies : _species.Keys.Max(), _caught.Count == 0 ? 0 : _caught.Keys.Max());
+        if (!ReferenceEquals(_shownFor, Trainer))
+        {
+            // Another trainer (or a new load): start at their first catch.
+            _shownFor = Trainer;
+            _selected = _caught.Count == 0 ? null : _caught.Keys.Min();
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusSearch)
+        {
+            _focusSearch = false;
+            await _searchField.FocusAsync();
+        }
+    }
+
+    private IEnumerable<Row> Rows()
+    {
+        var query = _query.Trim();
+        for (var id = 1; id <= _last; id++)
+        {
+            var row = Find(id)!;
+            if (_onlyCaught && row.Kind != RowKind.Caught)
+            {
+                continue;
+            }
+
+            if (query.Length > 0 && !Matches(row, query))
+            {
+                continue;
+            }
+
+            yield return row;
+        }
+    }
+
+    /// <summary>
+    /// Name or number — of caught and seen species only: arten.json holds every name, and the search must not reveal
+    /// the unknown ones.
+    /// </summary>
+    private static bool Matches(Row row, string query)
+    {
+        if (row.Kind == RowKind.Unknown)
+        {
+            return false;
+        }
+
+        var number = query.TrimStart('#');
+        return int.TryParse(number, NumberStyles.None, CultureInfo.InvariantCulture, out var id) && number.Length > 0
+            ? id == row.Id
+            : row.Species!.Name.Contains(query, StringComparison.CurrentCultureIgnoreCase);
+    }
+
+    private Row? Find(int? id)
+    {
+        if (id is not { } key)
+        {
+            return null;
+        }
+
+        _species.TryGetValue(key, out var data);
+        if (_caught.TryGetValue(key, out var entry))
+        {
+            return new Row(key, RowKind.Caught, entry.Species, entry, data);
+        }
+
+        return _seen.Contains(key)
+            ? new Row(key, RowKind.Seen, new SpeciesInfo(key, data!.Name, data.Types), null, data)
+            : new Row(key, RowKind.Unknown, null, null, null);
+    }
+
+    private RenderFragment Detail(Row row) => __builder =>
+    {
+        <h3>@row.Species!.Name</h3>
+        <p class="dex-types">
+            @foreach (var type in row.Species.Types)
+            {
+                <span class="type @Format.TypeClass(type)">@type</span>
+            }
+            @if (row.Entry?.HasStarter == true)
+            {
+                <span class="chip">Starter</span>
+            }
+            @if (row.Entry is { Count: > 1 } entry)
+            {
+                <span class="muted">× @entry.Count</span>
+            }
+        </p>
+        @if (row.Kind == RowKind.Seen)
+        {
+            <p class="muted">Schon im Kampf gesehen, aber noch nicht gefangen.</p>
+        }
+        else if (row.Data is { } data)
+        {
+            <h4>Basiswerte</h4>
+            <dl class="dex-values">
+                @foreach (var (label, value) in BaseValues)
+                {
+                    <div><dt>@label</dt><dd>@value(data)</dd></div>
+                }
+            </dl>
+        }
+    };
+
+    private static string Number(int id) => "#" + id.ToString("000", CultureInfo.InvariantCulture);
+
+    private void OpenSearch()
+    {
+        _searching = true;
+        _focusSearch = true;
+    }
+
+    private void CloseSearch()
+    {
+        _searching = false;
+        _query = "";
+    }
+
+    private void OnSearchKeyAsync(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            CloseSearch();
+        }
+    }
+}

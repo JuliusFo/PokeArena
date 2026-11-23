@@ -1,5 +1,6 @@
 @page "/trainer/{Key}"
 @implements IDisposable
+@using System.Text.Json
 @inject SiteData Data
 
 <PageTitle>@(_trainer?.DisplayName ?? "Trainer") – PokeArena</PageTitle>
@@ -46,24 +47,7 @@
         </ul>
     }
 
-    <h2>Pokédex</h2>
-    <ul class="pokedex">
-        @foreach (var entry in trainer.Pokedex)
-        {
-            <li>
-                <span class="dex-number">#@entry.Species.Id.ToString("000", CultureInfo.InvariantCulture)</span>
-                <SpeciesName Species="entry.Species" />
-                @if (entry.Count > 1)
-                {
-                    <span class="muted">× @entry.Count</span>
-                }
-                @if (entry.HasStarter)
-                {
-                    <span class="chip">Starter</span>
-                }
-            </li>
-        }
-    </ul>
+    <Pokedex Trainer="trainer" Species="_species" />
 
     @if (trainer.RecentBattles.Count > 0)
     {
@@ -88,6 +72,7 @@ else
 @code {
     private readonly CancellationTokenSource _stop = new();
     private TrainerPage? _trainer;
+    private SpeciesList? _species;
     private int? _rank;
     private bool _missing;
     private bool _failed;
@@ -103,11 +88,14 @@ else
         _failed = false;
         try
         {
+            var species = SpeciesOrNullAsync();
             var leaderboard = await Data.LeaderboardAsync(_stop.Token);
             var entry = leaderboard?.Entries.FirstOrDefault(e => e.TrainerId == Key)
                 ?? leaderboard?.Entries.FirstOrDefault(e => string.Equals(e.DisplayName, Key, StringComparison.OrdinalIgnoreCase));
             _rank = entry?.Rank;
-            _trainer = await Data.TrainerAsync(entry?.TrainerId ?? Key, _stop.Token);
+            var trainer = await Data.TrainerAsync(entry?.TrainerId ?? Key, _stop.Token);
+            _species = await species;
+            _trainer = trainer;
             _missing = _trainer is null;
         }
         catch (Exception ex) when (ex is HttpRequestException || (ex is OperationCanceledException && !_stop.IsCancellationRequested))
@@ -118,6 +106,22 @@ else
         catch (OperationCanceledException)
         {
             // Page left.
+        }
+    }
+
+    /// <summary>
+    /// arten.json, or null if it is missing (between the release and the bot's update) or cannot be read: the
+    /// Pokédex then shows the caught species without base values — never an error for the whole page.
+    /// </summary>
+    private async Task<SpeciesList?> SpeciesOrNullAsync()
+    {
+        try
+        {
+            return await Data.SpeciesAsync(_stop.Token);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or JsonException || (ex is OperationCanceledException && !_stop.IsCancellationRequested))
+        {
+            return null;
         }
     }
 

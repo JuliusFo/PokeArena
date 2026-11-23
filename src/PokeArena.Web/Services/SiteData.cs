@@ -35,6 +35,8 @@ public sealed class SiteData(HttpClient http)
 
     public Task<SiteMeta?> MetaAsync(CancellationToken ct) => GetAsync(SitePaths.Meta, SiteJson.Default.SiteMeta, ct);
 
+    public Task<SpeciesList?> SpeciesAsync(CancellationToken ct) => GetAsync(SitePaths.Species, SiteJson.Default.SpeciesList, ct);
+
     /// <summary>
     /// The address of a trainer's profile picture on the data host, or null without one. Only paths in the bot's own
     /// format count, so a file can never point the page at another host.
