@@ -40,7 +40,7 @@
                                 {
                                     case "survived":
                                         @* The numbers sit inside the bar to save width. *@
-                                        <HpBar Class="@("hp-bar" + (fighter.HpLeft * 4 <= fighter.MaxHp ? " low" : ""))"
+                                        <HpBar Class="@("hp-bar" + BarLevel(fighter.HpLeft ?? 0, fighter.MaxHp))"
                                                Style="@($"--hp: {HpPercent(fighter)}%")"
                                                Text="@($"{fighter.HpLeft} / {fighter.MaxHp} HP")" />
                                         break;
@@ -96,7 +96,7 @@
                            shows −70 (user decision in the review of claude/kampflog-hp-balken-feedback-808390). *@
                         int? damage = hit.Damage is >= 0 ? hit.Before - hit.After : null;
                         var hpText = $"{hit.Before} → {hit.After}";
-                        var barClass = "hp-bar hit-bar" + (hit.After * 4 <= target.MaxHp ? " low" : "") + (hit.Before == hit.After ? " no-loss" : "");
+                        var barClass = "hp-bar hit-bar" + BarLevel(hit.After, target.MaxHp) + (hit.Before == hit.After ? " no-loss" : "");
                         <span class="hit">
                             <span class="hit-text">@Parts(battle, line, withoutTargetHp: true, damageAtBar: damage is not null)</span>
                             <span class="hit-numbers">
@@ -207,7 +207,9 @@ else
 
     /// <summary>
     /// A log line's parts: names in their colour, „Volltreffer!“ on gold, the target's HP left out where a bar shows
-    /// them, and each part's <see cref="LogPart.TextWithBar"/> where the damage stands next to the bar.
+    /// them, the attacker's HP coloured like in the text view there (claude/hp-coloring-bar-view-4f3c63, viewer
+    /// feedback), and each part's <see cref="LogPart.TextWithBar"/> where the damage stands next to the bar. A line the
+    /// page cannot draw keeps its sentence as written, uncoloured HP included.
     /// </summary>
     private static RenderFragment Parts(BattlePage battle, LogLine line, bool withoutTargetHp, bool damageAtBar) => __builder =>
     {
@@ -218,10 +220,26 @@ else
                 continue;
             }
 
+            if (withoutTargetHp && AttackerHp(battle, part) is (var hp, var max))
+            {
+                @Hp(hp, max)
+                continue;
+            }
+
             // Text may be missing in a file that is not ours (no null check in SiteJson): plain text then.
             @Part(battle, part, damageAtBar && part.TextWithBar is { } withBar ? withBar : part.Text ?? "")
         }
     };
+
+    /// <summary>
+    /// An attacker's HP part („24“ of „Pikachu (Ash, HP 24)“) with its fighter's maximum; null for any other part, and
+    /// for a number the page cannot read (a file not ours) — that part stays plain text.
+    /// </summary>
+    private static (int Hp, int Max)? AttackerHp(BattlePage battle, LogPart part) =>
+        part.IsHp && FighterOf(battle, part) is { MaxHp: > 0 } fighter &&
+        int.TryParse(part.Text, NumberStyles.None, CultureInfo.InvariantCulture, out var hp) && hp <= fighter.MaxHp
+            ? (hp, fighter.MaxHp)
+            : null;
 
     /// <summary>One part: „Volltreffer!“ on gold, a name in its colour, anything else as plain text.</summary>
     private static RenderFragment Part(BattlePage battle, LogPart part, string text) => __builder =>
@@ -268,10 +286,9 @@ else
                 <strong class="log-damage">@((hit.Before - hit.After).ToString(CultureInfo.InvariantCulture))</strong>
                 @(" Schaden.")
             }
-            else if (part.IsHp && FighterOf(battle, part) is { MaxHp: > 0 } fighter &&
-                     int.TryParse(part.Text, NumberStyles.None, CultureInfo.InvariantCulture, out var hp) && hp <= fighter.MaxHp)
+            else if (AttackerHp(battle, part) is (var hp, var max))
             {
-                @Hp(hp, fighter.MaxHp)
+                @Hp(hp, max)
             }
             else
             {
@@ -281,13 +298,18 @@ else
     };
 
     /// <summary>
-    /// HP in the text view: red at a quarter or less (the bars' „low“), orange at half or less (the text view's own
-    /// step), green above.
+    /// How much is left: „low“ (red) at a quarter or less, „mid“ (orange) at half or less, „high“ (green) above. Bars and
+    /// text share the steps; the bars had no „mid“ before claude/hp-coloring-bar-view-4f3c63 (viewer feedback).
     /// </summary>
+    private static string Level(int hp, int max) => hp * 4 <= max ? "low" : hp * 2 <= max ? "mid" : "high";
+
+    /// <summary>A bar's class modifier: „ low“, „ mid“, or nothing for the default green fill.</summary>
+    private static string BarLevel(int hp, int max) => Level(hp, max) switch { "high" => "", var level => " " + level };
+
+    /// <summary>HP as coloured text: the target's in the text view, the attacker's in both views.</summary>
     private static RenderFragment Hp(int hp, int max) => __builder =>
     {
-        var level = hp * 4 <= max ? "low" : hp * 2 <= max ? "mid" : "high";
-        <span class="log-hp @level">@hp.ToString(CultureInfo.InvariantCulture)</span>
+        <span class="log-hp @Level(hp, max)">@hp.ToString(CultureInfo.InvariantCulture)</span>
     };
 
     private bool _textView;

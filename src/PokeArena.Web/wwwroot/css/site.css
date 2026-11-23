@@ -474,9 +474,12 @@ h1.tinted {
   looked thin and grey (fix/hp-text-crisp). --ok and --accent are just under that with white
   text in the light theme, hence the darker fills. The dark theme keeps them on purpose: the bright --ok with dark
   text had 8 : 1 but glared on the dark page and was reported as hard to read (fix/hp-bar-dark-mode).
+  Three steps like the text view's numbers (claude/hp-coloring-bar-view-4f3c63, viewer feedback): green, orange at half
+  or less (.mid, the text view's orange, 5.6 : 1 with white), red at a quarter or less (.low).
 */
 .hp-bar {
   --hp-fill: #1b7f45;
+  --hp-mid: #a35200;
   --hp-low: #c42d0b;
   --hp-on-fill: #ffffff;
   --hp-color: var(--hp-fill);
@@ -486,6 +489,10 @@ h1.tinted {
   border-radius: 10px;
   background: linear-gradient(to right, var(--hp-color) var(--hp), var(--border) var(--hp));
   overflow: hidden;
+}
+
+.hp-bar.mid {
+  --hp-color: var(--hp-mid);
 }
 
 .hp-bar.low {
@@ -843,9 +850,9 @@ h1.tinted {
 }
 
 /*
-  The text view: HP coloured by what is left — red at a quarter or less (the bars' „low“), orange at half or less (a
-  step the bars do not have), green above — and the damage in bold red. All at least 4.5 : 1 on the surface, light
-  and dark.
+  HP numbers in the log coloured by what is left, with the bars' steps — red at a quarter or less, orange at half or
+  less, green above: the target's in the text view, the attacker's in both views — and the text view's damage in bold
+  red. All at least 4.5 : 1 on the surface, light and dark.
 */
 .log .log-hp {
   font-variant-numeric: tabular-nums;

@@ -208,8 +208,8 @@ public class BattleTests : WebTestContext
     [Fact]
     public void A_hit_shows_the_targets_hp_as_a_bar_instead_of_in_the_sentence()
     {
-        // The first hit leaves 22 of 80, the second is more than the 22 left (the bar loses 22, the text keeps 31), the
-        // third took nothing (no minimum-width lost piece then).
+        // The first hit leaves 22 of 80 (half or less: orange), the second is more than the 22 left (the bar loses 22,
+        // the text keeps 31), the third took nothing (no minimum-width lost piece then).
         Put(
             SitePaths.Battle(8),
             BattlePage(8) with
@@ -242,7 +242,7 @@ public class BattleTests : WebTestContext
         var bars = cut.FindAll(".log .hit-bar");
         Assert.Equal(
             [
-                ("hp-bar hit-bar", "--hp: 27.5%; --before: 100%", "HP 80 → 22 von 80", "HP 80 → 22"),
+                ("hp-bar hit-bar mid", "--hp: 27.5%; --before: 100%", "HP 80 → 22 von 80", "HP 80 → 22"),
                 ("hp-bar hit-bar low", "--hp: 0%; --before: 27.5%", "HP 22 → 0 von 80", "HP 22 → 0"),
                 ("hp-bar hit-bar no-loss", "--hp: 100%; --before: 100%", "HP 80 → 80 von 80", "HP 80 → 80"),
             ],
@@ -415,6 +415,57 @@ public class BattleTests : WebTestContext
     }
 
     [Fact]
+    public void The_bar_view_colours_the_attackers_hp_like_the_text_view()
+    {
+        // Viewer feedback (claude/hp-coloring-bar-view-4f3c63): the attacker's HP in the sentence get the text view's
+        // colours, and the bars its orange step.
+        PutTextViewBattle(27);
+
+        var cut = Render<Battle>(p => p.Add(b => b.Id, 27));
+
+        cut.WaitForAssertion(() => Assert.Equal(2, cut.FindAll(".log .hit-bar").Count));
+        Assert.Equal(
+            ["Bisasam (Ash, HP 40) trifft Raupy (Misty). Volltreffer! Sehr effektiv!", "Bisasam (Ash, HP 90) trifft Raupy (Misty)."],
+            cut.FindAll(".log .hit-text").Select(t => t.TextContent));
+        // 40 of 90 is under half, 90 of 90 full; the target's HP stay in the bar, not as coloured text.
+        Assert.Equal(
+            [("40", "log-hp mid"), ("90", "log-hp high")],
+            cut.FindAll(".log .log-hp").Select(s => (s.TextContent, s.ClassName)));
+        Assert.All(cut.FindAll(".log .log-hp"), s => Assert.Equal("hit-text", s.ParentElement!.ClassName));
+        // 22 of 80 left is orange, 0 red.
+        Assert.Equal(["hp-bar hit-bar mid", "hp-bar hit-bar low"], cut.FindAll(".log .hit-bar").Select(b => b.ClassName));
+    }
+
+    [Fact]
+    public void Half_the_hp_left_counts_as_mid_on_the_card_and_in_the_log()
+    {
+        // The text view's orange step, now on the bars too: exactly half is orange, one more is green.
+        Put(
+            SitePaths.Battle(28),
+            BattlePage(28) with
+            {
+                Sides =
+                [
+                    new BattleSide("Ash", true, [new BattleFighter(Bisasam, "Ash", "11", 90, HpLeft: 45, Used: true)]),
+                    new BattleSide("Misty", false, [new BattleFighter(Raupy, "Misty", "12", 80, HpLeft: 41, Used: true)]),
+                ],
+                Lines = ["Raupy (Misty, HP 80 → 40) 40 Schaden.", "Raupy (Misty, HP 80 → 41) 39 Schaden."],
+                Log = [Hit(40), Hit(41)],
+            },
+            SiteJson.Default.BattlePage);
+
+        var cut = Render<Battle>(p => p.Add(b => b.Id, 28));
+
+        cut.WaitForAssertion(() => Assert.Equal(2, cut.FindAll(".log .hit-bar").Count));
+        Assert.Equal(["hp-bar hit-bar mid", "hp-bar hit-bar"], cut.FindAll(".log .hit-bar").Select(b => b.ClassName));
+        Assert.Equal(["hp-bar mid", "hp-bar"], cut.FindAll(".fighters .hp-bar").Select(b => b.ClassName));
+
+        static LogLine Hit(int after) => new(
+            [new LogPart("Raupy", 1, 0, IsSpecies: true), new LogPart(" (Misty"), new LogPart($", HP 80 → {after}", 1, 0, IsTargetHp: true), new LogPart($") {80 - after} Schaden.")],
+            Hit: new LogHit(1, 0, 80, after));
+    }
+
+    [Fact]
     public void The_switch_changes_the_view_and_the_browser_remembers_it()
     {
         PutTextViewBattle(21);
@@ -490,15 +541,23 @@ public class BattleTests : WebTestContext
     }
 
     [Theory]
-    [InlineData("abc", 0)] // not a number
-    [InlineData("-5", 0)] // negative
-    [InlineData("95", 0)] // more than the 90 the fighter has
-    [InlineData("40", 5)] // a fighter the page does not have
-    public void The_text_view_shows_an_attacker_hp_it_cannot_read_as_plain_text(string hp, int fighter)
+    [InlineData("abc", 0, true)] // not a number
+    [InlineData("-5", 0, true)] // negative
+    [InlineData("95", 0, true)] // more than the 90 the fighter has
+    [InlineData("40", 5, true)] // a fighter the page does not have
+    [InlineData("abc", 0, false)] // the same in the bar view (claude/hp-coloring-bar-view-4f3c63)
+    [InlineData("-5", 0, false)]
+    [InlineData("95", 0, false)]
+    [InlineData("40", 5, false)]
+    public void An_attacker_hp_the_page_cannot_read_stays_plain_text(string hp, int fighter, bool textView)
     {
         // A file not ours (review claude/kampflog-design-options-cb7042): the part stays as written, uncoloured; the
         // target's HP and the damage still come from the hit the page accepted.
-        JSInterop.Setup<string?>("localStorage.getItem", ViewerSettings.LogViewKey).SetResult("text");
+        if (textView)
+        {
+            JSInterop.Setup<string?>("localStorage.getItem", ViewerSettings.LogViewKey).SetResult("text");
+        }
+
         Put(
             SitePaths.Battle(25),
             BattlePage(25) with
@@ -526,9 +585,17 @@ public class BattleTests : WebTestContext
 
         var cut = Render<Battle>(p => p.Add(b => b.Id, 25));
 
-        cut.WaitForAssertion(() => Assert.Equal(
-            $"Bisasam (Ash, HP {hp}) trifft Raupy (Misty, HP 80 → 22) und verursacht 58 Schaden.", cut.Find(".log li").TextContent));
-        Assert.Equal(["80", "22"], cut.FindAll(".log .log-hp").Select(s => s.TextContent));
+        if (textView)
+        {
+            cut.WaitForAssertion(() => Assert.Equal(
+                $"Bisasam (Ash, HP {hp}) trifft Raupy (Misty, HP 80 → 22) und verursacht 58 Schaden.", cut.Find(".log li").TextContent));
+            Assert.Equal(["80", "22"], cut.FindAll(".log .log-hp").Select(s => s.TextContent));
+        }
+        else
+        {
+            cut.WaitForAssertion(() => Assert.Equal($"Bisasam (Ash, HP {hp}) trifft Raupy (Misty).", cut.Find(".log .hit-text").TextContent));
+            Assert.Empty(cut.FindAll(".log .log-hp"));
+        }
     }
 
     [Fact]
