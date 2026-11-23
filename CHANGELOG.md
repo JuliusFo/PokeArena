@@ -13,8 +13,10 @@ tagged `vX.Y.Z` once its section is complete.
   to the server (likely the automatic update): the window content needs a
   graphics device, which a disconnected remote desktop session does not have.
   The app now opens its window only once someone connects (the bot runs
-  before that), and if the content still fails to load, it shows no box and
-  loads it again at the next connection.
+  before that). If the content still fails to load, it shows no box and tries
+  again after 2, 5 and 15 seconds and at the next connection; meanwhile the
+  window says „Das Fenster konnte nicht geladen werden. Der Bot läuft trotzdem
+  weiter. Bitte PokeArena neu starten.“
 
 ## [1.10.0] - 2026-11-23
 

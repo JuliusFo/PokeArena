@@ -46,7 +46,10 @@ Thin WPF host around a `BlazorWebView` (ADR-0007). UI belongs in PokeArena.UI, l
   mode affects the whole UI. On load it creates a Direct3D 9 device; in a disconnected RDP session (a self-update
   restart) that throws `COMException` 0x8876086A twice and the control never retries. So `App` shows the window only
   in an active session (`InteractiveSession`), handles that HRESULT without a box and rebuilds the WebView
-  (`MainWindow.RebuildWebView`, built in code for that) on the next `SessionSwitch` (fix/wpf-software-rendering).
+  (`MainWindow.RebuildWebViewAsync`, built in code for that; a loaded one is disposed first) after 2/5/15 s and on the
+  next `SessionSwitch`, then shows a German hint (fix/wpf-software-rendering).
+- `Dispatcher.InvokeAsync` keeps an exception in its task — never `OnDispatcherUnhandledException`; for
+  fire-and-forget work use `BeginInvoke` or catch inside (review fix/wpf-software-rendering).
 - Shutdown: the main window's `Closing` cancels once, awaits `IHost.StopAsync`, closes the window, awaits the host's
   `DisposeAsync` (at most 5 s) and only then calls `Shutdown()`. `OnExit` neither awaits nor disposes the host: the
   dispatcher is already shutting down, and a synchronous `Dispose` could deadlock on async disposal (review 1.0.3).
