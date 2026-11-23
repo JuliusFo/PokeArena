@@ -15,6 +15,11 @@ public static class WindowTheme
     private const int DwmUseImmersiveDarkMode = 20;
     private static readonly Color DarkBackground = Color.FromRgb(0x14, 0x15, 0x18);
     private static readonly Color LightBackground = Color.FromRgb(0xf4, 0xf4, 0xf6);
+    private static readonly Color DarkText = Color.FromRgb(0xec, 0xec, 0xf0);
+    private static readonly Color LightText = Color.FromRgb(0x1d, 0x1d, 0x21);
+
+    /// <summary>Text color on the window background (<c>--text</c> in pokearena.css), for native text without the WebView.</summary>
+    public static Brush TextBrush() => new SolidColorBrush(IsSystemDark() ? DarkText : LightText);
 
     /// <summary>Must run before the WebView2 environment is created, otherwise it starts with a white flash.</summary>
     public static void PrepareWebViewBackground()
