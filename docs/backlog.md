@@ -152,6 +152,11 @@ showed it together with the ideas below); the rest is not decided yet:
   of static text in the website, so the page never announces a change before
   the streamer has updated the app — 2026-11-09, WP-10 (accepted the static
   variant; revisit if WP-09 values show up too early).
+- Other unhandled UI-thread errors still open one modal box each on the
+  unattended server; nobody clicks them, and an automatic update might wait
+  for an open box before the process ends (suspected, not reproduced). Idea:
+  at most one box per error, or none while nobody is connected — 2026-11-23,
+  code review of fix/wpf-software-rendering (pre-existing).
 
 ## Abuse protection
 
