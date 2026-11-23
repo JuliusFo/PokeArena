@@ -2,7 +2,7 @@
 
 Work packages up to v1.0.0, the packages and branches after it (all released
 up to 1.9.0; the index is docs/work-packages.md), WP-09 as the next planned
-one (1.10.0, proposal) and a parked idea for version 2. Read the package before starting it and agree the plan with
+one (1.11.0, proposal; 1.10.0 is the Pokédex on the trainer page) and a parked idea for version 2. Read the package before starting it and agree the plan with
 the user. Estimates: solo, "day" = one focused person-day; total ≈ 25–31
 days. Every package ends in a state that could run on stream.
 
@@ -706,7 +706,8 @@ User decisions (2026-11-21):
 - Own work package, after WP-09 (WP-09 stays 1.9.0, this one 1.10.0).
   Addendum 2026-11-22: 1.9.0 was released with the fight log's text view and
   the settings page, so the numbers became 1.10.0 and 1.11.0 (proposal, not
-  confirmed); the order stays.
+  confirmed); the order stays. Addendum 2026-11-23: the Pokédex on the trainer
+  page takes 1.10.0, so WP-09 and this one become 1.11.0 and 1.12.0 (proposal).
 - Website only. Chat texts and the desktop app stay German.
 - The English site shows English species, type and NPC names (Bulbasaur,
   Fire, Brock).

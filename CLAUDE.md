@@ -35,8 +35,8 @@ shows leaderboard, trainer pages and battle logs.
 
 Released versions and their content: `CHANGELOG.md`; which package went into which version: the table in
 `docs/work-packages.md`. Planned: 1.10.0 Pokédex on the trainer page + coloured HP (proposal); 1.11.0 WP-09 balancing (proposal, version not confirmed); 1.12.0 WP-12 English website
-(after WP-09 is a user decision 2026-11-21; the version moved up one because the user released the
-log view and settings page as 1.9.0 — proposal, not confirmed); 2.0.0 parked (website and
+(after WP-09 is a user decision 2026-11-21; the version moved up twice: the user released the
+log view and settings page as 1.9.0, and the Pokédex takes 1.10.0 — proposal, not confirmed); 2.0.0 parked (website and
 overlay served from the bot's server, roadmap.md). The version table that stood here was cut (review 1.8.1, D1).
 
 **Invariants — never weaken:**
