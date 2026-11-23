@@ -42,6 +42,9 @@ Thin WPF host around a `BlazorWebView` (ADR-0007). UI belongs in PokeArena.UI, l
   the program folder survives an update — settings go to `settings.json`. Try an update locally with
   `--PokeArena:Update:Source=<folder with vpk pack output>` (README); `VelopackUpdater.TryCreate` returns null for a
   copy Velopack did not install, then `GitHubReleaseHint` only shows the hint.
+- `Program.Main` sets `RenderOptions.ProcessRenderMode = RenderMode.SoftwareOnly` (fix/wpf-software-rendering): on
+  the GPU-less server or in a disconnected RDP session WPF's Direct3D render thread fails with 0x8876086A — empty
+  window, one error box per frame. WPF draws only the frame; WebView2 renders the UI itself, unaffected.
 - Shutdown: the main window's `Closing` cancels once, awaits `IHost.StopAsync`, closes the window, awaits the host's
   `DisposeAsync` (at most 5 s) and only then calls `Shutdown()`. `OnExit` neither awaits nor disposes the host: the
   dispatcher is already shutting down, and a synchronous `Dispose` could deadlock on async disposal (review 1.0.3).
