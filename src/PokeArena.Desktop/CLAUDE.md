@@ -8,7 +8,7 @@ Thin WPF host around a `BlazorWebView` (ADR-0007). UI belongs in PokeArena.UI, l
 - `--PokeArena:DataDirectory=<path>` redirects logs and data — use it for manual tests and screenshots so the
   real `%LOCALAPPDATA%\PokeArena` stays untouched.
 - `WindowTheme.PrepareWebViewBackground()` must run before the WebView2 environment exists (white flash
-  otherwise); its colors must match `--bg` in `PokeArena.UI/wwwroot/css/pokearena.css`.
+  otherwise); its colors must match `--bg` and `--text` in `PokeArena.UI/wwwroot/css/pokearena.css`.
 - Single-instance mutex: two running bots would answer every chat command twice — don't remove it.
 - Exceptions before the host is built are only visible via `Log.*` (static Serilog) and the start-failure
   message box; keep both. A start logger writes to the log file before the configuration is read, and closes before
