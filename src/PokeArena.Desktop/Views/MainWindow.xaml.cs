@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using Microsoft.AspNetCore.Components.WebView.Wpf;
 using PokeArena.Desktop.Services;
 using PokeArena.UI;
+using Serilog;
 
 namespace PokeArena.Desktop.Views;
 
@@ -10,6 +11,7 @@ public partial class MainWindow : Window
 {
     private readonly IServiceProvider _services;
     private bool _webViewLoaded;
+    private bool _closing;
 
     public MainWindow(IServiceProvider services)
     {
@@ -43,7 +45,11 @@ public partial class MainWindow : Window
         }
         finally
         {
-            Content = CreateWebView();
+            // Closed meanwhile (the app is stopping its services): no new WebView against them.
+            if (!_closing)
+            {
+                Content = CreateWebView();
+            }
         }
     }
 
@@ -51,8 +57,8 @@ public partial class MainWindow : Window
     public void ShowLoadFailedHint() =>
         Content = new TextBlock
         {
-            Text = "Das Fenster konnte nicht geladen werden. Der Bot läuft trotzdem weiter.\nBitte PokeArena neu starten.",
-            Foreground = WindowTheme.TextBrush(),
+            // Color: inherited from the window's Foreground, which WindowTheme sets for light and dark.
+            Text = "Die Anzeige konnte nicht geladen werden. Der Bot läuft trotzdem weiter.\nBitte neu verbinden oder PokeArena neu starten.",
             FontSize = 16,
             TextAlignment = TextAlignment.Center,
             TextWrapping = TextWrapping.Wrap,
@@ -61,6 +67,13 @@ public partial class MainWindow : Window
             Margin = new Thickness(24),
         };
 
+    /// <summary>App cancels the first close to stop the host first, but the window never comes back.</summary>
+    protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+    {
+        _closing = true;
+        base.OnClosing(e);
+    }
+
     private BlazorWebView CreateWebView()
     {
         _webViewLoaded = false;
@@ -68,13 +81,30 @@ public partial class MainWindow : Window
         webView.RootComponents.Add(new RootComponent { Selector = "#app", ComponentType = typeof(Shell) });
         webView.BlazorWebViewInitialized += (_, _) =>
         {
-            // A replaced WebView finishing late must not mark its successor as loaded.
             if (ReferenceEquals(Content, webView))
             {
                 _webViewLoaded = true;
                 WebViewLoaded?.Invoke(this, EventArgs.Empty);
+                return;
             }
+
+            // Replaced before it finished (its device came after all, but the retry was quicker — the WebView2 start
+            // takes seconds): dispose it, so no second browser and Blazor UI run unseen beside the new one.
+            _ = DisposeReplacedAsync(webView);
         };
         return webView;
+    }
+
+    private static async Task DisposeReplacedAsync(BlazorWebView webView)
+    {
+        try
+        {
+            Log.Information("Disposing a replaced window content that finished loading late");
+            await webView.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(5));
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Disposing a replaced window content failed");
+        }
     }
 }
