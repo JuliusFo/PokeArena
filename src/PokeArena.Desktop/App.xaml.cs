@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Win32;
 using PokeArena.Core;
 using PokeArena.Core.Game;
 using PokeArena.Core.Publishing;
@@ -26,6 +27,9 @@ public partial class App : Application
     private Mutex? _singleInstance;
     private bool _stopping;
     private bool _hostStopped;
+    private bool _windowPending;
+    private bool _webViewFailed;
+    private bool _watchingSession;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -135,8 +139,62 @@ public partial class App : Application
         var window = _host.Services.GetRequiredService<MainWindow>();
         window.Closing += OnMainWindowClosing;
         MainWindow = window;
-        window.Show();
+        if (InteractiveSession.IsActive())
+        {
+            window.Show();
+        }
+        else
+        {
+            // A self-update restarts the app while nobody is connected; the WebView would fail without a Direct3D
+            // device. The bot already runs; only the window waits.
+            Log.Information("No one is connected to this Windows session: the window opens once someone connects");
+            _windowPending = true;
+            WatchSession();
+        }
     }
+
+    /// <summary>Retries what a disconnected session prevented: showing the window, or loading the WebView.</summary>
+    private void WatchSession()
+    {
+        if (!_watchingSession)
+        {
+            _watchingSession = true;
+            SystemEvents.SessionSwitch += OnSessionSwitch;
+        }
+    }
+
+    private void StopWatchingSession()
+    {
+        if (_watchingSession)
+        {
+            _watchingSession = false;
+            SystemEvents.SessionSwitch -= OnSessionSwitch;
+        }
+    }
+
+    private void OnSessionSwitch(object sender, SessionSwitchEventArgs e) =>
+        Dispatcher.InvokeAsync(() =>
+        {
+            if (_stopping || MainWindow is not Views.MainWindow window || !InteractiveSession.IsActive())
+            {
+                return;
+            }
+
+            StopWatchingSession();
+            if (_webViewFailed)
+            {
+                _webViewFailed = false;
+                Log.Information("Windows session connected ({Reason}): loading the window content again", e.Reason);
+                window.RebuildWebView();
+            }
+
+            if (_windowPending)
+            {
+                _windowPending = false;
+                Log.Information("Windows session connected ({Reason}): opening the window", e.Reason);
+                window.Show();
+            }
+        });
 
     /// <summary>
     /// Stops the host before the window goes away: <c>OnExit</c> runs while the dispatcher shuts down, so an
@@ -199,6 +257,7 @@ public partial class App : Application
     {
         // A host still here was not stopped through the window (Windows logs off and ignores e.Cancel): the process
         // ends anyway, so it is not disposed synchronously on the shutting-down dispatcher.
+        StopWatchingSession();
         Log.CloseAndFlush();
         _singleInstance?.Dispose();
         base.OnExit(e);
@@ -265,6 +324,21 @@ public partial class App : Application
 
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
+        if (InteractiveSession.IsGraphicsDeviceUnavailable(e.Exception))
+        {
+            // The WebView found no Direct3D device (it throws twice: template and Loaded). No box — on the server
+            // nobody clicks it; the content is rebuilt once someone connects to the session.
+            if (!_webViewFailed)
+            {
+                Log.Warning(e.Exception, "The window content could not load (no graphics device); retrying when someone connects");
+            }
+
+            _webViewFailed = true;
+            WatchSession();
+            e.Handled = true;
+            return;
+        }
+
         Log.Error(e.Exception, "Unhandled exception on UI thread");
         MessageBox.Show($"Ein unerwarteter Fehler ist aufgetreten:\n\n{e.Exception.Message}", "PokeArena", MessageBoxButton.OK, MessageBoxImage.Error);
         e.Handled = true;
