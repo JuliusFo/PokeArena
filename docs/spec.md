@@ -421,11 +421,12 @@ on the first start of a new version — upload only, nothing deleted, marker
 | File                       | Content                                              |
 |----------------------------|------------------------------------------------------|
 | `rangliste.json`           | rank⁸, display name, distinct count, total count, player count, timestamp; per trainer the chat colour and the path of the profile picture⁷. Sort: distinct desc, then total desc, then earliest attainment¹, then Twitch user id |
-| `trainer/<twitch-id>.json` | pokedex (species + count), achievements, recent fights, stats, the path of the profile picture⁶, the chat colour⁷ |
+| `trainer/<twitch-id>.json` | pokedex (species + count), the species seen but not owned⁹, achievements, recent fights, stats, the path of the profile picture⁶, the chat colour⁷ |
 | `kampf/<id>.json`          | participants, teams, log lines, result, loot, seed; per fighter its HP left and whether it was sent in², its owner's chat colour³ and the damage it dealt⁴; the log lines also in parts that name their fighter³ |
 | `kaempfe.json`             | last N fights for an index page                      |
 | `statistik.json`           | community Pokédex and totals, rankings beyond the leaderboard⁵ |
 | `meta.json`                | data format version, timestamp                       |
+| `arten.json`               | every species with types and base values (HP, ATK, DEF, SPEZ) for the trainer page's Pokédex⁹; from the base data, so it changes only with a release (cached a day) |
 | `profilbild/<twitch-id>.png` or `.jpg` | the trainer's Twitch profile picture⁶, mirrored by the bot (binary, cached a day) |
 
 ¹ Attainment = the moment the trainer last completed the set of species they
@@ -534,6 +535,23 @@ show a small gold, silver and bronze trophy before the rank number, drawn by
 the site itself (no emoji, no official asset, ADR-0008). Ranks are unique —
 the Twitch user id breaks any remaining tie — so at most three trainers get
 one.
+
+⁹ Pokédex on the trainer page (viewer idea 2026-11-22, user decisions
+2026-11-23, roadmap.md): a list of all 151 species in its own scrolling box,
+next to a box with the selected one, equally high; on a phone the box opens
+below the selected row. Caught species show their types, „× 2“ from two on
+and „Starter“; the box shows their base values. Seen species — every Pokémon
+in a fight the trainer took part in, on either side, sent in or not, that they
+do not own now — stand greyed with the word „gesehen“; their box shows name
+and types only. All others are „????????“. A switch „Alle / Nur gefangene“
+over the list (not remembered), and a hidden search: a click on „Name“ turns
+it into a field that finds caught and seen species by name or number, never
+unknown ones. The bot keeps the seen species in its database, written with
+each fight (filled once from the stored logs on the first start with it) and deleted
+with the trainer. Names and base values of species the trainer has not caught
+come from `arten.json`: while it is missing (after the release, before the
+bot's update) the list shows the caught species without base values and no
+„gesehen“ rows.
 
 - Files are uploaded **directly per change** via the publish queue.
 - Uploads normally land within seconds, but the queue may lag (network

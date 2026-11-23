@@ -98,5 +98,11 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   clipped, so the bar shows it (`:has(a:focus-visible)`) (feat/statistics-page).
 - A new site file is missing between the release tag (the site deploys at once) and the bot's update (only after a
   stream): treat its 404 as „kommt bald“ without promising when, never as an empty game (review feat/statistics-page).
+- Pokédex (`Shared/Pokedex.razor`, claude/pokedex-trainer-page-improve-a4a504): names of species a trainer has not
+  caught come only from `arten.json`, which holds all 151 — the search and the „gesehen“ rows must never show an
+  unknown one. `Trainer.razor` loads `arten.json` beside the trainer file; missing or unreadable means no base values
+  and no „gesehen“ rows, never a page error. On a phone the box's content is rendered a second time below the selected
+  row (`.dex-inline`, hidden on desktop) — tests read `.dex-box`. The search field is `type="text"` (`search` draws a
+  second „×“).
 - Never tell a boss or NPC by `TrainerId == null`: a deleted trainer's fighters have no id either („[gelöscht]“). The
   boss is the fighter on side 1 of a boss fight (review feat/fight-log-colours).

@@ -7,6 +7,19 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+### Added
+- The trainer page's Pokédex, after a viewer's idea: all 151 species in a
+  scrolling list next to a box with the selected one (types, „Starter“, count,
+  base values HP / ATK / DEF / SPEZ). Pokémon the trainer has met in their
+  fights but does not own stand greyed with „gesehen“, all others as
+  „????????“. A switch „Alle / Nur gefangene“, and a click on „Name“ opens a
+  search by name or number. On a phone the box opens below the selected row.
+- The bot remembers which species each trainer has seen (new table
+  `SeenSpecies`, written with every fight; the update fills it once from the
+  stored fight logs) and uploads a new site file `arten.json` with every
+  species' types and base values. Until the updated bot has uploaded it, the
+  Pokédex shows the caught species without base values.
+
 ### Changed
 - The fight log's „Balken“ view colours HP like „Text“, after viewer feedback:
   the attacker's HP in the sentence are green, orange or red by what is left,

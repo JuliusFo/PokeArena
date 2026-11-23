@@ -577,8 +577,11 @@ User decisions (2026-11-23, evaluation):
   The trainer file adds only the ids of the species seen.
 - The search goes into „Neuigkeiten“ („Die Suche kannst du ruhig mit in die
   Neuigkeiten packen“).
+- The plan below was approved as a whole („Ja, umsetzen“) and built the same
+  day (log: work-packages/claude-pokedex-trainer-page-improve-a4a504.md); only
+  the version stays a proposal.
 
-Plan — Proposal (not confirmed) where not decided above:
+Plan:
 
 - Contracts: `SpeciesData(Id, Name, Types, Hp, Atk, Def, Spez)` and
   `SpeciesList(IReadOnlyList<SpeciesData> Species)` at `SitePaths.Species =
@@ -627,10 +630,11 @@ Plan — Proposal (not confirmed) where not decided above:
   `arten.json`, older trainer file), sample data (`beispieldaten/arten.json`
   generated from `data/pokemon.json` — base data, no player data).
 
-## WP-09 — Balancing after the first streams (≈ 2 days) → v1.10.0 (proposal)
+## WP-09 — Balancing after the first streams (≈ 2 days) → v1.11.0 (proposal)
 
 1.9.0 went to the fight log's text view and the „Einstellungen“ page (user pick
-at the release, 2026-11-22), so WP-09 and WP-12 each move up one version.
+at the release, 2026-11-22), so WP-09 and WP-12 each move up one version. The
+Pokédex on the trainer page (1.10.0, proposal) moves them up once more.
 
 Tuning with real stream data and the Monte Carlo simulator instead of
 guesses. Starts after 1.0 has run on a few streams.
@@ -689,7 +693,7 @@ Demo: measured win rates per NPC and boss group size, adjusted values.
   become a streamer setting, the page has to word them loosely („kurz“, „etwa
   eine halbe Stunde“) or the values have to be published in `meta.json`.
 
-## WP-12 — English website (≈ 2–3 days) → v1.11.0 (proposal)
+## WP-12 — English website (≈ 2–3 days) → v1.12.0 (proposal)
 
 Viewer feedback (2026-11-21): „Spracheinstellung zw. Deutsch und Englisch.
 Automatisch gewählt durch Browserlanguage und dann halt selbst festlegbar.

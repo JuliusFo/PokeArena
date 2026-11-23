@@ -58,6 +58,8 @@
   `BeginTransactionAsync` (BEGIN IMMEDIATE), also for a single save: `EnqueueAsync` updates tracked rows the worker
   may delete in between (review 1.0.3 A25, review 1.8.1 A3). Tests prove a flow is one transaction with
   `GameFixture.FailOutboxInserts()` (review 1.8.1, C2).
+- A new kind of fight calls `Sightings.RecordAsync` with its participants and log before saving, like boss, PvP and
+  NPC fights — or its Pokémon never turn „gesehen“ on the trainer pages (claude/pokedex-trainer-page-improve-a4a504).
 - Anything that runs without a human decision (e.g. `RepublishAfterUpdate`) only queues the database's own files —
   never the bucket listing that deletes what the database does not know: a wrong data directory would empty the site
   (review R2).

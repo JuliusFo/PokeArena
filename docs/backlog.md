@@ -90,6 +90,15 @@ Left out of the first version (feat/trainer-profile-image, 2026-11-11):
   or a takedown notice; today only deleting the trainer removes it (ADR-0008
   addendum) — 2026-11-11, review feat/trainer-profile-image.
 
+## Continuation of the Pokédex on the trainer page (1.10.0, proposal)
+
+Left out of the first version (claude/pokedex-trainer-page-improve-a4a504, 2026-11-23):
+
+- A „Gesehen“ count in the stats row beside „Arten“.
+- Rarity (common / rare / legendary) in the box — `arten.json` leaves it out.
+- Remember „Alle / Nur gefangene“ per viewer, like the log view.
+- English species names in `arten.json` for WP-12.
+
 ## Fight log redesign
 
 The user plans to rework the „Kampfverlauf“ on the fight page; ideas from
