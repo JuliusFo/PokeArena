@@ -139,11 +139,11 @@
         // Both files come from the data host: the JSON reader does not enforce non-null fields, so an entry without a
         // name or types, or outside Gen 1, is left out instead of breaking the page (review).
         _caught = (Trainer.Pokedex ?? [])
-            .Where(e => e?.Species is { Name: not null, Types: not null } s && InRange(s.Id))
+            .Where(e => e?.Species is { Name: not null, Types: not null } s && s.Types.All(t => t is not null) && InRange(s.Id))
             .GroupBy(e => e.Species.Id)
             .ToDictionary(g => g.Key, g => g.First());
         _species = (Species?.Species ?? [])
-            .Where(s => s is { Name: not null, Types: not null } && InRange(s.Id))
+            .Where(s => s is { Name: not null, Types: not null } && s.Types.All(t => t is not null) && InRange(s.Id))
             .GroupBy(s => s.Id)
             .ToDictionary(g => g.Key, g => g.First());
 

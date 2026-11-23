@@ -52,5 +52,32 @@
   - Not done: starting the desktop app once as a dry run — the command to stop
     it afterwards would have stopped every `PokeArena*` process on the machine,
     so the real database's first start with the migration is still to watch.
+- Code review (2026-11-23): „Alle“ — all eight findings, all L.
+  - L: the row loop's bound came from the files' ids — an id of 2³¹ − 1 in
+    `arten.json` would never end it. Fixed: rows are always 1–151, ids outside
+    are left out (bUnit theory).
+  - L: readable `arten.json` with null fields (`"species":null`, an entry
+    without name or types) broke the page. Fixed: such entries are left out,
+    in the trainer file's Pokédex too (bUnit theory).
+  - L: the box kept a species the filter or search had hidden. Fixed: the box
+    shows only a visible row, otherwise „Klick auf ein Pokémon in der Liste.“
+    (bUnit).
+  - L: accessibility — fixed: „Name“ announces „Name – Suche öffnen“, closing
+    the search returns the focus to it, „????????“ reads as „unbekannt“, the
+    box is an `aria-live` region, the placeholder takes `--muted` (browser grey
+    ≈ 2.2 : 1).
+  - L: the PvP rollback test did not check seen species — fixed.
+  - L: the privacy page's list of stored data lacked the seen species — added.
+  - L: „Neuigkeiten“ said „rechts“, the box is below the row on a phone —
+    reworded.
+  - L: version references in roadmap.md and CLAUDE.md §3 — fixed.
+  - Second pass, „Alle“:
+    - M: the hidden „unbekannt“ texts (`.visually-hidden`, absolute) escaped
+      the scrolling list and stretched the page to 6 919 px instead of 1 344 px
+      (measured in the preview). Fixed: `.dex-rows` is `position: relative`.
+    - L: a null inside `types` still broke the page — such entries are left
+      out too (bUnit case).
+    - L: the focus test only counted calls — it now checks the target is the
+      „Name“ button.
 - Deliberately not done (→ backlog): a „Gesehen“ count in the stats row;
   rarity in the box; remembering the switch.

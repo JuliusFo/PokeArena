@@ -1011,7 +1011,10 @@ h1.tinted {
   color: inherit;
 }
 
+/* position: relative keeps the hidden „unbekannt“ texts (.visually-hidden, absolute) inside the scrolling list —
+   without it they stretch the whole page by the list's full height, ≈ 5 500 px (review). */
 .dex-rows {
+  position: relative;
   flex: 1;
   margin: 0;
   padding: 0;

@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
 using PokeArena.Contracts;
@@ -190,6 +191,7 @@ public class TrainerPageTests : WebTestContext
     [Theory]
     [InlineData("{\"species\":null}")]
     [InlineData("{\"species\":[null,{\"id\":10,\"name\":null,\"types\":[\"Käfer\"]},{\"id\":25,\"name\":\"Pikachu\",\"types\":null}]}")]
+    [InlineData("{\"species\":[{\"id\":10,\"name\":\"Raupy\",\"types\":[null]},{\"id\":25,\"name\":\"Pikachu\",\"types\":[\"Elektro\",null]}]}")]
     [InlineData("{\"species\":[{\"id\":2147483647,\"name\":\"Riese\",\"types\":[]},{\"id\":0,\"name\":\"Null\",\"types\":[]},{\"id\":-5,\"name\":\"Minus\",\"types\":[]}]}")]
     public void A_species_file_with_empty_fields_or_ids_outside_gen_1_does_not_break_the_page(string json)
     {
@@ -233,9 +235,11 @@ public class TrainerPageTests : WebTestContext
 
         cut.Find(".dex-search-close").Click();
 
-        // FocusAsync goes through Blazor's own JS call; the last one aims at the „Name“ button again.
+        // FocusAsync goes through Blazor's own JS call: first the field, then the „Name“ button again.
         var focus = JSInterop.Invocations.Where(i => i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase)).ToList();
         Assert.Equal(2, focus.Count);
+        var target = Assert.IsType<ElementReference>(focus[^1].Arguments[0]);
+        Assert.Equal(cut.Find(".dex-search-open").GetAttribute("blazor:elementReference"), target.Id);
         Assert.Equal("Name – Suche öffnen", cut.Find(".dex-search-open").GetAttribute("aria-label"));
         Assert.Equal("unbekannt", cut.FindAll(".dex-row")[1].QuerySelector(".visually-hidden")!.TextContent);
     }

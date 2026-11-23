@@ -101,7 +101,9 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
 - Pokédex (`Shared/Pokedex.razor`, claude/pokedex-trainer-page-improve-a4a504): names of species a trainer has not
   caught come only from `arten.json`, which holds all 151 — the search and the „gesehen“ rows must never show an
   unknown one. `Trainer.razor` loads `arten.json` beside the trainer file; missing or unreadable means no base values
-  and no „gesehen“ rows, never a page error. On a phone the box's content is rendered a second time below the selected
+  and no „gesehen“ rows, never a page error. The JSON reader lets null fields through: entries without name or types
+  or with an id outside 1–151 are left out, and the row count is the constant 151, never a file's id. `.dex-rows` is
+  `position: relative`: a `.visually-hidden` text inside a scroll box otherwise stretches the whole page (review). On a phone the box's content is rendered a second time below the selected
   row (`.dex-inline`, hidden on desktop) — tests read `.dex-box`. The search field is `type="text"` (`search` draws a
   second „×“).
 - Never tell a boss or NPC by `TrainerId == null`: a deleted trainer's fighters have no id either („[gelöscht]“). The
