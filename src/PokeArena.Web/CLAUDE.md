@@ -103,8 +103,8 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   unknown one. `Trainer.razor` loads `arten.json` beside the trainer file; missing or unreadable means no base values
   and no „gesehen“ rows, never a page error. The JSON reader lets null fields through: entries without name or types
   or with an id outside 1–151 are left out, and the row count is the constant 151, never a file's id. `.dex-rows` is
-  `position: relative`: a `.visually-hidden` text inside a scroll box otherwise stretches the whole page (review). On a phone the box's content is rendered a second time below the selected
-  row (`.dex-inline`, hidden on desktop) — tests read `.dex-box`. The search field is `type="text"` (`search` draws a
-  second „×“).
+  `position: relative`: a `.visually-hidden` text inside a scroll box otherwise stretches the whole page (review).
+  On a phone the box's content is rendered a second time below the selected row (`.dex-inline`, hidden on desktop) —
+  tests read `.dex-box`. The search field is `type="text"` (`search` draws a second „×“).
 - Never tell a boss or NPC by `TrainerId == null`: a deleted trainer's fighters have no id either („[gelöscht]“). The
   boss is the fighter on side 1 of a boss fight (review feat/fight-log-colours).
