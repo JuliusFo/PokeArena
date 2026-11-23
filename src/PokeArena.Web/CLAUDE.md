@@ -108,5 +108,8 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   tests read `.dex-box`. The search field is `type="text"` (`search` draws a second „×“). „Alle / Nur gefangene“ is
   kept in `localStorage` (`ViewerSettings.PokedexViewKey`, „gefangen“/„alle“; `WebTestContext` plans its `getItem`)
   (claude/pokedex-toggle-persistence-c87bd9).
+- An awaited JS call in `OnInitializedAsync` (e.g. `localStorage.getItem`) does not finish synchronously in WASM:
+  Blazor renders once before `OnParametersSet`. Build what the markup needs in `OnInitialized` first; bUnit only sees
+  this with a `Setup` that has no result yet (review claude/pokedex-toggle-persistence-c87bd9).
 - Never tell a boss or NPC by `TrainerId == null`: a deleted trainer's fighters have no id either („[gelöscht]“). The
   boss is the fighter on side 1 of a boss fight (review feat/fight-log-colours).
