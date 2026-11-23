@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.AspNetCore.Components.WebView.Wpf;
+using Microsoft.Web.WebView2.Core;
 using PokeArena.Desktop.Services;
 using PokeArena.UI;
 using Serilog;
@@ -79,7 +80,7 @@ public partial class MainWindow : Window
         _webViewLoaded = false;
         var webView = new BlazorWebView { HostPage = @"wwwroot\index.html", Services = _services };
         webView.RootComponents.Add(new RootComponent { Selector = "#app", ComponentType = typeof(Shell) });
-        webView.BlazorWebViewInitialized += (_, _) =>
+        webView.BlazorWebViewInitialized += (_, e) =>
         {
             if (ReferenceEquals(Content, webView))
             {
@@ -90,15 +91,22 @@ public partial class MainWindow : Window
 
             // Replaced before it finished (its device came after all, but the retry was quicker — the WebView2 start
             // takes seconds): dispose it, so no second browser and Blazor UI run unseen beside the new one.
-            _ = DisposeReplacedAsync(webView);
+            _ = DisposeReplacedAsync(webView, e.WebView.CoreWebView2);
         };
         return webView;
     }
 
-    private static async Task DisposeReplacedAsync(BlazorWebView webView)
+    private static async Task DisposeReplacedAsync(BlazorWebView webView, CoreWebView2 core)
     {
         try
         {
+            // Not inside the Initialized event: the WebView's start goes on after it (request filters, scripts, Blazor
+            // start) and would touch a disposed control. Its first finished navigation ends the start; the delay only
+            // guards against one that never comes. The awaits return to the UI thread.
+            var navigated = new TaskCompletionSource();
+            core.NavigationCompleted += (_, _) => navigated.TrySetResult();
+            await Task.WhenAny(navigated.Task, Task.Delay(TimeSpan.FromSeconds(10)));
+
             Log.Information("Disposing a replaced window content that finished loading late");
             await webView.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(5));
         }
