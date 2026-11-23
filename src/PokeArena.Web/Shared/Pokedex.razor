@@ -5,6 +5,7 @@
     bot's update) the list shows the caught ones from the trainer file alone and the box no base values.
     „Alle / Nur gefangene“ is kept per viewer in localStorage (ViewerSettings.PokedexViewKey).
 *@
+@implements IAsyncDisposable
 @inject IJSRuntime JS
 @using Microsoft.JSInterop
 
@@ -23,7 +24,7 @@
             <span class="dex-number">#</span>
             @if (_searching)
             {
-                <span class="dex-search">
+                <span @ref="_searchBox" class="dex-search">
                     <input @ref="_searchField" type="text" autocomplete="off" placeholder="Name oder Nummer" aria-label="Pokédex durchsuchen"
                            @bind="_query" @bind:event="oninput" @onkeydown="OnSearchKeyAsync" />
                     <button type="button" class="dex-search-close" aria-label="Suche schließen" @onclick="CloseSearch">×</button>
@@ -117,9 +118,13 @@
     private bool _searching;
     private bool _focusSearch;
     private bool _focusOpener;
+    private bool _openedByKeyboard;
+    private bool _watchingOutside;
     private string _query = "";
+    private ElementReference _searchBox;
     private ElementReference _searchField;
     private ElementReference _searchOpener;
+    private DotNetObjectReference<Pokedex>? _self;
     private TrainerPage? _shownFor;
 
     [Parameter, EditorRequired]
@@ -200,6 +205,65 @@
             _focusOpener = false;
             await _searchOpener.FocusAsync();
         }
+
+        if (_searching != _watchingOutside)
+        {
+            await WatchOutsideAsync(_searching);
+        }
+    }
+
+    /// <summary>
+    /// A click on free space closes the search (index.html, <c>pokeArenaDex</c>). Without the script (an old cached
+    /// index.html) the search still closes with „×“ and Escape.
+    /// </summary>
+    private async Task WatchOutsideAsync(bool watch)
+    {
+        _watchingOutside = watch;
+        try
+        {
+            if (watch)
+            {
+                _self ??= DotNetObjectReference.Create(this);
+                await JS.InvokeVoidAsync("pokeArenaDex.watchOutside", _searchBox, _self);
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("pokeArenaDex.unwatch");
+            }
+        }
+        catch (JSException)
+        {
+        }
+    }
+
+    [JSInvokable]
+    public void CloseFromOutside()
+    {
+        if (!_searching)
+        {
+            return;
+        }
+
+        // The click put the focus where it wanted it: no jump back to „Name“.
+        _searching = false;
+        _query = "";
+        StateHasChanged();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_watchingOutside)
+        {
+            try
+            {
+                await JS.InvokeVoidAsync("pokeArenaDex.unwatch");
+            }
+            catch (Exception e) when (e is JSException or JSDisconnectedException)
+            {
+            }
+        }
+
+        _self?.Dispose();
     }
 
     private IEnumerable<Row> Rows()
@@ -294,17 +358,23 @@
 
     private static string Number(int id) => "#" + id.ToString("000", CultureInfo.InvariantCulture);
 
-    private void OpenSearch()
+    /// <summary>Enter or Space on a button fire a click with <c>detail</c> 0; a mouse or a tap counts from 1.</summary>
+    private void OpenSearch(MouseEventArgs e)
     {
         _searching = true;
         _focusSearch = true;
+        _openedByKeyboard = e.Detail == 0;
     }
 
+    /// <summary>
+    /// The focus goes back to „Name“ only when the search was opened with the keyboard: a focus moved by script after a
+    /// key (Escape) draws the browser's focus ring, which a mouse user sees as a stray frame (user feedback).
+    /// </summary>
     private void CloseSearch()
     {
         _searching = false;
         _query = "";
-        _focusOpener = true;
+        _focusOpener = _openedByKeyboard;
     }
 
     private void OnSearchKeyAsync(KeyboardEventArgs e)
