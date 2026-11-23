@@ -397,7 +397,9 @@ The settings page (user request 2026-11-21) holds a viewer's own picks, kept
 only in their browser (`localStorage`, never sent anywhere): the look —
 „Automatisch“ (default, follows the device, also when it switches while the
 page is open), „Hell“ or „Dunkel“ — and the fight log's view „Balken / Text“
-(§5; the switch over the log stays, both show the same pick). The menu reaches
+(§5; the switch over the log stays, both show the same pick). The Pokédex
+filter „Alle / Nur gefangene“ is kept the same way, but picked on the trainer
+page only. The menu reaches
 it through a gear icon at its end (own SVG, no word: a sixth one would wrap the
 menu once more on a phone). The look is applied before the page is drawn, so
 it never flashes in the other one.
@@ -544,8 +546,8 @@ and „Starter“; the box shows their base values. Seen species — every Poké
 in a fight the trainer took part in, on either side, sent in or not, that they
 do not own now — stand greyed with the word „gesehen“; their box shows name
 and types only. All others are „????????“. A switch „Alle / Nur gefangene“
-over the list (remembered in the viewer's browser like the settings page's picks), and a hidden search: a click on „Name“ turns
-it into a field that finds caught and seen species by name or number, never
+over the list (remembered in the viewer's browser like the settings page's
+picks), and a hidden search: a click on „Name“ turns it into a field that finds caught and seen species by name or number, never
 unknown ones. The bot keeps the seen species in its database, written with
 each fight (filled once from the stored logs on the first start with it) and deleted
 with the trainer. Names and base values of species the trainer has not caught

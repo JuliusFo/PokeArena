@@ -4,8 +4,9 @@ namespace PokeArena.Web.Services;
 
 /// <summary>
 /// What a viewer picked on „Einstellungen“, kept only in their own browser (privacy page): the look (light, dark or the
-/// device's) and the fight log's view — plus the Pokédex filter, picked on the trainer page itself. Storage may be blocked (private windows, strict settings): every call catches
-/// <see cref="JSException"/>, reading then gives the default and a pick holds until the page is left.
+/// device's) and the fight log's view — plus the Pokédex filter, picked on the trainer page itself. Storage may be
+/// blocked (private windows, strict settings): every call catches <see cref="JSException"/>, reading then gives the
+/// default and a pick holds until the page is left.
 /// </summary>
 public static class ViewerSettings
 {
@@ -80,7 +81,7 @@ public static class ViewerSettings
         }
     }
 
-    /// <summary>The viewer's look:<see cref="ThemeAuto"/>, <see cref="ThemeLight"/> or <see cref="ThemeDark"/>.</summary>
+    /// <summary>The viewer's look: <see cref="ThemeAuto"/>, <see cref="ThemeLight"/> or <see cref="ThemeDark"/>.</summary>
     public static async Task<string> ThemeAsync(IJSRuntime js)
     {
         try
