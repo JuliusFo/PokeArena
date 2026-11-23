@@ -272,6 +272,7 @@ public sealed class TrainerService
         await db.NpcBadges.Where(b => b.TrainerId == twitchUserId).ExecuteDeleteAsync(ct);
         await db.Cooldowns.Where(c => c.Key.StartsWith(npcCooldowns)).ExecuteDeleteAsync(ct);
         await db.ProfileImages.Where(i => i.TrainerId == twitchUserId).ExecuteDeleteAsync(ct);
+        await db.SeenSpecies.Where(s => s.TrainerId == twitchUserId).ExecuteDeleteAsync(ct);
         db.Trainers.Remove(trainer);
         await SiteOutbox.EnqueueAsync(
             db,

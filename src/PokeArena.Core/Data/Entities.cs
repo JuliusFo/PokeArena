@@ -239,3 +239,16 @@ public sealed class TrainerProfileImage
     /// <summary>When Twitch last confirmed <see cref="SourceUrl"/>.</summary>
     public DateTimeOffset CheckedAt { get; set; }
 }
+
+/// <summary>
+/// A species a trainer has seen: it stood in one of their fights, on either side, sent in or not — the fight page
+/// lists them all (spec §9). Written with the battle; the website shows the ones the trainer does not own now as
+/// „gesehen“. Only grows, like the fights themselves; deleted with the trainer.
+/// </summary>
+public sealed class SeenSpecies
+{
+    public required string TrainerId { get; init; }
+
+    /// <summary>Id in <see cref="SpeciesCatalog"/>.</summary>
+    public int SpeciesId { get; init; }
+}

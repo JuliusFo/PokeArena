@@ -195,6 +195,20 @@ namespace PokeArena.Core.Data.Migrations
                     b.ToTable("PublishQueue");
                 });
 
+            modelBuilder.Entity("PokeArena.Core.Data.SeenSpecies", b =>
+                {
+                    b.Property<string>("TrainerId")
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SpeciesId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("TrainerId", "SpeciesId");
+
+                    b.ToTable("SeenSpecies");
+                });
+
             modelBuilder.Entity("PokeArena.Core.Data.Specimen", b =>
                 {
                     b.Property<long>("Id")
@@ -331,6 +345,15 @@ namespace PokeArena.Core.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Trainer");
+                });
+
+            modelBuilder.Entity("PokeArena.Core.Data.SeenSpecies", b =>
+                {
+                    b.HasOne("PokeArena.Core.Data.Trainer", null)
+                        .WithMany()
+                        .HasForeignKey("TrainerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("PokeArena.Core.Data.Specimen", b =>

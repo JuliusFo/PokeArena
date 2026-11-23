@@ -42,7 +42,11 @@ public class NpcServiceTests : IDisposable
         var battle = await db.Battles.Include(b => b.Participants).SingleAsync(_ct);
         Assert.Equal((BattleKind.Npc, "eich", BattleOutcome.ChallengerWon, 1, Seed), (battle.Kind, battle.NpcId, battle.Outcome, battle.Tokens, battle.Seed));
         Assert.Equal([("1", true)], battle.Participants.Select(p => (p.TrainerId, p.Won)));
-        Assert.Equal(12, BattleLog.FromJson(battle.LogJson).Fighters.Count);
+        var fighters = BattleLog.FromJson(battle.LogJson).Fighters;
+        Assert.Equal(12, fighters.Count);
+        Assert.Equal(
+            fighters.Select(f => f.SpeciesId).Distinct().Order(),
+            await db.SeenSpecies.Where(s => s.TrainerId == "1").Select(s => s.SpeciesId).OrderBy(id => id).ToListAsync(_ct));
 
         var reward = await db.Specimens.SingleAsync(s => s.Id == battle.LootSpecimenId, _ct);
         Assert.Equal(("1", SpecimenOrigin.Npc, reward.SpeciesId), (reward.TrainerId, reward.Origin, battle.LootSpeciesId!.Value));
@@ -74,6 +78,7 @@ public class NpcServiceTests : IDisposable
         Assert.Empty(db.Cooldowns);
         Assert.Equal(0, (await db.Trainers.SingleAsync(_ct)).Tokens);
         Assert.Empty(db.Specimens.Where(s => s.Origin == SpecimenOrigin.Npc));
+        Assert.Empty(db.SeenSpecies);
     }
 
     [Fact]

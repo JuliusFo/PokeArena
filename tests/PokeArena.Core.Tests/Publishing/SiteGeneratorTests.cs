@@ -1,6 +1,8 @@
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 using PokeArena.Contracts;
 using PokeArena.Core.Data;
+using PokeArena.Core.Game;
 using PokeArena.Core.Game.Battles;
 using PokeArena.Core.Publishing;
 using PokeArena.Core.Tests.Fakes;
@@ -250,6 +252,46 @@ public class SiteGeneratorTests : IDisposable
         Assert.Contains("\"hit\":{\"side\":0,\"fighter\":0,\"before\":70,\"after\":0,\"damage\":90}", json);
         Assert.Contains("\"hpLeft\":0", json);
         Assert.Contains("\"won\":false", json);
+    }
+
+    [Fact]
+    public async Task The_trainer_page_lists_species_seen_but_not_owned()
+    {
+        await AddTrainerAsync("1", "Ash", (25, 0));
+        await AddTrainerAsync("2", "Misty", (7, 0));
+        var log = new BattleLog(
+            [new LogFighter(0, 25, 70, "1", "Ash"), new LogFighter(1, 7, 44, "2", "Misty"), new LogFighter(1, 129, 40, "2", "Misty")],
+            []);
+        await using (var db = _game.OpenLive())
+        {
+            await Sightings.RecordAsync(db, ["1", "2"], log, _ct);
+            await db.SaveChangesAsync(_ct);
+
+            // A second fight with the same Pokémon adds nothing twice.
+            await Sightings.RecordAsync(db, ["1", "1"], log, _ct);
+            await db.SaveChangesAsync(_ct);
+            Assert.Equal(6, await db.SeenSpecies.CountAsync(_ct));
+        }
+
+        Assert.Equal([7, 129], (await TrainerPageAsync("1")).Seen);
+        Assert.Equal([25, 129], (await TrainerPageAsync("2")).Seen);
+    }
+
+    [Fact]
+    public async Task The_species_file_holds_every_species_with_its_base_values_and_is_cached_a_day()
+    {
+        await using var db = _game.OpenLive();
+        var file = await _generator.RenderAsync(db, SitePaths.Species, Start, _ct);
+
+        Assert.Equal(SiteGenerator.BattleCache, file!.CacheControl);
+        var list = JsonSerializer.Deserialize(file.Content, SiteJson.Default.SpeciesList)!;
+        Assert.Equal(Enumerable.Range(1, 151), list.Species.Select(s => s.Id));
+        var bisasam = GameFixture.Species.Get(1);
+        var data = list.Species[0];
+        Assert.Equal(
+            (bisasam.Name, bisasam.Hp, bisasam.Atk, bisasam.Def, bisasam.Spez),
+            (data.Name, data.Hp, data.Atk, data.Def, data.Spez));
+        Assert.Equal(bisasam.Types, data.Types);
     }
 
     [Fact]

@@ -219,6 +219,7 @@ public sealed class BossEncounter(
             ],
         };
         db.Battles.Add(battle);
+        await Sightings.RecordAsync(db, participants.Select(p => p.Member.UserId), result.Log, ct);
         db.Specimens.AddRange(catchers.Select(c => new Specimen
         {
             TrainerId = c.UserId,

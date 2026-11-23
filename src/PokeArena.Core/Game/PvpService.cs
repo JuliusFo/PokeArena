@@ -190,6 +190,7 @@ public sealed class PvpService
             ],
         };
         db.Battles.Add(battle);
+        await Sightings.RecordAsync(db, [challenge.ChallengerId, challenge.TargetId], result.Log, ct);
         var transferred = await db.Specimens.SingleAsync(s => s.Id == loot.Id, ct);
         transferred.TrainerId = winnerId;
         transferred.AcquiredAt = now;

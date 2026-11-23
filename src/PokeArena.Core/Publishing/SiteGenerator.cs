@@ -49,6 +49,16 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
     /// </summary>
     public const string ImageCache = BattleCache;
 
+    /// <summary>
+    /// <c>arten.json</c> changes only with a release of the bot (base data, balancing): a day like fights, so an update
+    /// shows its new values on the trainer pages within a day.
+    /// </summary>
+    public const string SpeciesCache = BattleCache;
+
+    /// <summary>Every species with its base values, for the Pokédex on the trainer pages (spec §9).</summary>
+    public SpeciesList SpeciesList() =>
+        new([.. species.All.OrderBy(s => s.Id).Select(s => new SpeciesData(s.Id, s.Name, s.Types, s.Hp, s.Atk, s.Def, s.Spez))]);
+
     /// <summary>The file at <paramref name="path"/>, or null if it no longer exists (deleted trainer) and must be removed.</summary>
     /// <exception cref="ArgumentException">Not a site path.</exception>
     public async Task<SiteFile?> RenderAsync(PokeArenaDb db, string path, DateTimeOffset now, CancellationToken ct)
@@ -64,6 +74,8 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
                 return Mutable(JsonSerializer.SerializeToUtf8Bytes(index, SiteJson.Default.BattleIndex));
             case SitePaths.Statistics:
                 return Mutable(JsonSerializer.SerializeToUtf8Bytes(await StatisticsAsync(db, now, ct), SiteJson.Default.Statistics));
+            case SitePaths.Species:
+                return new SiteFile(JsonSerializer.SerializeToUtf8Bytes(SpeciesList(), SiteJson.Default.SpeciesList), SpeciesCache);
         }
 
         if (SitePaths.TrainerIdOf(path) is { } trainerId)
@@ -298,6 +310,11 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
             .Select(g => new { Battles = g.Count(), Wins = g.Count(p => p.Won) })
             .FirstOrDefaultAsync(ct);
         var recent = await LatestBattlesAsync(db, b => b.Participants.Any(p => p.TrainerId == trainerId), RecentBattlesPerTrainer, ct);
+        var owned = trainer.Specimens.Select(s => s.SpeciesId).ToHashSet();
+        var seen = await db.SeenSpecies.AsNoTracking()
+            .Where(s => s.TrainerId == trainerId)
+            .Select(s => s.SpeciesId)
+            .ToListAsync(ct);
 
         return new TrainerPage(
             trainerId,
@@ -317,7 +334,8 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
             [.. badges.Select(b => new BadgeInfo(npcs.Find(b.NpcId)?.Name ?? b.NpcId, b.WonAt, b.BattleId))],
             recent,
             SitePaths.TryProfileImage(trainerId, trainer.ImageType),
-            trainer.ChatColor);
+            trainer.ChatColor,
+            [.. seen.Where(id => !owned.Contains(id)).Order()]);
     }
 
     private async Task<BattlePage?> BattleAsync(PokeArenaDb db, long battleId, CancellationToken ct)

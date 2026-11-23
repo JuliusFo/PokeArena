@@ -149,6 +149,10 @@ public sealed record LogPart(
 /// one and in older files.
 /// </param>
 /// <param name="Color">Twitch chat colour (<c>#RRGGBB</c>) as picked; null if unknown and in older files.</param>
+/// <param name="Seen">
+/// Ids of the species the trainer has seen in their fights but does not own now, ascending; null in older files.
+/// Names, types and base values come from <see cref="SpeciesList"/>.
+/// </param>
 public sealed record TrainerPage(
     string TrainerId,
     string DisplayName,
@@ -164,7 +168,8 @@ public sealed record TrainerPage(
     IReadOnlyList<BadgeInfo> Badges,
     IReadOnlyList<BattleSummary> RecentBattles,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? ProfileImage = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Color = null);
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Color = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<int>? Seen = null);
 
 /// <param name="HasStarter">One of the specimens is the protected starter.</param>
 public sealed record PokedexEntry(SpeciesInfo Species, int Count, bool HasStarter);
@@ -224,3 +229,15 @@ public sealed record BossTally(int Rank, SpeciesInfo Species, int Count);
 
 /// <summary>What the local OBS overlay shows: the latest fight and the top of the leaderboard.</summary>
 public sealed record OverlayState(BattleSummary? LatestBattle, IReadOnlyList<LeaderboardEntry> Top);
+
+/// <summary>
+/// <c>arten.json</c>: every species with its base values, for the Pokédex on the trainer pages. Written from the base
+/// data, so it changes only with a release of the bot; it holds every name — the site shows only the ones a trainer
+/// caught or saw.
+/// </summary>
+public sealed record SpeciesList(IReadOnlyList<SpeciesData> Species);
+
+/// <summary>One species with its Gen-1 base values (ADR-0005), as the bot fights with them.</summary>
+/// <param name="Types">German type names, primary type first.</param>
+/// <param name="Spez">The Gen-1 value Special.</param>
+public sealed record SpeciesData(int Id, string Name, IReadOnlyList<string> Types, int Hp, int Atk, int Def, int Spez);

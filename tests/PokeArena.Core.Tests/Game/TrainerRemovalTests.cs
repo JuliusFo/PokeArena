@@ -41,6 +41,7 @@ public class TrainerRemovalTests : IDisposable
         Assert.Empty(await db.NpcBadges.ToListAsync(_ct));
         Assert.Equal([NpcService.CooldownKey("10010", "eich")], await db.Cooldowns.Select(c => c.Key).ToListAsync(_ct));
         Assert.Equal(["1002"], await db.BattleParticipants.Select(p => p.TrainerId).ToListAsync(_ct));
+        Assert.Equal(["1002"], (await db.SeenSpecies.Select(s => s.TrainerId).ToListAsync(_ct)).Distinct());
 
         var log = BattleLog.FromJson((await db.Battles.SingleAsync(_ct)).LogJson);
         Assert.Equal(
@@ -245,6 +246,7 @@ public class TrainerRemovalTests : IDisposable
         db.NpcBadges.Add(new NpcBadge { TrainerId = "1001", NpcId = "eich", WonAt = now, BattleId = 1 });
         db.Cooldowns.Add(new Cooldown { Key = NpcService.CooldownKey("1001", "eich"), Until = now });
         db.Cooldowns.Add(new Cooldown { Key = NpcService.CooldownKey("10010", "eich"), Until = now });
+        await Sightings.RecordAsync(db, ["1001", "1002"], log, _ct);
         db.PublishQueue.RemoveRange(db.PublishQueue);
         await db.SaveChangesAsync(_ct);
         return battle.Id;

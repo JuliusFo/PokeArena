@@ -13,6 +13,9 @@ public static class SitePaths
 
     public const string Statistics = "statistik.json";
 
+    /// <summary>Every species with its base values (<see cref="SpeciesList"/>).</summary>
+    public const string Species = "arten.json";
+
     /// <summary>Folder of the trainer pages.</summary>
     public const string TrainerPrefix = "trainer/";
 

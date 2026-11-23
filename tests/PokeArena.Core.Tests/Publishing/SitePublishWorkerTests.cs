@@ -160,7 +160,7 @@ public class SitePublishWorkerTests : IDisposable
         await worker.PublishDueAsync(_ct);
 
         Assert.Equal(
-            [SitePaths.BattleIndex, SitePaths.Meta, SitePaths.Leaderboard, SitePaths.Statistics, SitePaths.Trainer("1"), SitePaths.Trainer("2")],
+            [SitePaths.Species, SitePaths.BattleIndex, SitePaths.Meta, SitePaths.Leaderboard, SitePaths.Statistics, SitePaths.Trainer("1"), SitePaths.Trainer("2")],
             _bucket.Files.Keys.Order(StringComparer.Ordinal));
     }
 
@@ -181,7 +181,7 @@ public class SitePublishWorkerTests : IDisposable
         await worker.PublishDueAsync(_ct);
 
         Assert.Equal(
-            [SitePaths.BattleIndex, SitePaths.Battle(fight), SitePaths.Meta, SitePaths.Leaderboard, SitePaths.Statistics, SitePaths.Trainer("1")],
+            [SitePaths.Species, SitePaths.BattleIndex, SitePaths.Battle(fight), SitePaths.Meta, SitePaths.Leaderboard, SitePaths.Statistics, SitePaths.Trainer("1")],
             _bucket.Files.Keys.Order(StringComparer.Ordinal));
         Assert.Equal(51, await AddFightAsync("1"));
     }

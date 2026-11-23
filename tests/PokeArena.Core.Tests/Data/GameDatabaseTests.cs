@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using PokeArena.Core.Data;
+using PokeArena.Core.Game.Battles;
 using PokeArena.Core.Tests.Fakes;
 
 namespace PokeArena.Core.Tests.Data;
@@ -35,6 +36,36 @@ public class GameDatabaseTests : IDisposable
         await migrator.MigrateAsync(cancellationToken: _ct);
 
         Assert.Equal("ashketchum", (await db.Trainers.SingleAsync(_ct)).Login);
+    }
+
+    [Fact]
+    public async Task Seen_species_migration_fills_in_every_fighter_of_the_fights_fought_so_far()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync(_ct);
+        await using var db = new PokeArenaDb(new DbContextOptionsBuilder<PokeArenaDb>().UseSqlite(connection).Options);
+        var migrator = db.GetService<IMigrator>();
+        await migrator.MigrateAsync("20261111084203_TrainerProfileImage", _ct);
+        foreach (var (id, name) in new[] { ("1", "Ash"), ("2", "Misty"), ("3", "Rocko") })
+        {
+            await db.Database.ExecuteSqlAsync(
+                $"INSERT INTO \"Trainers\" (\"TwitchUserId\", \"DisplayName\", \"Login\", \"RegisteredAt\", \"Tokens\") VALUES ({id}, {name}, {name.ToLowerInvariant()}, 0, 0)", _ct);
+        }
+
+        // A PvP fight Ash vs Misty, written by the real serializer; a fighter of a deleted trainer has no id but counts.
+        var log = new BattleLog(
+            [new LogFighter(0, 25, 70, "1", "Ash"), new LogFighter(0, 10, 90, null, BattleLog.DeletedOwner), new LogFighter(1, 129, 40, "2", "Misty")],
+            []);
+        await db.Database.ExecuteSqlAsync(
+            $"INSERT INTO \"Battles\" (\"Id\", \"Kind\", \"FoughtAt\", \"Seed\", \"Outcome\", \"Rounds\", \"LogJson\") VALUES (1, 'Pvp', 0, 0, 'ChallengerWon', 1, {log.ToJson()})", _ct);
+        await db.Database.ExecuteSqlRawAsync(
+            "INSERT INTO \"BattleParticipants\" (\"BattleId\", \"TrainerId\", \"Won\") VALUES (1, '1', 1), (1, '2', 0)", _ct);
+
+        await migrator.MigrateAsync(cancellationToken: _ct);
+
+        Assert.Equal(
+            [("1", 10), ("1", 25), ("1", 129), ("2", 10), ("2", 25), ("2", 129)],
+            (await db.SeenSpecies.ToListAsync(_ct)).Select(s => (s.TrainerId, s.SpeciesId)).Order());
     }
 
     [Fact]

@@ -65,7 +65,16 @@ public class BossEncounterTests : IDisposable
         Assert.Equal(BattleOutcome.BossDefeated, battle.Outcome);
         Assert.Equal(["1", "2", "3"], battle.Participants.Select(p => p.TrainerId).Order());
         Assert.All(battle.Participants, p => Assert.True(p.Won));
-        Assert.NotEmpty(BattleLog.FromJson(battle.LogJson).Events);
+        var log = BattleLog.FromJson(battle.LogJson);
+        Assert.NotEmpty(log.Events);
+
+        // Everyone has seen the boss and what the others fielded (spec §9).
+        var species = log.Fighters.Select(f => f.SpeciesId).Distinct().Order().ToList();
+        Assert.Contains(expectedBoss.Id, species);
+        foreach (var trainer in new[] { "1", "2", "3" })
+        {
+            Assert.Equal(species, await db.SeenSpecies.Where(s => s.TrainerId == trainer).Select(s => s.SpeciesId).OrderBy(id => id).ToListAsync(_ct));
+        }
 
         var caught = await db.Specimens.Where(s => s.Origin == SpecimenOrigin.Boss).ToListAsync(_ct);
         Assert.Equal(3, caught.Count);
@@ -87,6 +96,7 @@ public class BossEncounterTests : IDisposable
         await using var db = _game.OpenLive();
         Assert.Empty(db.Battles);
         Assert.Empty(db.Specimens.Where(s => s.Origin == SpecimenOrigin.Boss));
+        Assert.Empty(db.SeenSpecies);
         Assert.Empty(db.Cooldowns);
     }
 

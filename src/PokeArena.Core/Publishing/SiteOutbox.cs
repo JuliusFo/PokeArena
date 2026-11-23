@@ -58,6 +58,7 @@ public static class SiteOutbox
             db,
             [
                 SitePaths.BattleIndex,
+                SitePaths.Species,
                 .. ForTrainers(trainers),
                 .. battles.Select(SitePaths.Battle),
                 .. images.Select(i => SitePaths.TryProfileImage(i.TrainerId, i.ContentType)).OfType<string>(),

@@ -14,5 +14,6 @@ namespace PokeArena.Contracts;
 [JsonSerializable(typeof(BattlePage))]
 [JsonSerializable(typeof(TrainerPage))]
 [JsonSerializable(typeof(Statistics))]
+[JsonSerializable(typeof(SpeciesList))]
 [JsonSerializable(typeof(OverlayState))]
 public sealed partial class SiteJson : JsonSerializerContext;

@@ -47,7 +47,15 @@ public class PvpServiceTests : IDisposable
         var battle = await db.Battles.Include(b => b.Participants).SingleAsync(_ct);
         Assert.Equal((BattleKind.Pvp, BattleOutcome.ChallengerWon, Seed), (battle.Kind, battle.Outcome, battle.Seed));
         Assert.Equal([("1", true), ("2", false)], battle.Participants.OrderBy(p => p.TrainerId).Select(p => (p.TrainerId, p.Won)));
-        Assert.Equal(12, BattleLog.FromJson(battle.LogJson).Fighters.Count);
+        var fighters = BattleLog.FromJson(battle.LogJson).Fighters;
+        Assert.Equal(12, fighters.Count);
+
+        // Both trainers have seen every Pokémon of the fight, sent in or not (spec §9).
+        var species = fighters.Select(f => f.SpeciesId).Distinct().Order().ToList();
+        foreach (var trainer in new[] { "1", "2" })
+        {
+            Assert.Equal(species, await db.SeenSpecies.Where(s => s.TrainerId == trainer).Select(s => s.SpeciesId).OrderBy(id => id).ToListAsync(_ct));
+        }
 
         var loot = await db.Specimens.SingleAsync(s => s.Id == battle.LootSpecimenId, _ct);
         Assert.Equal(("1", Species.Find("Karpador")!.Id, false), (loot.TrainerId, loot.SpeciesId, loot.IsStarter));
