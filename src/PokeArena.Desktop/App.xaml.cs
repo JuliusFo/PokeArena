@@ -264,12 +264,17 @@ public partial class App : Application
 
     private void OnWebViewLoaded(object? sender, EventArgs e)
     {
-        if (_reloadAttempts > 0)
+        if (_reloadAttempts > 0 || _webViewFailed)
         {
             Log.Information("The window content loaded");
         }
 
+        // Also after a first throw whose second try in the same load worked (device came a moment late): no reload of
+        // a working WebView, and a later failure counts again.
         _reloadAttempts = 0;
+        _webViewFailed = false;
+        _reloadTimer?.Stop();
+        _reloadTimer = null;
     }
 
     /// <summary>

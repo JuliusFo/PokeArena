@@ -18,8 +18,6 @@ public static class WindowTheme
     private static readonly Color DarkText = Color.FromRgb(0xec, 0xec, 0xf0);
     private static readonly Color LightText = Color.FromRgb(0x1d, 0x1d, 0x21);
 
-    /// <summary>Text color on the window background (<c>--text</c> in pokearena.css), for native text without the WebView.</summary>
-    public static Brush TextBrush() => new SolidColorBrush(IsSystemDark() ? DarkText : LightText);
 
     /// <summary>Must run before the WebView2 environment is created, otherwise it starts with a white flash.</summary>
     public static void PrepareWebViewBackground()
@@ -48,6 +46,8 @@ public static class WindowTheme
     {
         var dark = IsSystemDark();
         window.Background = new SolidColorBrush(dark ? DarkBackground : LightBackground);
+        // Native text without the WebView (MainWindow's load hint) inherits it; --text in pokearena.css.
+        window.Foreground = new SolidColorBrush(dark ? DarkText : LightText);
 
         var hwnd = new WindowInteropHelper(window).Handle;
         if (hwnd != IntPtr.Zero)
