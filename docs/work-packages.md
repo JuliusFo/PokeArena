@@ -53,6 +53,7 @@ code of a package lives: read the logs of earlier packages in the same area befo
 | – | [Pokédex on the trainer page (viewer idea)](work-packages/claude-pokedex-trainer-page-improve-a4a504.md) | 1.10.0 | 2026-11-23 | Contracts SpeciesList/TrainerPage.Seen, Core SeenSpecies + Sightings + arten.json, Web Shared/Pokedex |
 | – | [Empty window after a restart without a session (user report)](work-packages/fix-wpf-software-rendering.md) | 1.10.1 (proposal) | 2026-11-23 | Desktop App start, InteractiveSession, MainWindow |
 | – | [Pokédex switch remembered (user request)](work-packages/claude-pokedex-toggle-persistence-c87bd9.md) | 1.10.1 (proposal) | 2026-11-23 | Web ViewerSettings, Shared/Pokedex |
+| – | [Pokédex search: focus frame, click outside (user feedback)](work-packages/claude-pokedex-search-ui-fixes-79cb0c.md) | 1.10.1 (proposal) | 2026-11-24 | Web Shared/Pokedex, index.html |
 | WP-09 | Balancing after the first streams | 1.11.0 (proposal) | planned | BossSettings, PvP loot, NPC strength |
 
 ## Adding a package
