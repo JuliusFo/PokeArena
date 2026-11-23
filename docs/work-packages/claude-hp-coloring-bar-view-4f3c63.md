@@ -20,3 +20,15 @@
   hand in the browser — the sample data has no hit ending between ¼ and ½).
   CHANGELOG, „Neuigkeiten“ (under 1.9.1, proposal), Web CLAUDE.md.
 - User decisions: „A + B: auch Orange“ — both variants.
+- Code review (2026-11-23): „Alle“. Second pass on the fixes without findings.
+  - L: spec §9 footnote ³ said HP stay in the normal text colour, against §5 —
+    fixed, the sentence is about tints only; HP numbers point to §5.
+  - L: orange `#a35200` and red `#c42d0b` fills are equally dark (≈ 1.01 : 1),
+    alike with red-green weakness — accepted (white text needs 4.5 : 1, the
+    numbers inside carry the value); noted in the Web `CLAUDE.md`.
+  - L: `HpBar.Class` doc comment lacked `mid` — fixed. Sample fight 1 had no
+    HP between ¼ and ½ — fixed, a round-2 hit Relaxo → Bisasam 90 → 40 (card and
+    log orange, Relaxo's damage 110).
+  - L (pre-existing, more reachable): `Level` multiplied in `int`, so HP near
+    `int.MaxValue` from a file not ours wrapped into red — fixed in `long`, with
+    a bUnit test that fails without it; pitfall line in the Web `CLAUDE.md`.
