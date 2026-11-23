@@ -30,6 +30,11 @@ public partial class App : Application
     private bool _windowPending;
     private bool _webViewFailed;
     private bool _watchingSession;
+    private int _reloadAttempts;
+    private DispatcherTimer? _reloadTimer;
+
+    /// <summary>Waits before each new load after the WebView found no graphics device; then the hint.</summary>
+    private static readonly TimeSpan[] ReloadDelays = [TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(15)];
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -138,6 +143,7 @@ public partial class App : Application
 
         var window = _host.Services.GetRequiredService<MainWindow>();
         window.Closing += OnMainWindowClosing;
+        window.WebViewLoaded += OnWebViewLoaded;
         MainWindow = window;
         if (InteractiveSession.IsActive())
         {
@@ -172,8 +178,10 @@ public partial class App : Application
         }
     }
 
+    // BeginInvoke, not InvokeAsync: an exception in an InvokeAsync operation stays in its unobserved task, and the
+    // window would wait for good (watching has already stopped); BeginInvoke reaches OnDispatcherUnhandledException.
     private void OnSessionSwitch(object sender, SessionSwitchEventArgs e) =>
-        Dispatcher.InvokeAsync(() =>
+        Dispatcher.BeginInvoke(new Action(() =>
         {
             if (_stopping || MainWindow is not Views.MainWindow window || !InteractiveSession.IsActive())
             {
@@ -183,9 +191,11 @@ public partial class App : Application
             StopWatchingSession();
             if (_webViewFailed)
             {
-                _webViewFailed = false;
                 Log.Information("Windows session connected ({Reason}): loading the window content again", e.Reason);
-                window.RebuildWebView();
+                _reloadTimer?.Stop();
+                _reloadTimer = null;
+                _reloadAttempts = 0;
+                ReloadWebView(window);
             }
 
             if (_windowPending)
@@ -194,7 +204,73 @@ public partial class App : Application
                 Log.Information("Windows session connected ({Reason}): opening the window", e.Reason);
                 window.Show();
             }
-        });
+        }));
+
+    /// <summary>
+    /// After a failed load: tries again a few times (the graphics device may come a moment after the connection),
+    /// then shows a hint in the window and waits for the next connection.
+    /// </summary>
+    private void ScheduleReload()
+    {
+        if (MainWindow is not Views.MainWindow window)
+        {
+            return;
+        }
+
+        if (_reloadAttempts >= ReloadDelays.Length)
+        {
+            Log.Error("The window content could not load after {Attempts} attempts; the bot keeps running", _reloadAttempts + 1);
+            window.ShowLoadFailedHint();
+            WatchSession();
+            return;
+        }
+
+        var timer = new DispatcherTimer { Interval = ReloadDelays[_reloadAttempts++] };
+        timer.Tick += (_, _) =>
+        {
+            timer.Stop();
+            if (!ReferenceEquals(_reloadTimer, timer) || _stopping)
+            {
+                return;
+            }
+
+            _reloadTimer = null;
+            if (!InteractiveSession.IsActive())
+            {
+                // Disconnected meanwhile: the next connection loads it.
+                WatchSession();
+                return;
+            }
+
+            Log.Information("Loading the window content again (attempt {Attempt})", _reloadAttempts + 1);
+            ReloadWebView(window);
+        };
+        _reloadTimer = timer;
+        timer.Start();
+    }
+
+    private async void ReloadWebView(Views.MainWindow window)
+    {
+        _webViewFailed = false;
+        try
+        {
+            await window.RebuildWebViewAsync();
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Reloading the window content failed");
+        }
+    }
+
+    private void OnWebViewLoaded(object? sender, EventArgs e)
+    {
+        if (_reloadAttempts > 0)
+        {
+            Log.Information("The window content loaded");
+        }
+
+        _reloadAttempts = 0;
+    }
 
     /// <summary>
     /// Stops the host before the window goes away: <c>OnExit</c> runs while the dispatcher shuts down, so an
@@ -326,16 +402,17 @@ public partial class App : Application
     {
         if (InteractiveSession.IsGraphicsDeviceUnavailable(e.Exception))
         {
-            // The WebView found no Direct3D device (it throws twice: template and Loaded). No box — on the server
-            // nobody clicks it; the content is rebuilt once someone connects to the session.
+            // The WebView found no Direct3D device (it throws twice per load: template and Loaded, so only the first
+            // counts). No box — on the server nobody clicks it; the content is loaded again (ScheduleReload).
+            e.Handled = true;
             if (!_webViewFailed)
             {
-                Log.Warning(e.Exception, "The window content could not load (no graphics device); retrying when someone connects");
+                _webViewFailed = true;
+                // The stack trace once per series of tries; it is the same every time.
+                Log.Warning(_reloadAttempts == 0 ? e.Exception : null, "The window content could not load (no graphics device)");
+                ScheduleReload();
             }
 
-            _webViewFailed = true;
-            WatchSession();
-            e.Handled = true;
             return;
         }
 
