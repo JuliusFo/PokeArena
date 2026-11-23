@@ -149,6 +149,38 @@ public class TrainerPageTests : WebTestContext
     }
 
     [Fact]
+    public void While_the_browser_has_not_answered_the_pokedex_already_shows_the_trainer()
+    {
+        // In WASM getItem answers later: the render before it must not show 151 unknown rows and an empty box (review).
+        var pending = JSInterop.Setup<string?>("localStorage.getItem", ViewerSettings.PokedexViewKey);
+        PutPokedex(seen: [10]);
+
+        var cut = Render<Trainer>(p => p.Add(t => t.Key, "11"));
+
+        cut.WaitForAssertion(() => Assert.Equal("Bisasam", cut.Find(".dex-box h3").TextContent));
+        Assert.Equal(["caught", "unknown"], cut.FindAll(".dex-row").Take(2).Select(r => r.ClassList.First(c => c != "dex-row")));
+        Assert.Contains("seen", cut.FindAll(".dex-row")[9].ClassList);
+
+        pending.SetResult("gefangen");
+
+        cut.WaitForAssertion(() => Assert.Equal(["#001"], cut.FindAll(".dex-row .dex-number").Select(n => n.TextContent)));
+    }
+
+    [Fact]
+    public void A_click_before_the_browser_answers_is_not_overwritten()
+    {
+        var pending = JSInterop.Setup<string?>("localStorage.getItem", ViewerSettings.PokedexViewKey);
+        PutPokedex(seen: [10]);
+        var cut = Render<Trainer>(p => p.Add(t => t.Key, "11"));
+        cut.WaitForAssertion(() => Assert.Equal(151, cut.FindAll(".dex-row").Count));
+
+        cut.FindAll(".dex-head .view-switch button").Single(b => b.TextContent == "Nur gefangene").Click();
+        pending.SetResult("alle");
+
+        cut.WaitForAssertion(() => Assert.Equal(["#001"], cut.FindAll(".dex-row .dex-number").Select(n => n.TextContent)));
+    }
+
+    [Fact]
     public void Blocked_storage_starts_with_all_and_the_switch_still_works()
     {
         JSInterop.Setup<string?>("localStorage.getItem", ViewerSettings.PokedexViewKey).SetException(new Microsoft.JSInterop.JSException("SecurityError"));

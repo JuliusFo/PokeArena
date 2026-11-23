@@ -113,6 +113,7 @@
     private HashSet<int> _seen = [];
     private int? _selected;
     private bool _onlyCaught;
+    private bool _picked;
     private bool _searching;
     private bool _focusSearch;
     private bool _focusOpener;
@@ -138,13 +139,27 @@
     private sealed record Row(int Id, RowKind Kind, SpeciesInfo? Species, PokedexEntry? Entry, SpeciesData? Data);
 
     /// <summary>
-    /// The viewer's last pick, for every trainer page. Storage may be blocked: the Pokédex then starts with „Alle“ and
-    /// the switch still works until the page is left.
+    /// Builds the list before the stored pick is read: in WASM <c>getItem</c> answers later, and Blazor renders once in
+    /// between — without this, 151 unknown rows and an empty box (review).
     /// </summary>
-    protected override async Task OnInitializedAsync() => _onlyCaught = await ViewerSettings.OnlyCaughtAsync(JS);
+    protected override void OnInitialized() => OnParametersSet();
+
+    /// <summary>
+    /// The viewer's last pick, for every trainer page. Storage may be blocked: the Pokédex then starts with „Alle“ and
+    /// the switch still works until the page is left. A click before the browser answers wins.
+    /// </summary>
+    protected override async Task OnInitializedAsync()
+    {
+        var stored = await ViewerSettings.OnlyCaughtAsync(JS);
+        if (!_picked)
+        {
+            _onlyCaught = stored;
+        }
+    }
 
     private async Task SetOnlyCaughtAsync(bool onlyCaught)
     {
+        _picked = true;
         _onlyCaught = onlyCaught;
         await ViewerSettings.SavePokedexViewAsync(JS, onlyCaught);
     }
