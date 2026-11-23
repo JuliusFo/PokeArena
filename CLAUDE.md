@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-11-23 · v1.9.0 released · Pokédex on the trainer page built (→ 1.10.0 with the coloured HP, proposal) · next WP-09 (→ 1.11.0, proposal) after a few streams
+Status: 2026-11-23 · v1.10.0 released (Pokédex on the trainer page, coloured HP in the bar view) · next WP-09 (→ 1.11.0, proposal) after a few streams
 
 ## 1. Where to find what
 
@@ -34,9 +34,9 @@ shows leaderboard, trainer pages and battle logs.
 ## 3. Versions and invariants
 
 Released versions and their content: `CHANGELOG.md`; which package went into which version: the table in
-`docs/work-packages.md`. Planned: 1.10.0 Pokédex on the trainer page + coloured HP (proposal); 1.11.0 WP-09 balancing (proposal, version not confirmed); 1.12.0 WP-12 English website
+`docs/work-packages.md`. Planned: 1.11.0 WP-09 balancing (proposal, version not confirmed); 1.12.0 WP-12 English website
 (after WP-09 is a user decision 2026-11-21; the version moved up twice: the user released the
-log view and settings page as 1.9.0, and the Pokédex takes 1.10.0 — proposal, not confirmed); 2.0.0 parked (website and
+log view and settings page as 1.9.0, and the Pokédex as 1.10.0 — proposal, not confirmed); 2.0.0 parked (website and
 overlay served from the bot's server, roadmap.md). The version table that stood here was cut (review 1.8.1, D1).
 
 **Invariants — never weaken:**
@@ -176,11 +176,10 @@ PokeArena.slnx
 
 Replace this section at every release or package; history belongs in CHANGELOG.md and docs/work-packages/.
 
-- Unreleased on `main` / this branch, proposed as 1.10.0: coloured HP in the bar view
-  (`claude/hp-coloring-bar-view-4f3c63`) and the trainer page's new Pokédex — all 151 species, a detail box with base
-  values, „gesehen“ for species met in fights, „Alle / Nur gefangene“, hidden search behind „Name“
-  (`claude/pokedex-trainer-page-improve-a4a504`). It adds the table `SeenSpecies` (filled once from the fight logs on
-  the first start) and the site file `arten.json`; until the updated bot has uploaded it, the Pokédex has no base values.
+- Released 1.10.0 (2026-11-23): coloured HP in the bar view and the trainer page's new Pokédex — all 151 species, a
+  detail box with base values, „gesehen“ for species met in fights, „Alle / Nur gefangene“, hidden search behind „Name“.
+  It adds the table `SeenSpecies` (filled once from the fight logs on the first start) and the site file `arten.json`;
+  until the updated bot has uploaded it, the Pokédex has no base values.
   Still for the user to set by hand: the Cloudflare WAF rule and the R2 billing alert (docs/website-setup.md §2).
 - To watch after the update: the bot's first start with the migration (log), `arten.json` on the data host, „gesehen“
   rows on a real trainer page; on stream boss win rates with the 1.8.0 rule (≈ 75 % group wins expected); whether the

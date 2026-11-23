@@ -7,6 +7,8 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+## [1.10.0] - 2026-11-23
+
 ### Added
 - The trainer page's Pokédex, after a viewer's idea: all 151 species in a
   scrolling list next to a box with the selected one (types, „Starter“, count,

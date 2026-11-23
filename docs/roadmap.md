@@ -1,8 +1,8 @@
 # Roadmap
 
 Work packages up to v1.0.0, the packages and branches after it (all released
-up to 1.9.0; the index is docs/work-packages.md), WP-09 as the next planned
-one (1.11.0, proposal; 1.10.0 is the Pokédex on the trainer page) and a parked idea for version 2. Read the package before starting it and agree the plan with
+up to 1.10.0; the index is docs/work-packages.md), WP-09 as the next planned
+one (1.11.0, proposal) and a parked idea for version 2. Read the package before starting it and agree the plan with
 the user. Estimates: solo, "day" = one focused person-day; total ≈ 25–31
 days. Every package ends in a state that could run on stream.
 
@@ -561,7 +561,7 @@ reads „HP 0“; the viewer suggested the HP before the hit.
   change by its own hit). The text is rendered from the stored events, so older
   fights change after „Alles neu veröffentlichen“.
 
-## Pokédex on the trainer page (`claude/pokedex-trainer-page-improve-a4a504`) → v1.10.0 (proposal)
+## Pokédex on the trainer page (`claude/pokedex-trainer-page-improve-a4a504`) → v1.10.0 (released 2026-11-23)
 
 Viewer idea (2026-11-22, with a mockup): the trainer page's Pokédex as a list of
 all 151 species (unknown ones as „????????“) next to a detail box with types
@@ -634,7 +634,7 @@ Plan:
 
 1.9.0 went to the fight log's text view and the „Einstellungen“ page (user pick
 at the release, 2026-11-22), so WP-09 and WP-12 each move up one version. The
-Pokédex on the trainer page (1.10.0, proposal) moves them up once more.
+Pokédex on the trainer page (released as 1.10.0) moves them up once more.
 
 Tuning with real stream data and the Monte Carlo simulator instead of
 guesses. Starts after 1.0 has run on a few streams.
