@@ -449,8 +449,9 @@ the fighter list show the trainer's Twitch chat colour; in a boss fight the
 boss's name („Relaxo“ in „Relaxo (Boss, HP 503)“, not the brackets — user
 decision 2026-11-10, replacing the whole label) shows the colour of its first
 type — the Pokémon is the element. „Volltreffer!“ is bold on a gold background (dark
-text, the same in both themes). Species and HP of trainers' Pokémon, NPCs and
-trainers without a known colour stay in the normal text colour. The bot keeps
+text, the same in both themes). Species of trainers' Pokémon, NPCs and
+trainers without a known colour stay in the normal text colour; HP numbers are
+coloured by what is left (§5). The bot keeps
 the colour from the trainer's latest chat message (EventSub `color`; empty if
 the viewer never picked one). The site darkens each colour until it reaches
 4.5 : 1 on white, so a yellow name stays readable there, and uses that colour in

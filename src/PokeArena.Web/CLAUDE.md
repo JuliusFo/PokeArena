@@ -69,7 +69,9 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   target's HP from `LogHit` (`.log-hp` low at a quarter, mid at half, high above; ≥ 5 : 1 light and dark). Files
   without `IsDamage` keep their wording. Bars and text share the steps through `Level`/`BarLevel` (`.hp-bar.mid`
   orange, `.low` red), and the bar view colours `IsHp` too — only where `TargetOf` accepts the hit, like the text
-  view (claude/hp-coloring-bar-view-4f3c63, viewer feedback). bUnit stays strict: `WebTestContext` plans
+  view (claude/hp-coloring-bar-view-4f3c63, viewer feedback). Orange and red fills are equally dark (white text needs
+  4.5 : 1), so with red-green weakness they look alike — accepted, the numbers inside carry the value (user decision,
+  review). `Level` computes in `long`: HP from a file not ours must not wrap into red. bUnit stays strict: `WebTestContext` plans
   only `localStorage.getItem` (null = bars) and `setItem`; a test's own `Setup` is added later and wins
   (claude/kampflog-design-options-cb7042, review).
 - Light or dark is the viewer's pick on „Einstellungen“ (`Pages/Settings.razor`): „auto“ (default, follows the
