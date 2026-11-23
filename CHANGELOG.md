@@ -7,6 +7,12 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+### Fixed
+- The desktop app draws its window without the graphics card (WPF software
+  rendering). On the server without a real GPU, or in a disconnected remote
+  desktop session, the window stayed empty and showed one error box after the
+  other with „0x8876086A“.
+
 ## [1.10.0] - 2026-11-23
 
 ### Added
