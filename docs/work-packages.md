@@ -49,6 +49,7 @@ code of a package lives: read the logs of earlier packages in the same area befo
 | – | [Damage next to the hit bar (viewer feedback)](work-packages/claude-kampflog-hp-balken-feedback-808390.md) | 1.8.2 | 2026-11-20 | BattleLog spans, Contracts LogHit.Damage, Web .hit-numbers |
 | – | [Text view for the fight log (viewer feedback)](work-packages/claude-kampflog-design-options-cb7042.md) | 1.9.0 | 2026-11-21 | BattleLog spans, Contracts LogPart.IsHp/IsDamage, Web log view switch |
 | – | [Settings page on the website (user request)](work-packages/claude-settings-page-design-00654c.md) | 1.9.0 | 2026-11-21 | Web Settings page, ViewerSettings, index.html theme script, site.css data-theme |
+| – | [Coloured HP in the bar view (viewer feedback)](work-packages/claude-hp-coloring-bar-view-4f3c63.md) | 1.9.1 (proposal) | 2026-11-23 | Web Battle.razor HP steps, site.css .hp-bar.mid |
 | WP-09 | Balancing after the first streams | 1.10.0 (proposal) | planned | BossSettings, PvP loot, NPC strength |
 
 ## Adding a package

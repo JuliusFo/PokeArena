@@ -7,6 +7,13 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+### Changed
+- The fight log's „Balken“ view colours HP like „Text“, after viewer feedback:
+  the attacker's HP in the sentence are green, orange or red by what is left,
+  and the HP bars (log and fight cards) get the orange step at half or less
+  besides red at a quarter or less. A hit the page cannot draw keeps its
+  sentence as written.
+
 ## [1.9.0] - 2026-11-22
 
 ### Added

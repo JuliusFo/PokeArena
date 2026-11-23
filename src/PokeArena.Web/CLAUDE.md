@@ -66,8 +66,10 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   (`ViewerSettings.LogViewKey`, shared with „Einstellungen“; `ViewerSettings` wraps every JS call in `try`/`catch
   JSException` — blocked storage means bars and a pick for this page only). The text view (`TextParts`) words a hit itself where a part is marked
   `IsDamage` („ und verursacht 20 Schaden.“, the damage that arrived) and colours parts marked `IsHp` and the
-  target's HP from `LogHit` (`.log-hp` low at the bars' quarter, mid at half — a step the bars lack — high above;
-  ≥ 5 : 1 light and dark). Files without `IsDamage` keep their wording. bUnit stays strict: `WebTestContext` plans
+  target's HP from `LogHit` (`.log-hp` low at a quarter, mid at half, high above; ≥ 5 : 1 light and dark). Files
+  without `IsDamage` keep their wording. Bars and text share the steps through `Level`/`BarLevel` (`.hp-bar.mid`
+  orange, `.low` red), and the bar view colours `IsHp` too — only where `TargetOf` accepts the hit, like the text
+  view (claude/hp-coloring-bar-view-4f3c63, viewer feedback). bUnit stays strict: `WebTestContext` plans
   only `localStorage.getItem` (null = bars) and `setItem`; a test's own `Setup` is added later and wins
   (claude/kampflog-design-options-cb7042, review).
 - Light or dark is the viewer's pick on „Einstellungen“ (`Pages/Settings.razor`): „auto“ (default, follows the
