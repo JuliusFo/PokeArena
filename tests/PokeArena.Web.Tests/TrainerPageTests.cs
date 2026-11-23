@@ -2,8 +2,10 @@ using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
+using Microsoft.JSInterop;
 using PokeArena.Contracts;
 using PokeArena.Web.Layout;
 using PokeArena.Web.Shared;
@@ -297,12 +299,12 @@ public class TrainerPageTests : WebTestContext
     }
 
     [Fact]
-    public void Closing_the_search_puts_the_focus_back_on_name()
+    public void Closing_a_search_opened_with_the_keyboard_puts_the_focus_back_on_name()
     {
         PutPokedex(seen: [10]);
         var cut = Render<Trainer>(p => p.Add(t => t.Key, "11"));
         cut.WaitForAssertion(() => Assert.Equal(151, cut.FindAll(".dex-row").Count));
-        cut.Find(".dex-search-open").Click();
+        cut.Find(".dex-search-open").Click(new MouseEventArgs { Detail = 0 });
 
         cut.Find(".dex-search-close").Click();
 
@@ -313,6 +315,46 @@ public class TrainerPageTests : WebTestContext
         Assert.Equal(cut.Find(".dex-search-open").GetAttribute("blazor:elementReference"), target.Id);
         Assert.Equal("Name – Suche öffnen", cut.Find(".dex-search-open").GetAttribute("aria-label"));
         Assert.Equal("unbekannt", cut.FindAll(".dex-row")[1].QuerySelector(".visually-hidden")!.TextContent);
+    }
+
+    [Fact]
+    public void A_search_opened_with_the_mouse_closes_with_escape_without_moving_the_focus_to_name()
+    {
+        // A focus set by script after a key draws the focus ring on „Name“ — a stray frame for a mouse user (feedback).
+        PutPokedex(seen: [10]);
+        var cut = Render<Trainer>(p => p.Add(t => t.Key, "11"));
+        cut.WaitForAssertion(() => Assert.Equal(151, cut.FindAll(".dex-row").Count));
+        cut.Find(".dex-search-open").Click(new MouseEventArgs { Detail = 1 });
+
+        cut.Find(".dex-search input").KeyDown("Escape");
+
+        Assert.Empty(cut.FindAll(".dex-search input"));
+        var focus = JSInterop.Invocations.Where(i => i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase)).ToList();
+        var target = Assert.IsType<ElementReference>(Assert.Single(focus).Arguments[0]);
+        Assert.NotEqual(cut.Find(".dex-search-open").GetAttribute("blazor:elementReference"), target.Id);
+    }
+
+    [Fact]
+    public void A_click_on_free_space_closes_the_search_and_shows_everything_again()
+    {
+        PutPokedex(seen: [10]);
+        var cut = Render<Trainer>(p => p.Add(t => t.Key, "11"));
+        cut.WaitForAssertion(() => Assert.Equal(151, cut.FindAll(".dex-row").Count));
+        cut.Find(".dex-search-open").Click(new MouseEventArgs { Detail = 1 });
+        cut.Find(".dex-search input").Input("raupy");
+
+        // index.html's script calls back on a click outside the field that hits no control.
+        var watch = Assert.Single(JSInterop.Invocations, i => i.Identifier == "pokeArenaDex.watchOutside");
+        Assert.NotEmpty(Assert.IsType<ElementReference>(watch.Arguments[0]).Id);
+        var pokedex = Assert.IsType<DotNetObjectReference<Pokedex>>(watch.Arguments[1]).Value;
+        cut.InvokeAsync(pokedex.CloseFromOutside);
+
+        cut.WaitForAssertion(() => Assert.Equal(151, cut.FindAll(".dex-row").Count));
+        Assert.Empty(cut.FindAll(".dex-search input"));
+        Assert.Single(JSInterop.Invocations, i => i.Identifier == "pokeArenaDex.unwatch");
+        Assert.Single(JSInterop.Invocations, i => i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase));
+        cut.Find(".dex-search-open").Click();
+        Assert.Equal("", cut.Find(".dex-search input").GetAttribute("value") ?? "");
     }
 
     /// <summary>Anna: two Bisasam (one the starter); arten.json with Bisasam's Gen-1 values and Raupy.</summary>

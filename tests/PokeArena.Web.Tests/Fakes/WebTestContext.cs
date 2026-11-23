@@ -23,12 +23,15 @@ public abstract class WebTestContext : BunitContext
 
     protected WebTestContext()
     {
-        // The log view and the Pokédex filter in localStorage: no pick (the bars, „Alle“), saving works. Only these calls
-        // are planned, SettingsTests adds the theme script's — any other JS call still fails a test (strict mode,
-        // review claude/kampflog-design-options-cb7042). A test's own setup is added later and wins.
+        // The log view and the Pokédex filter in localStorage: no pick (the bars, „Alle“), saving works; the Pokédex
+        // search's watch for clicks on free space. Only these calls are planned, SettingsTests adds the theme script's —
+        // any other JS call still fails a test (strict mode, review claude/kampflog-design-options-cb7042). A test's own
+        // setup is added later and wins.
         JSInterop.Setup<string?>("localStorage.getItem", ViewerSettings.LogViewKey).SetResult(null);
         JSInterop.Setup<string?>("localStorage.getItem", ViewerSettings.PokedexViewKey).SetResult(null);
         JSInterop.SetupVoid("localStorage.setItem", _ => true).SetVoidResult();
+        JSInterop.SetupVoid("pokeArenaDex.watchOutside", _ => true).SetVoidResult();
+        JSInterop.SetupVoid("pokeArenaDex.unwatch").SetVoidResult();
         Services.AddSingleton<TimeProvider>(_time);
         Services.AddSingleton(new SiteData(new HttpClient(_host) { BaseAddress = new Uri("https://daten.example/") }));
     }

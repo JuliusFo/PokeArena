@@ -173,6 +173,42 @@
             restore();
         })();
     </script>
+    <script>
+        // The Pokédex search closes on a click on free space (claude/pokedex-search-ui-fixes-79cb0c): anything that is not
+        // a control — a row, „Alle / Nur gefangene“ or a link keep it open. „click“, not „pointerdown“: scrolling the
+        // page on a phone must not close it. A click that started in the field (selecting text, released outside)
+        // counts as inside. One Pokédex per page, so one watch at a time.
+        (function () {
+            var watched = null;
+            var controls = 'a, button, input, select, textarea, label, summary, [tabindex]';
+
+            function unwatch() {
+                if (watched === null) return;
+                document.removeEventListener('pointerdown', watched.down, true);
+                document.removeEventListener('click', watched.click, true);
+                watched = null;
+            }
+
+            window.pokeArenaDex = {
+                watchOutside: function (search, dotnet) {
+                    unwatch();
+                    var startedInside = false;
+                    var down = function (e) { startedInside = search.contains(e.target); };
+                    var click = function (e) {
+                        var inside = startedInside || search.contains(e.target);
+                        startedInside = false;
+                        if (inside || !search.isConnected) return;
+                        if (e.target instanceof Element && e.target.closest(controls)) return;
+                        dotnet.invokeMethodAsync('CloseFromOutside');
+                    };
+                    document.addEventListener('pointerdown', down, true);
+                    document.addEventListener('click', click, true);
+                    watched = { down: down, click: click };
+                },
+                unwatch: unwatch
+            };
+        })();
+    </script>
     <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
 </body>
 
