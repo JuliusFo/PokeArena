@@ -561,6 +561,72 @@ reads „HP 0“; the viewer suggested the HP before the hit.
   change by its own hit). The text is rendered from the stored events, so older
   fights change after „Alles neu veröffentlichen“.
 
+## Pokédex on the trainer page (`claude/pokedex-trainer-page-improve-a4a504`) → v1.10.0 (proposal)
+
+Viewer idea (2026-11-22, with a mockup): the trainer page's Pokédex as a list of
+all 151 species (unknown ones as „????????“) next to a detail box with types
+and base values; a switch to hide the unknown ones; species the trainer has
+seen but not caught greyed out; a hidden search behind a click on „Name“.
+
+User decisions (2026-11-23, evaluation):
+
+- Base values come from one central file instead of being copied into every
+  trainer file („Wäre zentral da nicht die einfachere Lösung?“): `arten.json`
+  on R2, published by the bot from `data/pokemon.json` — derived and
+  regenerable like every site file (ADR-0003: GitHub Pages holds the app only).
+  The trainer file adds only the ids of the species seen.
+- The search goes into „Neuigkeiten“ („Die Suche kannst du ruhig mit in die
+  Neuigkeiten packen“).
+
+Plan — Proposal (not confirmed) where not decided above:
+
+- Contracts: `SpeciesData(Id, Name, Types, Hp, Atk, Def, Spez)` and
+  `SpeciesList(IReadOnlyList<SpeciesData> Species)` at `SitePaths.Species =
+  "arten.json"`; `TrainerPage.Seen` as an optional list of species ids
+  (omitted when null, so `SiteMeta.CurrentFormatVersion` stays, ADR-0009).
+  Rarity (`seltenheit`) stays out.
+- „Gesehen“ = every species in a fight the trainer took part in, both sides,
+  including Pokémon „nicht eingesetzt“ — the fight page lists them too — minus
+  the species the trainer owns now. A species lost in PvP therefore turns
+  „gesehen“. Stored in a new table `SeenSpecies (TrainerId, SpeciesId)`,
+  written with the battle in the same transaction; the migration fills it once
+  from the stored logs (`json_each` over `$.fighters`). Not computed from the
+  logs on every publish: a trainer file is rendered after each of their fights,
+  and the statistics page deliberately avoided reading logs (feat/statistics-page).
+  Deleting a trainer deletes their rows (cascade).
+- `arten.json` is queued with „Alles neu veröffentlichen“ and the republish on
+  the first start of a new version — its values change only with a release —
+  and cached for a day like fights.
+- Website: list and detail box side by side, equally high (list ≈ 10 rows,
+  scrolls inside); the box's content at the top. Pre-selected is the first
+  species caught. Unknown rows „????????“ in `--muted` (≥ 4.5 : 1, no
+  `opacity`), not selectable. Seen rows: name in `--muted` plus a small
+  „gesehen“ mark (not colour alone), type chips; their box shows name and
+  types, the base values only for caught species — like a classic Pokédex.
+  Column „Anzahl“ as „× 2“ from two on, „Starter“ chip as today.
+- Switch over the list in the look of „Balken / Text“: „Alle“ (default) /
+  „Nur gefangene“; not remembered (no `localStorage` key).
+- Search: „Name“ in the list head is a button; a click turns it into a text
+  field (focus at once), Esc or „×“ turns it back and clears it. It matches the
+  name (case-insensitive) or the number („25“, „#025“) of caught and seen
+  species only — `arten.json` holds every name, and the search must not reveal
+  unknown ones. Combined with the switch.
+- Phone (375 px): the two columns do not fit; the box opens below the selected
+  row instead of beside the list.
+- Without `arten.json` (between the release tag and the bot's update, review
+  feat/statistics-page) or with an older trainer file: the list from the
+  trainer file alone, the box without base values, no „gesehen“ rows — never
+  an error.
+- Stats row: an extra „Gesehen“ count — open question, left out unless wanted.
+- WP-12 (English website) can later add English names to `arten.json`.
+- Version: 1.10.0 together with the unreleased coloured HP (1.9.1), WP-09
+  and WP-12 move up one version each — for the user to decide at the release.
+- Tests: Core (seen rows written per fight kind, migration backfill on a
+  sample log, `arten.json` rendered, queued on republish), Web bUnit (151 rows,
+  switch, seen styling, search incl. no match on unknown names, missing
+  `arten.json`, older trainer file), sample data (`beispieldaten/arten.json`
+  generated from `data/pokemon.json` — base data, no player data).
+
 ## WP-09 — Balancing after the first streams (≈ 2 days) → v1.10.0 (proposal)
 
 1.9.0 went to the fight log's text view and the „Einstellungen“ page (user pick
