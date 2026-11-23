@@ -40,6 +40,12 @@
     - 4 L, hint colour fixed at creation, wording: fixed, the hint inherits the window's `Foreground`, which
       `WindowTheme.Apply` sets with the background; text (user: „Alle vier“, proposed wording) „Die Anzeige konnte
       nicht geladen werden. Der Bot läuft trotzdem weiter. Bitte neu verbinden oder PokeArena neu starten.“
+  - Fourth pass, „Ja, beide“:
+    - 1 L, the late replaced WebView was disposed inside its `Initialized` event, while its start still ran: fixed,
+      `DisposeReplacedAsync` waits for its first `NavigationCompleted` (at most 10 s) before disposing.
+    - 2 L, doc leftovers of the colour change (`--text` in the `WindowTheme` summary and the pitfall, blank line,
+      wrap): fixed.
+  - No further review pass after the fourth (user: „Ja, beide“ on the proposal to push afterwards).
 - Tested: build with `-warnaserror`, all tests green; a WPF window never shown still raises `Closing` on `Close()`
   (checked in a scratch program), so the self-update can end the app while the window waits; local smoke start in an
   active session: window and UI appear as before. Two local runs with a temporary, uncommitted throw of the real
@@ -49,7 +55,8 @@
   colour.
 - Not tested: a real restart in a disconnected RDP session on the server, the `SessionSwitch` path (no way to
   disconnect the session locally), and the disposal of a replaced WebView that loads late (a throw from a `Loaded`
-  handler stops the control's own initialization, so the forced run cannot make the first WebView finish). To watch after the update: the log line „No one is connected to this Windows
-  session“ after a self-update, and the window appearing on the next RDP connection.
+  handler stops the control's own initialization, so the forced run cannot make the first WebView finish). To watch
+  after the update: the log line „No one is connected to this Windows session“ after a self-update, and the window
+  appearing on the next RDP connection.
 - Pitfalls: BlazorWebView's WebView2 is composited by WPF (`D3DImage`), not a child window — WPF's render mode and
   Direct3D state concern the whole UI.

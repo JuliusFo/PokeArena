@@ -7,8 +7,9 @@ using Microsoft.Win32;
 namespace PokeArena.Desktop.Services;
 
 /// <summary>
-/// Light/dark for the native parts of the window (title bar, background behind the WebView), following Windows.
-/// The WebView itself follows Windows through <c>prefers-color-scheme</c>. Colors match <c>--bg</c> in pokearena.css.
+/// Light/dark for the native parts of the window (title bar, background behind the WebView, text such as the load
+/// hint), following Windows. The WebView itself follows Windows through <c>prefers-color-scheme</c>. Colors match
+/// <c>--bg</c> and <c>--text</c> in pokearena.css.
 /// </summary>
 public static class WindowTheme
 {
@@ -17,7 +18,6 @@ public static class WindowTheme
     private static readonly Color LightBackground = Color.FromRgb(0xf4, 0xf4, 0xf6);
     private static readonly Color DarkText = Color.FromRgb(0xec, 0xec, 0xf0);
     private static readonly Color LightText = Color.FromRgb(0x1d, 0x1d, 0x21);
-
 
     /// <summary>Must run before the WebView2 environment is created, otherwise it starts with a white flash.</summary>
     public static void PrepareWebViewBackground()
