@@ -105,6 +105,8 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   or with an id outside 1–151 are left out, and the row count is the constant 151, never a file's id. `.dex-rows` is
   `position: relative`: a `.visually-hidden` text inside a scroll box otherwise stretches the whole page (review).
   On a phone the box's content is rendered a second time below the selected row (`.dex-inline`, hidden on desktop) —
-  tests read `.dex-box`. The search field is `type="text"` (`search` draws a second „×“).
+  tests read `.dex-box`. The search field is `type="text"` (`search` draws a second „×“). „Alle / Nur gefangene“ is
+  kept in `localStorage` (`ViewerSettings.PokedexViewKey`, „gefangen“/„alle“; `WebTestContext` plans its `getItem`)
+  (claude/pokedex-toggle-persistence-c87bd9).
 - Never tell a boss or NPC by `TrainerId == null`: a deleted trainer's fighters have no id either („[gelöscht]“). The
   boss is the fighter on side 1 of a boss fight (review feat/fight-log-colours).

@@ -608,7 +608,8 @@ Plan:
   types, the base values only for caught species — like a classic Pokédex.
   Column „Anzahl“ as „× 2“ from two on, „Starter“ chip as today.
 - Switch over the list in the look of „Balken / Text“: „Alle“ (default) /
-  „Nur gefangene“; not remembered (no `localStorage` key).
+  „Nur gefangene“; not remembered at first — kept per viewer in `localStorage`
+  (`pokearena.pokedex`) since 2026-11-23 (user request).
 - Search: „Name“ in the list head is a button; a click turns it into a text
   field (focus at once), Esc or „×“ turns it back and clears it. It matches the
   name (case-insensitive) or the number („25“, „#025“) of caught and seen

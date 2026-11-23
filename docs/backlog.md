@@ -96,7 +96,6 @@ Left out of the first version (claude/pokedex-trainer-page-improve-a4a504, 2026-
 
 - A „Gesehen“ count in the stats row beside „Arten“.
 - Rarity (common / rare / legendary) in the box — `arten.json` leaves it out.
-- Remember „Alle / Nur gefangene“ per viewer, like the log view.
 - English species names in `arten.json` for WP-12.
 
 ## Fight log redesign

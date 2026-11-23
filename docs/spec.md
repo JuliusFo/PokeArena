@@ -544,7 +544,7 @@ and „Starter“; the box shows their base values. Seen species — every Poké
 in a fight the trainer took part in, on either side, sent in or not, that they
 do not own now — stand greyed with the word „gesehen“; their box shows name
 and types only. All others are „????????“. A switch „Alle / Nur gefangene“
-over the list (not remembered), and a hidden search: a click on „Name“ turns
+over the list (remembered in the viewer's browser like the settings page's picks), and a hidden search: a click on „Name“ turns
 it into a field that finds caught and seen species by name or number, never
 unknown ones. The bot keeps the seen species in its database, written with
 each fight (filled once from the stored logs on the first start with it) and deleted

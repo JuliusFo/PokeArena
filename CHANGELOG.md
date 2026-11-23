@@ -7,6 +7,11 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+### Changed
+- The Pokédex on the trainer page remembers „Alle / Nur gefangene“ per viewer
+  in the browser (`localStorage`, like the fight log's view), for every
+  trainer page; blocked storage starts with „Alle“ as before.
+
 ### Fixed
 - An empty desktop window with two boxes „Ein unerwarteter Fehler ist
   aufgetreten: 0x8876086A“ after the app restarted while nobody was connected
