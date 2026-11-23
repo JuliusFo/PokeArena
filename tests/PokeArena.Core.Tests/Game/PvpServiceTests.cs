@@ -81,6 +81,7 @@ public class PvpServiceTests : IDisposable
 
         await using var db = _game.OpenLive();
         Assert.Empty(db.Battles);
+        Assert.Empty(db.SeenSpecies);
         Assert.Equal(6, await db.Specimens.CountAsync(s => s.TrainerId == "2", _ct));
         Assert.Equal(6, await db.Specimens.CountAsync(s => s.TrainerId == "1", _ct));
     }
