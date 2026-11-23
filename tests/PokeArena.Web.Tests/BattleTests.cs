@@ -466,6 +466,28 @@ public class BattleTests : WebTestContext
     }
 
     [Fact]
+    public void Huge_hp_from_a_file_not_ours_keep_their_colour()
+    {
+        // 1.5 billion of int.MaxValue is above half: green. Times 4 in int would wrap and turn it red (review
+        // claude/hp-coloring-bar-view-4f3c63).
+        Put(
+            SitePaths.Battle(29),
+            BattlePage(29) with
+            {
+                Sides =
+                [
+                    new BattleSide("Ash", true, [new BattleFighter(Bisasam, "Ash", "11", int.MaxValue, HpLeft: 1_500_000_000, Used: true)]),
+                    new BattleSide("Misty", false, [new BattleFighter(Raupy, "Misty", "12", 30, HpLeft: 0, Used: true)]),
+                ],
+            },
+            SiteJson.Default.BattlePage);
+
+        var cut = Render<Battle>(p => p.Add(b => b.Id, 29));
+
+        cut.WaitForAssertion(() => Assert.Equal("hp-bar", cut.Find(".fighters .hp-bar").ClassName));
+    }
+
+    [Fact]
     public void The_switch_changes_the_view_and_the_browser_remembers_it()
     {
         PutTextViewBattle(21);

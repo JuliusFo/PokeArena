@@ -300,8 +300,9 @@ else
     /// <summary>
     /// How much is left: „low“ (red) at a quarter or less, „mid“ (orange) at half or less, „high“ (green) above. Bars and
     /// text share the steps; the bars had no „mid“ before claude/hp-coloring-bar-view-4f3c63 (viewer feedback).
+    /// In <see cref="long"/>: a file not ours with HP near <see cref="int.MaxValue"/> must not wrap into red (review).
     /// </summary>
-    private static string Level(int hp, int max) => hp * 4 <= max ? "low" : hp * 2 <= max ? "mid" : "high";
+    private static string Level(int hp, int max) => (long)hp * 4 <= max ? "low" : (long)hp * 2 <= max ? "mid" : "high";
 
     /// <summary>A bar's class modifier: „ low“, „ mid“, or nothing for the default green fill.</summary>
     private static string BarLevel(int hp, int max) => Level(hp, max) switch { "high" => "", var level => " " + level };
