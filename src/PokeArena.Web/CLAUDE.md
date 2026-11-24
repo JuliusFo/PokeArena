@@ -72,7 +72,7 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   view (claude/hp-coloring-bar-view-4f3c63, viewer feedback). Orange and red fills are equally dark (white text needs
   4.5 : 1), so with red-green weakness they look alike — accepted, the numbers inside carry the value (user decision,
   review). `Level` computes in `long`: HP from a file not ours must not wrap into red. bUnit stays strict: `WebTestContext` plans
-  only `localStorage.getItem` (null = bars) and `setItem`; a test's own `Setup` is added later and wins
+  only `localStorage.getItem` (null = bars), `setItem` and the Pokédex search's `pokeArenaDex` calls; a test's own `Setup` is added later and wins
   (claude/kampflog-design-options-cb7042, review).
 - Light or dark is the viewer's pick on „Einstellungen“ (`Pages/Settings.razor`): „auto“ (default, follows the
   device), „hell“, „dunkel“. The inline script at the top of `index.html` sets `data-theme="light|dark"` on `<html>`
@@ -107,10 +107,11 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   On a phone the box's content is rendered a second time below the selected row (`.dex-inline`, hidden on desktop) —
   tests read `.dex-box`. The search field is `type="text"` (`search` draws a second „×“). „Alle / Nur gefangene“ is
   kept in `localStorage` (`ViewerSettings.PokedexViewKey`, „gefangen“/„alle“; `WebTestContext` plans its `getItem`)
-  (claude/pokedex-toggle-persistence-c87bd9). Closing the search moves the focus back to „Name“ only when it was
-  opened by keyboard (`detail` 0): a script focus after Escape draws the focus ring for mouse users too. A click on
-  free space closes it through `pokeArenaDex` in `index.html` (`WebTestContext` plans its two calls); bUnit's
-  `Click()` sends `detail` 1 (claude/pokedex-search-ui-fixes-79cb0c).
+  (claude/pokedex-toggle-persistence-c87bd9). „×“ puts the focus back on „Name“; Escape
+  only when the search was opened by keyboard (`detail` 0): a script focus after a key draws the focus ring for mouse
+  users too. A tap on free space closes an empty search through `pokeArenaDex` in `index.html` — pointer events, not
+  `click` (iOS sends none for a tap on an element without its own handler); bUnit's `Click()` sends `detail` 1
+  (claude/pokedex-search-ui-fixes-79cb0c, review).
 - An awaited JS call in `OnInitializedAsync` (e.g. `localStorage.getItem`) does not finish synchronously in WASM:
   Blazor renders once before `OnParametersSet`. Build what the markup needs in `OnInitialized` first; bUnit only sees
   this with a `Setup` that has no result yet (review claude/pokedex-toggle-persistence-c87bd9).
