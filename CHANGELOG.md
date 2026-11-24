@@ -14,9 +14,11 @@ tagged `vX.Y.Z` once its section is complete.
 
 ### Fixed
 - The Pokédex search: closing it with Escape after opening it with the mouse
-  no longer draws a frame around „Name“ (the focus only goes back there when
-  it was opened with the keyboard). A click on free space — anywhere that is
-  not a row, a button or a link — now closes it too, like „×“.
+  no longer draws a frame around „Name“ (Escape moves the focus back there
+  only when it was opened with the keyboard; „×“ always does). A tap or
+  click on free space — anywhere that is not a row, a button or a link — now
+  closes an empty search too; with a name typed in it stays open, so tapping
+  beside it to hide a phone's keyboard keeps the results.
 - An empty desktop window with two boxes „Ein unerwarteter Fehler ist
   aufgetreten: 0x8876086A“ after the app restarted while nobody was connected
   to the server (likely the automatic update): the window content needs a
