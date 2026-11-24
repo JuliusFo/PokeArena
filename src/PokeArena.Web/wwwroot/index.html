@@ -174,36 +174,47 @@
         })();
     </script>
     <script>
-        // The Pokédex search closes on a click on free space (claude/pokedex-search-ui-fixes-79cb0c): anything that is not
-        // a control — a row, „Alle / Nur gefangene“ or a link keep it open. „click“, not „pointerdown“: scrolling the
-        // page on a phone must not close it. A click that started in the field (selecting text, released outside)
-        // counts as inside. One Pokédex per page, so one watch at a time.
+        // The Pokédex search closes on a tap or click on free space (claude/pokedex-search-ui-fixes-79cb0c): anything
+        // that is not a control — a row, „Alle / Nur gefangene“ or a link keep it open; an element Blazor made focusable
+        // by script (tabindex -1, the h1 after navigating) is free space. A tap is told by pointer events, not „click“:
+        // iOS Safari sends no click to document for a tap on an element without its own handler (review). A press that
+        // moves more than a few pixels (scrolling on a phone, selecting text) or is cancelled is no tap; the press
+        // decides, so a selection started in the field never closes it. One Pokédex per page, so one watch at a time.
         (function () {
             var watched = null;
-            var controls = 'a, button, input, select, textarea, label, summary, [tabindex]';
+            var controls = 'a, button, input, select, textarea, label, summary, [tabindex]:not([tabindex="-1"])';
+            var slop = 10;
 
             function unwatch() {
                 if (watched === null) return;
                 document.removeEventListener('pointerdown', watched.down, true);
-                document.removeEventListener('click', watched.click, true);
+                document.removeEventListener('pointerup', watched.up, true);
+                document.removeEventListener('pointercancel', watched.cancel, true);
                 watched = null;
             }
 
             window.pokeArenaDex = {
                 watchOutside: function (search, dotnet) {
                     unwatch();
-                    var startedInside = false;
-                    var down = function (e) { startedInside = search.contains(e.target); };
-                    var click = function (e) {
-                        var inside = startedInside || search.contains(e.target);
-                        startedInside = false;
-                        if (inside || !search.isConnected) return;
-                        if (e.target instanceof Element && e.target.closest(controls)) return;
-                        dotnet.invokeMethodAsync('CloseFromOutside');
+                    var press = null;
+                    var down = function (e) {
+                        press = e.isPrimary && e.button === 0 ? { x: e.clientX, y: e.clientY, target: e.target } : null;
+                    };
+                    var cancel = function () { press = null; };
+                    var up = function (e) {
+                        var tap = press;
+                        press = null;
+                        if (tap === null || !e.isPrimary) return;
+                        if (Math.abs(e.clientX - tap.x) > slop || Math.abs(e.clientY - tap.y) > slop) return;
+                        if (!search.isConnected || search.contains(tap.target)) return;
+                        if (tap.target instanceof Element && tap.target.closest(controls)) return;
+                        // A disposed Pokédex (page left meanwhile) rejects; nothing to do then.
+                        dotnet.invokeMethodAsync('CloseFromOutside').catch(function () { });
                     };
                     document.addEventListener('pointerdown', down, true);
-                    document.addEventListener('click', click, true);
-                    watched = { down: down, click: click };
+                    document.addEventListener('pointerup', up, true);
+                    document.addEventListener('pointercancel', cancel, true);
+                    watched = { down: down, up: up, cancel: cancel };
                 },
                 unwatch: unwatch
             };
