@@ -72,8 +72,8 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   view (claude/hp-coloring-bar-view-4f3c63, viewer feedback). Orange and red fills are equally dark (white text needs
   4.5 : 1), so with red-green weakness they look alike — accepted, the numbers inside carry the value (user decision,
   review). `Level` computes in `long`: HP from a file not ours must not wrap into red. bUnit stays strict: `WebTestContext` plans
-  only `localStorage.getItem` (null = bars), `setItem` and the Pokédex search's `pokeArenaDex` calls; a test's own `Setup` is added later and wins
-  (claude/kampflog-design-options-cb7042, review).
+  only `localStorage.getItem` (null = bars), `setItem` and the Pokédex search's `pokeArenaDex` calls; a test's own
+  `Setup` is added later and wins (claude/kampflog-design-options-cb7042, review).
 - Light or dark is the viewer's pick on „Einstellungen“ (`Pages/Settings.razor`): „auto“ (default, follows the
   device), „hell“, „dunkel“. The inline script at the top of `index.html` sets `data-theme="light|dark"` on `<html>`
   before the first paint (Blazor starts too late — the page would flash), keeps the pick (`pokearena.aussehen`) and
