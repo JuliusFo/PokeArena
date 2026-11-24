@@ -27,7 +27,7 @@
                 <span @ref="_searchBox" class="dex-search">
                     <input @ref="_searchField" type="text" autocomplete="off" placeholder="Name oder Nummer" aria-label="Pokédex durchsuchen"
                            @bind="_query" @bind:event="oninput" @onkeydown="OnSearchKeyAsync" />
-                    <button type="button" class="dex-search-close" aria-label="Suche schließen" @onclick="CloseSearch">×</button>
+                    <button type="button" class="dex-search-close" aria-label="Suche schließen" @onclick="() => CloseSearch(returnFocus: true)">×</button>
                 </span>
             }
             else
@@ -236,19 +236,22 @@
         }
     }
 
+    /// <summary>
+    /// A tap on free space closes an empty search only: with a query typed, it is often meant to hide a phone's keyboard,
+    /// and the results stay (review). The tap put the focus where it wanted it: no jump back to „Name“.
+    /// </summary>
     [JSInvokable]
-    public void CloseFromOutside()
+    public Task CloseFromOutside() => InvokeAsync(() =>
     {
-        if (!_searching)
+        if (!_searching || !string.IsNullOrWhiteSpace(_query))
         {
             return;
         }
 
-        // The click put the focus where it wanted it: no jump back to „Name“.
         _searching = false;
         _query = "";
         StateHasChanged();
-    }
+    });
 
     public async ValueTask DisposeAsync()
     {
@@ -367,21 +370,22 @@
     }
 
     /// <summary>
-    /// The focus goes back to „Name“ only when the search was opened with the keyboard: a focus moved by script after a
-    /// key (Escape) draws the browser's focus ring, which a mouse user sees as a stray frame (user feedback).
+    /// „×“ always puts the focus back on „Name“ (the button is gone; screen readers would start at the top). Escape does
+    /// only when the search was opened with the keyboard: a focus moved by script after a key draws the browser's focus
+    /// ring, which a mouse user sees as a stray frame (user feedback, review).
     /// </summary>
-    private void CloseSearch()
+    private void CloseSearch(bool returnFocus)
     {
         _searching = false;
         _query = "";
-        _focusOpener = _openedByKeyboard;
+        _focusOpener = returnFocus;
     }
 
     private void OnSearchKeyAsync(KeyboardEventArgs e)
     {
         if (e.Key == "Escape")
         {
-            CloseSearch();
+            CloseSearch(returnFocus: _openedByKeyboard);
         }
     }
 }
