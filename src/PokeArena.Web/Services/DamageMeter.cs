@@ -6,7 +6,8 @@ namespace PokeArena.Web.Services;
 /// The „Schaden“ box of a fight page (feat/damage-meter): what each side dealt in total, then a ranking — the
 /// trainers in a boss fight, every Pokémon of both sides otherwise. Bars are in the trainer's chat colour (the boss
 /// and NPC Pokémon in the colour of their first type, like the boss's name in the log), darkened like the names in the
-/// light theme; the numbers sit inside the bar in white, like the HP numbers (feat/damage-text-white).
+/// light theme; the numbers sit inside the bar in white, like the HP numbers (feat/damage-text-white). A trainer's
+/// name links to the trainer page, like on the statistics page (claude/kampf-trainer-link-3fc5e0).
 /// </summary>
 public static class DamageMeter
 {
@@ -38,6 +39,7 @@ public static class DamageMeter
                 var fighters = used.Where(x => x.Side == s).ToList();
                 var colors = fighters.Select(x => Fill(battle, x.Side, x.Fighter)).Distinct().ToList();
                 return (Name: side.Name,
+                    Href: SideTrainer.Of(side) is { } trainer ? StatisticsBars.TrainerLink(trainer) : null,
                     Detail: boss && s == 0 ? $"({fighters.Count})" : null,
                     Damage: fighters.Sum(x => (long)x.Fighter.Damage!.Value),
                     Fill: colors.Count == 1 ? colors[0] : Bar.Mixed);
@@ -51,7 +53,7 @@ public static class DamageMeter
         var damages = ranked.Select(x => x.Fighter.Damage!.Value).ToList();
 
         return new Board(
-            [.. totals.Select(t => Bar.Make(null, t.Name, t.Detail, Bar.Number(t.Damage), t.Damage, totals.Max(x => x.Damage), t.Fill))],
+            [.. totals.Select(t => Bar.Make(null, t.Name, t.Detail, Bar.Number(t.Damage), t.Damage, totals.Max(x => x.Damage), t.Fill, t.Href))],
             boss ? "Trainer" : "Pokémon",
             [.. ranked.Select(x =>
             {
@@ -60,10 +62,14 @@ public static class DamageMeter
                 var rank = $"{1 + damages.Count(d => d > damage)}.";
                 var value = bossHp > 0 ? $"{Bar.Number(damage)} · {Bar.Number((long)Math.Round(100.0 * damage / bossHp))} %" : Bar.Number(damage);
                 return boss
-                    ? Bar.Make(rank, f.Owner, f.Species.Name, value, damage, damages[0], Fill(battle, x.Side, f))
+                    ? Bar.Make(rank, f.Owner, f.Species.Name, value, damage, damages[0], Fill(battle, x.Side, f), OwnerLink(f))
                     : Bar.Make(rank, f.Species.Name, f.Owner, value, damage, damages[0], Fill(battle, x.Side, f));
             })]);
     }
+
+    /// <summary>A boss fight's trainer bar links to the trainer page; a deleted trainer (no id) stays plain text.</summary>
+    private static string? OwnerLink(BattleFighter fighter) =>
+        fighter.TrainerId is { Length: > 0 } id ? StatisticsBars.TrainerLink(new TrainerRef(id, fighter.Owner)) : null;
 
     /// <summary>
     /// The boss and NPC Pokémon in the colour of their first type, a trainer's Pokémon in the trainer's chat colour.

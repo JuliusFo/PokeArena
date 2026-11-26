@@ -40,7 +40,7 @@ public class BattleTests : WebTestContext
         _time.Advance(Battle.RetryInterval);
 
         cut.WaitForAssertion(() => Assert.Contains("Ash gegen Misty", cut.Markup));
-        Assert.Contains("Ash – gewonnen", cut.Markup);
+        Assert.Equal("Ash – gewonnen", cut.Find(".side h2").TextContent.Trim());
         Assert.Equal(["Runde 1", "Bisasam (Ash, HP 40) hat Raupy (Misty, HP 45 → 0) 50 Schaden zugefügt."], cut.FindAll(".log li").Select(li => li.TextContent));
         Assert.NotNull(cut.Find(".type-kaefer"));
     }
@@ -121,6 +121,77 @@ public class BattleTests : WebTestContext
             bar.Children.Select(e => (e.ClassName, e.QuerySelector(".who")!.TextContent, e.QuerySelector(".value")!.TextContent, e.GetAttribute("aria-hidden"))));
         // Fills are darkened like the names, so the white text reads (feat/damage-text-white).
         Assert.Equal("--share: 93.8%; --fill: #737300", ranking[1].QuerySelector(".damage-bar")!.GetAttribute("style"));
+        // Each side's total links its trainer like the statistics page, in both clipped copies (claude/kampf-trainer-link-3fc5e0).
+        Assert.Equal(
+            ["trainer/11", "trainer/11", "trainer/12", "trainer/12"],
+            box.QuerySelectorAll("ul a").Select(a => a.GetAttribute("href")));
+    }
+
+    [Fact]
+    public void A_card_of_one_trainer_links_the_trainer_page_in_its_heading()
+    {
+        Put(
+            SitePaths.Battle(9),
+            BattlePage(9) with
+            {
+                Sides =
+                [
+                    new BattleSide("Ash", true, [new BattleFighter(Bisasam, "Ash", "11", 40, Color: "#FFFF00")]),
+                    new BattleSide("Misty", false, [new BattleFighter(Raupy, "Misty", "12", 30)]),
+                ],
+            },
+            SiteJson.Default.BattlePage);
+
+        var cut = Render<Battle>(p => p.Add(b => b.Id, 9));
+
+        cut.WaitForAssertion(() => Assert.Equal(2, cut.FindAll(".side h2").Count));
+        Assert.Equal(["Ash – gewonnen", "Misty"], cut.FindAll(".side h2").Select(h => h.TextContent.Trim()));
+        // In the chat colour like the names on the card; without a colour the link keeps the link colour.
+        Assert.Equal(
+            [("trainer/11", "Ash", "tinted", Tint.Style("#FFFF00")), ("trainer/12", "Misty", null, null)],
+            cut.FindAll(".side h2 a").Select(a => (a.GetAttribute("href"), a.TextContent, a.GetAttribute("class"), a.GetAttribute("style"))));
+        // The owner is in the heading: the rows name no owner of their own.
+        Assert.Empty(cut.FindAll(".fighters a"));
+    }
+
+    [Fact]
+    public void Group_boss_npc_and_deleted_trainer_headings_are_no_links()
+    {
+        var arkani = new SpeciesInfo(59, "Arkani", ["Feuer"]);
+        Put(
+            SitePaths.Battle(10),
+            BattlePage(10) with
+            {
+                Kind = BattleKind.Boss,
+                Sides =
+                [
+                    new BattleSide("Trainer", true, [new BattleFighter(Bisasam, "Ash", "11", 40), new BattleFighter(Raupy, "Ash", "11", 30)]),
+                    new BattleSide("Arkani", false, [new BattleFighter(arkani, "Boss", null, 400)]),
+                ],
+            },
+            SiteJson.Default.BattlePage);
+        Put(
+            SitePaths.Battle(11),
+            BattlePage(11) with
+            {
+                Kind = BattleKind.Npc,
+                Sides =
+                [
+                    new BattleSide("[gelöscht]", false, [new BattleFighter(Bisasam, "[gelöscht]", null, 40)]),
+                    new BattleSide("Rocko", true, [new BattleFighter(arkani, "Rocko", null, 60)]),
+                ],
+            },
+            SiteJson.Default.BattlePage);
+
+        var boss = Render<Battle>(p => p.Add(b => b.Id, 10));
+        var npc = Render<Battle>(p => p.Add(b => b.Id, 11));
+
+        boss.WaitForAssertion(() => Assert.Equal(2, boss.FindAll(".side h2").Count));
+        npc.WaitForAssertion(() => Assert.Equal(2, npc.FindAll(".side h2").Count));
+        // The group of a boss fight is no trainer, even with a single one in it: the rows keep their own owner links.
+        Assert.Empty(boss.FindAll(".side h2 a"));
+        Assert.Equal(["trainer/11", "trainer/11"], boss.FindAll(".fighters a").Select(a => a.GetAttribute("href")));
+        Assert.Empty(npc.FindAll(".side h2 a"));
     }
 
     [Fact]

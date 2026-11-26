@@ -20,7 +20,17 @@
         @foreach (var side in battle.Sides)
         {
             <section class="side @(side.Won ? "won" : "lost")">
-                <h2>@side.Name@(side.Won ? " – gewonnen" : "")</h2>
+                <h2>
+                    @if (SideTrainer.Of(side) is { } trainer)
+                    {
+                        var tint = Tint.Style(trainer.Color);
+                        <a href="@StatisticsBars.TrainerLink(trainer)" class="@(tint is null ? null : "tinted")" style="@tint">@side.Name</a>
+                    }
+                    else
+                    {
+                        @side.Name
+                    }@(side.Won ? " – gewonnen" : "")
+                </h2>
                 <ul class="fighters">
                     @foreach (var fighter in side.Fighters)
                     {

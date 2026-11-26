@@ -113,7 +113,8 @@ h1:focus {
 }
 
 /* A heading keeps its bold weight; .tinted only lends the colour. */
-h1.tinted {
+h1.tinted,
+.side h2 .tinted {
   font-weight: 700;
 }
 

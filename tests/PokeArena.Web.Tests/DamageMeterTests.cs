@@ -35,11 +35,28 @@ public class DamageMeterTests
         Assert.Equal("Trainer", board.RankingTitle);
         Assert.Equal(
             [
-                new Bar("1.", "Clara", "Glumanda", "300 · 75 %", "100", "#0000ff"),
-                new Bar("2.", "Anna", "Bisasam", "100 · 25 %", "33.3", "#737300"),
-                new Bar("3.", "Ben", "Raupy", "0 · 0 %", "0", Bar.Neutral),
+                new Bar("1.", "Clara", "Glumanda", "300 · 75 %", "100", "#0000ff", "trainer/3"),
+                new Bar("2.", "Anna", "Bisasam", "100 · 25 %", "33.3", "#737300", "trainer/1"),
+                new Bar("3.", "Ben", "Raupy", "0 · 0 %", "0", Bar.Neutral, "trainer/2"),
             ],
             board.Ranking);
+    }
+
+    [Fact]
+    public void A_deleted_trainer_in_a_boss_fight_gets_no_link()
+    {
+        var board = DamageMeter.For(Page(
+            BattleKind.Boss,
+            new BattleSide("Trainer", true,
+            [
+                new BattleFighter(Bisasam, "Anna", "1", 90, 90, true, Damage: 100),
+                new BattleFighter(Raupy, "[gelöscht]", null, 45, 0, true, Damage: 50),
+            ]),
+            new BattleSide("Relaxo", false, [new BattleFighter(Relaxo, "Boss", null, 400, 0, true, Damage: 200)])))!;
+
+        // The group and the boss are no trainer: no link on the totals either.
+        Assert.Equal([null, null], board.Totals.Select(b => b.Href));
+        Assert.Equal([("Anna", "trainer/1"), ("[gelöscht]", null)], board.Ranking.Select(b => (b.Name, b.Href)));
     }
 
     [Fact]
@@ -65,6 +82,9 @@ public class DamageMeterTests
         Assert.Equal(
             [("1.", "Bisasam", "Anna", "60"), ("1.", "Glumanda", "Ben", "60"), ("3.", "Raupy", "Ben", "0")],
             board.Ranking.Select(b => (b.Rank, b.Name, b.Detail, b.Value)));
+        // The side's name is the trainer and links to the trainer page; a Pokémon's name does not.
+        Assert.Equal(["trainer/1", "trainer/2"], board.Totals.Select(b => b.Href));
+        Assert.All(board.Ranking, b => Assert.Null(b.Href));
     }
 
     [Fact]
@@ -81,6 +101,8 @@ public class DamageMeterTests
 
         // An invalid chat colour falls back to grey; two type colours on one side make it the mixed green.
         Assert.Equal([Bar.Neutral, Bar.Mixed], board.Totals.Select(b => b.Fill));
+        // Anna's side links to the trainer page, the NPC has none.
+        Assert.Equal(["trainer/1", null], board.Totals.Select(b => b.Href));
         Assert.Equal(
             [Tint.Darkened(Tint.TypeColors["type-feuer"]), Tint.Darkened(Tint.TypeColors["type-normal"]), Bar.Neutral],
             board.Ranking.Select(b => b.Fill));
