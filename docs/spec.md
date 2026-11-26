@@ -468,6 +468,14 @@ in the sentence (§5, user pick 2026-11-19); the piece a hit took is at least a
 few pixels wide, so small hits on a big boss stay visible (user decision
 2026-11-19). Older files keep the full sentence until „Alles neu
 veröffentlichen“, and like the end state for up to a day after it (cache).
+Trainer links (user request 2026-11-26): like the leaderboard and the
+statistics, a trainer's name links to the trainer page — the name heading a
+fight card that stands for one trainer (PvP and NPC fights, in the chat colour,
+still bold), the owner in each fighter row of a boss fight's group (also for a
+viewer named „Trainer“), and the trainer names in the „Schaden“ box (⁴:
+„Gesamt“ in PvP and NPC fights, the ranking in a boss fight). The group of a
+boss fight, the boss, NPCs and deleted trainers have no link; the
+„Kampfverlauf“ keeps its names as plain text.
 
 ⁴ „Schaden“ box on the fight page (user request 2026-11-10), between the fight
 cards and the „Kampfverlauf“, as wide as both cards: „Gesamt“ compares what each
@@ -485,14 +493,6 @@ a thin black outline over the fill, normal text over the rest (user decisions
 dark edge (light in the dark theme), so a colour close to the track still shows
 its length. Older files show no box until „Alles
 neu veröffentlichen“.
-
-Trainer links on the fight page (user request 2026-11-26): like the
-leaderboard and the statistics, a trainer's name links to the trainer page —
-the owner in a fighter row (boss fights), the name heading a fight card that
-stands for one trainer (in the chat colour, still bold), and the trainer names
-in the „Schaden“ box („Gesamt“ in PvP and NPC fights, the ranking in a boss
-fight). The group of a boss fight, the boss, NPCs and deleted trainers have no
-link. The „Kampfverlauf“ keeps its names as plain text.
 
 ⁵ „Statistik“ page (user idea 2026-11-10, feat/statistics-page). At the top is
 the community Pokédex: the distinct species anyone owns, out of 151, with the

@@ -39,12 +39,13 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   (`.log .critical`, review feat/fight-log-boss-name-crit).
 - Names in the chat colour: fight page, statistics, leaderboard and trainer heading (feat/leaderboard-profile-colours).
   On a link the tint goes on the `<a>` itself, or the underline stays `--accent`; `.tinted` sets weight 600, so
-  `h1.tinted` and `.side h2 .tinted` restore 700. A card heading links its trainer only through `SideTrainer.Of` (one
-  id, every owner = the side name), never by `TrainerId` alone (claude/kampf-trainer-link-3fc5e0). The leaderboard's
-  24 px pictures load lazily inside an always-rendered `span.profile-image` (the circle) and hide on an error; rows
-  carry `@key` — an element hidden outside Blazor's view
-  must not move to another trainer when the poll reorders rows (review feat/leaderboard-profile-colours). The sample
-  data has colours but no pictures (`RepositoryTests` refuses image files under `src/`).
+  `h1.tinted` and `.side h2 .tinted` restore 700. The leaderboard's 24 px pictures load lazily inside an
+  always-rendered `span.profile-image` (the circle) and hide on an error; rows carry `@key` — an element hidden outside
+  Blazor's view must not move to another trainer when the poll reorders rows (review feat/leaderboard-profile-colours).
+  The sample data has colours but no pictures (`RepositoryTests` refuses image files under `src/`).
+- Every trainer link goes through `Services/TrainerLinks.Href` (escaped, none for an empty id). A fight card's heading
+  links only through `TrainerLinks.OfSide` (not in a boss fight — the group is named „Trainer“, like a viewer may be;
+  one id, every owner = the side name); otherwise each row links its owner (review claude/kampf-trainer-link-3fc5e0).
 - Leaderboard trophies (ranks 1–3) are an own inline SVG (`Shared/Trophy.razor`), never emoji (they differ per system)
   or image files; the stroke-only handles take the metal on the dark page (claude/ranking-trophy-icons-458526).
 - A fighter row is `.who` (species + owner, wraps, `flex: 1 1 0`, never `min-width: 0` — the name would cover the
