@@ -92,9 +92,10 @@
                            from the sentence to the bar's left (claude/kampflog-hp-balken-feedback-808390, mockup „A“), so
                            a hit's numbers are in one place; older files without it keep it in the sentence. *@
                         var hit = line.Hit!;
-                        @* The number is what arrived, like the bar and the „Schaden“ box: a knockout of 77 on 70 HP left
-                           shows −70 (user decision in the review of claude/kampflog-hp-balken-feedback-808390). *@
-                        int? damage = hit.Damage is >= 0 ? hit.Before - hit.After : null;
+                        @* The number is the hit's full damage: a knockout of 77 on 70 HP left shows −77 next to 70 → 0, so
+                           an overkill stays visible; the bar shows what arrived, the „Schaden“ box counts only that
+                           (user decision 2026-11-27 after viewer feedback, reverting the cap of 1.8.2). *@
+                        int? damage = hit.Damage is >= 0 ? hit.Damage : null;
                         var hpText = $"{hit.Before} → {hit.After}";
                         var barClass = "hp-bar hit-bar" + BarLevel(hit.After, target.MaxHp) + (hit.Before == hit.After ? " no-loss" : "");
                         <span class="hit">
@@ -264,7 +265,8 @@ else
     /// <summary>
     /// A hit in the text view (claude/kampflog-design-options-cb7042, viewer feedback on the bars): the whole sentence
     /// „Pikachu (Ash, HP 24) trifft Schiggy (Misty, HP 88 → 30) und verursacht 58 Schaden.“ with the HP coloured by
-    /// what is left and the damage in bold red. The damage is what arrived, like the bar and the „Schaden“ box. A file
+    /// what is left and the damage in bold red. The damage is the hit's full damage, like the bar view's number (an
+    /// overkill shows, user decision 2026-11-27); a file with a foreign damage falls back to what arrived. A file
     /// without a marked damage (1.8.2 and older) keeps its own wording; only the target's HP get their colour there.
     /// </summary>
     private static RenderFragment TextParts(BattlePage battle, LogLine line, BattleFighter target) => __builder =>
@@ -283,7 +285,7 @@ else
             else if (reworded && part.IsDamage)
             {
                 @(" und verursacht ")
-                <strong class="log-damage">@((hit.Before - hit.After).ToString(CultureInfo.InvariantCulture))</strong>
+                <strong class="log-damage">@((hit.Damage is >= 0 and var full ? full : hit.Before - hit.After).ToString(CultureInfo.InvariantCulture))</strong>
                 @(" Schaden.")
             }
             else if (AttackerHp(battle, part) is (var hp, var max))

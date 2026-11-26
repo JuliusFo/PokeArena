@@ -103,8 +103,8 @@ public sealed record LogLine(
 /// </summary>
 /// <param name="Damage">
 /// The hit's full damage (claude/kampflog-hp-balken-feedback-808390); null in older files, whose sentence keeps the
-/// number. When set, the page shows what arrived (<paramref name="Before"/> minus <paramref name="After"/>) next to
-/// the bar instead of in the sentence.
+/// number. When set, the page shows it next to the bar instead of in the sentence — the full hit, so an overkill
+/// shows (user decision 2026-11-27).
 /// </param>
 public sealed record LogHit(
     int Side,

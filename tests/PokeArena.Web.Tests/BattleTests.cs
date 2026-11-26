@@ -265,8 +265,8 @@ public class BattleTests : WebTestContext
     [Fact]
     public void A_hit_with_its_damage_shows_the_number_next_to_the_bar_and_a_short_sentence()
     {
-        // The second hit is more than the 22 left: the number says what arrived (−22), like the bar and the „Schaden“
-        // box — not the 31 of the sentence (review claude/kampflog-hp-balken-feedback-808390).
+        // The second hit is more than the 22 left: the number is the full hit (−31) beside the bar 22 → 0, so an overkill
+        // shows (user decision 2026-11-27, viewer feedback; 1.8.2 to 1.10.0 showed −22).
         Put(
             SitePaths.Battle(10),
             BattlePage(10) with
@@ -297,7 +297,7 @@ public class BattleTests : WebTestContext
             cut.FindAll(".log .hit-text").Select(t => t.TextContent));
         Assert.Equal("Volltreffer!", cut.Find(".log .critical").TextContent);
         // The number left of the bar, inside one box with it; „Schaden“ only for screen readers and a copied line.
-        Assert.Equal([" −58 Schaden, ", " −22 Schaden, "], cut.FindAll(".log .hit-damage").Select(d => d.TextContent));
+        Assert.Equal([" −58 Schaden, ", " −31 Schaden, "], cut.FindAll(".log .hit-damage").Select(d => d.TextContent));
         Assert.All(cut.FindAll(".log .hit-damage .visually-hidden"), h => Assert.NotEqual("", h.TextContent));
         Assert.Equal(4, cut.FindAll(".log .hit-damage .visually-hidden").Count);
         Assert.All(cut.FindAll(".log .hit-numbers"), n => Assert.Equal("hit-damage", n.Children[0].ClassName));
@@ -388,8 +388,8 @@ public class BattleTests : WebTestContext
     [Fact]
     public void The_text_view_shows_each_hit_as_one_sentence_with_coloured_numbers()
     {
-        // The viewer picked the text view before (claude/kampflog-design-options-cb7042). The knockout says what
-        // arrived (22), like the bars and the „Schaden“ box, not the 31 of the hit.
+        // The viewer picked the text view before (claude/kampflog-design-options-cb7042). The knockout shows the full
+        // hit (31 on 22 left), not what arrived (user decision 2026-11-27, viewer feedback).
         JSInterop.Setup<string?>("localStorage.getItem", ViewerSettings.LogViewKey).SetResult("text");
         PutTextViewBattle(20);
 
@@ -400,7 +400,7 @@ public class BattleTests : WebTestContext
             [
                 "Runde 1",
                 "Bisasam (Ash, HP 40) trifft Raupy (Misty, HP 80 → 22) und verursacht 58 Schaden. Volltreffer! Sehr effektiv!",
-                "Bisasam (Ash, HP 90) trifft Raupy (Misty, HP 22 → 0) und verursacht 22 Schaden.",
+                "Bisasam (Ash, HP 90) trifft Raupy (Misty, HP 22 → 0) und verursacht 31 Schaden.",
             ],
             cut.FindAll(".log li").Select(li => li.TextContent));
         Assert.Empty(cut.FindAll(".log .hit-bar"));
@@ -409,9 +409,43 @@ public class BattleTests : WebTestContext
         Assert.Equal(
             [("40", "log-hp mid"), ("80", "log-hp high"), ("22", "log-hp mid"), ("90", "log-hp high"), ("22", "log-hp mid"), ("0", "log-hp low")],
             cut.FindAll(".log .log-hp").Select(s => (s.TextContent, s.ClassName)));
-        Assert.Equal(["58", "22"], cut.FindAll(".log strong.log-damage").Select(s => s.TextContent));
+        Assert.Equal(["58", "31"], cut.FindAll(".log strong.log-damage").Select(s => s.TextContent));
         Assert.Equal("Volltreffer!", cut.Find(".log .critical").TextContent);
         Assert.Equal("true", cut.Find(".view-switch button:last-child").GetAttribute("aria-pressed"));
+    }
+
+    [Fact]
+    public void The_text_view_shows_what_arrived_when_the_damage_is_foreign()
+    {
+        // A negative damage is not ours: the text view falls back to what arrived (30 → 10) instead of „−20“.
+        JSInterop.Setup<string?>("localStorage.getItem", ViewerSettings.LogViewKey).SetResult("text");
+        Put(
+            SitePaths.Battle(30),
+            BattlePage(30) with
+            {
+                Sides =
+                [
+                    new BattleSide("Ash", true, [new BattleFighter(Bisasam, "Ash", "11", 90)]),
+                    new BattleSide("Misty", false, [new BattleFighter(Raupy, "Misty", "12", 80)]),
+                ],
+                Lines = ["Bisasam (Ash, HP 90) hat Raupy (Misty, HP 30 → 10) 20 Schaden zugefügt."],
+                Log =
+                [
+                    new LogLine(
+                        [
+                            new LogPart("Bisasam", 0, 0, IsSpecies: true), new LogPart(" (Ash, HP 90)", 0, 0), new LogPart(" hat ", TextWithBar: " trifft "),
+                            new LogPart("Raupy", 1, 0, IsSpecies: true), new LogPart(" (Misty", 1, 0),
+                            new LogPart(", HP 30 → 10", 1, 0, IsTargetHp: true), new LogPart(")", 1, 0),
+                            new LogPart(" 20 Schaden zugefügt.", TextWithBar: ".", IsDamage: true),
+                        ],
+                        Hit: new LogHit(1, 0, 30, 10, -20)),
+                ],
+            },
+            SiteJson.Default.BattlePage);
+
+        var cut = Render<Battle>(p => p.Add(b => b.Id, 30));
+
+        cut.WaitForAssertion(() => Assert.Equal("20", cut.Find(".log strong.log-damage").TextContent));
     }
 
     [Fact]
