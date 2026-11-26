@@ -47,6 +47,7 @@ public class NpcServiceTests : IDisposable
         Assert.Equal(
             fighters.Select(f => f.SpeciesId).Distinct().Order(),
             await db.SeenSpecies.Where(s => s.TrainerId == "1").Select(s => s.SpeciesId).OrderBy(id => id).ToListAsync(_ct));
+        Assert.All(await db.SeenSpecies.ToListAsync(_ct), s => Assert.Equal((long?)battle.Id, s.LastBattleId));
 
         var reward = await db.Specimens.SingleAsync(s => s.Id == battle.LootSpecimenId, _ct);
         Assert.Equal(("1", SpecimenOrigin.Npc, reward.SpeciesId), (reward.TrainerId, reward.Origin, battle.LootSpeciesId!.Value));

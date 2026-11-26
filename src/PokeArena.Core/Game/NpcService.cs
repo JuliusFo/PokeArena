@@ -134,8 +134,8 @@ public sealed class NpcService(
             Participants = [new BattleParticipant { TrainerId = message.UserId, Won = won }],
         };
         db.Battles.Add(battle);
-        await Sightings.RecordAsync(db, [message.UserId], result.Log, ct);
         await db.SaveChangesAsync(ct);
+        await Sightings.RecordAsync(db, [message.UserId], battle, result.Log, ct);
 
         if (firstWin)
         {

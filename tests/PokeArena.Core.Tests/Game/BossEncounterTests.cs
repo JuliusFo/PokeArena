@@ -76,6 +76,11 @@ public class BossEncounterTests : IDisposable
             Assert.Equal(species, await db.SeenSpecies.Where(s => s.TrainerId == trainer).Select(s => s.SpeciesId).OrderBy(id => id).ToListAsync(_ct));
         }
 
+        // This fight is the first and the latest one with each of them (claude/pokedex-details-layout-76a090).
+        Assert.All(
+            await db.SeenSpecies.ToListAsync(_ct),
+            s => Assert.Equal(((DateTimeOffset?)battle.FoughtAt, (long?)battle.Id, (DateTimeOffset?)battle.FoughtAt, (long?)battle.Id), (s.FirstSeenAt, s.FirstBattleId, s.LastSeenAt, s.LastBattleId)));
+
         var caught = await db.Specimens.Where(s => s.Origin == SpecimenOrigin.Boss).ToListAsync(_ct);
         Assert.Equal(3, caught.Count);
         Assert.All(caught, s => Assert.Equal(expectedBoss.Id, s.SpeciesId));

@@ -190,11 +190,11 @@ public sealed class PvpService
             ],
         };
         db.Battles.Add(battle);
-        await Sightings.RecordAsync(db, [challenge.ChallengerId, challenge.TargetId], result.Log, ct);
         var transferred = await db.Specimens.SingleAsync(s => s.Id == loot.Id, ct);
         transferred.TrainerId = winnerId;
         transferred.AcquiredAt = now;
         await db.SaveChangesAsync(ct);
+        await Sightings.RecordAsync(db, [challenge.ChallengerId, challenge.TargetId], battle, result.Log, ct);
 
         var achievements = await Achievements.UnlockNewAsync(db, [winnerId], _npcs, now, ct);
         await SiteOutbox.EnqueueAsync(db, SiteOutbox.ForBattle(battle.Id, ids), now, ct);

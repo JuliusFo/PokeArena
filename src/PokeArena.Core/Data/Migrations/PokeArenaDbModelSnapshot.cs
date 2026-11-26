@@ -204,6 +204,18 @@ namespace PokeArena.Core.Data.Migrations
                     b.Property<int>("SpeciesId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<long?>("FirstBattleId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long?>("FirstSeenAt")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long?>("LastBattleId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long?>("LastSeenAt")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("TrainerId", "SpeciesId");
 
                     b.ToTable("SeenSpecies");

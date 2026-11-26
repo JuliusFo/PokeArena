@@ -286,7 +286,7 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
                 t.Tokens,
                 t.ChatColor,
                 ImageType = db.ProfileImages.Where(i => i.TrainerId == t.TwitchUserId).Select(i => i.ContentType).FirstOrDefault(),
-                Specimens = t.Specimens.Select(s => new { s.SpeciesId, s.IsStarter }).ToList(),
+                Specimens = t.Specimens.Select(s => new SpecimenRow(s.Id, s.SpeciesId, s.IsStarter, s.Origin, s.CaughtAt, s.AcquiredAt)).ToList(),
             })
             .FirstOrDefaultAsync(ct);
         if (trainer is null)
@@ -313,8 +313,9 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
         var owned = trainer.Specimens.Select(s => s.SpeciesId).ToHashSet();
         var seen = await db.SeenSpecies.AsNoTracking()
             .Where(s => s.TrainerId == trainerId)
-            .Select(s => s.SpeciesId)
+            .OrderBy(s => s.SpeciesId)
             .ToListAsync(ct);
+        var sources = await SpecimenSourcesAsync(db, trainerId, trainer.Specimens, ct);
 
         return new TrainerPage(
             trainerId,
@@ -329,14 +330,88 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
             [.. trainer.Specimens
                 .GroupBy(s => s.SpeciesId)
                 .OrderBy(g => g.Key)
-                .Select(g => new PokedexEntry(Info(g.Key), g.Count(), g.Any(s => s.IsStarter)))],
+                .Select(g => new PokedexEntry(
+                    Info(g.Key),
+                    g.Count(),
+                    g.Any(s => s.IsStarter),
+                    [.. g.Select(s => sources[s.Id]).OrderBy(s => s.Since).ThenBy(s => s.BattleId)]))],
             [.. achievements.Select(a => new AchievementInfo(a.Threshold, npcs.ForThreshold(a.Threshold).Name, a.UnlockedAt))],
             [.. badges.Select(b => new BadgeInfo(npcs.Find(b.NpcId)?.Name ?? b.NpcId, b.WonAt, b.BattleId))],
             recent,
             SitePaths.TryProfileImage(trainerId, trainer.ImageType),
             trainer.ChatColor,
-            [.. seen.Where(id => !owned.Contains(id)).Order()]);
+            [.. seen.Select(s => s.SpeciesId).Where(id => !owned.Contains(id))],
+            [
+                .. seen
+                    .Where(s => s is { FirstSeenAt: not null, FirstBattleId: not null, LastSeenAt: not null, LastBattleId: not null })
+                    .Select(s => new SightingInfo(s.SpeciesId, s.FirstSeenAt!.Value, s.FirstBattleId!.Value, s.LastSeenAt!.Value, s.LastBattleId!.Value)),
+            ]);
     }
+
+    /// <summary>
+    /// How the trainer got each specimen (claude/pokedex-details-layout-76a090), by specimen id. A specimen PvP moved
+    /// has <c>AcquiredAt</c> ≠ <c>CaughtAt</c>; its fight is the latest PvP win with it as loot. A boss catch has no
+    /// battle id of its own: it is the boss fight the trainer won against that species at the very moment of the
+    /// catch (both take the same clock reading).
+    /// </summary>
+    private async Task<Dictionary<long, SpecimenInfo>> SpecimenSourcesAsync(
+        PokeArenaDb db, string trainerId, IReadOnlyList<SpecimenRow> specimens, CancellationToken ct)
+    {
+        var ids = specimens.Select(s => s.Id).ToList();
+        var loot = await db.Battles.AsNoTracking()
+            .Where(b => b.LootSpecimenId != null && ids.Contains(b.LootSpecimenId.Value)
+                && b.Participants.Any(p => p.TrainerId == trainerId && p.Won))
+            .Select(b => new
+            {
+                b.Id,
+                b.Kind,
+                b.FoughtAt,
+                Specimen = b.LootSpecimenId!.Value,
+                b.NpcId,
+                Loser = b.Participants.Where(p => !p.Won).Select(p => new { p.TrainerId, p.Trainer!.DisplayName }).FirstOrDefault(),
+            })
+            .ToListAsync(ct);
+        var bossWins = await db.Battles.AsNoTracking()
+            .Where(b => b.Kind == BattleKind.Boss && b.Participants.Any(p => p.TrainerId == trainerId && p.Won))
+            .Select(b => new { b.Id, b.BossSpeciesId, b.FoughtAt })
+            .ToListAsync(ct);
+
+        var sources = new Dictionary<long, SpecimenInfo>();
+        foreach (var s in specimens)
+        {
+            var won = loot.Where(b => b.Specimen == s.Id);
+            if (s.AcquiredAt != s.CaughtAt)
+            {
+                var pvp = won.Where(b => b.Kind == BattleKind.Pvp).MaxBy(b => (b.FoughtAt, b.Id));
+                sources[s.Id] = new SpecimenInfo(
+                    SpecimenSource.Pvp,
+                    s.AcquiredAt,
+                    pvp?.Id,
+                    pvp is null ? null : pvp.Loser?.DisplayName ?? BattleLog.DeletedOwner,
+                    pvp?.Loser?.TrainerId);
+            }
+            else if (s.IsStarter || s.Origin == SpecimenOrigin.Starter)
+            {
+                sources[s.Id] = new SpecimenInfo(SpecimenSource.Starter, s.AcquiredAt);
+            }
+            else if (s.Origin == SpecimenOrigin.Npc)
+            {
+                var npc = won.FirstOrDefault(b => b.Kind == BattleKind.Npc);
+                sources[s.Id] = new SpecimenInfo(
+                    SpecimenSource.Npc, s.AcquiredAt, npc?.Id, npc?.NpcId is { } id ? npcs.Find(id)?.Name ?? id : null);
+            }
+            else
+            {
+                var boss = bossWins.FirstOrDefault(b => b.BossSpeciesId == s.SpeciesId && b.FoughtAt == s.CaughtAt);
+                sources[s.Id] = new SpecimenInfo(SpecimenSource.Boss, s.AcquiredAt, boss?.Id);
+            }
+        }
+
+        return sources;
+    }
+
+    private sealed record SpecimenRow(
+        long Id, int SpeciesId, bool IsStarter, SpecimenOrigin Origin, DateTimeOffset CaughtAt, DateTimeOffset AcquiredAt);
 
     private async Task<BattlePage?> BattleAsync(PokeArenaDb db, long battleId, CancellationToken ct)
     {

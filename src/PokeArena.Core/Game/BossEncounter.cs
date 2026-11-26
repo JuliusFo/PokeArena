@@ -219,7 +219,6 @@ public sealed class BossEncounter(
             ],
         };
         db.Battles.Add(battle);
-        await Sightings.RecordAsync(db, participants.Select(p => p.Member.UserId), result.Log, ct);
         db.Specimens.AddRange(catchers.Select(c => new Specimen
         {
             TrainerId = c.UserId,
@@ -229,6 +228,7 @@ public sealed class BossEncounter(
             Origin = SpecimenOrigin.Boss,
         }));
         await db.SaveChangesAsync(ct);
+        await Sightings.RecordAsync(db, participants.Select(p => p.Member.UserId), battle, result.Log, ct);
 
         var achievements = await Achievements.UnlockNewAsync(db, [.. catchers.Select(c => c.UserId)], npcs, now, ct);
         await SiteOutbox.EnqueueAsync(db, SiteOutbox.ForBattle(battle.Id, participants.Select(p => p.Member.UserId)), now, ct);

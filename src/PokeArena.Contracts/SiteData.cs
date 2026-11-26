@@ -153,6 +153,10 @@ public sealed record LogPart(
 /// Ids of the species the trainer has seen in their fights but does not own now, ascending; null in older files.
 /// Names, types and base values come from <see cref="SpeciesList"/>.
 /// </param>
+/// <param name="Sightings">
+/// Every species the trainer has seen in their fights, owned or not, with the first and the latest such fight;
+/// ascending by id, null in older files (claude/pokedex-details-layout-76a090).
+/// </param>
 public sealed record TrainerPage(
     string TrainerId,
     string DisplayName,
@@ -169,10 +173,50 @@ public sealed record TrainerPage(
     IReadOnlyList<BattleSummary> RecentBattles,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? ProfileImage = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Color = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<int>? Seen = null);
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<int>? Seen = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<SightingInfo>? Sightings = null);
 
 /// <param name="HasStarter">One of the specimens is the protected starter.</param>
-public sealed record PokedexEntry(SpeciesInfo Species, int Count, bool HasStarter);
+/// <param name="Specimens">
+/// How the trainer got each specimen of the species, oldest first; null in older files
+/// (claude/pokedex-details-layout-76a090).
+/// </param>
+public sealed record PokedexEntry(
+    SpeciesInfo Species,
+    int Count,
+    bool HasStarter,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<SpecimenInfo>? Specimens = null);
+
+/// <summary>How a trainer got a specimen they own now.</summary>
+public enum SpecimenSource
+{
+    Starter,
+
+    /// <summary>Caught by surviving a boss fight (spec §4).</summary>
+    Boss,
+
+    /// <summary>Reward for the first win against an NPC (spec §7).</summary>
+    Npc,
+
+    /// <summary>Won from another trainer in a PvP fight (spec §6) — whatever its origin before.</summary>
+    Pvp,
+}
+
+/// <summary>One specimen a trainer owns, for the Pokédex box.</summary>
+/// <param name="Since">When the trainer got it: the fight that brought it, for the starter the registration.</param>
+/// <param name="BattleId">That fight; null for the starter and if the bot cannot find it.</param>
+/// <param name="From">The NPC's name (<see cref="SpecimenSource.Npc"/>) or the former owner's current name
+/// (<see cref="SpecimenSource.Pvp"/>, „[gelöscht]“ if deleted); null otherwise.</param>
+/// <param name="FromTrainerId">The former owner's Twitch user id; null unless <see cref="SpecimenSource.Pvp"/> and still there.</param>
+public sealed record SpecimenInfo(
+    SpecimenSource Source,
+    DateTimeOffset Since,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] long? BattleId = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? From = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? FromTrainerId = null);
+
+/// <summary>A species a trainer has seen in their fights: the first and the latest of them.</summary>
+public sealed record SightingInfo(int SpeciesId, DateTimeOffset First, long FirstBattleId, DateTimeOffset Last, long LastBattleId);
 
 /// <param name="Threshold">Distinct species needed („AV 15“).</param>
 public sealed record AchievementInfo(int Threshold, string NpcName, DateTimeOffset UnlockedAt);

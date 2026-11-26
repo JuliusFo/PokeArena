@@ -255,26 +255,118 @@ public class SiteGeneratorTests : IDisposable
     }
 
     [Fact]
-    public async Task The_trainer_page_lists_species_seen_but_not_owned()
+    public async Task The_trainer_page_lists_species_seen_with_their_first_and_latest_fight()
     {
         await AddTrainerAsync("1", "Ash", (25, 0));
         await AddTrainerAsync("2", "Misty", (7, 0));
         var log = new BattleLog(
             [new LogFighter(0, 25, 70, "1", "Ash"), new LogFighter(1, 7, 44, "2", "Misty"), new LogFighter(1, 129, 40, "2", "Misty")],
             []);
+        var later = new BattleLog([new LogFighter(0, 25, 70, "1", "Ash"), new LogFighter(1, 59, 400, null, "Boss")], []);
+        long first, second;
         await using (var db = _game.OpenLive())
         {
-            await Sightings.RecordAsync(db, ["1", "2"], log, _ct);
-            await db.SaveChangesAsync(_ct);
+            first = await SightedFightAsync(db, Start, log, "1", "2");
 
-            // A second fight with the same Pokémon adds nothing twice.
-            await Sightings.RecordAsync(db, ["1", "1"], log, _ct);
-            await db.SaveChangesAsync(_ct);
-            Assert.Equal(6, await db.SeenSpecies.CountAsync(_ct));
+            // A second fight with Pikachu adds no row twice (a trainer named twice neither), it only becomes the latest.
+            second = await SightedFightAsync(db, Start.AddHours(1), later, "1", "1");
+            Assert.Equal(7, await db.SeenSpecies.CountAsync(_ct));
         }
 
-        Assert.Equal([7, 129], (await TrainerPageAsync("1")).Seen);
+        var ash = await TrainerPageAsync("1");
+        Assert.Equal([7, 59, 129], ash.Seen);
+        Assert.Equal(
+            [
+                new SightingInfo(7, Start, first, Start, first),
+                new SightingInfo(25, Start, first, Start.AddHours(1), second),
+                new SightingInfo(59, Start.AddHours(1), second, Start.AddHours(1), second),
+                new SightingInfo(129, Start, first, Start, first),
+            ],
+            ash.Sightings);
         Assert.Equal([25, 129], (await TrainerPageAsync("2")).Seen);
+    }
+
+    [Fact]
+    public async Task Sightings_need_the_saved_battle()
+    {
+        await using var db = _game.OpenLive();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => Sightings.RecordAsync(db, ["1"], new Battle { LogJson = "{}" }, new BattleLog([], []), _ct));
+    }
+
+    [Fact]
+    public async Task The_pokedex_tells_how_the_trainer_got_each_specimen()
+    {
+        await AddTrainerAsync("1", "Ash");
+        await AddTrainerAsync("2", "Misty");
+        await AddTrainerAsync("3", "Rocko");
+        Specimen Own(int species, SpecimenOrigin origin, int caughtHour, int acquiredHour, bool starter = false) => new()
+        {
+            TrainerId = "1", SpeciesId = species, Origin = origin, IsStarter = starter,
+            CaughtAt = Start.AddHours(caughtHour), AcquiredAt = Start.AddHours(acquiredHour),
+        };
+
+        var starter = Own(25, SpecimenOrigin.Starter, 0, 0, starter: true);
+        var caught = Own(59, SpecimenOrigin.Boss, 1, 1);
+        var reward = Own(129, SpecimenOrigin.Npc, 2, 2);
+        var wonTwice = Own(25, SpecimenOrigin.Boss, 0, 3); // Misty's catch: won from Rocko, lost to Misty, won back
+        var fromDeleted = Own(4, SpecimenOrigin.Boss, 0, 4);
+        var simulated = Own(10, SpecimenOrigin.Boss, 5, 5); // a dry-run trainer's specimen: no fight behind it
+        long bossFight, npcFight, wonBack, deletedFight;
+        await using (var db = _game.OpenLive())
+        {
+            db.Specimens.AddRange(starter, caught, reward, wonTwice, fromDeleted, simulated);
+            await db.SaveChangesAsync(_ct);
+
+            Battle Fight(BattleKind kind, double hour, int? boss, string? npc, Specimen? loot, params (string Trainer, bool Won)[] participants) => new()
+            {
+                Kind = kind, FoughtAt = Start.AddHours(hour), BossSpeciesId = boss, NpcId = npc, LootSpecimenId = loot?.Id,
+                Outcome = BattleOutcome.ChallengerWon,
+                LogJson = new BattleLog([new LogFighter(0, 25, 70, "1", "Ash"), new LogFighter(1, 7, 44, null, "Gegner")], []).ToJson(),
+                Participants = [.. participants.Select(p => new BattleParticipant { TrainerId = p.Trainer, Won = p.Won })],
+            };
+            Battle[] battles =
+            [
+                // Arkani escaped an hour earlier: not the catch.
+                Fight(BattleKind.Boss, 0.5, 59, null, null, ("1", false)),
+                Fight(BattleKind.Boss, 1, 59, null, null, ("1", true)),
+                Fight(BattleKind.Npc, 2, null, "eich", reward, ("1", true)),
+                Fight(BattleKind.Pvp, 2.5, null, null, wonTwice, ("1", true), ("3", false)),
+                Fight(BattleKind.Pvp, 3, null, null, wonTwice, ("1", true), ("2", false)),
+                Fight(BattleKind.Pvp, 4, null, null, fromDeleted, ("1", true)), // the loser was deleted with their participant row
+            ];
+            db.Battles.AddRange(battles);
+            await db.SaveChangesAsync(_ct);
+            (bossFight, npcFight, wonBack, deletedFight) = (battles[1].Id, battles[2].Id, battles[4].Id, battles[5].Id);
+        }
+
+        var page = await TrainerPageAsync("1");
+
+        Assert.Equal(
+            [
+                (4, new SpecimenInfo(SpecimenSource.Pvp, Start.AddHours(4), deletedFight, BattleLog.DeletedOwner)),
+                (10, new SpecimenInfo(SpecimenSource.Boss, Start.AddHours(5))),
+                (25, new SpecimenInfo(SpecimenSource.Starter, Start)),
+                (25, new SpecimenInfo(SpecimenSource.Pvp, Start.AddHours(3), wonBack, "Misty", "2")),
+                (59, new SpecimenInfo(SpecimenSource.Boss, Start.AddHours(1), bossFight)),
+                (129, new SpecimenInfo(SpecimenSource.Npc, Start.AddHours(2), npcFight, "Eich")),
+            ],
+            page.Pokedex.SelectMany(e => e.Specimens!.Select(s => (e.Species.Id, s))));
+    }
+
+    private async Task<long> SightedFightAsync(PokeArenaDb db, DateTimeOffset at, BattleLog log, params string[] trainers)
+    {
+        var battle = new Battle
+        {
+            Kind = BattleKind.Boss, FoughtAt = at, Outcome = BattleOutcome.BossEscaped, LogJson = log.ToJson(),
+            Participants = [.. trainers.Distinct().Select(t => new BattleParticipant { TrainerId = t })],
+        };
+        db.Battles.Add(battle);
+        await db.SaveChangesAsync(_ct);
+        await Sightings.RecordAsync(db, trainers, battle, log, _ct);
+        await db.SaveChangesAsync(_ct);
+        return battle.Id;
     }
 
     [Fact]

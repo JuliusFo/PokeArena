@@ -246,8 +246,9 @@ public class TrainerRemovalTests : IDisposable
         db.NpcBadges.Add(new NpcBadge { TrainerId = "1001", NpcId = "eich", WonAt = now, BattleId = 1 });
         db.Cooldowns.Add(new Cooldown { Key = NpcService.CooldownKey("1001", "eich"), Until = now });
         db.Cooldowns.Add(new Cooldown { Key = NpcService.CooldownKey("10010", "eich"), Until = now });
-        await Sightings.RecordAsync(db, ["1001", "1002"], log, _ct);
         db.PublishQueue.RemoveRange(db.PublishQueue);
+        await db.SaveChangesAsync(_ct);
+        await Sightings.RecordAsync(db, ["1001", "1002"], battle, log, _ct);
         await db.SaveChangesAsync(_ct);
         return battle.Id;
     }

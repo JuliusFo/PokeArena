@@ -57,6 +57,8 @@ public class PvpServiceTests : IDisposable
             Assert.Equal(species, await db.SeenSpecies.Where(s => s.TrainerId == trainer).Select(s => s.SpeciesId).OrderBy(id => id).ToListAsync(_ct));
         }
 
+        Assert.All(await db.SeenSpecies.ToListAsync(_ct), s => Assert.Equal((long?)battle.Id, s.LastBattleId));
+
         var loot = await db.Specimens.SingleAsync(s => s.Id == battle.LootSpecimenId, _ct);
         Assert.Equal(("1", Species.Find("Karpador")!.Id, false), (loot.TrainerId, loot.SpeciesId, loot.IsStarter));
         Assert.Equal(loot.SpeciesId, battle.LootSpeciesId);

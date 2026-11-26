@@ -69,6 +69,54 @@ public class GameDatabaseTests : IDisposable
     }
 
     [Fact]
+    public async Task Seen_species_dates_migration_finds_the_first_and_latest_fight_of_every_row()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync(_ct);
+        await using var db = new PokeArenaDb(new DbContextOptionsBuilder<PokeArenaDb>().UseSqlite(connection).Options);
+        var migrator = db.GetService<IMigrator>();
+        await migrator.MigrateAsync("20261123125843_SeenSpecies", _ct);
+        foreach (var (id, name) in new[] { ("1", "Ash"), ("2", "Misty") })
+        {
+            await db.Database.ExecuteSqlAsync(
+                $"INSERT INTO \"Trainers\" (\"TwitchUserId\", \"DisplayName\", \"Login\", \"RegisteredAt\", \"Tokens\") VALUES ({id}, {name}, {name.ToLowerInvariant()}, 0, 0)", _ct);
+        }
+
+        // Three fights out of id order: fight 3 is the earliest. Pikachu fights in all, Karpador only in fight 2, which
+        // Misty missed. Fights 1 and 4 share a moment: the higher id is the latest.
+        var start = new DateTimeOffset(2026, 11, 1, 18, 0, 0, TimeSpan.Zero);
+        var pikachu = new LogFighter(0, 25, 70, "1", "Ash");
+        var karpador = new LogFighter(1, 129, 40, null, "Boss");
+        foreach (var (battle, hour, fighters) in new[] { (1L, 2, new[] { pikachu }), (2L, 3, new[] { pikachu, karpador }), (3L, 1, new[] { pikachu }), (4L, 2, new[] { pikachu }) })
+        {
+            await db.Database.ExecuteSqlAsync(
+                $"INSERT INTO \"Battles\" (\"Id\", \"Kind\", \"FoughtAt\", \"Seed\", \"Outcome\", \"Rounds\", \"LogJson\") VALUES ({battle}, 'Boss', {start.AddHours(hour).UtcTicks}, 0, 'BossEscaped', 1, {new BattleLog(fighters, []).ToJson()})", _ct);
+            await db.Database.ExecuteSqlAsync($"INSERT INTO \"BattleParticipants\" (\"BattleId\", \"TrainerId\", \"Won\") VALUES ({battle}, '1', 0)", _ct);
+            if (battle != 2)
+            {
+                await db.Database.ExecuteSqlAsync($"INSERT INTO \"BattleParticipants\" (\"BattleId\", \"TrainerId\", \"Won\") VALUES ({battle}, '2', 0)", _ct);
+            }
+        }
+
+        await db.Database.ExecuteSqlRawAsync(
+            "INSERT INTO \"SeenSpecies\" (\"TrainerId\", \"SpeciesId\") VALUES ('1', 25), ('1', 129), ('2', 25), ('2', 7)", _ct);
+
+        await migrator.MigrateAsync(cancellationToken: _ct);
+
+        DateTimeOffset? At(int hour) => start.AddHours(hour);
+        Assert.Equal(
+            [
+                ("1", 25, At(1), (long?)3, At(3), (long?)2),
+                ("1", 129, At(3), 2, At(3), 2),
+                ("2", 7, null, null, null, null), // no fight shows it: stays empty
+                ("2", 25, At(1), 3, At(2), 4),
+            ],
+            (await db.SeenSpecies.ToListAsync(_ct))
+                .Select(s => (s.TrainerId, s.SpeciesId, s.FirstSeenAt, s.FirstBattleId, s.LastSeenAt, s.LastBattleId))
+                .OrderBy(s => s.TrainerId).ThenBy(s => s.SpeciesId));
+    }
+
+    [Fact]
     public async Task A_trainer_cannot_have_two_starters()
     {
         await using var db = _game.OpenLive();

@@ -243,7 +243,9 @@ public sealed class TrainerProfileImage
 /// <summary>
 /// A species a trainer has seen: it stood in one of their fights, on either side, sent in or not — the fight page
 /// lists them all (spec §9). Written with the battle; the website shows the ones the trainer does not own now as
-/// „gesehen“. Only grows, like the fights themselves; deleted with the trainer.
+/// „gesehen“. Only grows, like the fights themselves; deleted with the trainer. The first and the latest such fight
+/// are kept for the Pokédex box (claude/pokedex-details-layout-76a090); the battle ids have no foreign key, like
+/// <see cref="Battle.LootSpecimenId"/>.
 /// </summary>
 public sealed class SeenSpecies
 {
@@ -251,4 +253,17 @@ public sealed class SeenSpecies
 
     /// <summary>Id in <see cref="SpeciesCatalog"/>.</summary>
     public int SpeciesId { get; init; }
+
+    /// <summary>
+    /// The first fight with the species. Null only if the update's fill from the stored logs found none — every row
+    /// comes from a fight, so that should not happen.
+    /// </summary>
+    public DateTimeOffset? FirstSeenAt { get; set; }
+
+    public long? FirstBattleId { get; set; }
+
+    /// <summary>The latest fight with the species; null like <see cref="FirstSeenAt"/>.</summary>
+    public DateTimeOffset? LastSeenAt { get; set; }
+
+    public long? LastBattleId { get; set; }
 }
