@@ -57,7 +57,7 @@ else if (_stats is not null)
                 {
                     <li>
                         <SpeciesName Species="single.Species" />
-                        <a href="@StatisticsBars.TrainerLink(single.Owner)" class="@(Tint.Style(single.Owner.Color) is null ? null : "tinted")" style="@Tint.Style(single.Owner.Color)">@single.Owner.DisplayName</a>
+                        <a href="@TrainerLinks.Href(single.Owner.TrainerId)" class="@(Tint.Style(single.Owner.Color) is null ? null : "tinted")" style="@Tint.Style(single.Owner.Color)">@single.Owner.DisplayName</a>
                     </li>
                 }
             </ul>

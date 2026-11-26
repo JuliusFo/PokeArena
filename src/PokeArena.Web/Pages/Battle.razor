@@ -17,14 +17,17 @@
     <p class="result">@battle.Result</p>
 
     <div class="sides">
-        @foreach (var side in battle.Sides)
+        @for (var s = 0; s < battle.Sides.Count; s++)
         {
+            var side = battle.Sides[s];
+            @* A card of one trainer links the name in its heading; otherwise (a boss fight's group) each row links its owner. *@
+            var sideTrainer = TrainerLinks.OfSide(battle, s);
             <section class="side @(side.Won ? "won" : "lost")">
                 <h2>
-                    @if (SideTrainer.Of(side) is { } trainer)
+                    @if (sideTrainer is not null)
                     {
-                        var tint = Tint.Style(trainer.Color);
-                        <a href="@StatisticsBars.TrainerLink(trainer)" class="@(tint is null ? null : "tinted")" style="@tint">@side.Name</a>
+                        var tint = Tint.Style(sideTrainer.Color);
+                        <a href="@TrainerLinks.Href(sideTrainer.TrainerId)" class="@(tint is null ? null : "tinted")" style="@tint">@side.Name</a>
                     }
                     else
                     {
@@ -39,10 +42,10 @@
                             @* Name and owner wrap inside their own box, so the end state keeps its column on the right. *@
                             <span class="who">
                                 <SpeciesName Species="fighter.Species" />
-                                @if (fighter.TrainerId is { } trainerId && fighter.Owner != side.Name)
+                                @if (sideTrainer is null && TrainerLinks.Href(fighter.TrainerId) is { } ownerHref)
                                 {
                                     var tint = Tint.Style(fighter.Color);
-                                    <a href="trainer/@trainerId" class="@(tint is null ? null : "tinted")" style="@tint">@fighter.Owner</a>
+                                    <a href="@ownerHref" class="@(tint is null ? null : "tinted")" style="@tint">@fighter.Owner</a>
                                 }
                             </span>
                             <span class="end-state">

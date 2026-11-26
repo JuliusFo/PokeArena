@@ -39,7 +39,7 @@ public static class DamageMeter
                 var fighters = used.Where(x => x.Side == s).ToList();
                 var colors = fighters.Select(x => Fill(battle, x.Side, x.Fighter)).Distinct().ToList();
                 return (Name: side.Name,
-                    Href: SideTrainer.Of(side) is { } trainer ? StatisticsBars.TrainerLink(trainer) : null,
+                    Href: TrainerLinks.OfSide(battle, s) is { } trainer ? TrainerLinks.Href(trainer.TrainerId) : null,
                     Detail: boss && s == 0 ? $"({fighters.Count})" : null,
                     Damage: fighters.Sum(x => (long)x.Fighter.Damage!.Value),
                     Fill: colors.Count == 1 ? colors[0] : Bar.Mixed);
@@ -62,14 +62,10 @@ public static class DamageMeter
                 var rank = $"{1 + damages.Count(d => d > damage)}.";
                 var value = bossHp > 0 ? $"{Bar.Number(damage)} · {Bar.Number((long)Math.Round(100.0 * damage / bossHp))} %" : Bar.Number(damage);
                 return boss
-                    ? Bar.Make(rank, f.Owner, f.Species.Name, value, damage, damages[0], Fill(battle, x.Side, f), OwnerLink(f))
+                    ? Bar.Make(rank, f.Owner, f.Species.Name, value, damage, damages[0], Fill(battle, x.Side, f), TrainerLinks.Href(f.TrainerId))
                     : Bar.Make(rank, f.Species.Name, f.Owner, value, damage, damages[0], Fill(battle, x.Side, f));
             })]);
     }
-
-    /// <summary>A boss fight's trainer bar links to the trainer page; a deleted trainer (no id) stays plain text.</summary>
-    private static string? OwnerLink(BattleFighter fighter) =>
-        fighter.TrainerId is { Length: > 0 } id ? StatisticsBars.TrainerLink(new TrainerRef(id, fighter.Owner)) : null;
 
     /// <summary>
     /// The boss and NPC Pokémon in the colour of their first type, a trainer's Pokémon in the trainer's chat colour.

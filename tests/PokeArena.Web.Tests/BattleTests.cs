@@ -165,7 +165,7 @@ public class BattleTests : WebTestContext
                 Kind = BattleKind.Boss,
                 Sides =
                 [
-                    new BattleSide("Trainer", true, [new BattleFighter(Bisasam, "Ash", "11", 40), new BattleFighter(Raupy, "Ash", "11", 30)]),
+                    new BattleSide("Trainer", true, [new BattleFighter(Bisasam, "Trainer", "a/b", 40), new BattleFighter(Raupy, "Trainer", "a/b", 30)]),
                     new BattleSide("Arkani", false, [new BattleFighter(arkani, "Boss", null, 400)]),
                 ],
             },
@@ -188,9 +188,12 @@ public class BattleTests : WebTestContext
 
         boss.WaitForAssertion(() => Assert.Equal(2, boss.FindAll(".side h2").Count));
         npc.WaitForAssertion(() => Assert.Equal(2, npc.FindAll(".side h2").Count));
-        // The group of a boss fight is no trainer, even with a single one in it: the rows keep their own owner links.
+        // The group of a boss fight is no trainer, even with a single viewer named „Trainer“ in it: the rows keep their
+        // own owner links, escaped like everywhere (review claude/kampf-trainer-link-3fc5e0).
         Assert.Empty(boss.FindAll(".side h2 a"));
-        Assert.Equal(["trainer/11", "trainer/11"], boss.FindAll(".fighters a").Select(a => a.GetAttribute("href")));
+        Assert.Equal(
+            [("trainer/a%2Fb", "Trainer"), ("trainer/a%2Fb", "Trainer")],
+            boss.FindAll(".fighters a").Select(a => (a.GetAttribute("href"), a.TextContent)));
         Assert.Empty(npc.FindAll(".side h2 a"));
     }
 

@@ -38,7 +38,7 @@ else if (_leaderboard is not null)
                     <td>
                         @{ var tint = Tint.Style(entry.Color); }
                         @* The tint on the link itself, so the underline takes the name's colour too. *@
-                        <a href="trainer/@entry.TrainerId" class="trainer-link@(tint is null ? null : " tinted")" style="@tint">
+                        <a href="@TrainerLinks.Href(entry.TrainerId)" class="trainer-link@(tint is null ? null : " tinted")" style="@tint">
                             <span class="profile-image small" aria-hidden="true">
                                 @if (Data.ProfileImageUrl(entry.ProfileImage) is { } image)
                                 {

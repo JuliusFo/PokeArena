@@ -48,8 +48,4 @@ public class StatisticsBarsTests
 
         Assert.Equal(Tint.Darkened(Tint.TypeColors["type-feuer"]), bar.Fill);
     }
-
-    [Fact]
-    public void Trainer_ids_are_escaped_in_links() =>
-        Assert.Equal("trainer/a%2Fb", StatisticsBars.TrainerLink(new TrainerRef("a/b", "X")));
 }

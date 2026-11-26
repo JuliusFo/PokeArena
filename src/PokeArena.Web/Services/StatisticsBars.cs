@@ -38,11 +38,8 @@ public static class StatisticsBars
             Rank(r.Rank), r.Species.Name, null, Bar.Number(r.Count), r.Count, Longest(rows, x => x.Count),
             r.Species.Types.Count > 0 ? Tint.TypeColors.GetValueOrDefault(Format.TypeClass(r.Species.Types[0])) : null))];
 
-    /// <summary>The trainer page of <paramref name="trainer"/>, relative like every link of the site.</summary>
-    public static string TrainerLink(TrainerRef trainer) => $"trainer/{Uri.EscapeDataString(trainer.TrainerId)}";
-
     private static Bar Trainer(int rank, TrainerRef trainer, string? detail, string value, int amount, long longest) =>
-        Bar.Make(Rank(rank), trainer.DisplayName, detail, value, amount, longest, trainer.Color, TrainerLink(trainer));
+        Bar.Make(Rank(rank), trainer.DisplayName, detail, value, amount, longest, trainer.Color, TrainerLinks.Href(trainer.TrainerId));
 
     private static string Rank(int rank) => $"{Bar.Number(rank)}.";
 
