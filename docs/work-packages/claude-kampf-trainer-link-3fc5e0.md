@@ -17,7 +17,8 @@
   one side, escaping. CHANGELOG, „Neuigkeiten“ (under 1.10.1, proposal), spec
   §9 footnote ³, Web `CLAUDE.md`.
 - Code review (2026-11-26): „Fix all“. Second pass on the fixes: all five
-  covered, the stale log (this entry) fixed; one test gap left for the user (N2).
+  covered; N1 stale log (this entry) fixed, N2 escaping tests for the
+  leaderboard and the statistics' single owners added (user: „Add N2“).
   - L1 fixed: a viewer named „Trainer“ alone in a boss fight made the group
     heading and its „Gesamt“ bar a link (side 0 of a boss fight is always
     „Trainer“) and lost the row link. `OfSide` returns null in boss fights;
