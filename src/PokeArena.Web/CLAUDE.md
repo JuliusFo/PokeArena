@@ -57,15 +57,16 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   (fix/hp-bar-dark-mode). The log's `.hit-bar` hatches the lost piece up to `max(--before, --hp + 4px)` (`.no-loss`
   drops it), hides „HP “ for screen readers (`white-space: pre`), and its sentence needs `overflow-wrap: anywhere`
   (claude/hp-balken-kampf-log-mockup-de3cfe). Parts marked `IsTargetHp` are left out only where `TargetOf` accepts the
-  hit; anything else keeps the full sentence. The damage that arrived (`Before − After`, not `LogHit.Damage`: it stays
-  equal to the bar and the „Schaden“ box on a knockout) stands as „−20“ in `.hit-numbers` before the bar and the parts
+  hit; anything else keeps the full sentence. The hit's full damage (`LogHit.Damage`, not `Before − After`: an overkill
+  must show, user decision 2026-11-27 after viewer feedback — the capped number read like a hit of exactly the HP
+  left) stands as „−20“ in `.hit-numbers` before the bar and the parts
   show their `TextWithBar` („ trifft “, „.“) — only when `LogHit.Damage` is set and not negative; a 1.8.1 file keeps
   the number in the sentence (claude/kampflog-hp-balken-feedback-808390, mockup „A“). Its red is lighter in the dark
   theme: `--hp-low` as text on the dark surface is under 3 : 1.
 - The log has two views, „Balken“ (default) and „Text“, picked per viewer in `localStorage`
   (`ViewerSettings.LogViewKey`, shared with „Einstellungen“; `ViewerSettings` wraps every JS call in `try`/`catch
   JSException` — blocked storage means bars and a pick for this page only). The text view (`TextParts`) words a hit itself where a part is marked
-  `IsDamage` („ und verursacht 20 Schaden.“, the damage that arrived) and colours parts marked `IsHp` and the
+  `IsDamage` („ und verursacht 20 Schaden.“, the full damage; `Before − After` only for a negative one) and colours parts marked `IsHp` and the
   target's HP from `LogHit` (`.log-hp` low at a quarter, mid at half, high above; ≥ 5 : 1 light and dark). Files
   without `IsDamage` keep their wording. Bars and text share the steps through `Level`/`BarLevel` (`.hp-bar.mid`
   orange, `.low` red), and the bar view colours `IsHp` too — only where `TargetOf` accepts the hit, like the text

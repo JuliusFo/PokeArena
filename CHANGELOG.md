@@ -11,6 +11,12 @@ tagged `vX.Y.Z` once its section is complete.
 - The Pokédex on the trainer page remembers „Alle / Nur gefangene“ per viewer
   in the browser (`localStorage`, like the fight log's view), for every
   trainer page; blocked storage starts with „Alle“ as before.
+- The fight log shows a hit's full damage again, in both views, after viewer
+  feedback: a knockout of 210 on 40 HP left reads „−210“ next to the bar „40 →
+  0“ and „und verursacht 210 Schaden“ in „Text“ (since 1.8.2 it showed only
+  what arrived, „40“, which read like a hit of exactly the HP left). The HP
+  arrow still shows what arrived; the „Schaden“ box keeps counting only that.
+  Works for every fight file since 1.8.2 — they carry the full damage already.
 
 ### Fixed
 - The Pokédex search: closing it with Escape after opening it with the mouse

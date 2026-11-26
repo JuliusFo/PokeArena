@@ -207,8 +207,10 @@ Used by boss, PvP and NPC fights.
   quarter or less, like on the fight cards and the text view's numbers; the
   attacker's HP in the sentence get the same colours (user decision
   2026-11-23, viewer feedback). The
-  damage that arrived stands as „−40“ right before the bar (a knockout of 77
-  on 70 HP left shows „−70“, like the „Schaden“ box; user decision 2026-11-20),
+  hit's full damage stands as „−40“ right before the bar (a knockout of 77
+  on 70 HP left shows „−77“ next to „70 → 0“, so an overkill shows; user
+  decision 2026-11-27 after viewer feedback — from 2026-11-20 it was the
+  damage that arrived, „−70“, which read like a hit of exactly the HP left),
   and the sentence reads
   `Pikachu (Ash, HP 35) trifft Arkani (Boss).` plus the same additions
   (user pick „A“ from the mockups, 2026-11-20, after viewer feedback). Desktop
@@ -220,7 +222,7 @@ Used by boss, PvP and NPC fights.
   `Pikachu (Ash, HP 35) trifft Arkani (Boss, HP 160 → 120) und verursacht 40 Schaden.`
   plus the same additions, the HP green above half, orange above a quarter, red
   at a quarter or less of the fighter's maximum, the damage in bold red — again
-  the damage that arrived. Fight files from 1.8.2 and older keep their own
+  the hit's full damage. The „Schaden“ box counts only what arrived. Fight files from 1.8.2 and older keep their own
   wording there (only the target's HP are coloured) until the bot has uploaded
   the website again after its update.
 
