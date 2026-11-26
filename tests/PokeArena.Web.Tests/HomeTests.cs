@@ -17,12 +17,13 @@ public class HomeTests : WebTestContext
     [Fact]
     public void The_leaderboard_lists_trainers_with_links_to_their_pages()
     {
-        Put(SitePaths.Leaderboard, new Leaderboard(Now, 2, [new(1, "11", "Anna", 3, 4), new(2, "12", "Ben", 1, 1)]), SiteJson.Default.Leaderboard);
+        Put(SitePaths.Leaderboard, new Leaderboard(Now, 2, [new(1, "11", "Anna", 3, 4), new(2, "a/b", "Ben", 1, 1)]), SiteJson.Default.Leaderboard);
 
         var cut = Render<Home>();
 
         cut.WaitForAssertion(() => Assert.Equal(2, cut.FindAll("tbody tr").Count));
-        Assert.Equal("trainer/11", cut.Find("tbody a").GetAttribute("href"));
+        // Ids are escaped like every trainer link of the site (review claude/kampf-trainer-link-3fc5e0).
+        Assert.Equal(["trainer/11", "trainer/a%2Fb"], cut.FindAll("tbody a").Select(a => a.GetAttribute("href")));
         Assert.Contains("2 Trainer · Stand 18:30 Uhr", cut.Markup);
     }
 

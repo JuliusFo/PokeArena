@@ -18,7 +18,7 @@ public class StatsTests : WebTestContext
     public void The_statistics_show_each_list_as_bars_with_links_to_the_trainers()
     {
         var anna = new TrainerRef("11", "Anna", "#FF69B4");
-        var ben = new TrainerRef("12", "Ben");
+        var ben = new TrainerRef("a/b", "Ben");
         Put(SitePaths.Statistics, new Statistics(
             Now,
             new CommunityTotals(38, 151, 2, 27, 31),
@@ -42,6 +42,9 @@ public class StatsTests : WebTestContext
         Assert.Equal("-1", cut.Find(".damage-text.on-fill a").GetAttribute("tabindex"));
         Assert.Contains("12 Arten hat nur ein einziger Trainer. Hier die seltensten:", Regex.Replace(cut.Markup, @"\s+", " "));
         Assert.Equal(["Anna", "Ben"], cut.FindAll(".singles a").Select(a => a.TextContent));
+        // Ids are escaped in the bars and the list of single owners alike (review claude/kampf-trainer-link-3fc5e0).
+        Assert.Equal(["trainer/11", "trainer/a%2Fb"], cut.FindAll(".singles a").Select(a => a.GetAttribute("href")));
+        Assert.Equal("trainer/a%2Fb", cut.FindAll(".damage-text:not(.on-fill) a")[1].GetAttribute("href"));
         Assert.Contains("Bisher wurde jeder Boss gefangen.", cut.Markup);
     }
 
