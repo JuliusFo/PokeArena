@@ -24,7 +24,9 @@
 - User decisions: „Ja, loslegen“ on the plan — a per-viewer switch, bars stay
   the default, the number is the damage that arrived (the mockup's 112 on
   64 → 0 shows 64, like the bars and the „Schaden“ box).
-- Addenda: version 1.8.3 was a proposal; the user released it as 1.9.0
+- Addenda: superseded 2026-11-27: the text view's number is the hit's full
+  damage again, after viewer feedback (claude/damage-display-capping-25b0a0).
+  Version 1.8.3 was a proposal; the user released it as 1.9.0
   (2026-11-22).
 - Pitfalls: bUnit's `JSInterop` is strict — every fight page test would fail
   on the `localStorage.getItem` call; `WebTestContext` plans `getItem` and

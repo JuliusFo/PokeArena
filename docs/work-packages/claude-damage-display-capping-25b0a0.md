@@ -14,7 +14,7 @@
   damage. Tests: bUnit expectations of the knockout (−31 / 31 on 22 left), new
   fallback test. Spec §5, CHANGELOG, „Neuigkeiten“ (under 1.10.1, proposal),
   Web CLAUDE.md, Contracts doc of `LogHit.Damage`.
-- User decisions: full damage in both views („Ja, beide Ansichten“); the
-  „Schaden“ box keeps counting only what arrived (the line says how hard a hit
-  was, the box what it added to the fight — proposal, not asked separately).
+- User decisions: full damage in both views („Ja, beide Ansichten“).
+- Unchanged: the „Schaden“ box counts only what arrived (feat-damage-meter) —
+  the line says how hard a hit was, the box what it added to the fight.
 - Pitfalls: none new.

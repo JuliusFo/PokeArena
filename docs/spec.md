@@ -222,10 +222,10 @@ Used by boss, PvP and NPC fights.
   remembers the pick, bars by default): every hit as one sentence
   `Pikachu (Ash, HP 35) trifft Arkani (Boss, HP 160 → 120) und verursacht 40 Schaden.`
   plus the same additions, the HP coloured like the bars by what is left of the
-  fighter's maximum, the damage in bold red — again
-  the hit's full damage. The „Schaden“ box counts only what arrived. Fight files from 1.8.2 and older keep their own
-  wording there (only the target's HP are coloured) until the bot has uploaded
-  the website again after its update.
+  fighter's maximum, the damage in bold red — again the hit's full damage. The
+  „Schaden“ box counts only what arrived. Fight files from 1.8.2 and older keep
+  their own wording there (only the target's HP are coloured) until the bot has
+  uploaded the website again after its update.
 
 ## 6. PvP (`!fight`)
 

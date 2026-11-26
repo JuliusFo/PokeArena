@@ -21,7 +21,9 @@
   number is the damage that arrived, like the bar and the „Schaden“ box (a
   knockout of 77 on 70 HP left shows „−70“) — „Nr. 1 anrechnen“ in the
   code review.
-- Addenda: version 1.8.2 is a proposal (not confirmed).
+- Addenda: version 1.8.2 is a proposal (not confirmed). Superseded
+  2026-11-27: the number is the hit's full damage again, after viewer feedback
+  (claude/damage-display-capping-25b0a0).
 - Pitfalls: the dark theme's `--hp-low` is under 3 : 1 as text on the dark
   surface, so `.hit-damage` uses a lighter red there.
 - Deliberately not done (→ backlog): one HP column per side (mockup „B“),
