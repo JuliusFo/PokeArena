@@ -17,6 +17,11 @@ tagged `vX.Y.Z` once its section is complete.
   what arrived, „40“, which read like a hit of exactly the HP left). The HP
   arrow still shows what arrived; the „Schaden“ box keeps counting only that.
   Works for every fight file since 1.8.2 — they carry the full damage already.
+- The fight page links trainers to their page like the leaderboard and the
+  statistics do: the trainer's name heading a fight card (in the chat colour)
+  and the trainer names in the „Schaden“ box („Gesamt“ in PvP and NPC fights,
+  the ranking in a boss fight). The group of a boss fight, the boss, NPCs and
+  deleted trainers stay plain text.
 
 ### Fixed
 - The Pokédex search: closing it with Escape after opening it with the mouse

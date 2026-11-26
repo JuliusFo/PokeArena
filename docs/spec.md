@@ -486,6 +486,14 @@ dark edge (light in the dark theme), so a colour close to the track still shows
 its length. Older files show no box until „Alles
 neu veröffentlichen“.
 
+Trainer links on the fight page (user request 2026-11-26): like the
+leaderboard and the statistics, a trainer's name links to the trainer page —
+the owner in a fighter row (boss fights), the name heading a fight card that
+stands for one trainer (in the chat colour, still bold), and the trainer names
+in the „Schaden“ box („Gesamt“ in PvP and NPC fights, the ranking in a boss
+fight). The group of a boss fight, the boss, NPCs and deleted trainers have no
+link. The „Kampfverlauf“ keeps its names as plain text.
+
 ⁵ „Statistik“ page (user idea 2026-11-10, feat/statistics-page). At the top is
 the community Pokédex: the distinct species anyone owns, out of 151, with the
 numbers of trainers, fights and boss catches. Below it is one box per list.
