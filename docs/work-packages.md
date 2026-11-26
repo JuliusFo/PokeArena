@@ -54,7 +54,7 @@ code of a package lives: read the logs of earlier packages in the same area befo
 | – | [Empty window after a restart without a session (user report)](work-packages/fix-wpf-software-rendering.md) | 1.10.1 (proposal) | 2026-11-23 | Desktop App start, InteractiveSession, MainWindow |
 | – | [Pokédex switch remembered (user request)](work-packages/claude-pokedex-toggle-persistence-c87bd9.md) | 1.10.1 (proposal) | 2026-11-23 | Web ViewerSettings, Shared/Pokedex |
 | – | [Pokédex search: focus frame, click outside (user feedback)](work-packages/claude-pokedex-search-ui-fixes-79cb0c.md) | 1.10.1 (proposal) | 2026-11-24 | Web Shared/Pokedex, index.html |
-| – | [Trainer links on the fight page (user request)](work-packages/claude-kampf-trainer-link-3fc5e0.md) | 1.10.1 (proposal) | 2026-11-26 | Web Battle.razor, SideTrainer, DamageMeter |
+| – | [Trainer links on the fight page (user request)](work-packages/claude-kampf-trainer-link-3fc5e0.md) | 1.10.1 (proposal) | 2026-11-26 | Web Battle.razor, TrainerLinks, DamageMeter, Home, Stats |
 | – | [Full hit damage in the fight log again (viewer feedback)](work-packages/claude-damage-display-capping-25b0a0.md) | 1.10.1 (proposal) | 2026-11-27 | Web Pages/Battle |
 | WP-09 | Balancing after the first streams | 1.11.0 (proposal) | planned | BossSettings, PvP loot, NPC strength |
 
