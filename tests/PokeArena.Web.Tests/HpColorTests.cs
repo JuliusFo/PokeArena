@@ -60,11 +60,29 @@ public class HpColorTests
         Assert.Matches(@"^--log-hp: #[0-9a-f]{6}; --log-hp-dark: #[0-9a-f]{6}$", HpColor.TextStyle(53, 80));
     }
 
+    [Fact]
+    public void The_anchors_match_the_colours_site_css_shares_with_them()
+    {
+        // The green is also the bars' fallback and Bar.Mixed („the HP bar's green“ of the „Schaden“ and statistics bars),
+        // the red also the damage „−20“ and the text view's damage: changing an anchor only here would split them (review).
+        Assert.Equal([HpColor.Fill(Max, Max)], Values("--hp-fill"));
+        Assert.Equal(Bar.Mixed, HpColor.Fill(Max, Max));
+        Assert.Equal([HpColor.Fill(0, Max), HpColor.OnDark(0, Max)], Values("--log-hp-low"));
+        Assert.Equal([HpColor.Fill(0, Max), HpColor.OnDark(0, Max)], Values("--damage"));
+    }
+
     private static int Distance(string a, string b) =>
         Enumerable.Range(0, 3).Max(i => Math.Abs(Convert.ToInt32(a.Substring(1 + (2 * i), 2), 16) - Convert.ToInt32(b.Substring(1 + (2 * i), 2), 16)));
 
     /// <summary>The light and the dark theme's <c>--surface</c> from site.css, where the log sits.</summary>
     private static (string Light, string Dark) Surfaces()
+    {
+        var surfaces = Values("--surface");
+        return (surfaces[0], surfaces[1]);
+    }
+
+    /// <summary>Every value site.css gives <paramref name="property"/>, in order: the light theme's first, then the dark one's.</summary>
+    private static List<string> Values(string property)
     {
         var root = new DirectoryInfo(AppContext.BaseDirectory);
         while (!File.Exists(Path.Combine(root.FullName, "PokeArena.slnx")))
@@ -73,7 +91,6 @@ public class HpColorTests
         }
 
         var css = File.ReadAllText(Path.Combine(root.FullName, "src", "PokeArena.Web", "wwwroot", "css", "site.css"));
-        var surfaces = Regex.Matches(css, @"--surface: (#[0-9a-f]{6});").Select(m => m.Groups[1].Value).ToList();
-        return (surfaces[0], surfaces[1]);
+        return Regex.Matches(css, Regex.Escape(property) + @": (#[0-9a-f]{6});").Select(m => m.Groups[1].Value).ToList();
     }
 }
