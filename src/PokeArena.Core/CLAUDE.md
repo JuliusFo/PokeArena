@@ -65,6 +65,9 @@
 - A boss catch has no battle id: the trainer file finds its fight as the won boss fight against that species at
   exactly `CaughtAt` (both take the same `now`) — keep the two on one clock reading. A PvP-moved specimen is the one
   with `AcquiredAt` ≠ `CaughtAt` (claude/pokedex-details-layout-76a090).
+- Another trainer's name on a trainer page comes from the fight's log, never `Trainer.DisplayName`: a rename
+  re-queues only the renamed trainer's own page, so a current name elsewhere goes stale (review
+  claude/pokedex-details-layout-76a090).
 - Anything that runs without a human decision (e.g. `RepublishAfterUpdate`) only queues the database's own files —
   never the bucket listing that deletes what the database does not know: a wrong data directory would empty the site
   (review R2).

@@ -36,5 +36,19 @@
 - User decision (2026-11-27): version 1.11.0 — a feature with a database
   migration. Everything unreleased on `main` (listed under 1.10.1 until then)
   goes out with it; WP-09 and WP-12 move to 1.12.0 and 1.13.0 (proposal).
+- Code review (2026-11-27): user decision „Ja, beide so“ (fix both, the former
+  owner by the name of the fight).
+  - M1 fixed: „Von X gewonnen“ showed the former owner's current name, but a
+    rename re-queues only the renamed trainer's page, so the winner's page went
+    stale. Now the losing side's owner in the PvP fight's log (side by
+    `Outcome`), as on the fight page; a deletion already rewrites the log and
+    re-queues the winner. Test renames the former owner after the fight (fails
+    on the old code with the new name).
+  - L1 fixed: the heading rule `p + h4` also moved „Basiswerte“ (after
+    `p.dex-types`) 2 px down; narrowed to `p.muted + h4`, checked in the
+    preview.
+  - Pre-existing, not made worse: a manipulated date near
+    `DateTimeOffset.MaxValue` in a data-host file makes `Format.Date` throw and
+    breaks the trainer page (also for the older date fields).
 - Deliberately not done: base values as a 2×2 grid to save more height
   (the box scrolls on narrow screens or with many duplicates instead).
