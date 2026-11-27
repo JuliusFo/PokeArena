@@ -11,13 +11,16 @@
   `--log-hp-dark` on `.log-hp`; `Level` / `BarLevel` and the classes
   `.hp-bar.mid/.low`, `.log-hp.high/.mid/.low` are gone. site.css keeps
   `--hp-fill` as fallback and `--log-hp-low` for the text view's damage.
-- Tried first: mixing on OKLab's straight line — 60–80 % came out a greyish
-  brown (#7f6828 at 70 %); OKLCH keeps the saturation (#826900, olive) and its
-  lowest contrast is 5.0 : 1 with white, 6.9 : 1 on the dark surface. Both
-  compared as strips in the preview.
+- Tried first: mixing on OKLab's straight line — between orange and green the
+  shades came out a greyish brown (#7f6828 at 70 %, measured with the first
+  variant's green at full HP); OKLCH keeps the saturation (#826900, olive, same
+  point). Both compared as strips in the preview. With the final anchors the
+  lowest contrast is 5.0 : 1 with white, 6.9 : 1 on the dark surface.
 - Tests: `HpColorTests` (anchors, > 100 shades between ¼ and ¾ in small
   steps, 4.5 : 1 for every shade of 0 … 1000 against white numbers and both
-  `--surface` values read from site.css, `Share` edge cases incl. int.MaxValue);
+  `--surface` values read from site.css, the anchors equal to `--hp-fill`,
+  `--log-hp-low` and `--damage` in site.css, `Share` edge cases incl.
+  int.MaxValue);
   `BattleTests` assert colours instead of classes (¼ exactly red, ½ exactly
   orange, one HP more already different).
 - Checked in the preview: fight 1, bars light, text view dark.

@@ -65,7 +65,7 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   left) stands as „−20“ in `.hit-numbers` before the bar and the parts
   show their `TextWithBar` („ trifft “, „.“) — only when `LogHit.Damage` is set and not negative; a 1.8.1 file keeps
   the number in the sentence (claude/kampflog-hp-balken-feedback-808390, mockup „A“). Its red is lighter in the dark
-  theme: `--hp-low` as text on the dark surface is under 3 : 1.
+  theme: the bars' red (#c42d0b) as text on the dark surface is under 3 : 1.
 - The log has two views, „Balken“ (default) and „Text“, picked per viewer in `localStorage`
   (`ViewerSettings.LogViewKey`, shared with „Einstellungen“; `ViewerSettings` wraps every JS call in `try`/`catch
   JSException` — blocked storage means bars and a pick for this page only). The text view (`TextParts`) words a hit itself where a part is marked
@@ -74,8 +74,9 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   where `TargetOf` accepts the hit, like the text view (claude/hp-coloring-bar-view-4f3c63, viewer feedback).
   HP colours have no steps (claude/hp-bar-color-gradient-ee5d5b): `Services/HpColor` mixes red (≤ ¼), orange (½) and
   green (≥ ¾, user decision) in OKLCH and goes inline — `--hp-color` on a bar, `--log-hp` / `--log-hp-dark` on `.log-hp` (site.css
-  picks by theme); OKLab's straight line or sRGB turned 60–80 % greyish brown. Change an anchor only with
-  `HpColorTests` green: it checks 4.5 : 1 for every shade (white numbers, light and dark surface). Orange and red
+  picks by theme); OKLab's straight line or sRGB turned the shades between orange and green greyish brown. Change an
+  anchor only with `HpColorTests` green: it checks 4.5 : 1 for every shade (white numbers, light and dark surface)
+  and ties the anchors to `--hp-fill` (`Bar.Mixed`), `--log-hp-low` and `--damage` in site.css. Orange and red
   fills are equally dark (white text needs 4.5 : 1), so with red-green weakness they look alike — accepted, the
   numbers inside carry the value (user decision, review). `HpColor.Share` computes in `double`: HP from a file not
   ours must not wrap into red. bUnit stays strict: `WebTestContext` plans
