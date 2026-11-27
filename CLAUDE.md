@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-11-23 · v1.10.0 released (Pokédex on the trainer page, coloured HP in the bar view) · next release 1.11.0 (Pokédex „Verlauf“ and the fixes since 1.10.0, user decision 2026-11-27), then WP-09 (→ 1.12.0, proposal) after a few streams
+Status: 2026-11-27 · v1.11.0 released (Pokédex „Verlauf“, full hit damage, trainer links and gradual HP colours on the fight page) · next WP-09 (→ 1.12.0, proposal) after a few streams
 
 ## 1. Where to find what
 
@@ -34,7 +34,7 @@ shows leaderboard, trainer pages and battle logs.
 ## 3. Versions and invariants
 
 Released versions and their content: `CHANGELOG.md`; which package went into which version: the table in
-`docs/work-packages.md`. Planned: 1.11.0 the Pokédex „Verlauf“ with everything unreleased on `main` (user decision 2026-11-27); 1.12.0 WP-09 balancing (proposal, version not confirmed); 1.13.0 WP-12 English website
+`docs/work-packages.md`. Planned: 1.12.0 WP-09 balancing (proposal, version not confirmed); 1.13.0 WP-12 English website
 (after WP-09 is a user decision 2026-11-21; the version moved up twice: the user released the
 log view and settings page as 1.9.0, and the Pokédex as 1.10.0 — proposal, not confirmed); 2.0.0 parked (website and
 overlay served from the bot's server, roadmap.md). The version table that stood here was cut (review 1.8.1, D1).
@@ -176,16 +176,16 @@ PokeArena.slnx
 
 Replace this section at every release or package; history belongs in CHANGELOG.md and docs/work-packages/.
 
-- Released 1.10.0 (2026-11-23): coloured HP in the bar view and the trainer page's new Pokédex — all 151 species, a
-  detail box with base values, „gesehen“ for species met in fights, „Alle / Nur gefangene“, hidden search behind „Name“.
-  It adds the table `SeenSpecies` (filled once from the fight logs on the first start) and the site file `arten.json`;
-  until the updated bot has uploaded it, the Pokédex has no base values.
+- Released 1.11.0 (2026-11-27): the Pokédex box's „Verlauf“ (how each specimen was got, first and latest fight per
+  seen species — migration `SeenSpeciesDates`, filled once from the fight logs), the remembered „Alle / Nur gefangene“,
+  Pokédex search fixes, the full hit damage in the fight log again, trainer links and gradual HP colours on the fight
+  page, and the desktop window that stayed empty after a restart without a remote session.
+  Until the updated bot has rewritten a trainer page, its box has no „Verlauf“.
   Still for the user to set by hand: the Cloudflare WAF rule and the R2 billing alert (docs/website-setup.md §2).
-- To watch after the update: the bot's first start with the migration (log), `arten.json` on the data host, „gesehen“
-  rows on a real trainer page; on stream boss win rates with the 1.8.0 rule (≈ 75 % group wins expected); whether the
-  darkened names read well on the dark page (roadmap.md).
-- Next: release 1.11.0 (Pokédex „Verlauf“ with a migration, remembered Pokédex switch, search fixes, empty-window
-  fix, full hit damage in the fight log, trainer links on the fight page, gradual HP colours). Then WP-09 balancing after a few streams (1.12.0, proposal): PvP loot preferring missing species, NPC difficulty;
+- To watch after the update: „Verlauf“ rows on a real trainer page once the bot has rewritten it; whether the gradual
+  HP colours read well on stream; on stream boss win rates with the 1.8.0 rule (≈ 75 % group wins expected); whether
+  the darkened names read well on the dark page (roadmap.md).
+- Next: WP-09 balancing after a few streams (1.12.0, proposal): PvP loot preferring missing species, NPC difficulty;
   no runtime balancing editor. After it WP-12 English website (1.13.0, proposal): language from the browser or „Einstellungen“,
   website only, English species/NPC names (roadmap.md). Parked for version 2: website and overlay served from the bot's server.
   Ideas go to docs/backlog.md; details in docs/roadmap.md.
