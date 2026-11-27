@@ -1195,10 +1195,11 @@ button.dex-pick:focus-visible,
   font-variant-numeric: tabular-nums;
 }
 
-/* „Verlauf“ below the base values (or the seen sentence): one row per specimen and sighting, the date on the right. */
+/* „Verlauf“ below the base values (or the seen sentence): one row per specimen and sighting, the date on the right.
+   Never plain „p + h4“: „Basiswerte“ follows p.dex-types and would move down too (review). */
 .dex-values + h4,
-.dex-box p + h4,
-.dex-inline p + h4 {
+.dex-box p.muted + h4,
+.dex-inline p.muted + h4 {
   margin-top: 16px;
 }
 
