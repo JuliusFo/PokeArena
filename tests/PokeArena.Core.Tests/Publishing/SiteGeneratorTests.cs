@@ -319,24 +319,36 @@ public class SiteGeneratorTests : IDisposable
             db.Specimens.AddRange(starter, caught, reward, wonTwice, fromDeleted, simulated);
             await db.SaveChangesAsync(_ct);
 
-            Battle Fight(BattleKind kind, double hour, int? boss, string? npc, Specimen? loot, params (string Trainer, bool Won)[] participants) => new()
+            var ash = new LogFighter(0, 25, 70, "1", "Ash");
+            Battle Fight(
+                BattleKind kind, double hour, int? boss, string? npc, Specimen? loot, (string Trainer, bool Won)[] participants,
+                BattleLog? log = null, BattleOutcome outcome = BattleOutcome.ChallengerWon) => new()
             {
                 Kind = kind, FoughtAt = Start.AddHours(hour), BossSpeciesId = boss, NpcId = npc, LootSpecimenId = loot?.Id,
-                Outcome = BattleOutcome.ChallengerWon,
-                LogJson = new BattleLog([new LogFighter(0, 25, 70, "1", "Ash"), new LogFighter(1, 7, 44, null, "Gegner")], []).ToJson(),
+                Outcome = outcome,
+                LogJson = (log ?? new BattleLog([ash, new LogFighter(1, 7, 44, null, "Gegner")], [])).ToJson(),
                 Participants = [.. participants.Select(p => new BattleParticipant { TrainerId = p.Trainer, Won = p.Won })],
             };
             Battle[] battles =
             [
                 // Arkani escaped an hour earlier: not the catch.
-                Fight(BattleKind.Boss, 0.5, 59, null, null, ("1", false)),
-                Fight(BattleKind.Boss, 1, 59, null, null, ("1", true)),
-                Fight(BattleKind.Npc, 2, null, "eich", reward, ("1", true)),
-                Fight(BattleKind.Pvp, 2.5, null, null, wonTwice, ("1", true), ("3", false)),
-                Fight(BattleKind.Pvp, 3, null, null, wonTwice, ("1", true), ("2", false)),
-                Fight(BattleKind.Pvp, 4, null, null, fromDeleted, ("1", true)), // the loser was deleted with their participant row
+                Fight(BattleKind.Boss, 0.5, 59, null, null, [("1", false)]),
+                Fight(BattleKind.Boss, 1, 59, null, null, [("1", true)]),
+                Fight(BattleKind.Npc, 2, null, "eich", reward, [("1", true)]),
+                Fight(BattleKind.Pvp, 2.5, null, null, wonTwice, [("1", true), ("3", false)], new BattleLog([ash, new LogFighter(1, 7, 44, "3", "Rocko")], [])),
+                // Misty challenged Ash and lost: the loser is side 0 here.
+                Fight(
+                    BattleKind.Pvp, 3, null, null, wonTwice, [("1", true), ("2", false)],
+                    new BattleLog([new LogFighter(0, 7, 44, "2", "Misty"), ash with { Side = 1 }], []), BattleOutcome.OpponentWon),
+                // The loser was deleted: participant row gone, log anonymised.
+                Fight(
+                    BattleKind.Pvp, 4, null, null, fromDeleted, [("1", true)],
+                    new BattleLog([ash, new LogFighter(1, 7, 44, null, BattleLog.DeletedOwner)], [])),
             ];
             db.Battles.AddRange(battles);
+
+            // Misty renamed after the fight: the page keeps the name of the fight, like the fight page (review).
+            (await db.Trainers.FindAsync(["2"], _ct))!.DisplayName = "Misty2";
             await db.SaveChangesAsync(_ct);
             (bossFight, npcFight, wonBack, deletedFight) = (battles[1].Id, battles[2].Id, battles[4].Id, battles[5].Id);
         }

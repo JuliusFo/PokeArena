@@ -368,7 +368,8 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
                 b.FoughtAt,
                 Specimen = b.LootSpecimenId!.Value,
                 b.NpcId,
-                Loser = b.Participants.Where(p => !p.Won).Select(p => new { p.TrainerId, p.Trainer!.DisplayName }).FirstOrDefault(),
+                b.Outcome,
+                Log = b.Kind == BattleKind.Pvp ? b.LogJson : null,
             })
             .ToListAsync(ct);
         var bossWins = await db.Battles.AsNoTracking()
@@ -382,13 +383,14 @@ public sealed class SiteGenerator(SpeciesCatalog species, NpcCatalog npcs)
             var won = loot.Where(b => b.Specimen == s.Id);
             if (s.AcquiredAt != s.CaughtAt)
             {
+                // The former owner as the fight's log names them — the name at the time, like the fight page and the
+                // „Letzte Kämpfe“ headline: a later rename re-queues only the renamed trainer's own page, so a current
+                // name here would go stale (review). A deletion rewrites the log („[gelöscht]“, no id) and re-queues
+                // the winner's page.
                 var pvp = won.Where(b => b.Kind == BattleKind.Pvp).MaxBy(b => (b.FoughtAt, b.Id));
-                sources[s.Id] = new SpecimenInfo(
-                    SpecimenSource.Pvp,
-                    s.AcquiredAt,
-                    pvp?.Id,
-                    pvp is null ? null : pvp.Loser?.DisplayName ?? BattleLog.DeletedOwner,
-                    pvp?.Loser?.TrainerId);
+                var loserSide = pvp?.Outcome == BattleOutcome.ChallengerWon ? 1 : 0;
+                var loser = pvp?.Log is { } json ? BattleLog.FromJson(json).Fighters.FirstOrDefault(f => f.Side == loserSide) : null;
+                sources[s.Id] = new SpecimenInfo(SpecimenSource.Pvp, s.AcquiredAt, pvp?.Id, loser?.Owner, loser?.TrainerId);
             }
             else if (s.IsStarter || s.Origin == SpecimenOrigin.Starter)
             {

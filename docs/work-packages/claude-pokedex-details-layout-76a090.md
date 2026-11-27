@@ -18,8 +18,8 @@
   `TrainerPage.Sightings` (`SightingInfo`), both optional so an older file
   still reads. Boss catches have no battle id: the fight is the won boss fight
   against that species at `CaughtAt`; a PvP specimen's fight is the latest PvP
-  win with it as loot, the former owner the losing participant (current name;
-  „[gelöscht]“ without id when deleted). The box shows „Verlauf“ below the base
+  win with it as loot, the former owner the losing side of its log (name at
+  the time of the fight; „[gelöscht]“ without id when deleted). The box shows „Verlauf“ below the base
   values or the seen sentence: one row per specimen plus „Zuletzt gesehen“; a
   seen species „Zuerst / Zuletzt gesehen“ or „Gesehen“ for one fight. Dates
   link their fight, the former owner their trainer page.

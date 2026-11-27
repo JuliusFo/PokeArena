@@ -568,8 +568,9 @@ bot's update) the list shows the caught species without base values and no
 „gesehen“ rows. Below the base values (or the seen sentence) the box shows
 „Verlauf“ (user feedback 2026-11-27): one row per specimen with how the
 trainer got it and when — „Starter“, „Als Boss gefangen“, „Belohnung von
-<NPC>“, „Von <trainer> gewonnen“ (PvP, the former owner's current name,
-linked to their page) — and „Zuletzt gesehen“; a seen species shows „Zuerst
+<NPC>“, „Von <trainer> gewonnen“ (PvP, the former owner's name at the time
+of the fight as on the fight page, linked to their page; user decision,
+review 2026-11-27) — and „Zuletzt gesehen“; a seen species shows „Zuerst
 gesehen“ and „Zuletzt gesehen“ instead, or only „Gesehen“ when both are the
 same fight. Every date links its fight. The bot keeps the first and the
 latest fight per seen species (filled once from the stored logs on the first

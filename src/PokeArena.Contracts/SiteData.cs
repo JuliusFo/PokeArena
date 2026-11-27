@@ -205,8 +205,8 @@ public enum SpecimenSource
 /// <summary>One specimen a trainer owns, for the Pokédex box.</summary>
 /// <param name="Since">When the trainer got it: the fight that brought it, for the starter the registration.</param>
 /// <param name="BattleId">That fight; null for the starter and if the bot cannot find it.</param>
-/// <param name="From">The NPC's name (<see cref="SpecimenSource.Npc"/>) or the former owner's current name
-/// (<see cref="SpecimenSource.Pvp"/>, „[gelöscht]“ if deleted); null otherwise.</param>
+/// <param name="From">The NPC's name (<see cref="SpecimenSource.Npc"/>) or the former owner's name as the fight's log has
+/// it, the name at the time (<see cref="SpecimenSource.Pvp"/>, „[gelöscht]“ if deleted); null otherwise.</param>
 /// <param name="FromTrainerId">The former owner's Twitch user id; null unless <see cref="SpecimenSource.Pvp"/> and still there.</param>
 public sealed record SpecimenInfo(
     SpecimenSource Source,
