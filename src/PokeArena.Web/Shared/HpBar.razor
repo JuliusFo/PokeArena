@@ -5,11 +5,11 @@
 {<span class="visually-hidden">@prefix</span>}@Text</span> <span class="hp-text on-fill" aria-hidden="true">@Text</span></span>
 
 @code {
-    /// <summary>`hp-bar` plus modifiers such as `mid`, `low` or `hit-bar`.</summary>
+    /// <summary>`hp-bar` plus modifiers such as `hit-bar` or `no-loss`.</summary>
     [Parameter, EditorRequired]
     public string Class { get; set; } = "hp-bar";
 
-    /// <summary>At least `--hp: <percent>%`; numbers only, never text from a file.</summary>
+    /// <summary>At least `--hp: <percent>%` and `--hp-color` (HpColor.Fill); numbers only, never text from a file.</summary>
     [Parameter, EditorRequired]
     public string Style { get; set; } = "";
 

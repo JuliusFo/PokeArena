@@ -472,13 +472,12 @@ h1.tinted,
   looked thin and grey (fix/hp-text-crisp). --ok and --accent are just under that with white
   text in the light theme, hence the darker fills. The dark theme keeps them on purpose: the bright --ok with dark
   text had 8 : 1 but glared on the dark page and was reported as hard to read (fix/hp-bar-dark-mode).
-  Three steps like the text view's numbers (claude/hp-coloring-bar-view-4f3c63, viewer feedback): green, orange at half
-  or less (.mid, the text view's orange, 5.6 : 1 with white), red at a quarter or less (.low).
+  Coloured by what is left without steps (claude/hp-bar-color-gradient-ee5d5b, before: three steps from
+  claude/hp-coloring-bar-view-4f3c63): Battle.razor sets --hp-color from HpColor.Fill — red up to a quarter, orange at
+  half, green from three quarters, mixed in between, every shade ≥ 4.5 : 1 with white (HpColorTests). --hp-fill is the fallback.
 */
 .hp-bar {
   --hp-fill: #1b7f45;
-  --hp-mid: #a35200;
-  --hp-low: #c42d0b;
   --hp-on-fill: #ffffff;
   --hp-color: var(--hp-fill);
   position: relative;
@@ -487,14 +486,6 @@ h1.tinted,
   border-radius: 10px;
   background: linear-gradient(to right, var(--hp-color) var(--hp), var(--border) var(--hp));
   overflow: hidden;
-}
-
-.hp-bar.mid {
-  --hp-color: var(--hp-mid);
-}
-
-.hp-bar.low {
-  --hp-color: var(--hp-low);
 }
 
 /*
@@ -769,8 +760,8 @@ h1.tinted,
 
 /*
   The damage left of the bar (claude/kampflog-hp-balken-feedback-808390, mockup „A“): viewers read the number in the
-  sentence and the HP on the right, so both moved together. Right-aligned against the bar; the red is --hp-low on
-  white (5.6 : 1) and a lighter red on the dark surface (≈ 6.9 : 1), since --hp-low there is under 3 : 1.
+  sentence and the HP on the right, so both moved together. Right-aligned against the bar; the red is the bars' red (#c42d0b) on
+  white (5.6 : 1) and a lighter red on the dark surface (≈ 6.9 : 1), since that red there is under 3 : 1.
 */
 .log .hit-numbers {
   display: flex;
@@ -848,30 +839,21 @@ h1.tinted,
 }
 
 /*
-  HP numbers in the log coloured by what is left, with the bars' steps — red at a quarter or less, orange at half or
-  less, green above: the target's in the text view, the attacker's in both views — and the text view's damage in bold
-  red. All at least 4.5 : 1 on the surface, light and dark.
+  HP numbers in the log coloured by what is left like the bars, without steps — the target's in the text view, the
+  attacker's in both views: Battle.razor sets --log-hp (light) and --log-hp-dark from HpColor
+  (claude/hp-bar-color-gradient-ee5d5b). The text view's damage is bold red. All at least 4.5 : 1 on the surface,
+  light and dark (HpColorTests).
 */
 .log .log-hp {
+  color: var(--log-hp);
   font-variant-numeric: tabular-nums;
 }
 
-.log .log-hp.high {
-  color: var(--log-hp-high);
-}
-
-.log .log-hp.mid {
-  color: var(--log-hp-mid);
-}
-
-.log .log-hp.low,
 .log .log-damage {
   color: var(--log-hp-low);
 }
 
 .log {
-  --log-hp-high: #1b7f45;
-  --log-hp-mid: #a35200;
   --log-hp-low: #c42d0b;
 }
 
@@ -898,9 +880,11 @@ h1.tinted,
 }
 
 :root[data-theme="dark"] .log {
-  --log-hp-high: #4cc283;
-  --log-hp-mid: #f0a04b;
   --log-hp-low: #ff8a6e;
+}
+
+:root[data-theme="dark"] .log .log-hp {
+  color: var(--log-hp-dark);
 }
 
 /* Trainer page */

@@ -53,8 +53,8 @@
                                 {
                                     case "survived":
                                         @* The numbers sit inside the bar to save width. *@
-                                        <HpBar Class="@("hp-bar" + BarLevel(fighter.HpLeft ?? 0, fighter.MaxHp))"
-                                               Style="@($"--hp: {HpPercent(fighter)}%")"
+                                        <HpBar Class="hp-bar"
+                                               Style="@($"--hp: {HpPercent(fighter)}%; --hp-color: {HpColor.Fill(fighter.HpLeft ?? 0, fighter.MaxHp)}")"
                                                Text="@($"{fighter.HpLeft} / {fighter.MaxHp} HP")" />
                                         break;
                                     case "fainted":
@@ -110,7 +110,7 @@
                            (user decision 2026-11-27 after viewer feedback, reverting the cap of 1.8.2). *@
                         int? damage = hit.Damage is >= 0 ? hit.Damage : null;
                         var hpText = $"{hit.Before} → {hit.After}";
-                        var barClass = "hp-bar hit-bar" + BarLevel(hit.After, target.MaxHp) + (hit.Before == hit.After ? " no-loss" : "");
+                        var barClass = "hp-bar hit-bar" + (hit.Before == hit.After ? " no-loss" : "");
                         <span class="hit">
                             <span class="hit-text">@Parts(battle, line, withoutTargetHp: true, damageAtBar: damage is not null)</span>
                             <span class="hit-numbers">
@@ -121,7 +121,7 @@
                                 }
                                 @* „HP“ for screen readers, who would otherwise hear only „80 Pfeil 22“ (review). *@
                                 <HpBar Class="@barClass"
-                                       Style="@($"--hp: {Percent(hit.After, target.MaxHp)}%; --before: {Percent(hit.Before, target.MaxHp)}%")"
+                                       Style="@($"--hp: {Percent(hit.After, target.MaxHp)}%; --before: {Percent(hit.Before, target.MaxHp)}%; --hp-color: {HpColor.Fill(hit.After, target.MaxHp)}")"
                                        Title="@($"HP {hpText} von {target.MaxHp}")"
                                        HiddenPrefix="HP "
                                        Text="@hpText" />
@@ -313,19 +313,12 @@ else
     };
 
     /// <summary>
-    /// How much is left: „low“ (red) at a quarter or less, „mid“ (orange) at half or less, „high“ (green) above. Bars and
-    /// text share the steps; the bars had no „mid“ before claude/hp-coloring-bar-view-4f3c63 (viewer feedback).
-    /// In <see cref="long"/>: a file not ours with HP near <see cref="int.MaxValue"/> must not wrap into red (review).
+    /// HP as coloured text: the target's in the text view, the attacker's in both views. The colour shades with what is
+    /// left, like the bars (<see cref="HpColor"/>, claude/hp-bar-color-gradient-ee5d5b).
     /// </summary>
-    private static string Level(int hp, int max) => (long)hp * 4 <= max ? "low" : (long)hp * 2 <= max ? "mid" : "high";
-
-    /// <summary>A bar's class modifier: „ low“, „ mid“, or nothing for the default green fill.</summary>
-    private static string BarLevel(int hp, int max) => Level(hp, max) switch { "high" => "", var level => " " + level };
-
-    /// <summary>HP as coloured text: the target's in the text view, the attacker's in both views.</summary>
     private static RenderFragment Hp(int hp, int max) => __builder =>
     {
-        <span class="log-hp @Level(hp, max)">@hp.ToString(CultureInfo.InvariantCulture)</span>
+        <span class="log-hp" style="@HpColor.TextStyle(hp, max)">@hp.ToString(CultureInfo.InvariantCulture)</span>
     };
 
     private bool _textView;
