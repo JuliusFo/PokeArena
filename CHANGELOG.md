@@ -7,6 +7,17 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+### Added
+- „Verlauf“ in the Pokédex box, after user feedback: below the base values
+  one row per Pokémon of that species with how the trainer got it and when
+  („Starter“, „Als Boss gefangen“, „Belohnung von Eich“, „Von Ben gewonnen“
+  with a link to Ben's page) and when the species was last seen in one of
+  their fights; a species only seen shows its first and latest fight. Every
+  date links its fight. The bot now keeps the first and the latest fight per
+  seen species (the update fills both once from the stored fight logs) and
+  writes how each specimen was got into the trainer file. Until the updated
+  bot has rewritten a trainer page, its box has no „Verlauf“.
+
 ### Changed
 - The Pokédex on the trainer page remembers „Alle / Nur gefangene“ per viewer
   in the browser (`localStorage`, like the fight log's view), for every

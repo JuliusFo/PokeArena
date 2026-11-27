@@ -565,7 +565,15 @@ each fight (filled once
 from the stored logs on the first start with it) and deleted with the trainer. Names and base values of species the trainer has not caught
 come from `arten.json`: while it is missing (after the release, before the
 bot's update) the list shows the caught species without base values and no
-„gesehen“ rows.
+„gesehen“ rows. Below the base values (or the seen sentence) the box shows
+„Verlauf“ (user feedback 2026-11-27): one row per specimen with how the
+trainer got it and when — „Starter“, „Als Boss gefangen“, „Belohnung von
+<NPC>“, „Von <trainer> gewonnen“ (PvP, the former owner's current name,
+linked to their page) — and „Zuletzt gesehen“; a seen species shows „Zuerst
+gesehen“ and „Zuletzt gesehen“ instead, or only „Gesehen“ when both are the
+same fight. Every date links its fight. The bot keeps the first and the
+latest fight per seen species (filled once from the stored logs on the first
+start with it); a trainer file from an older bot has no „Verlauf“.
 
 - Files are uploaded **directly per change** via the publish queue.
 - Uploads normally land within seconds, but the queue may lag (network

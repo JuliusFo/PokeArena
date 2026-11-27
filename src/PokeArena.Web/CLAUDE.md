@@ -119,7 +119,11 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   only when the search was opened by keyboard (`detail` 0): a script focus after a key draws the focus ring for mouse
   users too. A tap on free space closes an empty search through `pokeArenaDex` in `index.html` — pointer events, not
   `click` (iOS sends none for a tap on an element without its own handler); bUnit's `Click()` sends `detail` 1
-  (claude/pokedex-search-ui-fixes-79cb0c, review).
+  (claude/pokedex-search-ui-fixes-79cb0c, review). The box's „Verlauf“ (`.dex-history`, a `dl` like the base values:
+  Razor drops the space between two inline elements, and dt/dd keep label and date apart for screen readers) has
+  14 px rows so the ≈ 330 px box stays as high as the list (`.dex-box` max 470 px, scrolls beyond); its links are text
+  colour with underline — `--accent` on the grey rows is only 4.0 : 1. A former owner's id from the file goes through
+  `Uri.EscapeDataString`, battle ids ≤ 0 get no link (claude/pokedex-details-layout-76a090).
 - An awaited JS call in `OnInitializedAsync` (e.g. `localStorage.getItem`) does not finish synchronously in WASM:
   Blazor renders once before `OnParametersSet`. Build what the markup needs in `OnInitialized` first; bUnit only sees
   this with a `Setup` that has no result yet (review claude/pokedex-toggle-persistence-c87bd9).
