@@ -1,11 +1,26 @@
 {"trainerId":"1001","displayName":"Anna","registeredAt":"2026-10-20T17:00:00+00:00","updatedAt":"2026-11-01T18:30:00+00:00","distinct":3,"total":4,"tokens":1,"battles":2,"wins":2,
 "pokedex":[
-{"species":{"id":1,"name":"Bisasam","types":["Pflanze","Gift"]},"count":1,"hasStarter":true},
-{"species":{"id":16,"name":"Taubsi","types":["Normal","Flug"]},"count":2,"hasStarter":false},
-{"species":{"id":143,"name":"Relaxo","types":["Normal"]},"count":1,"hasStarter":false}],
+{"species":{"id":1,"name":"Bisasam","types":["Pflanze","Gift"]},"count":1,"hasStarter":true,"specimens":[{"source":"Starter","since":"2026-10-20T17:00:00+00:00"}]},
+{"species":{"id":16,"name":"Taubsi","types":["Normal","Flug"]},"count":2,"hasStarter":false,"specimens":[{"source":"Boss","since":"2026-10-25T18:00:00+00:00"},{"source":"Pvp","since":"2026-11-01T18:25:00+00:00","battleId":2,"from":"Ben","fromTrainerId":"1002"}]},
+{"species":{"id":143,"name":"Relaxo","types":["Normal"]},"count":1,"hasStarter":false,"specimens":[{"source":"Boss","since":"2026-11-01T18:10:00+00:00","battleId":1}]}],
 "achievements":[{"threshold":15,"npcName":"Eich","unlockedAt":"2026-10-28T19:00:00+00:00"}],
 "badges":[{"npcName":"Eich","wonAt":"2026-10-29T19:00:00+00:00","battleId":1}],
 "recentBattles":[
 {"id":2,"kind":"Pvp","foughtAt":"2026-11-01T18:25:00+00:00","headline":"Anna gegen Ben","result":"Anna besiegt Ben und bekommt Taubsi von Ben!"},
 {"id":1,"kind":"Boss","foughtAt":"2026-11-01T18:10:00+00:00","headline":"Boss-Kampf gegen Relaxo (selten)","result":"Relaxo wurde besiegt! Gefangen von: Anna, Clara."}],"color":"#FF69B4",
-"seen":[4,7,10,19,21,25,27,29,37,63,74]}
+"seen":[4,7,10,19,21,25,27,29,37,63,74],
+"sightings":[
+{"speciesId":1,"first":"2026-11-01T18:10:00+00:00","firstBattleId":1,"last":"2026-11-01T18:25:00+00:00","lastBattleId":2},
+{"speciesId":4,"first":"2026-11-01T18:10:00+00:00","firstBattleId":1,"last":"2026-11-01T18:10:00+00:00","lastBattleId":1},
+{"speciesId":7,"first":"2026-11-01T18:25:00+00:00","firstBattleId":2,"last":"2026-11-01T18:25:00+00:00","lastBattleId":2},
+{"speciesId":10,"first":"2026-11-01T18:25:00+00:00","firstBattleId":2,"last":"2026-11-01T18:25:00+00:00","lastBattleId":2},
+{"speciesId":16,"first":"2026-11-01T18:25:00+00:00","firstBattleId":2,"last":"2026-11-01T18:25:00+00:00","lastBattleId":2},
+{"speciesId":19,"first":"2026-11-01T18:25:00+00:00","firstBattleId":2,"last":"2026-11-01T18:25:00+00:00","lastBattleId":2},
+{"speciesId":21,"first":"2026-11-01T18:25:00+00:00","firstBattleId":2,"last":"2026-11-01T18:25:00+00:00","lastBattleId":2},
+{"speciesId":25,"first":"2026-11-01T18:25:00+00:00","firstBattleId":2,"last":"2026-11-01T18:25:00+00:00","lastBattleId":2},
+{"speciesId":27,"first":"2026-11-01T18:25:00+00:00","firstBattleId":2,"last":"2026-11-01T18:25:00+00:00","lastBattleId":2},
+{"speciesId":29,"first":"2026-11-01T18:25:00+00:00","firstBattleId":2,"last":"2026-11-01T18:25:00+00:00","lastBattleId":2},
+{"speciesId":37,"first":"2026-11-01T18:25:00+00:00","firstBattleId":2,"last":"2026-11-01T18:25:00+00:00","lastBattleId":2},
+{"speciesId":63,"first":"2026-11-01T18:25:00+00:00","firstBattleId":2,"last":"2026-11-01T18:25:00+00:00","lastBattleId":2},
+{"speciesId":74,"first":"2026-11-01T18:25:00+00:00","firstBattleId":2,"last":"2026-11-01T18:25:00+00:00","lastBattleId":2},
+{"speciesId":143,"first":"2026-11-01T18:10:00+00:00","firstBattleId":1,"last":"2026-11-01T18:10:00+00:00","lastBattleId":1}]}

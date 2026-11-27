@@ -2,7 +2,9 @@
     The trainer page's Pokédex (claude/pokedex-trainer-page-improve-a4a504): all species as a list — caught, seen
     („gesehen“, greyed with a mark) and unknown („????????“) — next to a box with the selected one. Names, types and
     base values of species the trainer has not caught come from arten.json; without it (between the release and the
-    bot's update) the list shows the caught ones from the trainer file alone and the box no base values.
+    bot's update) the list shows the caught ones from the trainer file alone and the box no base values. Below them the
+    box shows „Verlauf“ — how each specimen came, when the species was seen — if the trainer file has it
+    (claude/pokedex-details-layout-76a090).
     „Alle / Nur gefangene“ is kept per viewer in localStorage (ViewerSettings.PokedexViewKey).
 *@
 @implements IAsyncDisposable
@@ -112,6 +114,7 @@
     private Dictionary<int, PokedexEntry> _caught = [];
     private Dictionary<int, SpeciesData> _species = [];
     private HashSet<int> _seen = [];
+    private Dictionary<int, SightingInfo> _sightings = [];
     private int? _selected;
     private bool _onlyCaught;
     private bool _picked;
@@ -184,6 +187,12 @@
 
         // A seen species needs its name from arten.json; without it, it stays unknown.
         _seen = [.. (Trainer.Seen ?? []).Where(id => _species.ContainsKey(id) && !_caught.ContainsKey(id))];
+
+        // Only shown in the box of a caught or seen species, so an entry for any other id never appears.
+        _sightings = (Trainer.Sightings ?? [])
+            .Where(s => s is not null && InRange(s.SpeciesId))
+            .GroupBy(s => s.SpeciesId)
+            .ToDictionary(g => g.Key, g => g.First());
         if (!ReferenceEquals(_shownFor, Trainer))
         {
             // Another trainer (or a new load): start at their first catch.
@@ -354,6 +363,74 @@
                     <div><dt>@label</dt><dd>@value(data)</dd></div>
                 }
             </dl>
+        }
+        @History(row)
+    };
+
+    /// <summary>
+    /// „Verlauf“ (claude/pokedex-details-layout-76a090): how the trainer got each specimen, and when the species was
+    /// seen in their fights — a caught one only the latest time, a seen one also the first. Each date links its fight.
+    /// Nothing in older trainer files.
+    /// </summary>
+    private RenderFragment History(Row row) => __builder =>
+    {
+        var specimens = row.Entry?.Specimens?.Where(s => s is not null).ToList() ?? [];
+        _sightings.TryGetValue(row.Id, out var sighting);
+        if (specimens.Count == 0 && sighting is null)
+        {
+            return;
+        }
+
+        <h4>Verlauf</h4>
+        <dl class="dex-history">
+            @foreach (var specimen in specimens)
+            {
+                <div>
+                    @if (specimen is { Source: SpecimenSource.Pvp, From: { } owner, FromTrainerId: { Length: > 0 } ownerId })
+                    {
+                        <dt>Von <a href="trainer/@Uri.EscapeDataString(ownerId)">@owner</a> gewonnen</dt>
+                    }
+                    else
+                    {
+                        <dt>@SourceText(specimen)</dt>
+                    }
+                    <dd>@When(specimen.Since, specimen.BattleId)</dd>
+                </div>
+            }
+            @if (sighting is not null)
+            {
+                @if (row.Kind == RowKind.Seen && sighting.FirstBattleId != sighting.LastBattleId)
+                {
+                    <div><dt>Zuerst gesehen</dt><dd>@When(sighting.First, sighting.FirstBattleId)</dd></div>
+                }
+                <div>
+                    <dt>@(row.Kind == RowKind.Seen && sighting.FirstBattleId == sighting.LastBattleId ? "Gesehen" : "Zuletzt gesehen")</dt>
+                    <dd>@When(sighting.Last, sighting.LastBattleId)</dd>
+                </div>
+            }
+        </dl>
+    };
+
+    private static string SourceText(SpecimenInfo specimen) => specimen switch
+    {
+        { Source: SpecimenSource.Starter } => "Starter",
+        { Source: SpecimenSource.Boss } => "Als Boss gefangen",
+        { Source: SpecimenSource.Npc, From: { } npc } => $"Belohnung von {npc}",
+        { Source: SpecimenSource.Npc } => "Belohnung im NPC-Kampf",
+        { From: { } owner } => $"Von {owner} gewonnen",
+        _ => "Im Kampf gewonnen",
+    };
+
+    /// <summary>The date, as a link to its fight when there is one.</summary>
+    private static RenderFragment When(DateTimeOffset at, long? battleId) => __builder =>
+    {
+        if (battleId is > 0 and { } id)
+        {
+            <a href="kampf/@id.ToString(CultureInfo.InvariantCulture)">@Format.Date(at)</a>
+        }
+        else
+        {
+            <text>@Format.Date(at)</text>
         }
     };
 

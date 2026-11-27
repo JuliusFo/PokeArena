@@ -410,12 +410,110 @@ public class TrainerPageTests : WebTestContext
         return Assert.IsType<DotNetObjectReference<Pokedex>>(watch.Arguments[1]).Value;
     }
 
+    [Fact]
+    public void The_box_tells_how_each_specimen_came_and_when_the_species_was_seen_last()
+    {
+        var day = new DateTimeOffset(2026, 11, 20, 18, 0, 0, TimeSpan.Zero);
+        PutPokedex(
+            seen: [10],
+            specimens:
+            [
+                new(SpecimenSource.Starter, day.AddDays(-10)),
+                new(SpecimenSource.Pvp, day, 7, "Misty", "22"),
+            ],
+            sightings: [new(1, day.AddDays(-5), 3, day.AddDays(1), 8)]);
+
+        var cut = Render<Trainer>(p => p.Add(t => t.Key, "11"));
+
+        cut.WaitForAssertion(() => Assert.Equal("Bisasam", cut.Find(".dex-box h3").TextContent));
+        Assert.Equal(["Basiswerte", "Verlauf"], cut.FindAll(".dex-box h4").Select(h => h.TextContent));
+        Assert.Equal(
+            ["Starter 10.11.2026", "Von Misty gewonnen 20.11.2026", "Zuletzt gesehen 21.11.2026"],
+            HistoryRows(cut));
+        Assert.Equal(
+            ["trainer/22", "kampf/7", "kampf/8"],
+            cut.FindAll(".dex-box .dex-history a").Select(a => a.GetAttribute("href")));
+        Assert.Empty(cut.FindAll(".dex-box .dex-history dd")[0].QuerySelectorAll("a"));
+    }
+
+    [Fact]
+    public void A_seen_species_shows_its_first_and_latest_fight_or_its_only_one()
+    {
+        var day = new DateTimeOffset(2026, 11, 20, 18, 0, 0, TimeSpan.Zero);
+        PutPokedex(
+            seen: [10, 25],
+            sightings: [new(10, day, 3, day.AddDays(2), 9), new(25, day, 4, day, 4)]);
+
+        var cut = Render<Trainer>(p => p.Add(t => t.Key, "11"));
+        cut.WaitForAssertion(() => Assert.Equal(151, cut.FindAll(".dex-row").Count));
+
+        cut.FindAll(".dex-row")[9].QuerySelector("button")!.Click();
+        Assert.Equal(
+            ["Zuerst gesehen 20.11.2026", "Zuletzt gesehen 22.11.2026"],
+            HistoryRows(cut));
+        Assert.Equal(["kampf/3", "kampf/9"], cut.FindAll(".dex-box .dex-history a").Select(a => a.GetAttribute("href")));
+
+        cut.FindAll(".dex-row")[24].QuerySelector("button")!.Click();
+        Assert.Equal(
+            ["Gesehen 20.11.2026"],
+            HistoryRows(cut));
+    }
+
+    [Fact]
+    public void Without_the_new_fields_the_box_has_no_history()
+    {
+        PutPokedex(seen: [10]);
+
+        var cut = Render<Trainer>(p => p.Add(t => t.Key, "11"));
+
+        cut.WaitForAssertion(() => Assert.Equal("Bisasam", cut.Find(".dex-box h3").TextContent));
+        Assert.Empty(cut.FindAll(".dex-box .dex-history"));
+        Assert.Equal(["Basiswerte"], cut.FindAll(".dex-box h4").Select(h => h.TextContent));
+    }
+
+    [Fact]
+    public void History_values_from_the_data_host_cannot_leave_the_site_or_name_an_unknown_species()
+    {
+        var day = new DateTimeOffset(2026, 11, 20, 18, 0, 0, TimeSpan.Zero);
+        PutPokedex(
+            seen: [10],
+            specimens:
+            [
+                new(SpecimenSource.Pvp, day, 0, "Rocko", "../../evil?x=1"),
+                new(SpecimenSource.Pvp, day, -4, "[gelöscht]"),
+                new(SpecimenSource.Npc, day, 5, "Eich"),
+                new(SpecimenSource.Boss, day),
+            ],
+            sightings: [new(2, day, 1, day, 1), new(1000, day, 1, day, 1)]);
+
+        var cut = Render<Trainer>(p => p.Add(t => t.Key, "11"));
+
+        cut.WaitForAssertion(() => Assert.Equal("Bisasam", cut.Find(".dex-box h3").TextContent));
+        Assert.Equal(
+            ["Von Rocko gewonnen 20.11.2026", "Von [gelöscht] gewonnen 20.11.2026", "Belohnung von Eich 20.11.2026", "Als Boss gefangen 20.11.2026"],
+            HistoryRows(cut));
+        Assert.Equal(
+            ["trainer/..%2F..%2Fevil%3Fx%3D1", "kampf/5"],
+            cut.FindAll(".dex-box .dex-history a").Select(a => a.GetAttribute("href")));
+
+        // Species 2 is unknown to Anna: its sighting never shows, its row stays „????????“ without a button.
+        Assert.Empty(cut.FindAll(".dex-row")[1].QuerySelectorAll("button"));
+    }
+
+    /// <summary>The box's „Verlauf“ rows as „label date“.</summary>
+    private static List<string> HistoryRows(IRenderedComponent<Trainer> cut) =>
+    [
+        .. cut.FindAll(".dex-box .dex-history div")
+            .Select(row => Regex.Replace(row.QuerySelector("dt")!.TextContent + " " + row.QuerySelector("dd")!.TextContent, @"\s+", " ").Trim()),
+    ];
+
     /// <summary>Anna: two Bisasam (one the starter); arten.json with Bisasam's Gen-1 values and Raupy.</summary>
-    private void PutPokedex(IReadOnlyList<int>? seen)
+    private void PutPokedex(
+        IReadOnlyList<int>? seen, IReadOnlyList<SpecimenInfo>? specimens = null, IReadOnlyList<SightingInfo>? sightings = null)
     {
         Put(
             SitePaths.Trainer("11"),
-            new TrainerPage("11", "Anna", Now, Now, 1, 2, 0, 0, 0, [new(Bisasam, 2, true)], [], [], [], Seen: seen),
+            new TrainerPage("11", "Anna", Now, Now, 1, 2, 0, 0, 0, [new(Bisasam, 2, true, specimens)], [], [], [], Seen: seen, Sightings: sightings),
             SiteJson.Default.TrainerPage);
         Put(
             SitePaths.Species,
