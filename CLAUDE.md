@@ -185,7 +185,7 @@ Replace this section at every release or package; history belongs in CHANGELOG.m
   rows on a real trainer page; on stream boss win rates with the 1.8.0 rule (≈ 75 % group wins expected); whether the
   darkened names read well on the dark page (roadmap.md).
 - Next: release 1.11.0 (Pokédex „Verlauf“ with a migration, remembered Pokédex switch, search fixes, empty-window
-  fix). Then WP-09 balancing after a few streams (1.12.0, proposal): PvP loot preferring missing species, NPC difficulty;
+  fix, full hit damage in the fight log, trainer links on the fight page, gradual HP colours). Then WP-09 balancing after a few streams (1.12.0, proposal): PvP loot preferring missing species, NPC difficulty;
   no runtime balancing editor. After it WP-12 English website (1.13.0, proposal): language from the browser or „Einstellungen“,
   website only, English species/NPC names (roadmap.md). Parked for version 2: website and overlay served from the bot's server.
   Ideas go to docs/backlog.md; details in docs/roadmap.md.
