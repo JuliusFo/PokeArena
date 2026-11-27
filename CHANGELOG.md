@@ -22,6 +22,11 @@ tagged `vX.Y.Z` once its section is complete.
   and the trainer names in the „Schaden“ box („Gesamt“ in PvP and NPC fights,
   the ranking in a boss fight). The group of a boss fight, the boss, NPCs and
   deleted trainers stay plain text.
+- HP on the fight page change colour gradually instead of in three steps:
+  red up to a quarter, turning to orange at half and to green at three
+  quarters, green above, mixed in OKLCH (`HpColor`). Bars on the fight cards and in the log and the HP
+  numbers in both log views share it; every shade keeps at least 4.5 : 1 with
+  the white numbers and on the light and dark page (`HpColorTests`).
 
 ### Fixed
 - The Pokédex search: closing it with Escape after opening it with the mouse

@@ -203,10 +203,11 @@ Used by boss, PvP and NPC fights.
   On the fight page a hit's target HP are not in the sentence but a small bar
   on the right (user pick „B“ from the mockups, 2026-11-19): filled up to the HP
   after the hit, the lost piece hatched in red up to the HP before it, „160 →
-  120“ inside, the fill green above half, orange above a quarter, red at a
-  quarter or less, like on the fight cards and the text view's numbers; the
-  attacker's HP in the sentence get the same colours (user decision
-  2026-11-23, viewer feedback). The
+  120“ inside, the fill red up to a quarter, turning gradually to orange at
+  half and to green at three quarters, green above (user decision 2026-11-27,
+  before three fixed steps), like on the fight cards and the
+  text view's numbers; the attacker's HP in the sentence get the same colours
+  (user decision 2026-11-23, viewer feedback). The
   hit's full damage stands as „−40“ right before the bar (a knockout of 77
   on 70 HP left shows „−77“ next to „70 → 0“, so an overkill shows; user
   decision 2026-11-27 after viewer feedback — from 2026-11-20 it was the
@@ -220,8 +221,8 @@ Used by boss, PvP and NPC fights.
   a text view (user request 2026-11-21, viewer feedback on the bars; the browser
   remembers the pick, bars by default): every hit as one sentence
   `Pikachu (Ash, HP 35) trifft Arkani (Boss, HP 160 → 120) und verursacht 40 Schaden.`
-  plus the same additions, the HP green above half, orange above a quarter, red
-  at a quarter or less of the fighter's maximum, the damage in bold red — again
+  plus the same additions, the HP coloured like the bars by what is left of the
+  fighter's maximum, the damage in bold red — again
   the hit's full damage. The „Schaden“ box counts only what arrived. Fight files from 1.8.2 and older keep their own
   wording there (only the target's HP are coloured) until the bot has uploaded
   the website again after its update.

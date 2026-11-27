@@ -70,12 +70,15 @@ Public website, Blazor WebAssembly on GitHub Pages (spec §9). Visitors are casu
   (`ViewerSettings.LogViewKey`, shared with „Einstellungen“; `ViewerSettings` wraps every JS call in `try`/`catch
   JSException` — blocked storage means bars and a pick for this page only). The text view (`TextParts`) words a hit itself where a part is marked
   `IsDamage` („ und verursacht 20 Schaden.“, the full damage; `Before − After` only for a negative one) and colours parts marked `IsHp` and the
-  target's HP from `LogHit` (`.log-hp` low at a quarter, mid at half, high above; ≥ 5 : 1 light and dark). Files
-  without `IsDamage` keep their wording. Bars and text share the steps through `Level`/`BarLevel` (`.hp-bar.mid`
-  orange, `.low` red), and the bar view colours `IsHp` too — only where `TargetOf` accepts the hit, like the text
-  view (claude/hp-coloring-bar-view-4f3c63, viewer feedback). Orange and red fills are equally dark (white text needs
-  4.5 : 1), so with red-green weakness they look alike — accepted, the numbers inside carry the value (user decision,
-  review). `Level` computes in `long`: HP from a file not ours must not wrap into red. bUnit stays strict: `WebTestContext` plans
+  target's HP from `LogHit`. Files without `IsDamage` keep their wording. The bar view colours `IsHp` too — only
+  where `TargetOf` accepts the hit, like the text view (claude/hp-coloring-bar-view-4f3c63, viewer feedback).
+  HP colours have no steps (claude/hp-bar-color-gradient-ee5d5b): `Services/HpColor` mixes red (≤ ¼), orange (½) and
+  green (≥ ¾, user decision) in OKLCH and goes inline — `--hp-color` on a bar, `--log-hp` / `--log-hp-dark` on `.log-hp` (site.css
+  picks by theme); OKLab's straight line or sRGB turned 60–80 % greyish brown. Change an anchor only with
+  `HpColorTests` green: it checks 4.5 : 1 for every shade (white numbers, light and dark surface). Orange and red
+  fills are equally dark (white text needs 4.5 : 1), so with red-green weakness they look alike — accepted, the
+  numbers inside carry the value (user decision, review). `HpColor.Share` computes in `double`: HP from a file not
+  ours must not wrap into red. bUnit stays strict: `WebTestContext` plans
   only `localStorage.getItem` (null = bars), `setItem` and the Pokédex search's `pokeArenaDex` calls; a test's own
   `Setup` is added later and wins (claude/kampflog-design-options-cb7042, review).
 - Light or dark is the viewer's pick on „Einstellungen“ (`Pages/Settings.razor`): „auto“ (default, follows the
