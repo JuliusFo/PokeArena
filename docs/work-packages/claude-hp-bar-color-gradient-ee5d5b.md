@@ -27,3 +27,12 @@
 - User decisions: „Grün schon ab ¾“ — first built with green only at full HP,
   where a bar at 85–90 % was already a little olive; now green from ¾ up
   (fight 1: 94 % and 87 % green, 44 % orange-red).
+- Code review (2026-11-27): „Alle“. Second pass on the fixes without findings.
+  - L: Web `CLAUDE.md` still named `--hp-low`, removed by this branch — fixed,
+    it names the bars' red (#c42d0b).
+  - L: the anchors live in C# and site.css too (`--hp-fill` / `Bar.Mixed`,
+    `--log-hp-low`, `--damage`) with nothing tying them — fixed,
+    `HpColorTests` compares them (fails with the green anchor changed);
+    pitfall line in the Web `CLAUDE.md`.
+  - L: log and Web `CLAUDE.md` quoted percentages from the first variant —
+    fixed, marked as measured with green at full HP.
