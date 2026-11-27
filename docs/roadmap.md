@@ -2,7 +2,7 @@
 
 Work packages up to v1.0.0, the packages and branches after it (all released
 up to 1.10.0; the index is docs/work-packages.md), WP-09 as the next planned
-one (1.11.0, proposal) and a parked idea for version 2. Read the package before starting it and agree the plan with
+one (1.12.0, proposal) and a parked idea for version 2. Read the package before starting it and agree the plan with
 the user. Estimates: solo, "day" = one focused person-day; total ≈ 25–31
 days. Every package ends in a state that could run on stream.
 
@@ -631,7 +631,7 @@ Plan:
   `arten.json`, older trainer file), sample data (`beispieldaten/arten.json`
   generated from `data/pokemon.json` — base data, no player data).
 
-## WP-09 — Balancing after the first streams (≈ 2 days) → v1.11.0 (proposal)
+## WP-09 — Balancing after the first streams (≈ 2 days) → v1.12.0 (proposal)
 
 1.9.0 went to the fight log's text view and the „Einstellungen“ page (user pick
 at the release, 2026-11-22), so WP-09 and WP-12 each move up one version. The
@@ -694,7 +694,7 @@ Demo: measured win rates per NPC and boss group size, adjusted values.
   become a streamer setting, the page has to word them loosely („kurz“, „etwa
   eine halbe Stunde“) or the values have to be published in `meta.json`.
 
-## WP-12 — English website (≈ 2–3 days) → v1.12.0 (proposal)
+## WP-12 — English website (≈ 2–3 days) → v1.13.0 (proposal)
 
 Viewer feedback (2026-11-21): „Spracheinstellung zw. Deutsch und Englisch.
 Automatisch gewählt durch Browserlanguage und dann halt selbst festlegbar.
@@ -709,6 +709,8 @@ User decisions (2026-11-21):
   the settings page, so the numbers became 1.10.0 and 1.11.0 (proposal, not
   confirmed); the order stays. Addendum 2026-11-23: the Pokédex on the trainer
   page takes 1.10.0, so WP-09 and this one become 1.11.0 and 1.12.0 (proposal).
+  Addendum 2026-11-27: the Pokédex „Verlauf“ (a migration) takes 1.11.0 (user
+  decision), so WP-09 and this one become 1.12.0 and 1.13.0 (proposal).
 - Website only. Chat texts and the desktop app stay German.
 - The English site shows English species, type and NPC names (Bulbasaur,
   Fire, Brock).

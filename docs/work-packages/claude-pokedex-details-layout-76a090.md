@@ -33,8 +33,8 @@
   and the date ran together (`Starter10.11.2026`) → `dl` with dt/dd. `Battle`
   is a class with init-only properties — no `with`. Port 5180 of the preview
   was taken by another session: a temporary launch entry, not committed.
-- Open: the version — a feature with a database migration would be 1.11.0 by
-  SemVer, which WP-09 holds as a proposal; listed under 1.10.1 like the other
-  unreleased Pokédex changes until the user decides.
+- User decision (2026-11-27): version 1.11.0 — a feature with a database
+  migration. Everything unreleased on `main` (listed under 1.10.1 until then)
+  goes out with it; WP-09 and WP-12 move to 1.12.0 and 1.13.0 (proposal).
 - Deliberately not done: base values as a 2×2 grid to save more height
   (the box scrolls on narrow screens or with many duplicates instead).

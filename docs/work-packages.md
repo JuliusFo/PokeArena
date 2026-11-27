@@ -51,14 +51,14 @@ code of a package lives: read the logs of earlier packages in the same area befo
 | – | [Settings page on the website (user request)](work-packages/claude-settings-page-design-00654c.md) | 1.9.0 | 2026-11-21 | Web Settings page, ViewerSettings, index.html theme script, site.css data-theme |
 | – | [Coloured HP in the bar view (viewer feedback)](work-packages/claude-hp-coloring-bar-view-4f3c63.md) | 1.10.0 | 2026-11-23 | Web Battle.razor HP steps, site.css .hp-bar.mid |
 | – | [Pokédex on the trainer page (viewer idea)](work-packages/claude-pokedex-trainer-page-improve-a4a504.md) | 1.10.0 | 2026-11-23 | Contracts SpeciesList/TrainerPage.Seen, Core SeenSpecies + Sightings + arten.json, Web Shared/Pokedex |
-| – | [Empty window after a restart without a session (user report)](work-packages/fix-wpf-software-rendering.md) | 1.10.1 (proposal) | 2026-11-23 | Desktop App start, InteractiveSession, MainWindow |
-| – | [Pokédex switch remembered (user request)](work-packages/claude-pokedex-toggle-persistence-c87bd9.md) | 1.10.1 (proposal) | 2026-11-23 | Web ViewerSettings, Shared/Pokedex |
-| – | [Pokédex search: focus frame, click outside (user feedback)](work-packages/claude-pokedex-search-ui-fixes-79cb0c.md) | 1.10.1 (proposal) | 2026-11-24 | Web Shared/Pokedex, index.html |
-| – | [Trainer links on the fight page (user request)](work-packages/claude-kampf-trainer-link-3fc5e0.md) | 1.10.1 (proposal) | 2026-11-26 | Web Battle.razor, TrainerLinks, DamageMeter, Home, Stats |
-| – | [Full hit damage in the fight log again (viewer feedback)](work-packages/claude-damage-display-capping-25b0a0.md) | 1.10.1 (proposal) | 2026-11-27 | Web Pages/Battle |
-| – | [Gradual HP colours (user request)](work-packages/claude-hp-bar-color-gradient-ee5d5b.md) | 1.10.1 (proposal) | 2026-11-27 | Web Services/HpColor, Battle.razor, site.css |
-| – | [Pokédex box „Verlauf“ (user feedback)](work-packages/claude-pokedex-details-layout-76a090.md) | 1.10.1 (proposal) | 2026-11-27 | Core SeenSpecies dates + Sightings + SiteGenerator, Contracts SpecimenInfo/SightingInfo, Web Shared/Pokedex |
-| WP-09 | Balancing after the first streams | 1.11.0 (proposal) | planned | BossSettings, PvP loot, NPC strength |
+| – | [Empty window after a restart without a session (user report)](work-packages/fix-wpf-software-rendering.md) | 1.11.0 | 2026-11-23 | Desktop App start, InteractiveSession, MainWindow |
+| – | [Pokédex switch remembered (user request)](work-packages/claude-pokedex-toggle-persistence-c87bd9.md) | 1.11.0 | 2026-11-23 | Web ViewerSettings, Shared/Pokedex |
+| – | [Pokédex search: focus frame, click outside (user feedback)](work-packages/claude-pokedex-search-ui-fixes-79cb0c.md) | 1.11.0 | 2026-11-24 | Web Shared/Pokedex, index.html |
+| – | [Trainer links on the fight page (user request)](work-packages/claude-kampf-trainer-link-3fc5e0.md) | 1.11.0 | 2026-11-26 | Web Battle.razor, TrainerLinks, DamageMeter, Home, Stats |
+| – | [Full hit damage in the fight log again (viewer feedback)](work-packages/claude-damage-display-capping-25b0a0.md) | 1.11.0 | 2026-11-27 | Web Pages/Battle |
+| – | [Gradual HP colours (user request)](work-packages/claude-hp-bar-color-gradient-ee5d5b.md) | 1.11.0 | 2026-11-27 | Web Services/HpColor, Battle.razor, site.css |
+| – | [Pokédex box „Verlauf“ (user feedback)](work-packages/claude-pokedex-details-layout-76a090.md) | 1.11.0 | 2026-11-27 | Core SeenSpecies dates + Sightings + SiteGenerator, Contracts SpecimenInfo/SightingInfo, Web Shared/Pokedex |
+| WP-09 | Balancing after the first streams | 1.12.0 (proposal) | planned | BossSettings, PvP loot, NPC strength |
 
 ## Adding a package
 

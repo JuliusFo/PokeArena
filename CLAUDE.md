@@ -1,7 +1,7 @@
 # PokeArena
 
 Working language with the user: **German**. Code, comments, commits, docs: **English**.
-Status: 2026-11-23 · v1.10.0 released (Pokédex on the trainer page, coloured HP in the bar view) · next WP-09 (→ 1.11.0, proposal) after a few streams
+Status: 2026-11-23 · v1.10.0 released (Pokédex on the trainer page, coloured HP in the bar view) · next release 1.11.0 (Pokédex „Verlauf“ and the fixes since 1.10.0, user decision 2026-11-27), then WP-09 (→ 1.12.0, proposal) after a few streams
 
 ## 1. Where to find what
 
@@ -34,7 +34,7 @@ shows leaderboard, trainer pages and battle logs.
 ## 3. Versions and invariants
 
 Released versions and their content: `CHANGELOG.md`; which package went into which version: the table in
-`docs/work-packages.md`. Planned: 1.11.0 WP-09 balancing (proposal, version not confirmed); 1.12.0 WP-12 English website
+`docs/work-packages.md`. Planned: 1.11.0 the Pokédex „Verlauf“ with everything unreleased on `main` (user decision 2026-11-27); 1.12.0 WP-09 balancing (proposal, version not confirmed); 1.13.0 WP-12 English website
 (after WP-09 is a user decision 2026-11-21; the version moved up twice: the user released the
 log view and settings page as 1.9.0, and the Pokédex as 1.10.0 — proposal, not confirmed); 2.0.0 parked (website and
 overlay served from the bot's server, roadmap.md). The version table that stood here was cut (review 1.8.1, D1).
@@ -184,7 +184,8 @@ Replace this section at every release or package; history belongs in CHANGELOG.m
 - To watch after the update: the bot's first start with the migration (log), `arten.json` on the data host, „gesehen“
   rows on a real trainer page; on stream boss win rates with the 1.8.0 rule (≈ 75 % group wins expected); whether the
   darkened names read well on the dark page (roadmap.md).
-- Next: WP-09 balancing after a few streams (1.11.0, proposal): PvP loot preferring missing species, NPC difficulty;
-  no runtime balancing editor. After it WP-12 English website (1.12.0, proposal): language from the browser or „Einstellungen“,
+- Next: release 1.11.0 (Pokédex „Verlauf“ with a migration, remembered Pokédex switch, search fixes, empty-window
+  fix). Then WP-09 balancing after a few streams (1.12.0, proposal): PvP loot preferring missing species, NPC difficulty;
+  no runtime balancing editor. After it WP-12 English website (1.13.0, proposal): language from the browser or „Einstellungen“,
   website only, English species/NPC names (roadmap.md). Parked for version 2: website and overlay served from the bot's server.
   Ideas go to docs/backlog.md; details in docs/roadmap.md.
