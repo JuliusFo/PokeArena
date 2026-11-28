@@ -7,6 +7,15 @@ tagged `vX.Y.Z` once its section is complete.
 
 ## [Unreleased]
 
+### Changed
+- HP colours on the fight page run over the whole range, after viewer
+  feedback: red only at 0, yellow at half, green only when full, so every HP
+  value has its own shade (since 1.11.0 a quarter and less was one red and
+  three quarters and more one green — read as a few fixed colours). On the
+  dark page the HP numbers in the log are bright, from green over yellow to
+  red; the bars and the numbers on the light page take the same way darker,
+  so white numbers stay readable (yellow there is a dark ochre).
+
 ## [1.11.0] - 2026-11-27
 
 ### Added
