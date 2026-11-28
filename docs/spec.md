@@ -203,9 +203,10 @@ Used by boss, PvP and NPC fights.
   On the fight page a hit's target HP are not in the sentence but a small bar
   on the right (user pick „B“ from the mockups, 2026-11-19): filled up to the HP
   after the hit, the lost piece hatched in red up to the HP before it, „160 →
-  120“ inside, the fill red up to a quarter, turning gradually to orange at
-  half and to green at three quarters, green above (user decision 2026-11-27,
-  before three fixed steps), like on the fight cards and the
+  120“ inside, the fill red only at 0, turning gradually to yellow at half and
+  to green only when full, every HP its own shade (user decision 2026-11-28
+  after viewer feedback; before red up to a quarter and green from three
+  quarters, and before 2026-11-27 three fixed steps), like on the fight cards and the
   text view's numbers; the attacker's HP in the sentence get the same colours
   (user decision 2026-11-23, viewer feedback). The
   hit's full damage stands as „−40“ right before the bar (a knockout of 77

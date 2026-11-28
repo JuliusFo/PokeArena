@@ -8,25 +8,34 @@ public class HpColorTests
     private const int Max = 1000;
 
     [Theory]
-    [InlineData(0, "#c42d0b", "#ff8a6e")]
-    [InlineData(100, "#c42d0b", "#ff8a6e")] // red up to a quarter
-    [InlineData(250, "#c42d0b", "#ff8a6e")]
-    [InlineData(500, "#a35200", "#f0a04b")] // the former steps' orange at half
-    [InlineData(750, "#1b7f45", "#4cc283")] // green from three quarters (user decision 2026-11-27)
-    [InlineData(900, "#1b7f45", "#4cc283")]
-    [InlineData(1000, "#1b7f45", "#4cc283")]
-    public void The_anchors_keep_the_former_steps_colours(int hp, string fill, string onDark) =>
+    [InlineData(0, "#c42d0b", "#ff8a6e")] // red only at 0
+    [InlineData(500, "#8a6d00", "#e2c044")] // yellow at half: a dark ochre under white numbers, bright on the dark page
+    [InlineData(1000, "#1b7f45", "#4cc283")] // green only when full
+    public void The_anchors_are_red_yellow_and_green(int hp, string fill, string onDark) =>
         Assert.Equal((fill, onDark), (HpColor.Fill(hp, Max), HpColor.OnDark(hp, Max)));
 
     [Fact]
-    public void Between_the_anchors_every_hp_gets_its_own_shade()
+    public void Only_none_left_is_red_and_only_full_is_green()
     {
-        // Gradual, not three steps (claude/hp-bar-color-gradient-ee5d5b): from a quarter to three quarters the colour
-        // keeps moving, in small steps.
-        var fills = Enumerable.Range(250, 501).Select(hp => HpColor.Fill(hp, Max)).ToList();
+        // The whole range moves (user decision 2026-11-28, claude/health-bar-gradient-166dce): before, a quarter and
+        // less was one red and three quarters and more one green, and viewers saw a few fixed colours.
+        Assert.NotEqual((HpColor.Fill(0, Max), HpColor.OnDark(0, Max)), (HpColor.Fill(1, Max), HpColor.OnDark(1, Max)));
+        Assert.NotEqual((HpColor.Fill(Max, Max), HpColor.OnDark(Max, Max)), (HpColor.Fill(Max - 1, Max), HpColor.OnDark(Max - 1, Max)));
+        Assert.NotEqual(HpColor.Fill(0, Max), HpColor.Fill(250, Max));
+        Assert.NotEqual(HpColor.Fill(Max, Max), HpColor.Fill(750, Max));
+    }
 
-        Assert.True(fills.Distinct().Count() > 100, $"only {fills.Distinct().Count()} shades");
-        Assert.All(fills.Zip(fills.Skip(1)), pair => Assert.True(Distance(pair.First, pair.Second) <= 6, $"{pair.First} → {pair.Second}"));
+    [Fact]
+    public void Every_hp_gets_its_own_shade()
+    {
+        // Gradual, not steps: from none to full the colour keeps moving, in small steps.
+        foreach (var colour in new Func<int, int, string>[] { HpColor.Fill, HpColor.OnDark })
+        {
+            var shades = Enumerable.Range(0, Max + 1).Select(hp => colour(hp, Max)).ToList();
+
+            Assert.True(shades.Distinct().Count() > 300, $"only {shades.Distinct().Count()} shades");
+            Assert.All(shades.Zip(shades.Skip(1)), pair => Assert.True(Distance(pair.First, pair.Second) <= 6, $"{pair.First} → {pair.Second}"));
+        }
     }
 
     [Fact]

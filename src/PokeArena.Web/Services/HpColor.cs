@@ -3,17 +3,19 @@ using System.Globalization;
 namespace PokeArena.Web.Services;
 
 /// <summary>
-/// The colour of HP by what is left, without steps (claude/hp-bar-color-gradient-ee5d5b): red up to a quarter, from
-/// there to orange at half and to green at three quarters, green above (user decision 2026-11-27: a nearly full bar
-/// stays green). The anchors are the former steps' colours; in between they are mixed in OKLCH, which keeps lightness
-/// and saturation even (a mix in sRGB or on OKLab's straight line turned the middle greyish brown). Bars and text share
-/// it: <see cref="Fill"/> is the bar's fill under white numbers and the HP text on the light page, <see cref="OnDark"/>
-/// the HP text on the dark page. <c>HpColorTests</c> checks 4.5 : 1 along the whole way.
+/// The colour of HP by what is left, over the whole range (claude/health-bar-gradient-166dce): red only at 0, yellow at
+/// half, green only when full, every HP in between its own shade. Before (claude/hp-bar-color-gradient-ee5d5b) red up to
+/// a quarter and green from three quarters through orange at half — viewers read that as a few fixed colours, half the
+/// range was one of two (user decision 2026-11-28, after a friend's mockup that runs the hue evenly from green over
+/// yellow to red; it replaces „Grün schon ab ¾“ of 2026-11-27). Mixed in OKLCH, which keeps lightness and saturation
+/// even (a mix in sRGB or on OKLab's straight line turned the middle greyish brown). Bars and text share it:
+/// <see cref="Fill"/> is the bar's fill under white numbers and the HP text on the light page, so its yellow is a dark
+/// ochre; <see cref="OnDark"/> the HP text on the dark page, bright. <c>HpColorTests</c> checks 4.5 : 1 along the whole way.
 /// </summary>
 public static class HpColor
 {
-    private static readonly Stops FillStops = new("#c42d0b", "#a35200", "#1b7f45");
-    private static readonly Stops DarkStops = new("#ff8a6e", "#f0a04b", "#4cc283");
+    private static readonly Stops FillStops = new("#c42d0b", "#8a6d00", "#1b7f45");
+    private static readonly Stops DarkStops = new("#ff8a6e", "#e2c044", "#4cc283");
 
     /// <summary>Fill of an HP bar (white numbers, both themes) and HP text on the light page.</summary>
     public static string Fill(int hp, int max) => FillStops.At(Share(hp, max));
@@ -34,7 +36,7 @@ public static class HpColor
         return Math.Clamp(hp, 0, top) / (double)top;
     }
 
-    /// <summary>Red, orange and green in OKLab, mixed in OKLCH by <see cref="At"/>.</summary>
+    /// <summary>Red, yellow and green in OKLab, mixed in OKLCH by <see cref="At"/>.</summary>
     private sealed class Stops(string low, string mid, string high)
     {
         private readonly (double L, double A, double B) _low = ToOklab(low);
@@ -43,9 +45,9 @@ public static class HpColor
 
         public string At(double share) => share switch
         {
-            <= 0.25 => ToHex(_low),
-            <= 0.5 => ToHex(Mix(_low, _mid, (share - 0.25) / 0.25)),
-            < 0.75 => ToHex(Mix(_mid, _high, (share - 0.5) / 0.25)),
+            <= 0 => ToHex(_low),
+            < 0.5 => ToHex(Mix(_low, _mid, share / 0.5)),
+            < 1 => ToHex(Mix(_mid, _high, (share - 0.5) / 0.5)),
             _ => ToHex(_high),
         };
 

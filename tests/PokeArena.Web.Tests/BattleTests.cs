@@ -68,10 +68,10 @@ public class BattleTests : WebTestContext
             [("fighter-survived", "8 / 40 HP"), ("fighter-unused", "nicht eingesetzt"), ("fighter-fainted", "besiegt")],
             rows.Select(li => (li.ClassName,
                 (li.QuerySelector(".end-state .hp-text:not(.on-fill)") ?? li.QuerySelector(".end-state")!).TextContent.Trim())));
-        // 8 of 40 HP is a fifth: the bar is short and red; the numbers sit inside it (feat/hp-text-in-bar).
+        // 8 of 40 HP is a fifth: the bar is short and red-orange; the numbers sit inside it (feat/hp-text-in-bar).
         // Two copies of the numbers, the white one over the fill hidden from screen readers (fix/hp-text-crisp).
         var bar = rows[0].QuerySelector(".end-state > .hp-bar")!;
-        Assert.Equal(("hp-bar", "--hp: 20%; --hp-color: #c42d0b"), (bar.ClassName, bar.GetAttribute("style")));
+        Assert.Equal(("hp-bar", $"--hp: 20%; --hp-color: {HpColor.Fill(8, 40)}"), (bar.ClassName, bar.GetAttribute("style")));
         Assert.Equal(
             [("hp-text", "8 / 40 HP", null), ("hp-text on-fill", "8 / 40 HP", "true")],
             bar.Children.Select(e => (e.ClassName, e.TextContent, e.GetAttribute("aria-hidden"))));
@@ -282,7 +282,7 @@ public class BattleTests : WebTestContext
     [Fact]
     public void A_hit_shows_the_targets_hp_as_a_bar_instead_of_in_the_sentence()
     {
-        // The first hit leaves 22 of 80 (half or less: orange), the second is more than the 22 left (the bar loses 22,
+        // The first hit leaves 22 of 80 (red-orange), the second is more than the 22 left (the bar loses 22,
         // the text keeps 31), the third took nothing (no minimum-width lost piece then).
         Put(
             SitePaths.Battle(8),
@@ -542,16 +542,17 @@ public class BattleTests : WebTestContext
             [("40", HpColor.TextStyle(40, 90)), ("90", "--log-hp: #1b7f45; --log-hp-dark: #4cc283")],
             cut.FindAll(".log .log-hp").Select(s => (s.TextContent, s.GetAttribute("style"))));
         Assert.All(cut.FindAll(".log .log-hp"), s => Assert.Equal("hit-text", s.ParentElement!.ClassName));
-        // 22 of 80 left is between red and orange, 0 red.
+        // 22 of 80 left is between red and yellow, 0 red.
         Assert.Equal(
             [HpColor.Fill(22, 80), "#c42d0b"],
             cut.FindAll(".log .hit-bar").Select(HpColorOf));
     }
 
     [Fact]
-    public void Half_the_hp_left_is_orange_on_the_card_and_in_the_log()
+    public void Half_the_hp_left_is_yellow_on_the_card_and_in_the_log()
     {
-        // Exactly half is the former orange step; one more is already a little greener (claude/hp-bar-color-gradient-ee5d5b).
+        // Exactly half is the yellow anchor (ochre under white numbers); one more is already a little greener
+        // (claude/health-bar-gradient-166dce).
         Put(
             SitePaths.Battle(28),
             BattlePage(28) with
@@ -569,10 +570,10 @@ public class BattleTests : WebTestContext
         var cut = Render<Battle>(p => p.Add(b => b.Id, 28));
 
         cut.WaitForAssertion(() => Assert.Equal(2, cut.FindAll(".log .hit-bar").Count));
-        var orange = "#a35200";
-        Assert.NotEqual(orange, HpColor.Fill(41, 80));
-        Assert.Equal([orange, HpColor.Fill(41, 80)], cut.FindAll(".log .hit-bar").Select(HpColorOf));
-        Assert.Equal([orange, HpColor.Fill(41, 80)], cut.FindAll(".fighters .hp-bar").Select(HpColorOf));
+        var yellow = "#8a6d00";
+        Assert.NotEqual(yellow, HpColor.Fill(41, 80));
+        Assert.Equal([yellow, HpColor.Fill(41, 80)], cut.FindAll(".log .hit-bar").Select(HpColorOf));
+        Assert.Equal([yellow, HpColor.Fill(41, 80)], cut.FindAll(".fighters .hp-bar").Select(HpColorOf));
 
         static LogLine Hit(int after) => new(
             [new LogPart("Raupy", 1, 0, IsSpecies: true), new LogPart(" (Misty"), new LogPart($", HP 80 → {after}", 1, 0, IsTargetHp: true), new LogPart($") {80 - after} Schaden.")],
@@ -582,7 +583,7 @@ public class BattleTests : WebTestContext
     [Fact]
     public void Huge_hp_from_a_file_not_ours_keep_their_colour()
     {
-        // 1.5 billion of int.MaxValue is about 70 %: green side of orange. Times 4 in int would wrap and turn it red
+        // 1.5 billion of int.MaxValue is about 70 %: green side of yellow. Times 4 in int would wrap and turn it red
         // (review claude/hp-coloring-bar-view-4f3c63).
         Put(
             SitePaths.Battle(29),
@@ -836,7 +837,7 @@ public class BattleTests : WebTestContext
     }
 
     [Fact]
-    public void A_quarter_of_the_hp_left_is_red_on_the_card_and_in_the_log()
+    public void A_quarter_of_the_hp_left_is_no_longer_red_on_the_card_and_in_the_log()
     {
         Put(
             SitePaths.Battle(11),
@@ -859,9 +860,11 @@ public class BattleTests : WebTestContext
 
         var cut = Render<Battle>(p => p.Add(b => b.Id, 11));
 
-        // Exactly 25 % is still the full red (review 1.8.1, C12); the full 90 green.
-        cut.WaitForAssertion(() => Assert.Equal("#c42d0b", HpColorOf(cut.Find(".log .hit-bar"))));
-        Assert.Equal(["#1b7f45", "#c42d0b"], cut.FindAll(".fighters .hp-bar").Select(HpColorOf));
+        // Exactly 25 % was the full red until claude/health-bar-gradient-166dce (review 1.8.1, C12); now only 0 is red.
+        // The full 90 green.
+        cut.WaitForAssertion(() => Assert.Equal(HpColor.Fill(20, 80), HpColorOf(cut.Find(".log .hit-bar"))));
+        Assert.NotEqual("#c42d0b", HpColor.Fill(20, 80));
+        Assert.Equal(["#1b7f45", HpColor.Fill(20, 80)], cut.FindAll(".fighters .hp-bar").Select(HpColorOf));
     }
 
     [Fact]

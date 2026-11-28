@@ -473,8 +473,9 @@ h1.tinted,
   text in the light theme, hence the darker fills. The dark theme keeps them on purpose: the bright --ok with dark
   text had 8 : 1 but glared on the dark page and was reported as hard to read (fix/hp-bar-dark-mode).
   Coloured by what is left without steps (claude/hp-bar-color-gradient-ee5d5b, before: three steps from
-  claude/hp-coloring-bar-view-4f3c63): Battle.razor sets --hp-color from HpColor.Fill — red up to a quarter, orange at
-  half, green from three quarters, mixed in between, every shade ≥ 4.5 : 1 with white (HpColorTests). --hp-fill is the fallback.
+  claude/hp-coloring-bar-view-4f3c63): Battle.razor sets --hp-color from HpColor.Fill — red only at 0, a dark ochre
+  yellow at half, green only when full (claude/health-bar-gradient-166dce), mixed in between, every shade ≥ 4.5 : 1
+  with white (HpColorTests). --hp-fill is the fallback.
 */
 .hp-bar {
   --hp-fill: #1b7f45;
